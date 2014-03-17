@@ -12,7 +12,27 @@
       set: function(data) {
         this.trigger('change:data', data);
       }
-    })
+    }),
+    attachCharts: function(charts) {
+      _.each(charts, function(chart, name) {      
+        this.attach(name, chart);
+      }, this);
+    },
+    wrapProperties: function(charts, properties, options) {
+      options = options || {};
+      _.each(properties, function(prop) {
+        this[prop] = property(prop, {
+          set: function(value) {
+            _.each(charts, function(chart) {
+              chart[prop].call(chart, value);
+            });
+
+            if (options.set)
+              options.set.call(this, value);
+          }
+        });
+      }, this);
+    }
   });
 
   d3.chart('Base').extend('Container', {
@@ -201,7 +221,8 @@
   });
 
   d3.chart('CenteredValueBase').extend('BarChart', {
-    initialize: function() {
+    initialize: function(options) {
+      options = options || {};
       this.layer('BarChart', this.base.append('g').classed('bar-chart', true), {
         dataBind: function(data) {
           var chart = this.chart();
@@ -236,7 +257,8 @@
 
   // Example: https://github.com/misoproject/d3.chart/issues/30
   d3.chart('CenteredValueBase').extend('CenteredLineChart', {
-    initialize: function() {
+    initialize: function(options) {
+      options = options || {};
       var line = d3.svg.line()
         .x(this.x.bind(this))
         .y(this.y.bind(this));
@@ -263,7 +285,8 @@
 
   d3.chart('CenteredValueBase').extend('CenteredDataLabelsChart', {
     // Add circles (temporarily)
-    initialize: function() {
+    initialize: function(options) {
+      options = options || {};
       this.layer('PointChart', this.base.append('g').classed('point-chart', true), {
         dataBind: function(data) {
           var chart = this.chart();
@@ -289,33 +312,26 @@
   });
 
   d3.chart('CenteredValueBase').extend('CenteredLineChartWithLabels', {
-    initialize: function() {
+    initialize: function(options) {
+      options = options || {};
       this.charts = {
-        'Line': this.base.chart('CenteredLineChart'),
-        'DataLabels': this.base.chart('CenteredDataLabelsChart')
+        'Line': this.base.chart('CenteredLineChart', options.Line),
+        'DataLabels': this.base.chart('CenteredDataLabelsChart', options.DataLabels)
       };
 
-      this.charts['Line'].yScale = this.yScale.bind(this);
-      this.charts['DataLabels'].yScale = this.yScale.bind(this);
-
-      this.attach('Line', this.charts['Line']);
-      this.attach('DataLabels', this.charts['DataLabels']);
-    },
-    itemPadding: property('itemPadding', {
-      set: function(value) {
-        this.charts['Line'].itemPadding(value);
-        this.charts['DataLabels'].itemPadding(value);
-      }
-    })
+      this.attachCharts(this.charts);
+      this.wrapProperties(this.charts, ['xScale', 'xMin', 'xMax', 'yScale', 'yMin', 'yMax', 'itemPadding']);
+    }
   })
 
   d3.chart('Container').extend('SimpleBarChart', {
-    initialize: function() {
+    initialize: function(options) {
+      options = options || {};
       this.charts = {
-        'BarChart': this.chartBase().chart('BarChart')
+        'Bars': this.chartBase().chart('BarChart', options.Bars)
       };
 
-      this.attach('BarChart', this.charts['BarChart']);
+      this.attachCharts(this.charts);
       this.bounds({top: 10, right: 10, bottom: 40, left: 10});
     },
     itemPadding: property('itemPadding', {
@@ -327,14 +343,20 @@
   });
 
   d3.chart('Container').extend('LineBarChart', {
-    initialize: function() {
+    initialize: function(options) {
+      options = options || {};
       this.charts = {
-        'Bars': this.chartBase().chart('BarChart'),
-        'Line': this.chartBase().chart('CenteredLineChartWithLabels')
+        'Bars': this.chartBase().chart('BarChart', options.Bars),
+        'Line': this.chartBase().chart('CenteredLineChartWithLabels', options.Line)
       };
 
-      this.attach('Bars', this.charts['Bars']);
-      this.attach('Line', this.charts['Line']);
+      this.attachCharts(this.charts);
+      this.wrapProperties(this.charts, ['itemPadding'], {
+        set: function(value) {
+          this.trigger('change:dimensions');
+        }
+      });
+
       this.bounds({top: 10, right: 10, bottom: 0, left: 10});
     },
     demux: function(name, data) {
@@ -342,19 +364,13 @@
         return data;
       else
         return data[name];
-    },
-    itemPadding: property('itemPadding', {
-      set: function(value) {
-        this.charts['Bars'].itemPadding(value);
-        this.charts['Line'].itemPadding(value);
-        this.trigger('change:dimensions');
-      }
-    })
+    }
   });
 
   function property(name, options) {
     var prop_key = '__properties'
     options = options || {};
+    
     function get(context) {
       return context[prop_key] ? context[prop_key][name] : null;
     }
