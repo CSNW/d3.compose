@@ -19,7 +19,7 @@
       fill: #97E8A2;
     }
     .point {
-      fill: #fc3;
+      fill: steelblue;
     }
     .line {
       fill: none;
@@ -34,15 +34,27 @@
 
   <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.2/d3.js"></script>
   <script src="http://misoproject.com/js/d3.chart.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
   <script src="../d3.chart.csnw.line-bar.js"></script>
   <script type="text/javascript">
-    var data = [
-      {name: 'A', value: 15},
-      {name: 'B', value: 98},
-      {name: 'C', value: 67},
-      {name: 'D', value: 35},
-      {name: 'E', value: 22}
+    var deaths_prevented = [
+      {name: '1 year program', value: 12},
+      {name: '2 year program', value: 23},
+      {name: '3 year program', value: 35},
+      {name: '5 year program', value: 58}
     ];
+    var people_participating = [
+      {name: '1 year program', value: 1563},
+      {name: '2 year program', value: 3127},
+      {name: '3 year program', value: 4690},
+      {name: '5 year program', value: 7817}
+    ];
+
+    var data = {
+      'Bars': people_participating,
+      'Line': deaths_prevented
+    };
+
     var chart = d3.select('#chart')
       .append('svg')
       .chart('LineBarChart')
@@ -53,6 +65,9 @@
         var count = this.data() && this.data().length || 1;
         return (this.width() / count) * ratio;
       });
+
+    chart.charts['Line'].yScale(d3.scale.linear().domain([0, 70]));
+    chart.charts['Bars'].yScale(d3.scale.linear().domain([0, 20000]));
 
     chart.draw(data);
   </script>

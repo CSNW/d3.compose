@@ -1,4 +1,4 @@
-(function(d3) {
+(function(d3, _) {
   'use strict';
 
   d3.chart('Base', {
@@ -8,7 +8,7 @@
     height: function height() {
       return dimensions(this).height;
     },
-    data: property({
+    data: property('data', {
       set: function(data) {
         this.trigger('change:data', data);
       }
@@ -47,10 +47,10 @@
       this.rawData(data);
       return data;
     },
-    rawData: property(),
+    rawData: property('rawData'),
 
-    chartBase: property(),
-    bounds: property({
+    chartBase: property('chartBase'),
+    bounds: property('bounds', {
       get: function(values) {
         values = (values && typeof values == 'object') ? values : {};
         values = {
@@ -83,7 +83,7 @@
         };
       }
     }),
-    width: property({
+    width: property('width', {
       get: function(value) {
         return value != null ? value : dimensions(this).width;
       },
@@ -91,7 +91,7 @@
         this.trigger('change:dimensions');
       }
     }),
-    height: property({
+    height: property('height', {
       get: function(value) {
         return value != null ? value : dimensions(this).height;
       },
@@ -124,27 +124,54 @@
     },
 
     setScales: function() {
-      var xScale = this.setXScale(this.xScale() || d3.scale.linear(), this.data() || [], this);
-      var yScale = this.setYScale(this.yScale() || d3.scale.linear(), this.data() || [], this);
+      var xScale = this.xScale() || d3.scale.linear().domain([this.xMin(), this.xMax()]);
+      var yScale = this.yScale() || d3.scale.linear().domain([this.yMin(), this.yMax()]);
 
+      xScale = this.setXScaleRange(xScale, this.data() || [], this);
+      yScale = this.setYScaleRange(yScale, this.data() || [], this);
+      
       this.xScale(xScale).yScale(yScale);
     },
-    setXScale: function(xScale, data, chart) {
-      var xMax = d3.extent(data, chart.xValue)[1];
-      return xScale.domain([0, xMax]).range([0, chart.width()]);
+    setXScaleRange: function(xScale, data, chart) {
+      return xScale.range([0, chart.width()]);
     },
-    setYScale: function(yScale, data, chart) {
-      var yMax = d3.extent(data, chart.yValue)[1];
-      return yScale.domain([0, yMax]).range([chart.height(), 0]);
+    setYScaleRange: function(yScale, data, chart) {
+      return yScale.range([chart.height(), 0]);
     },
-    xScale: property({type: 'function'}),
-    yScale: property({type: 'function'})
+
+    xScale: property('xScale', {type: 'function'}),
+    yScale: property('yScale', {type: 'function'}),
+    xMin: property('xMin', {
+      get: function(value) {
+        // Default behavior: if min is less than zero, use min, otherwise use 0
+        var min = d3.extent(this.data(), this.xValue)[0];
+        return value != null ? value : (min < 0 ? min : 0);
+      }
+    }),
+    xMax: property('xMax', {
+      get: function(value) {
+        var max = d3.extent(this.data(), this.xValue)[1];
+        return value != null ? value : max;
+      }
+    }),
+    yMin: property('yMin', {
+      get: function(value) {
+        // Default behavior: if min is less than zero, use min, otherwise use 0
+        var min = d3.extent(this.data(), this.yValue)[0]
+        return value != null ? value : (min < 0 ? min : 0);
+      }
+    }),
+    yMax: property('yMax', {
+      get: function(value) {
+        return value != null ? value : d3.extent(this.data(), this.yValue)[1];
+      }
+    })
   });
   
   d3.chart('XYBase').extend('ValueBase', {
     transform: function(data) {
       return data.map(function(item, index) {
-        var value = typeof item == 'object' ? item.value : item;
+        var value = typeof item == 'object' ? item.value || item.y : item;
         var key = typeof item == 'object' ? item.key || item.name : null;
         return {x: index, y: value, key: key};
       });
@@ -152,11 +179,11 @@
   });
 
   d3.chart('ValueBase').extend('CenteredValueBase', {
-    setXScale: function(xScale, data, chart) {
+    setXScaleRange: function(xScale, data, chart) {
       var left = chart.itemWidth() / 2;
       var right = chart.width() - chart.itemWidth() / 2;
 
-      return d3.chart('XYBase').prototype.setXScale.call(this, xScale, data, chart).range([left, right]);
+      return xScale.range([left, right]);
     },
 
     itemWidth: function(d, i) {
@@ -166,7 +193,7 @@
       else
         return this.width();
     },
-    itemPadding: property({
+    itemPadding: property('itemPadding', {
       get: function(value) {
         return value != null ? value : 0;
       }
@@ -207,8 +234,8 @@
     }
   });
 
-  // https://github.com/misoproject/d3.chart/issues/30
-  d3.chart('CenteredValueBase').extend('LineChart', {
+  // Example: https://github.com/misoproject/d3.chart/issues/30
+  d3.chart('CenteredValueBase').extend('CenteredLineChart', {
     initialize: function() {
       var line = d3.svg.line()
         .x(this.x.bind(this))
@@ -234,7 +261,8 @@
     }
   });
 
-  d3.chart('CenteredValueBase').extend('PointChart', {
+  d3.chart('CenteredValueBase').extend('CenteredDataLabelsChart', {
+    // Add circles (temporarily)
     initialize: function() {
       this.layer('PointChart', this.base.append('g').classed('point-chart', true), {
         dataBind: function(data) {
@@ -260,6 +288,27 @@
     }
   });
 
+  d3.chart('CenteredValueBase').extend('CenteredLineChartWithLabels', {
+    initialize: function() {
+      this.charts = {
+        'Line': this.base.chart('CenteredLineChart'),
+        'DataLabels': this.base.chart('CenteredDataLabelsChart')
+      };
+
+      this.charts['Line'].yScale = this.yScale.bind(this);
+      this.charts['DataLabels'].yScale = this.yScale.bind(this);
+
+      this.attach('Line', this.charts['Line']);
+      this.attach('DataLabels', this.charts['DataLabels']);
+    },
+    itemPadding: property('itemPadding', {
+      set: function(value) {
+        this.charts['Line'].itemPadding(value);
+        this.charts['DataLabels'].itemPadding(value);
+      }
+    })
+  })
+
   d3.chart('Container').extend('SimpleBarChart', {
     initialize: function() {
       this.charts = {
@@ -269,7 +318,7 @@
       this.attach('BarChart', this.charts['BarChart']);
       this.bounds({top: 10, right: 10, bottom: 40, left: 10});
     },
-    itemPadding: property({
+    itemPadding: property('itemPadding', {
       set: function(value) {
         this.charts['BarChart'].itemPadding(value);
         this.trigger('change:dimensions');
@@ -280,31 +329,42 @@
   d3.chart('Container').extend('LineBarChart', {
     initialize: function() {
       this.charts = {
-        'BarChart': this.chartBase().chart('BarChart'),
-        'LineChart': this.chartBase().chart('LineChart'),
-        'PointChart': this.chartBase().chart('PointChart')
+        'Bars': this.chartBase().chart('BarChart'),
+        'Line': this.chartBase().chart('CenteredLineChartWithLabels')
       };
 
-      this.attach('BarChart', this.charts['BarChart']);
-      this.attach('LineChart', this.charts['LineChart']);
-      this.attach('PointChart', this.charts['PointChart']);
+      this.attach('Bars', this.charts['Bars']);
+      this.attach('Line', this.charts['Line']);
       this.bounds({top: 10, right: 10, bottom: 0, left: 10});
     },
-    itemPadding: property({
+    demux: function(name, data) {
+      if (!_.isObject(data))
+        return data;
+      else
+        return data[name];
+    },
+    itemPadding: property('itemPadding', {
       set: function(value) {
-        this.charts['BarChart'].itemPadding(value);
-        this.charts['LineChart'].itemPadding(value);
-        this.charts['PointChart'].itemPadding(value);
+        this.charts['Bars'].itemPadding(value);
+        this.charts['Line'].itemPadding(value);
         this.trigger('change:dimensions');
       }
     })
   });
 
-  function property(options) {
+  function property(name, options) {
+    var prop_key = '__properties'
     options = options || {};
-    var underlying;
+    function get(context) {
+      return context[prop_key] ? context[prop_key][name] : null;
+    }
+    function set(context, value) {
+      context[prop_key] = context[prop_key] || {};
+      context[prop_key][name] = value;
+    }
 
     return function(value) {
+      var underlying = get(this);
       if (!arguments.length) {
         if (underlying && typeof underlying == 'function' && options.type != 'function')
           value = underlying.call(this);
@@ -318,14 +378,14 @@
       }
 
       var previous = underlying;
-      underlying = value;
+      set(this, value);
       
       if (typeof options.set == 'function') {
         var response = options.set.call(this, value, previous);
         if (response && response.override)
-          underlying = response.override;
+          set(this, response.override);
         if (response && response.after)
-          response.after.call(this, underlying);
+          response.after.call(this, get(this));
       }
 
       return this;
@@ -340,4 +400,4 @@
       height: parseFloat((chart.base && chart.base.attr('height')) || (element && element.clientHeight) || 0)
     };
   }
-}(d3));
+}(d3, _));
