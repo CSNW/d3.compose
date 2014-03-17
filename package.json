@@ -1,0 +1,19 @@
+{
+  "name": "d3.chart.csnw.line-bar",
+  "version": "0.0.0",
+  "description": "d3-chart line-bar chart",
+  "main": "d3.chart.csnw.line-bar.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CSNW/d3.chart.csnw.line-bar.git"
+  },
+  "keywords": ["d3-chart", "d3", "chart", "line", "bar"],
+  "author": "CSNW",
+  "bugs": {
+    "url": "https://github.com/CSNW/d3.chart.csnw.line-bar/issues"
+  },
+  "homepage": "https://github.com/CSNW/d3.chart.csnw.line-bar"
+}

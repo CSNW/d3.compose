@@ -1,0 +1,7 @@
+node_modules
+
+# OS Junk
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

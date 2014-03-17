@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.chart.csnw.line-bar Example</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    #chart svg {
+      
+    }
+    .chart {
+      background-color: #eee;
+      border: solid 1px #ddd;
+    }
+    .bar {
+      fill: #97E8A2;
+    }
+    .point {
+      fill: #fc3;
+    }
+    .line {
+      fill: none;
+      stroke: steelblue;
+      stroke-width: 1.5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Example</h1>
+  <div id="chart"></div>
+
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.2/d3.js"></script>
+  <script src="http://misoproject.com/js/d3.chart.js"></script>
+  <script src="../d3.chart.csnw.line-bar.js"></script>
+  <script type="text/javascript">
+    var data = [
+      {name: 'A', value: 15},
+      {name: 'B', value: 98},
+      {name: 'C', value: 67},
+      {name: 'D', value: 35},
+      {name: 'E', value: 22}
+    ];
+    var chart = d3.select('#chart')
+      .append('svg')
+      .chart('LineBarChart')
+      .width(600)
+      .height(400)
+      .itemPadding(function() {
+        var ratio = this.width >= 600 ? 0.05 : 0.10;
+        var count = this.data() && this.data().length || 1;
+        return (this.width() / count) * ratio;
+      });
+
+    chart.draw(data);
+  </script>
+</body>
+</html>
