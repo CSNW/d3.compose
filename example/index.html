@@ -16,15 +16,19 @@
       border: solid 1px #ddd;
     }
     .bar {
-      fill: #97E8A2;
+      fill: steelblue;
     }
     .point {
-      fill: steelblue;
+      fill: #c00;
     }
     .line {
       fill: none;
-      stroke: steelblue;
+      stroke: #c00;
       stroke-width: 1.5px;
+    }
+    .axis line, .axis path {
+      fill: none;
+      stroke: #999;
     }
   </style>
 </head>
@@ -61,7 +65,7 @@
       .width(600)
       .height(400)
       .itemPadding(function() {
-        var ratio = this.width >= 600 ? 0.05 : 0.10;
+        var ratio = this.width >= 600 ? 0.10 : 0.20;
         var count = this.data() && this.data().length || 1;
         return (this.width() / count) * ratio;
       });

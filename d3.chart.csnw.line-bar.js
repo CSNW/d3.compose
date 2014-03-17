@@ -18,6 +18,21 @@
         this.attach(name, chart);
       }, this);
     },
+    attachComponents: function(components) {
+      _.each(components, function(component, name) {
+        this.attach(name, component);
+
+        var bounds = this.bounds();
+        var offset = component.offset();
+        
+        this.bounds({
+          top: bounds.top + offset.top,
+          right: bounds.right + offset.right,
+          bottom: bounds.bottom + offset.bottom,
+          left: bounds.left + offset.left
+        });
+      }, this);
+    },
     wrapProperties: function(charts, properties, options) {
       options = options || {};
       _.each(properties, function(prop) {
@@ -73,12 +88,7 @@
     bounds: property('bounds', {
       get: function(values) {
         values = (values && typeof values == 'object') ? values : {};
-        values = {
-          top: values.top || 0,
-          right: values.right || 0,
-          bottom: values.bottom || 0,
-          left: values.left || 0
-        };
+        values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
         values.width = this.width() - values.left - values.right;
         values.height = this.height() - values.top - values.bottom;
 
@@ -86,14 +96,7 @@
       },
       set: function(values, previous) {
         values = (values && typeof values == 'object') ? values : {};
-        previous = previous || {};
-
-        values = {
-          top: values.top || previous.top || 0,
-          right: values.right || previous.right || 0,
-          bottom: values.bottom || previous.bottom || 0,
-          left: values.left || previous.left || 0
-        };
+        values = _.defaults(values, previous, {top: 0, right: 0, bottom: 0, left: 0});
 
         return {
           override: values,
@@ -198,10 +201,12 @@
     }
   });
 
+  // TODO: Look at ordinal scale
+  // https://github.com/mbostock/d3/wiki/Ordinal-Scales
   d3.chart('ValueBase').extend('CenteredValueBase', {
     setXScaleRange: function(xScale, data, chart) {
-      var left = chart.itemWidth() / 2;
-      var right = chart.width() - chart.itemWidth() / 2;
+      var left = chart.itemWidth() / 2 + this.itemPadding() / 2;
+      var right = chart.width() - chart.itemWidth() / 2 - this.itemPadding() / 2;
 
       return xScale.range([left, right]);
     },
@@ -209,7 +214,7 @@
     itemWidth: function(d, i) {
       var count = this.data() ? this.data().length : 0;
       if (count > 0)
-        return (this.width() - this.itemPadding() * (count - 1)) / count;
+        return (this.width() - this.itemPadding() * (count)) / count;
       else
         return this.width();
     },
@@ -221,8 +226,7 @@
   });
 
   d3.chart('CenteredValueBase').extend('BarChart', {
-    initialize: function(options) {
-      options = options || {};
+    initialize: function() {
       this.layer('BarChart', this.base.append('g').classed('bar-chart', true), {
         dataBind: function(data) {
           var chart = this.chart();
@@ -257,8 +261,7 @@
 
   // Example: https://github.com/misoproject/d3.chart/issues/30
   d3.chart('CenteredValueBase').extend('CenteredLineChart', {
-    initialize: function(options) {
-      options = options || {};
+    initialize: function() {
       var line = d3.svg.line()
         .x(this.x.bind(this))
         .y(this.y.bind(this));
@@ -285,8 +288,7 @@
 
   d3.chart('CenteredValueBase').extend('CenteredDataLabelsChart', {
     // Add circles (temporarily)
-    initialize: function(options) {
-      options = options || {};
+    initialize: function() {
       this.layer('PointChart', this.base.append('g').classed('point-chart', true), {
         dataBind: function(data) {
           var chart = this.chart();
@@ -311,12 +313,104 @@
     }
   });
 
+  d3.chart('XYBase').extend('Axis', {
+    initialize: function() {
+      this.axis = d3.svg.axis();
+      this.layer('Axis', this.base.append('g').classed('axis', true), {
+        dataBind: function(data) {
+          var chart = this.chart();
+          chart.data(data);
+          return this.selectAll('g')
+            .data([0]);
+        },
+        insert: function() {
+          var chart = this.chart();
+          var position = chart.position();
+          var orientation = chart.orientation();
+
+          // Setup axis (extending existing if present)
+          chart.axis
+            .scale(orientation == 'horizontal' ? chart.xScale() : chart.yScale())
+            .orient(position);
+          
+          return this.append('g')
+        },
+        events: {
+          merge: function() {
+            var chart = this.chart();
+            var container = chart.container();
+            var bounds = container.bounds();
+            var position = chart.position();
+
+            var left = position == 'right' ? (container.width() - bounds.right) : bounds.left;
+            var top = position == 'bottom' ? (container.height() - bounds.bottom) : bounds.top;
+            
+            this
+              .attr('transform', 'translate(' + left + ',' + top + ')')
+              .call(chart.axis);
+          }
+        }
+      })
+    },
+    orientation: function() {
+      var position = this.position();
+      return (position == 'left' || position == 'right') ? 'vertical' : 'horizontal';
+    },
+    setXScaleRange: function(xScale, data, chart) {
+      var container = chart.container();
+      var bounds = container.bounds();
+      return xScale.range([0, container.width() - bounds.right - bounds.left]);
+    },
+    setYScaleRange: function(yScale, data, chart) {
+      var container = chart.container();
+      var bounds = container.bounds();
+      return yScale.range([bounds.top, container.height() - bounds.bottom - bounds.top]);
+    },
+
+    position: property('position', {
+      get: function(value) {
+        return value != null ? value : 'bottom';
+      }
+    }),
+    offset: property('offset', {
+      get: function(values) {
+        values = (values && typeof values == 'object') ? values : {};
+
+        var default_offset = {};
+        default_offset[this.position()] = this.orientation() == 'horizontal' ? 40 : 40;
+        values = _.defaults(values, default_offset, {top: 0, right: 0, bottom: 0, left: 0});
+
+        return values;
+      },
+      set: function(values, previous) {
+        values = (values && typeof values == 'object') ? values : {};
+
+        var default_offset = {};
+        default_offset[this.position()] = this.orientation() == 'horizontal' ? 40 : 40;
+        values = _.defaults(values, previous || {}, default_offset, {top: 0, right: 0, bottom: 0, left: 0});
+
+        return {
+          override: values
+        };
+      }
+    }),
+    container: property('container')
+  });
+  
+  // TODO: Update scale / ordinal scale
+  d3.chart('Axis').extend('CenteredAxis', {
+    initialize: function() {
+      this.on('change:data', function(data) {
+        this.axis.ticks(data.length);
+      });
+    }
+  });
+
   d3.chart('CenteredValueBase').extend('CenteredLineChartWithLabels', {
-    initialize: function(options) {
-      options = options || {};
+    initialize: function() {
       this.charts = {
-        'Line': this.base.chart('CenteredLineChart', options.Line),
-        'DataLabels': this.base.chart('CenteredDataLabelsChart', options.DataLabels)
+        'Line': this.base.chart('CenteredLineChart'),
+        'DataLabels': this.base.chart('CenteredDataLabelsChart')
       };
 
       this.attachCharts(this.charts);
@@ -325,10 +419,9 @@
   })
 
   d3.chart('Container').extend('SimpleBarChart', {
-    initialize: function(options) {
-      options = options || {};
+    initialize: function() {
       this.charts = {
-        'Bars': this.chartBase().chart('BarChart', options.Bars)
+        'Bars': this.chartBase().chart('BarChart')
       };
 
       this.attachCharts(this.charts);
@@ -343,27 +436,43 @@
   });
 
   d3.chart('Container').extend('LineBarChart', {
-    initialize: function(options) {
-      options = options || {};
+    initialize: function() {
       this.charts = {
-        'Bars': this.chartBase().chart('BarChart', options.Bars),
-        'Line': this.chartBase().chart('CenteredLineChartWithLabels', options.Line)
+        'Bars': this.chartBase().chart('BarChart'),
+        'Line': this.chartBase().chart('CenteredLineChartWithLabels')
+      };
+      this.components = {
+        'xAxis': this.base.chart('CenteredAxis').container(this),
+        'BarsAxis': this.base.chart('Axis').container(this).position('left'),
+        'LineAxis': this.base.chart('Axis').container(this).position('right')
       };
 
       this.attachCharts(this.charts);
+      this.attachComponents(this.components);
       this.wrapProperties(this.charts, ['itemPadding'], {
         set: function(value) {
           this.trigger('change:dimensions');
         }
       });
 
-      this.bounds({top: 10, right: 10, bottom: 0, left: 10});
+      this.bounds({top: 10});
+    },
+    transform: function(data) {
+      if (!_.isObject(data)) {
+        data = {
+          'Bars': data,
+          'Line': data
+        }
+      }
+
+      return _.defaults(data, {
+        'xAxis': data['Bars'] || [],
+        'BarsAxis': data['Bars'] || [],
+        'LineAxis': data['Line'] || []
+      });
     },
     demux: function(name, data) {
-      if (!_.isObject(data))
-        return data;
-      else
-        return data[name];
+      return data[name];
     }
   });
 
