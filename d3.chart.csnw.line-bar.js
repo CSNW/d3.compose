@@ -141,16 +141,17 @@
     yScale: property({type: 'function'})
   });
   
-  // (Maybe intermediate value base?)
-  d3.chart('XYBase').extend('CenteredValueBase', {
+  d3.chart('XYBase').extend('ValueBase', {
     transform: function(data) {
       return data.map(function(item, index) {
         var value = typeof item == 'object' ? item.value : item;
         var key = typeof item == 'object' ? item.key || item.name : null;
         return {x: index, y: value, key: key};
       });
-    },
+    }
+  });
 
+  d3.chart('ValueBase').extend('CenteredValueBase', {
     setXScale: function(xScale, data, chart) {
       var left = chart.itemWidth() / 2;
       var right = chart.width() - chart.itemWidth() / 2;
@@ -205,7 +206,7 @@
       return this.x(d, i) - this.itemWidth() / 2;
     }
   });
-  
+
   // https://github.com/misoproject/d3.chart/issues/30
   d3.chart('CenteredValueBase').extend('LineChart', {
     initialize: function() {
@@ -287,7 +288,7 @@
       this.attach('BarChart', this.charts['BarChart']);
       this.attach('LineChart', this.charts['LineChart']);
       this.attach('PointChart', this.charts['PointChart']);
-      this.bounds({top: 10});
+      this.bounds({top: 10, right: 10, bottom: 0, left: 10});
     },
     itemPadding: property({
       set: function(value) {
@@ -335,8 +336,8 @@
     var element = chart.base && chart.base.length && chart.base[0] && chart.base[0].length && chart.base[0][0];
 
     return {
-      width: parseFloat((chart.base && chart.base.attr('width')) || element.clientWidth),
-      height: parseFloat((chart.base && chart.base.attr('height')) || element.clientHeight)
+      width: parseFloat((chart.base && chart.base.attr('width')) || (element && element.clientWidth) || 0),
+      height: parseFloat((chart.base && chart.base.attr('height')) || (element && element.clientHeight) || 0)
     };
   }
 }(d3));
