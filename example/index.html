@@ -42,18 +42,19 @@
   <script src="../d3.chart.csnw.line-bar.js"></script>
   <script type="text/javascript">
     var deaths_prevented = [
-      {name: '1 year program', value: 12},
-      {name: '2 year program', value: 23},
-      {name: '3 year program', value: 35},
-      {name: '5 year program', value: 58}
+      {key: '1 year program', y: 12},
+      {key: '2 year program', y: 23},
+      {key: '3 year program', y: 35},
+      {key: '5 year program', y: 58}
     ];
     var people_participating = [
-      {name: '1 year program', value: 1563},
-      {name: '2 year program', value: 3127},
-      {name: '3 year program', value: 4690},
-      {name: '5 year program', value: 7817}
+      {key: '1 year program', y: 1563},
+      {key: '2 year program', y: 3127},
+      {key: '3 year program', y: 4690},
+      {key: '5 year program', y: 7817}
     ];
 
+    // TODO, add transformed data here
     var data = {
       'Bars': people_participating,
       'Line': deaths_prevented
@@ -74,6 +75,22 @@
     chart.charts['Bars'].yScale(d3.scale.linear().domain([0, 20000]));
 
     chart.draw(data);
+
+    // series: [
+    //   Series {
+    //     values: [
+    //       Point {
+    //         x, 
+    //         y, 
+    //         extrapolated, 
+    //         css_class
+    //       }
+    //     ], 
+    //     css_class, 
+    //     render_class (line, bar, etc.),
+    //     key
+    //   }
+    // ]
   </script>
 </body>
 </html>
