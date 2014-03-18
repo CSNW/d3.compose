@@ -290,7 +290,7 @@
       // Include 1/2 itemPadding at each side
       var left = chart.itemWidth() / 2 + this.itemPadding() / 2;
       var right = chart.width() - chart.itemWidth() / 2 - this.itemPadding() / 2;
-
+      
       return xScale.range([left, right]);
     },
 
@@ -398,24 +398,70 @@
         dataBind: function(data) {
           var chart = this.chart();
           chart.data(data);
-          return this.selectAll('circle')
+          return this.selectAll('text')
             .data(data, chart.dataKey);
         },
         insert: function() {
-          return this.append('circle')
+          return this.append('text')
             .classed('label', true);
         },
         events: {
           merge: function() {
             var chart = this.chart();
+            var position = chart.position();
+            var offset = chart.offset();
+
+            var anchor = 'middle';
+            var x = chart.x.bind(chart);
+            var y = chart.y.bind(chart);
+            if (position == 'top') {
+              anchor = 'middle';
+              y = function(d, i) {
+                return this.y(d, i) - offset;
+              }.bind(chart);
+            }
+            else if (position == 'right') {
+              anchor = 'start';
+              x = function(d, i) {
+                return this.x(d, i) + offset;
+              }.bind(chart);
+            }
+            else if (position == 'bottom') {
+              anchor = 'middle';
+              y = function(d, i) {
+                return this.y(d, i) + offset;
+              }.bind(chart);
+            }
+            else if (position == 'left') {
+              anchor = 'end';
+              x = function(d, i) {
+                return this.x(d, i) - offset;
+              }.bind(chart);
+            }
+
             this
-              .attr('r', 3)
-              .attr('cx', chart.x.bind(chart))
-              .attr('cy', chart.y.bind(chart));
+              .text(chart.y.bind(chart))
+              .attr('text-anchor', anchor)
+              .attr('x', x)
+              .attr('y', y);
           }
         }
       });
-    }
+    },
+
+    // Position of label: top, right, bottom, left
+    position: property('position', {
+      get: function(value) {
+        return value != null ? value : 'top';
+      }
+    }),
+
+    // Offset distance from point in pixels
+    offset: property('offset', {
+      get: function(value) {
+        return value != null ? value : 10;
+      }
+    })
   });
 
   /**
@@ -423,11 +469,12 @@
    * 
    * Options:
    * - position: top, right, bottom, left
-   * CSS: .axis
+   * CSS: .axis, .tick
    * ------------------------------------------------------- */
   d3.chart('XYBase').extend('Axis', {
     initialize: function() {
       this.axis = d3.svg.axis();
+
       this.layer('Axis', this.base.append('g').classed('axis', true), {
         dataBind: function(data) {
           var chart = this.chart();
@@ -440,11 +487,18 @@
           var position = chart.position();
           var orientation = chart.orientation();
 
-          // Setup axis (extending existing if present)
+          // Get scale by orientation (and if y-scale, reverse range)
+          var scale = orientation == 'horizontal' ? chart.xScale() : chart.yScale();
+          if (orientation == 'vertical')
+            scale.range([scale.range()[1], scale.range()[0]]);
+
+          // Setup axis
           chart.axis
-            .scale(orientation == 'horizontal' ? chart.xScale() : chart.yScale())
-            .orient(position);
-          
+            .scale(scale)
+            .orient(position)
+            .ticks(chart.ticks())
+            .tickFormat(chart.tickFormat());
+
           return this.append('g')
         },
         events: {
@@ -506,20 +560,20 @@
         };
       }
     }),
-    container: property('container')
+    container: property('container'),
+
+    tickFormat: property('tickFormat', {type: 'function'}),
+    ticks: property('ticks', {type: 'function'})
   });
   
   /**
-   * CenteredAxis : Axis
+   * ValueAxis
    * 
-   * Axis with ticks centered at values
+   * Axis using ValueBase transform
+   * TODO: Display values on x-axis
    * ------------------------------------------------------- */
-  d3.chart('Axis').extend('CenteredAxis', {
-    initialize: function() {
-      this.on('change:data', function(data) {
-        this.axis.ticks(data.length);
-      });
-    }
+  d3.chart('Axis').extend('ValueAxis', {
+    transform: d3.chart('ValueBase').prototype.transform
   });
 
   /**
@@ -551,9 +605,9 @@
         'Line': this.chartBase().chart('CenteredLineChartWithLabels')
       };
       this.components = {
-        'xAxis': this.base.chart('CenteredAxis').container(this),
-        'BarsAxis': this.base.chart('Axis').container(this).position('left'),
-        'LineAxis': this.base.chart('Axis').container(this).position('right')
+        'BottomAxis': this.base.chart('ValueAxis').container(this).position('bottom'),
+        'LeftAxis': this.base.chart('ValueAxis').container(this).position('left').offset({left: 60}),
+        'RightAxis': this.base.chart('ValueAxis').container(this).position('right').offset({right: 60})
       };
 
       this.attachCharts(this.charts);
@@ -565,20 +619,6 @@
       });
 
       this.bounds({top: 10});
-    },
-    transform: function(data) {
-      if (!_.isObject(data)) {
-        data = {
-          'Bars': data,
-          'Line': data
-        }
-      }
-
-      return _.defaults(data, {
-        'xAxis': data['Bars'] || [],
-        'BarsAxis': data['Bars'] || [],
-        'LineAxis': data['Line'] || []
-      });
     },
     demux: function(name, data) {
       return data[name];
