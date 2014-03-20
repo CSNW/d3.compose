@@ -8,27 +8,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    #chart svg {
-      
-    }
     .chart {
       background-color: #eee;
       border: solid 1px #ddd;
     }
-    .bar {
-      fill: steelblue;
-    }
-    .point {
-      fill: #c00;
-    }
+
+    .series_0 .line {stroke: blue;}
+    .series_0 .bar {fill: steelblue; }
+    .series_1 .line {stroke: red;}
+    .series_1 .bar {fill: #fc3;}
+
     .line {
-      fill: none;
-      stroke: #c00;
       stroke-width: 1.5px;
-    }
-    .axis line, .axis path {
       fill: none;
-      stroke: #999;
+    }
+    .bar {
+
     }
   </style>
 </head>
@@ -39,61 +34,56 @@
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
+  <script src="../d3.chart.csnw.extensions.js"></script>
   <script src="../d3.chart.csnw.line-bar.js"></script>
-  <script type="text/javascript">
-    var deaths_prevented = [
-      {key: '1 year program', y: 12},
-      {key: '2 year program', y: 23},
-      {key: '3 year program', y: 35},
-      {key: '5 year program', y: 58}
-    ];
-    var people_participating = [
-      {key: '1 year program', y: 1563},
-      {key: '2 year program', y: 3127},
-      {key: '3 year program', y: 4690},
-      {key: '5 year program', y: 7817}
-    ];
 
-    // TODO, add transformed data here
-    var data = {
-      'Bars': people_participating,
-      'Line': deaths_prevented,
-      'BottomAxis': people_participating,
-      'LeftAxis': people_participating,
-      'RightAxis': deaths_prevented
+  <script type="text/javascript">
+    d3.chart('Container').extend('LineBar', {
+      initialize: function() {
+        this.charts = {
+          Bars: this.chartBase().chart('Bars', this.options.Bars).itemPadding(10),
+          Line: this.chartBase().chart('LineValues', this.options.Line)
+        };
+
+        this.attach('Bars', this.charts.Bars);
+        this.attach('Line', this.charts.Line);
+      },
+      demux: function(name, data) {
+        return data[name];
+      }
+    })
+
+    var deaths_prevented = {
+      key: 'deaths_prevented',
+      values: [
+        {key: '1 year program', y: 12},
+        {key: '2 year program', y: 23},
+        {key: '3 year program', y: 35},
+        {key: '5 year program', y: 58}
+      ]
+    };
+    var people_participating = {
+      key: 'people_participating',
+      values: [
+        {key: '1 year program', y: 1563},
+        {key: '2 year program', y: 3127},
+        {key: '3 year program', y: 4690},
+        {key: '5 year program', y: 7817}
+      ]
     };
 
     var chart = d3.select('#chart')
       .append('svg')
-      .chart('LineBarChart')
+      .chart('LineBar')
       .width(600)
       .height(400)
-      .itemPadding(function() {
-        var ratio = this.width >= 600 ? 0.10 : 0.20;
-        var count = this.data() && this.data().length || 1;
-        return (this.width() / count) * ratio;
-      });
+      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-    chart.charts['Line'].yScale(d3.scale.linear().domain([0, 70]));
-    chart.charts['Bars'].yScale(d3.scale.linear().domain([0, 20000]));
+    chart.charts.Bars.yScale(d3.scale.linear().domain([0, 20000]));
+    chart.charts.Line.yScale(d3.scale.linear().domain([0, 70]));
 
+    var data = {'Bars': [people_participating], 'Line': [deaths_prevented]}
     chart.draw(data);
-
-    // series: [
-    //   Series {
-    //     values: [
-    //       Point {
-    //         x, 
-    //         y, 
-    //         extrapolated, 
-    //         css_class
-    //       }
-    //     ], 
-    //     css_class, 
-    //     render_class (line, bar, etc.),
-    //     key
-    //   }
-    // ]
   </script>
 </body>
 </html>

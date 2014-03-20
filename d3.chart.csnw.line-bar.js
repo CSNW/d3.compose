@@ -1,91 +1,45 @@
 (function(d3, _) {
-  'use strict';
 
-  /**
-   * Base
-   * 
-   * Common base that includes helpers for all charts
-   * ------------------------------------------------------- */
+  // Add helpers
+  var property = d3.chart.helpers.property;
+  var dimensions = d3.chart.helpers.dimensions;
+  var translate = d3.chart.helpers.translate;
+
   d3.chart('Base', {
-    // TODO: Look at wrapping transform in initialization to store data() automatically
+    initialize: function(options) {
+      this.options = options || {};
+    },
+    transform: function(data) {
+      // Base is last transform to be called,
+      // so stored data has been fully transformed
+      this.data(data);
+      return data;
+    },
 
     width: function width() {
-      return dimensions(this).width;
+      return dimensions(this.base).width;
     },
     height: function height() {
-      return dimensions(this).height;
+      return dimensions(this.base).height;
     },
+
     data: property('data', {
       set: function(data) {
         this.trigger('change:data', data);
       }
-    }),
-
-    /**
-     * Helper for attaching charts object
-     * 
-     * @param {Object} charts with chart name as key
-     */
-    attachCharts: function(charts) {
-      _.each(charts, function(chart, name) {      
-        this.attach(name, chart);
-      }, this);
-    },
-
-    /**
-     * Helper for attaching components object
-     *
-     * @param {Object} components with component name as key
-     */
-    attachComponents: function(components) {
-      _.each(components, function(component, name) {
-        this.attach(name, component);
-
-        var bounds = this.bounds();
-        var offset = component.offset();
-        
-        this.bounds({
-          top: bounds.top + offset.top,
-          right: bounds.right + offset.right,
-          bottom: bounds.bottom + offset.bottom,
-          left: bounds.left + offset.left
-        });
-      }, this);
-    },
-
-    /**
-     * For each property, create combined setter that calls setter of each chart
-     * optionally, call setter from options after all setters have been called
-     *
-     * @param {Array} charts
-     * @param {Array} properties property names to create combined setter
-     * @param {Object} [options]
-     * - set: Setter to call after all chart setters
-     */
-    wrapProperties: function(charts, properties, options) {
-      options = options || {};
-      _.each(properties, function(prop) {
-        this[prop] = property(prop, {
-          set: function(value) {
-            _.each(charts, function(chart) {
-              chart[prop].call(chart, value);
-            });
-
-            if (options.set)
-              options.set.call(this, value);
-          }
-        });
-      }, this);
-    }
+    })
   });
-  
-  /**
-   * Container
-   *
-   * Chart container with helpers for placing charts, dimensioning, and redrawing
-   * ------------------------------------------------------- */
+
   d3.chart('Base').extend('Container', {
     initialize: function() {
+      // Overriding transform in init jumps it to the top of the stack
+      // Therefore, data coming in hasn't been transformed and is raw
+      // (Save raw data for redraw)
+      this.transform = function(data) {
+        this.rawData(data);
+        return data;
+      }
+
       this.base.classed('chart', true);
       this.chartBase(this.base.append('g').classed('chart-base', true));
 
@@ -97,46 +51,31 @@
     },
 
     updateDimensions: function() {
-      var bounds = this.bounds();
-
       // Explicitly set width and height of container
       this.base
         .attr('width', this.width())
         .attr('height', this.height());
 
       // Place chart base within container
+      var margins = this.chartMargins();
       this.chartBase()
-        .attr('transform', 'translate(' + bounds.left + ', ' + bounds.top + ')')
-        .attr('width', bounds.width)
-        .attr('height', bounds.height);
+        .attr('transform', translate(margins.left, margins.top))
+        .attr('width', this.chartWidth())
+        .attr('height', this.chartHeight());
     },
 
     redraw: function() {
-      // Using previously saved rawData, redraw chart
+      // Using previously saved rawData, redraw chart      
       if (this.rawData())
         this.draw(this.rawData());
     },
 
-    transform: function(data) {
-      // Container's transform is first to be called in chain
-      // so data that comes in here hasn't been through any transforms
-      // Save as raw data (as it was originally passed in) for use in redrawing
-      this.rawData(data);
-      return data;
-    },
     rawData: property('rawData'),
-
     chartBase: property('chartBase'),
-
-    // TODO: Rename chartMargins(), split off chartWidth() and chartHeight(), and add update helper
-    bounds: property('bounds', {
+    chartMargins: property('chartMargins', {
       get: function(values) {
         values = (values && typeof values == 'object') ? values : {};
         values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
-
-        // Add width and height helpers
-        values.width = this.width() - values.left - values.right;
-        values.height = this.height() - values.top - values.bottom;
 
         return values;
       },
@@ -147,15 +86,23 @@
         return {
           override: values,
           after: function() {
-            // Trigger change dimensions "after" set so that override value is used
             this.trigger('change:dimensions');
           }
         };
       }
     }),
+    chartWidth: function() {
+      var margins = this.chartMargins();
+      return this.width() - margins.left - margins.right;
+    },
+    chartHeight: function() {
+      var margins = this.chartMargins();
+      return this.height() - margins.top - margins.bottom;
+    },
+
     width: property('width', {
       get: function(value) {
-        return value != null ? value : dimensions(this).width;
+        return value != null ? value : dimensions(this.base).width;
       },
       set: function(value) {
         this.trigger('change:dimensions');
@@ -163,7 +110,7 @@
     }),
     height: property('height', {
       get: function(value) {
-        return value != null ? value : dimensions(this).height;
+        return value != null ? value : dimensions(this.base).height;
       },
       set: function(value) {
         this.trigger('change:dimensions');
@@ -171,28 +118,71 @@
     })
   });
 
-  /**
-   * XYBase
-   * 
-   * Chart base with helpers for handling (x, y) data
-   * - Expected data format: [{x, y, key}...]
-   * ------------------------------------------------------- */
-  d3.chart('Base').extend('XYBase', {
+  // Extensions
+
+  var extensions = d3.chart.extensions = {};
+
+  extensions.Series = {
+    seriesKey: function(d, i) {
+      return d.key;
+    },
+    seriesValues: function(d, i) {
+      // Store series_index on series and values
+      if (i != null)
+        d.series_index = i;
+
+      return _.map(d.values, function(value) {
+        if (i != null)
+          value.series_index = i;
+        return value;
+      });
+    },
+    seriesClass: function(d, i) {
+      return 'series series_' + i + (d['class'] ? ' ' + d['class'] : '');
+    },
+    seriesIndex: function(d, i) {
+      return d.series_index || 0;
+    },
+    seriesLayer: function(name, selection, options) {
+      if (options && options.dataBind) {
+        var dataBind = options.dataBind;
+
+        options.dataBind = function(data) {
+          var chart = this.chart();
+          var series = this.selectAll('g')
+            .data(data, chart.seriesKey.bind(chart));
+
+          series.enter()
+            .append('g')
+            .attr('class', chart.seriesClass.bind(chart));
+          series.chart = function() { return chart; };
+
+          return dataBind.call(series, chart.seriesValues.bind(chart));
+        };
+      }
+      
+      return d3.chart().prototype.layer.call(this, name, selection, options);
+    }
+  };
+
+  extensions.XY = {
     initialize: function() {
       this.on('change:data', this.setScales);
     },
 
-    // Get scaled x-value
     x: function(d, i) {
-      return this.xScale()(this.xValue(d, i));
+      return this._xScale()(this.xValue(d, i));
     },
-    
-    // Get scaled y-value
     y: function(d, i) {
-      return this.yScale()(this.yValue(d, i));
+      return this._yScale()(this.yValue(d, i));
+    },
+    x0: function(d, i) {
+      return this._xScale()(0);
+    },
+    y0: function(d, i) {
+      return this._yScale()(0);
     },
 
-    // Get x, y, and key from data
     xValue: function(d, i) {
       return d.x;
     },
@@ -204,485 +194,250 @@
     },
 
     setScales: function() {
-      // Use saved scales or create default (linear with from min-max)
-      var xScale = this.xScale() || d3.scale.linear().domain([this.xMin(), this.xMax()]);
-      var yScale = this.yScale() || d3.scale.linear().domain([this.yMin(), this.yMax()]);
+      var xScale = this.xScale();
+      var yScale = this.yScale();
 
-      // Range is dependent on chart dimensions and should be set separately
-      // (User may want to set domain explicity, but range changes as dimensions change)
+      // If no user-defined scales, create default and set domain
+      if (!xScale)
+        xScale = this.setXScaleDomain(d3.scale.linear(), this.data() || [], this);
+      if (!yScale)
+        yScale = this.setYScaleDomain(d3.scale.linear(), this.data() || [], this);
+
+      // Range is dependent on chart dimensions, set separately even if scale is user-defined
       xScale = this.setXScaleRange(xScale, this.data() || [], this);
       yScale = this.setYScaleRange(yScale, this.data() || [], this);
-      
-      this.xScale(xScale).yScale(yScale);
+
+      this._xScale(xScale)._yScale(yScale);
     },
 
-    /**
-     * Set range for x-scale
-     * (Can be overriden based on chart needs)
-     */
+    setXScaleDomain: function(xScale, data, chart) {
+      return xScale.domain([this.xMin(), this.xMax()]);
+    },
+    setYScaleDomain: function(yScale, data, chart) {
+      return yScale.domain([this.yMin(), this.yMax()]);
+    },
+
     setXScaleRange: function(xScale, data, chart) {
       return xScale.range([0, chart.width()]);
     },
-
-    /**
-     * Set range for y-scale
-     * (Can be overriden based on chart needs)
-     */
     setYScaleRange: function(yScale, data, chart) {
       return yScale.range([chart.height(), 0]);
     },
 
+    // _xScale and _yScale used to differentiate between user- and internally-set values
+    _xScale: property('_xScale', {type: 'function'}),
+    _yScale: property('_yScale', {type: 'function'}),
     xScale: property('xScale', {type: 'function'}),
     yScale: property('yScale', {type: 'function'}),
+
     xMin: property('xMin', {
       get: function(value) {
-        // Default behavior: if min is less than zero, use min, otherwise use 0
-        var min = d3.extent(this.data(), this.xValue)[0];
+        var min = _.reduce(this.data(), function(memo, series, index) {
+          var min = d3.extent(this.seriesValues(series, index), this.xValue)[0];
+          return min < memo ? min : memo;
+        }, Infinity, this);
+
         return value != null ? value : (min < 0 ? min : 0);
       }
     }),
     xMax: property('xMax', {
       get: function(value) {
-        var max = d3.extent(this.data(), this.xValue)[1];
+        var max = _.reduce(this.data(), function(memo, series, index) {
+          var max = d3.extent(this.seriesValues(series, index), this.xValue)[1];
+          return max > memo ? max : memo;
+        }, -Infinity, this);
+
         return value != null ? value : max;
       }
     }),
     yMin: property('yMin', {
       get: function(value) {
+        var min = _.reduce(this.data(), function(memo, series, index) {
+          var min = d3.extent(this.seriesValues(series, index), this.yValue)[0];
+          return min < memo ? min : memo;
+        }, Infinity, this);
+
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        var min = d3.extent(this.data(), this.yValue)[0]
         return value != null ? value : (min < 0 ? min : 0);
       }
     }),
     yMax: property('yMax', {
       get: function(value) {
-        return value != null ? value : d3.extent(this.data(), this.yValue)[1];
+        var max = _.reduce(this.data(), function(memo, series, index) {
+          var max = d3.extent(this.seriesValues(series, index), this.yValue)[1];
+          return max > memo ? max : memo;
+        }, -Infinity, this);
+
+        return value != null ? value : max;
       }
     })
-  });
-  
-  /**
-   * ValueBase
-   *
-   * Extension of XYBase for set of values that uses index for x-value
-   * - Expected data format: [values...] or [{y, key}...]
-   * ------------------------------------------------------- */
-  d3.chart('XYBase').extend('ValueBase', {
-    transform: function(data) {
-      // Transform data from [values...] or [{y, key}...] into XYBase [{x, y, key}...]
-      return data.map(function(item, index) {
-        var value = typeof item == 'object' ? item.y : item;
-        var key = typeof item == 'object' ? item.key : null;
-        return {x: index, y: value, key: key};
-      });
-    }
-  });
+  };
 
-  /**
-   * CenteredValueBase
-   *
-   * Extend ValueBase to center items at each data point
-   * ------------------------------------------------------- */
-  d3.chart('ValueBase').extend('CenteredValueBase', {
-    // TODO: Look at ordinal scale
-    // https://github.com/mbostock/d3/wiki/Ordinal-Scales
-    setXScaleRange: function(xScale, data, chart) {
-      // Include 1/2 itemPadding at each side
-      var left = chart.itemWidth() / 2 + this.itemPadding() / 2;
-      var right = chart.width() - chart.itemWidth() / 2 - this.itemPadding() / 2;
-      
-      return xScale.range([left, right]);
+  extensions.Values = {
+    transform: function(data) {
+      _.each(data, function(series) {
+        series.values = _.map(series.values, function(item, index) {
+          item = _.isObject(item) ? item : {y: item};
+
+          // Use 0-based index for x
+          return {
+            x: item.x != null ? item.x : index,
+            y: item.y,
+            key: item.key
+          }
+        }, this);
+      }, this);
+
+      return data;
+    }
+  };
+
+  extensions.Centered = {
+    // Shift x-values 0.5 to right (center in step size of 1)
+    // Expand domain +1 to include last shifted step
+    x: function(d, i) {
+      return this._xScale()(this.xValue(d, i) + 0.5);
+    },
+    setXScaleDomain: function(xScale, data, chart) {
+      return xScale.domain([this.xMin(), this.xMax() + 1]);
     },
 
     itemWidth: function(d, i) {
-      // Include an additional itemPadding to account for 1/2 itemPadding at each side
-      var count = this.data() ? this.data().length : 0;
-      if (count > 0)
-        return (this.width() - this.itemPadding() * (count)) / count;
-      else
-        return this.width();
+      // Find maximum item count in series
+      var max_count = _.reduce(this.data() || [], function(memo, series) {
+        var count = this.seriesValues(series).length;
+        return count > memo ? count : memo;
+      }, 0, this);
+
+      return (this.width() - this.itemPadding() * max_count) / max_count;
     },
     itemPadding: property('itemPadding', {
       get: function(value) {
         return value != null ? value : 0;
       }
     })
-  });
+  };
 
-  /**
-   * BarChart
-   *
-   * Vertical bar chart
-   * CSS: .bar-chart -> .bar
-   * TODO: Handle multiple series with clustered bars
-   * ------------------------------------------------------- */
-  d3.chart('CenteredValueBase').extend('BarChart', {
-    initialize: function() {
-      this.layer('BarChart', this.base.append('g').classed('bar-chart', true), {
-        dataBind: function(data) {
-          var chart = this.chart();
-          chart.data(data);
-          return this.selectAll('rect')
-            .data(data, chart.keyValue);
-        },
-        insert: function() {
-          return this.append('rect')
-            .classed('bar', true);
-        },
-        events: {
-          merge: function() {
+  // Charts
+  d3.chart('Base').mixin(extensions.Series).extend('Chart');
+
+  d3.chart('Chart')
+    .mixin(extensions.XY)
+    .extend('Line', {
+      initialize: function() {
+        this.seriesLayer('Line', this.base.append('g').classed('line-chart', true), {
+          dataBind: function(data) {
             var chart = this.chart();
-            this
-              .attr('width', chart.itemWidth.bind(chart))
-              .attr('height', chart.barHeight.bind(chart))
-              .attr('x', chart.barX.bind(chart))
-              .attr('y', chart.y.bind(chart));
+
+            // Add lines based on underlying series data
+            chart.lines(_.map(chart.data(), function(series) {
+              return chart.createLine(series);
+            }));
+
+            // Rather than use provided series data
+            return this.selectAll('path')
+              .data(function(d, i) {
+                return [chart.data()[i]];
+              }, chart.seriesKey.bind(chart));
+          },
+          insert: function() {
+            return this.append('path')
+              .classed('line', true);
+          },
+          events: {
+            'merge:transition': function() {
+              var chart = this.chart();
+              var lines = chart.lines();
+
+              this
+                .attr('d', function(d, i) {
+                  return lines[chart.seriesIndex(d, i)](chart.seriesValues(d, i));
+                })
+            }
           }
-        }
-      });
-    },
+        });
+      },
+      lines: property('lines'),
+      createLine: function(series) {
+        var line = d3.svg.line()
+          .x(this.x.bind(this))
+          .y(this.y.bind(this));
 
-    barHeight: function(d, i) {
-      return this.height() - this.y(d, i);
-    },
-    barX: function(d, i) {
-      return this.x(d, i) - this.itemWidth() / 2;
-    }
-  });
+        var interpolate = series.interpolate || this.options.interpolate;
+        if (interpolate)
+          line.interpolate(interpolate);
 
-  /**
-   * CenteredLineChart
-   *
-   * Line chart of y-values with x-value centered at index
-   * CSS: .line-chart -> .line
-   * TODO: Handle multiple series
-   * Example: https://github.com/misoproject/d3.chart/issues/30
-   * ------------------------------------------------------- */
-  d3.chart('CenteredValueBase').extend('CenteredLineChart', {
-    initialize: function() {
-      var line = d3.svg.line()
-        .x(this.x.bind(this))
-        .y(this.y.bind(this));
+        return line;
+      }
+    });
 
-      this.layer('LineChart', this.base.append('g').classed('line-chart', true), {
-        dataBind: function(data) {
-          var chart = this.chart();
-          chart.data(data);
-          return this.selectAll('path')
-            .data([data]);
-        },
-        insert: function() {
-          return this.append('path')
-            .classed('line', true);
-        },
-        events: {
-          merge: function() {
-            this.attr('d', line);
-          }
-        }
-      })
-    }
-  });
-
-  /**
-   * CenteredDataLabelsChart
-   *
-   * Labels of y-values positioned at y-values with x-value centered at index
-   * CSS: .label-chart -> .label
-   * TODO: Add labels and multiple series (circles temporarily)
-   * ------------------------------------------------------- */
-  d3.chart('CenteredValueBase').extend('CenteredDataLabelsChart', {
-    // Add circles (temporarily)
-    initialize: function() {
-      this.layer('PointChart', this.base.append('g').classed('label-chart', true), {
-        dataBind: function(data) {
-          var chart = this.chart();
-          chart.data(data);
-          return this.selectAll('text')
-            .data(data, chart.dataKey);
-        },
-        insert: function() {
-          return this.append('text')
-            .classed('label', true);
-        },
-        events: {
-          merge: function() {
+  d3.chart('Chart')
+    .mixin(extensions.XY, extensions.Values, extensions.Centered)
+    .extend('Bars', {
+      initialize: function() {
+        this.seriesLayer('Bars', this.base.append('g').classed('bar-chart', true), {
+          dataBind: function(data) {
             var chart = this.chart();
-            var position = chart.position();
-            var offset = chart.offset();
-
-            var anchor = 'middle';
-            var x = chart.x.bind(chart);
-            var y = chart.y.bind(chart);
-            if (position == 'top') {
-              anchor = 'middle';
-              y = function(d, i) {
-                return this.y(d, i) - offset;
-              }.bind(chart);
+            return this.selectAll('rect')
+              .data(data, chart.keyValue.bind(chart));
+          },
+          insert: function() {
+            return this.append('rect')
+              .classed('bar', true);
+          },
+          events: {
+            'enter': function() {
+              var chart = this.chart();
+              this
+                .attr('x', chart.barX.bind(chart))
+                .attr('y', chart.y0.bind(chart))
+                .attr('width', chart.barWidth.bind(chart))
+                .attr('height', 0);
+            },
+            'merge:transition': function() {
+              var chart = this.chart();
+              this
+                .attr('y', chart.barY.bind(chart))
+                .attr('height', chart.barHeight.bind(chart));
             }
-            else if (position == 'right') {
-              anchor = 'start';
-              x = function(d, i) {
-                return this.x(d, i) + offset;
-              }.bind(chart);
-            }
-            else if (position == 'bottom') {
-              anchor = 'middle';
-              y = function(d, i) {
-                return this.y(d, i) + offset;
-              }.bind(chart);
-            }
-            else if (position == 'left') {
-              anchor = 'end';
-              x = function(d, i) {
-                return this.x(d, i) - offset;
-              }.bind(chart);
-            }
-
-            this
-              .text(chart.y.bind(chart))
-              .attr('text-anchor', anchor)
-              .attr('x', x)
-              .attr('y', y);
           }
-        }
-      });
-    },
+        });
+      },
+      barHeight: function(d, i) {
+        return Math.abs(this.y0(d, i) - this.y(d, i));
+      },
+      barWidth: function(d, i) {
+        var series_count = this.data() ? this.data().length : 1;
+        return this.itemWidth() / series_count;
+      },
+      barX: function(d, i) {
+        var x = this.x(d, i) - this.itemWidth() / 2
+        return x + this.barWidth(d, i) * this.seriesIndex(d, i);
+      },
+      barY: function(d, i) {
+        var y = this.y(d, i);
+        var y0 = this.y0();
+        
+        return y < y0 ? y : y0;
+      }
+    });
+  
+  d3.chart('Chart')
+    .mixin(d3.chart('Line').prototype, extensions.Values, extensions.Centered)
+    .extend('LineValues');
 
-    // Position of label: top, right, bottom, left
-    position: property('position', {
+  // Components
+
+  d3.chart('Base').extend('Component', {
+    width: property('width', {
       get: function(value) {
-        return value != null ? value : 'top';
+        return value != null ? value : dimensions(this.base).width;
       }
     }),
-
-    // Offset distance from point in pixels
-    offset: property('offset', {
+    height: property('height', {
       get: function(value) {
-        return value != null ? value : 10;
+        return value != null ? value : dimensions(this.base).height;
       }
     })
   });
-
-  /**
-   * Axis
-   * 
-   * Options:
-   * - position: top, right, bottom, left
-   * CSS: .axis, .tick
-   * ------------------------------------------------------- */
-  d3.chart('XYBase').extend('Axis', {
-    initialize: function() {
-      this.axis = d3.svg.axis();
-
-      this.layer('Axis', this.base.append('g').classed('axis', true), {
-        dataBind: function(data) {
-          var chart = this.chart();
-          chart.data(data);
-          return this.selectAll('g')
-            .data([0]);
-        },
-        insert: function() {
-          var chart = this.chart();
-          var position = chart.position();
-          var orientation = chart.orientation();
-
-          // Get scale by orientation (and if y-scale, reverse range)
-          var scale = orientation == 'horizontal' ? chart.xScale() : chart.yScale();
-          if (orientation == 'vertical')
-            scale.range([scale.range()[1], scale.range()[0]]);
-
-          // Setup axis
-          chart.axis
-            .scale(scale)
-            .orient(position)
-            .ticks(chart.ticks())
-            .tickFormat(chart.tickFormat());
-
-          return this.append('g')
-        },
-        events: {
-          merge: function() {
-            var chart = this.chart();
-            var container = chart.container();
-            var bounds = container.bounds();
-            var position = chart.position();
-
-            var left = position == 'right' ? (container.width() - bounds.right) : bounds.left;
-            var top = position == 'bottom' ? (container.height() - bounds.bottom) : bounds.top;
-            
-            this
-              .attr('transform', 'translate(' + left + ',' + top + ')')
-              .call(chart.axis);
-          }
-        }
-      })
-    },
-    orientation: function() {
-      var position = this.position();
-      return (position == 'left' || position == 'right') ? 'vertical' : 'horizontal';
-    },
-    setXScaleRange: function(xScale, data, chart) {
-      var container = chart.container();
-      var bounds = container.bounds();
-      return xScale.range([0, container.width() - bounds.right - bounds.left]);
-    },
-    setYScaleRange: function(yScale, data, chart) {
-      var container = chart.container();
-      var bounds = container.bounds();
-      return yScale.range([bounds.top, container.height() - bounds.bottom - bounds.top]);
-    },
-
-    position: property('position', {
-      get: function(value) {
-        return value != null ? value : 'bottom';
-      }
-    }),
-    offset: property('offset', {
-      get: function(values) {
-        values = (values && typeof values == 'object') ? values : {};
-
-        var default_offset = {};
-        default_offset[this.position()] = this.orientation() == 'horizontal' ? 40 : 40;
-        values = _.defaults(values, default_offset, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return values;
-      },
-      set: function(values, previous) {
-        values = (values && typeof values == 'object') ? values : {};
-
-        var default_offset = {};
-        default_offset[this.position()] = this.orientation() == 'horizontal' ? 40 : 40;
-        values = _.defaults(values, previous || {}, default_offset, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return {
-          override: values
-        };
-      }
-    }),
-    container: property('container'),
-
-    tickFormat: property('tickFormat', {type: 'function'}),
-    ticks: property('ticks', {type: 'function'})
-  });
-  
-  /**
-   * ValueAxis
-   * 
-   * Axis using ValueBase transform
-   * TODO: Display values on x-axis
-   * ------------------------------------------------------- */
-  d3.chart('Axis').extend('ValueAxis', {
-    transform: d3.chart('ValueBase').prototype.transform
-  });
-
-  /**
-   * CenteredLineChartWithLabels
-   * 
-   * Combination of CenteredLineChart and CenteredDataLabelsChart
-   * ------------------------------------------------------- */
-  d3.chart('CenteredValueBase').extend('CenteredLineChartWithLabels', {
-    initialize: function() {
-      this.charts = {
-        'Line': this.base.chart('CenteredLineChart'),
-        'DataLabels': this.base.chart('CenteredDataLabelsChart')
-      };
-
-      this.attachCharts(this.charts);
-      this.wrapProperties(this.charts, ['xScale', 'xMin', 'xMax', 'yScale', 'yMin', 'yMax', 'itemPadding']);
-    }
-  });
-
-  /**
-   * LineBarChart
-   * 
-   * Combination of BarChart and CenteredLineChartWithLabels with Axes
-   * ------------------------------------------------------- */
-  d3.chart('Container').extend('LineBarChart', {
-    initialize: function() {
-      this.charts = {
-        'Bars': this.chartBase().chart('BarChart'),
-        'Line': this.chartBase().chart('CenteredLineChartWithLabels')
-      };
-      this.components = {
-        'BottomAxis': this.base.chart('ValueAxis').container(this).position('bottom'),
-        'LeftAxis': this.base.chart('ValueAxis').container(this).position('left').offset({left: 60}),
-        'RightAxis': this.base.chart('ValueAxis').container(this).position('right').offset({right: 60})
-      };
-
-      this.attachCharts(this.charts);
-      this.attachComponents(this.components);
-      this.wrapProperties(this.charts, ['itemPadding'], {
-        set: function(value) {
-          this.trigger('change:dimensions');
-        }
-      });
-
-      this.bounds({top: 10});
-    },
-    demux: function(name, data) {
-      return data[name];
-    }
-  });
-  
-  /**
-   * Property helper
-   *
-   * @param {String} name of stored property
-   * @param {Object} options
-   * - get: function(value) {return ...} getter, where value is the stored value, return desired value
-   * - set: function(value, previous) {return {override, after}} 
-   *        setter, return override to set stored value and after() to run after set
-   * - type: 'function' if get/set value is function, otherwise get/set is evaluated if they're a function
-   */
-  function property(name, options) {
-    var prop_key = '__properties'
-    options = options || {};
-    
-    function get(context) {
-      return context[prop_key] ? context[prop_key][name] : null;
-    }
-    function set(context, value) {
-      context[prop_key] = context[prop_key] || {};
-      context[prop_key][name] = value;
-    }
-
-    return function(value) {
-      var underlying = get(this);
-      if (!arguments.length) {
-        if (underlying && typeof underlying == 'function' && options.type != 'function')
-          value = underlying.call(this);
-        else
-          value = underlying;
-
-        if (typeof options.get == 'function')
-          return options.get.call(this, value);
-        else
-          return value;
-      }
-
-      var previous = underlying;
-      set(this, value);
-      
-      if (typeof options.set == 'function') {
-        var response = options.set.call(this, value, previous);
-        if (response && response.override)
-          set(this, response.override);
-        if (response && response.after)
-          response.after.call(this, get(this));
-      }
-
-      return this;
-    };
-  }
-
-  // Dimensions helper for robustly determining width/height of given chart
-  function dimensions(chart) {
-    var element = chart.base && chart.base.length && chart.base[0] && chart.base[0].length && chart.base[0][0];
-
-    return {
-      width: parseFloat((chart.base && chart.base.attr('width')) || (element && element.clientWidth) || 0),
-      height: parseFloat((chart.base && chart.base.attr('height')) || (element && element.clientHeight) || 0)
-    };
-  }
-}(d3, _));
+})(d3, _);
