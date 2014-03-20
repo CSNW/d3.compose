@@ -38,21 +38,6 @@
   <script src="../d3.chart.csnw.line-bar.js"></script>
 
   <script type="text/javascript">
-    d3.chart('Container').extend('LineBar', {
-      initialize: function() {
-        this.charts = {
-          Bars: this.chartBase().chart('Bars', this.options.Bars).itemPadding(10),
-          Line: this.chartBase().chart('LineValues', this.options.Line)
-        };
-
-        this.attach('Bars', this.charts.Bars);
-        this.attach('Line', this.charts.Line);
-      },
-      demux: function(name, data) {
-        return data[name];
-      }
-    })
-
     var deaths_prevented = {
       key: 'deaths_prevented',
       values: [
@@ -74,15 +59,23 @@
 
     var chart = d3.select('#chart')
       .append('svg')
-      .chart('LineBar')
+      .chart('Configurable', {
+        charts: [
+          {type: 'Bars', data_key: 'people_participating'},
+          {type: 'LineValues', data_key: 'deaths_prevented'}
+        ]
+      })
       .width(600)
       .height(400)
       .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-    chart.charts.Bars.yScale(d3.scale.linear().domain([0, 20000]));
-    chart.charts.Line.yScale(d3.scale.linear().domain([0, 70]));
+    chart.charts[0].yScale(d3.scale.linear().domain([0, 20000])).itemPadding(20);
+    chart.charts[1].yScale(d3.scale.linear().domain([0, 70]));
 
-    var data = {'Bars': [people_participating], 'Line': [deaths_prevented]}
+    var data = {
+      'people_participating': [people_participating], 
+      'deaths_prevented': [deaths_prevented]
+    };
     chart.draw(data);
   </script>
 </body>

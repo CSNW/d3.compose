@@ -256,7 +256,7 @@
           var min = d3.extent(this.seriesValues(series, index), this.yValue)[0];
           return min < memo ? min : memo;
         }, Infinity, this);
-
+        
         // Default behavior: if min is less than zero, use min, otherwise use 0
         return value != null ? value : (min < 0 ? min : 0);
       }
@@ -425,6 +425,43 @@
   d3.chart('Chart')
     .mixin(d3.chart('Line').prototype, extensions.Values, extensions.Centered)
     .extend('LineValues');
+
+  d3.chart('Container').extend('Configurable', {
+    initialize: function() {
+      this.charts = [];
+      this.components = [];
+
+      // Setup charts
+      _.each(this.options.charts, function(chart_options, i) {
+        if (!d3.chart(chart_options.type))
+          return; // No matching chart found...
+
+        var chart = this.chartBase().chart(chart_options.type, chart_options);
+        var id = 'chart_' + i;
+
+        chart.id = id;
+        this.attach(id, chart);
+        this.charts.push(chart);
+      }, this);
+
+      // Setup axes
+      _.each(this.options.axes, function(axis_options, i) {
+        // ...
+      }, this);
+
+      // Setup legend
+      if (this.options.legend) {
+        // ...
+      }
+    },
+    demux: function(name, data) {
+      var search = {id: name};
+      var item = _.findWhere(this.charts, search) || _.findWhere(this.components, search);
+      var data_key = item && item.options && item.options.data_key || name;
+      
+      return data[data_key];
+    }
+  });
 
   // Components
 
