@@ -22,13 +22,13 @@
       context[prop_key][name] = value;
     }
 
-    return function(value) {
+    var getSet = function(value) {
       var underlying = get(this);
       if (!arguments.length) {
-        if (underlying && typeof underlying == 'function' && options.type != 'function')
-          value = underlying.call(this);
-        else
-          value = underlying;
+        value = underlying != null ? underlying : getSet.defaultValue;
+
+        if (value && typeof value == 'function' && options.type != 'function')
+          value = value.call(this);
 
         if (typeof options.get == 'function')
           return options.get.call(this, value);
@@ -49,6 +49,13 @@
 
       return this;
     };
+
+    // For checking if function is a property
+    getSet.isProperty = true;
+    getSet.setFromOptions = options.setFromOptions != null ? options.setFromOptions : true;
+    getSet.defaultValue = options.defaultValue;
+
+    return getSet;
   };
 
   // Dimensions helper for robustly determining width/height of given selector
@@ -66,6 +73,23 @@
     return 'translate(' + x + ', ' + y + ')';
   }
 
+  // Create scale from options
+  function createScaleFromOptions(options) {
+    options = options || {};
+
+    // If function, scale was passed in as options
+    if (_.isFunction(options))
+      return options;
+
+    var scale = options.type && d3.scale[options.type] ? d3.scale[options.type]() : d3.scale.linear();
+    if (options.domain)
+      scale.domain(options.domain);
+    if (options.range)
+      scale.range(options.range);
+
+    return scale;
+  }
+
   /**
     Mixin extensions into prototype
 
@@ -78,9 +102,7 @@
   */
   function mixin(extensions) {
     extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
-    var mixed = _.extend.apply(this, _.map([{}].concat(extensions), function(extension) {
-      return extension.prototype ? extension.prototype : extension;
-    }));
+    var mixed = _.extend.apply(this, [{}].concat(extensions));
 
     if (mixed.initialize) {
       mixed.initialize = function initialize() {
@@ -125,7 +147,8 @@
     // (May be updated in the future)
     return {
       extend: function(name, protoProps, staticProps) {
-        extensions.push(protoProps || {});
+        if (protoProps)
+          extensions.push(protoProps);
         return d3.chart().extend.call(parent, name, mixin(extensions), staticProps);
       }
     };
@@ -136,6 +159,7 @@
     property: property,
     dimensions: dimensions,
     translate: translate,
+    createScaleFromOptions: createScaleFromOptions,
     mixin: mixin
   };
 })(d3, _);

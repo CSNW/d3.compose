@@ -57,23 +57,31 @@
       ]
     };
 
+    var bars_2 = {
+      key: 'bars_2',
+      values: [
+        {key: 'A', y: 1000},
+        {key: 'B', y: 2000},
+        {key: 'C', y: 3000},
+        {key: 'D', y: 4000},
+        {key: 'E', y: 5000}
+      ]
+    }
+
     var chart = d3.select('#chart')
       .append('svg')
       .chart('Configurable', {
         charts: [
-          {type: 'Bars', data_key: 'people_participating'},
-          {type: 'LineValues', data_key: 'deaths_prevented'}
+          {type: 'Bars', data_key: 'people_participating', yScale: {domain: [0, 20000]}, itemPadding: 20},
+          {type: 'LineValues', data_key: 'deaths_prevented', yScale: {domain: [0, 70]}, labelPosition: 'top'}
         ]
       })
       .width(600)
       .height(400)
       .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-    chart.charts[0].yScale(d3.scale.linear().domain([0, 20000])).itemPadding(20);
-    chart.charts[1].yScale(d3.scale.linear().domain([0, 70]));
-
     var data = {
-      'people_participating': [people_participating], 
+      'people_participating': [people_participating, bars_2], 
       'deaths_prevented': [deaths_prevented]
     };
     chart.draw(data);
