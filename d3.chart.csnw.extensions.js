@@ -70,6 +70,11 @@
 
   // Translate helper for creating translate string
   function translate(x, y) {
+    if (_.isObject(x)) {
+      y = x.y;
+      x = x.x;
+    }
+      
     return 'translate(' + x + ', ' + y + ')';
   }
 

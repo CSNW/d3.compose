@@ -25,6 +25,21 @@
     .bar {
 
     }
+    .axis {
+
+    }
+    .axis path {
+      stroke-width: 1.5px;
+      fill: none;
+      stroke: black;
+    }
+    .tick {
+      font-size: 90%;
+    }
+
+    .special .bar {
+      fill: yellow;
+    }
   </style>
 </head>
 <body>
@@ -60,11 +75,11 @@
     var bars_2 = {
       key: 'bars_2',
       values: [
-        {key: 'A', y: 1000},
-        {key: 'B', y: 2000},
-        {key: 'C', y: 3000},
-        {key: 'D', y: 4000},
-        {key: 'E', y: 5000}
+        {key: '1 year program', y: 1000},
+        {key: '2 year program', y: 2000},
+        {key: '3 year program', y: 3000},
+        {key: '5 year program', y: 4000},
+        {key: '10 year program', y: 5000}
       ]
     }
 
@@ -72,13 +87,41 @@
       .append('svg')
       .chart('Configurable', {
         charts: [
-          {type: 'Bars', data_key: 'people_participating', yScale: {domain: [0, 20000]}, itemPadding: 20},
-          {type: 'LineValues', data_key: 'deaths_prevented', yScale: {domain: [0, 70]}, labelPosition: 'top'}
+          {
+            type: 'Bars', 
+            data_key: 'people_participating', 
+            yScale: {domain: [0, 20000]}, 
+            labelFontSize: 14,
+            labelOffset: 5
+          },
+          {
+            type: 'LineValues', 
+            data_key: 'deaths_prevented', 
+            yScale: {domain: [0, 70]}, 
+            labelPosition: 'top'
+          }
+        ],
+        axes: [
+          {
+            type: 'AxisValues',
+            data_key: 'people_participating',
+            axisPosition: 'bottom'
+          },
+          {
+            type: 'AxisValues',
+            data_key: 'people_participating',
+            axisPosition: 'left'
+          },
+          {
+            type: 'AxisValues',
+            data_key: 'deaths_prevented',
+            axisPosition: 'right'
+          }
         ]
       })
       .width(600)
       .height(400)
-      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+      .chartMargins({top: 10});
 
     var data = {
       'people_participating': [people_participating, bars_2], 
