@@ -27,8 +27,8 @@
     "grunt": "~0.4.4",
     "grunt-contrib-watch": "~0.6.1",
     "grunt-contrib-jshint": "~0.9.2",
-    "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-uglify": "~0.4.0",
-    "grunt-preprocess": "~4.0.0"
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-concat-sourcemap": "~0.4.1"
   }
 }

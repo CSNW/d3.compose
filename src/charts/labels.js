@@ -84,17 +84,18 @@
 
       calculatedLabelPosition: function(d, i) {
         var position = this.labelPosition();
-        if (position == 'top|bottom')
-          return this.yValue(d, i) >= 0 ? 'top' : 'bottom';
-        else if (position == 'right|left')
-          return this.xValue(d, i) >= 0 ? 'right' : 'left';
-        else
-          return position;
+        var parts = position.split('|');
+
+        if (parts.length > 1) {
+          var value = parts[0] == 'top' || parts[0] == 'bottom' ? this.yValue(d, i) : this.xValue(d, i);
+          return value >= 0 ? parts[0] : parts[1];
+        }
+        else {
+          return parts[0];
+        }
       },
 
-      // top, right, bottom, left, 
-      // top|bottom (above for positive, below for negative), 
-      // right|left (right for positive, left for negative)
+      // top, right, bottom, left, 1|2 (1 for positive or 0, 2 for negative)
       labelPosition: property('labelPosition', {defaultValue: 'top'}),
       // px distance offset from (x,y) point
       labelOffset: property('labelOffset', {defaultValue: 14}),
@@ -114,6 +115,7 @@
     });
 
   // ChartWithLabels: Chart with labels attached
+  // TODO: Attach labels after chart so that labels appear above chart
   d3.chart('Chart').extend('ChartWithLabels', {
     initialize: function() {
       if (this.showLabels()) {

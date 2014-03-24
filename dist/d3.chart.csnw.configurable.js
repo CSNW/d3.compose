@@ -126,14 +126,19 @@
       elements = options;
       options = {
         direction: 'vertical',
-        origin: 'top'
+        origin: 'top',
+        padding: 0
       };
+    }
+
+    function padding(d, i) {
+      return i > 0 && options.padding ? options.padding : 0;
     }
 
     if (elements && elements.attr) {
       var previous = 0;
       elements
-        .attr('transform', function(g, i) {
+        .attr('transform', function(d, i) {
           var dimensions = this.getBBox();
           var x = 0;
           var y = 0;
@@ -143,22 +148,22 @@
               options.origin = 'left';
 
             if (options.origin == 'left')
-              x = previous;
+              x = previous + padding(d, i);
             else
-              x = previous + dimensions.width;
+              x = previous + dimensions.width + padding(d, i);
 
-            previous = previous + dimensions.width;
+            previous = previous + dimensions.width + padding(d, i);
           }
           else {
             if (!(options.origin == 'top' || options.origin == 'bottom'))
               options.origin = 'top';
 
             if (options.origin == 'top')
-              y = previous;
+              y = previous + padding(d, i);
             else
-              y = previous + dimensions.height;
+              y = previous + dimensions.height + padding(d, i);
 
-            previous = previous + dimensions.height;
+            previous = previous + dimensions.height + padding(d, i);
           }
 
           return translate(x, y);
@@ -512,7 +517,6 @@
 
 })(d3, d3.chart.helpers);
 
-
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
   
@@ -743,7 +747,6 @@
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
 
-
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
 
@@ -830,17 +833,18 @@
 
       calculatedLabelPosition: function(d, i) {
         var position = this.labelPosition();
-        if (position == 'top|bottom')
-          return this.yValue(d, i) >= 0 ? 'top' : 'bottom';
-        else if (position == 'right|left')
-          return this.xValue(d, i) >= 0 ? 'right' : 'left';
-        else
-          return position;
+        var parts = position.split('|');
+
+        if (parts.length > 1) {
+          var value = parts[0] == 'top' || parts[0] == 'bottom' ? this.yValue(d, i) : this.xValue(d, i);
+          return value >= 0 ? parts[0] : parts[1];
+        }
+        else {
+          return parts[0];
+        }
       },
 
-      // top, right, bottom, left, 
-      // top|bottom (above for positive, below for negative), 
-      // right|left (right for positive, left for negative)
+      // top, right, bottom, left, 1|2 (1 for positive or 0, 2 for negative)
       labelPosition: property('labelPosition', {defaultValue: 'top'}),
       // px distance offset from (x,y) point
       labelOffset: property('labelOffset', {defaultValue: 14}),
@@ -860,6 +864,7 @@
     });
 
   // ChartWithLabels: Chart with labels attached
+  // TODO: Attach labels after chart so that labels appear above chart
   d3.chart('Chart').extend('ChartWithLabels', {
     initialize: function() {
       if (this.showLabels()) {
@@ -1132,10 +1137,14 @@
               });
 
             groups.append('g')
+              .attr('width', 20)
+              .attr('height', 20)
               .attr('class', 'legend-swatch');
             groups.append('text')
-              .attr('class', 'legend-label');
-
+              .attr('class', 'legend-label')
+              .attr('transform', helpers.translate(25, 0))
+              .attr('font-size', '20px');
+            
             return groups;
           },
           events: {
@@ -1148,7 +1157,7 @@
                 .attr('alignment-baseline', 'before-edge');
 
               // Position groups after positioning everything inside
-              this.call(helpers.stack.bind(this, {origin: 'top'}));
+              this.call(helpers.stack.bind(this, {origin: 'top', padding: 5}));
             }
           }
         });
@@ -1173,6 +1182,7 @@
           .attr('width', 20)
           .attr('height', 20)
           .attr('fill', 'red');
+          // .attr('transform', helpers.translate(10, 10));
       },
 
       // Position legend: top, right, bottom, left
@@ -1217,7 +1227,6 @@
   });
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
-
 
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
@@ -1320,3 +1329,4 @@
 
   return d3;
 }));
+//# sourceMappingURL=d3.chart.csnw.configurable.js.map

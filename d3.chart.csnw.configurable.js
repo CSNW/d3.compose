@@ -1,14 +1,3 @@
-(function (root, factory) {
-  if (typeof exports === 'object') {
-    module.exports = factory(require('d3', 'underscore'));
-  } else if (typeof define === 'function' && define.amd) {
-    define(['d3', 'underscore'], factory);
-  } else {
-    factory(root.d3, root._);
-  }
-}(this, function (d3, _) {
-  'use strict';
-
 (function(d3, _) {
   
   function isDefined(value) {
@@ -111,6 +100,67 @@
   }
 
   /**
+    Stack given array of elements using options
+
+    @example
+    this.call(helpers.stack)
+    this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
+  
+    @param {Object} [options]
+    - {String} [direction=vertical] vertical or horizontal
+    - {String} [origin=top] top/bottom for vertical and left/right for horizontal
+  */
+  function stack(options, elements) {
+    if (options && !elements) {
+      elements = options;
+      options = {
+        direction: 'vertical',
+        origin: 'top',
+        padding: 0
+      };
+    }
+
+    function padding(d, i) {
+      return i > 0 && options.padding ? options.padding : 0;
+    }
+
+    if (elements && elements.attr) {
+      var previous = 0;
+      elements
+        .attr('transform', function(d, i) {
+          var dimensions = this.getBBox();
+          var x = 0;
+          var y = 0;
+
+          if (options.direction == 'horizontal') {
+            if (!(options.origin == 'left' || options.origin == 'right'))
+              options.origin = 'left';
+
+            if (options.origin == 'left')
+              x = previous + padding(d, i);
+            else
+              x = previous + dimensions.width + padding(d, i);
+
+            previous = previous + dimensions.width + padding(d, i);
+          }
+          else {
+            if (!(options.origin == 'top' || options.origin == 'bottom'))
+              options.origin = 'top';
+
+            if (options.origin == 'top')
+              y = previous + padding(d, i);
+            else
+              y = previous + dimensions.height + padding(d, i);
+
+            previous = previous + dimensions.height + padding(d, i);
+          }
+
+          return translate(x, y);
+        });
+    }
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -181,6 +231,7 @@
     dimensions: dimensions,
     translate: translate,
     createScaleFromOptions: createScaleFromOptions,
+    stack: stack,
     mixin: mixin
   };
 })(d3, _);
@@ -210,7 +261,7 @@
       });
     },
     seriesClass: function(d, i) {
-      return 'series series_' + i + (d['class'] ? ' ' + d['class'] : '');
+      return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
     },
     seriesIndex: function(d, i) {
       return d.seriesIndex || 0;
@@ -455,7 +506,6 @@
 
 })(d3, d3.chart.helpers);
 
-
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
   
@@ -654,15 +704,15 @@
     // Internal chart margins to separate from user-defined margins
     _chartMargins: property('_chartMargins', {
       defaultValue: function() {
-        return this.chartMargins();
+        return _.extend({}, this.chartMargins());
       }
     }),
     chartWidth: function() {
-      var margins = this.chartMargins();
+      var margins = this._chartMargins();
       return this.width() - margins.left - margins.right;
     },
     chartHeight: function() {
-      var margins = this.chartMargins();
+      var margins = this._chartMargins();
       return this.height() - margins.top - margins.bottom;
     },
 
@@ -686,7 +736,6 @@
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
 
-
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
 
@@ -709,7 +758,8 @@
             return this.append('text')
               .classed('label', true)
               .attr('font-family', chart.labelFontFamily())
-              .attr('font-size', chart.labelFontSize());
+              .attr('font-size', chart.labelFontSize())
+              .attr('alignment-baseline', chart.labelAlignment.bind(chart));
           },
           events: {
             'enter': function() {
@@ -731,47 +781,65 @@
       },
 
       labelX: function(d, i) {
-        return this.x(d, i) + this.calculatedLabelOffset().x;
+        return this.x(d, i) + this.calculatedLabelOffset(d, i).x;
       },
       labelY: function(d, i) {
-        return this.y(d, i) + this.calculatedLabelOffset().y;
+        return this.y(d, i) + this.calculatedLabelOffset(d, i).y;
       },
 
-      calculatedLabelOffset: function() {
-        var fontSize = parseFloat(this.labelFontSize());
+      calculatedLabelOffset: function(d, i) {
         var offset = this.labelOffset();
 
         var byPosition = {
           top: {x: 0, y: -offset},
-          right: {x: offset, y: (fontSize/2)},
-          bottom: {x: 0, y: offset + fontSize},
-          left: {x: -offset, y: (fontSize/2)}
+          right: {x: offset, y: 0},
+          bottom: {x: 0, y: offset},
+          left: {x: -offset, y: 0}
         };
         
-        return byPosition[this.labelPosition()];
+        return byPosition[this.calculatedLabelPosition(d, i)];
       },
-      labelAnchor: function() {
-        if (this.labelPosition() == 'right')
+      labelAnchor: function(d, i) {
+        if (this.calculatedLabelPosition(d, i) == 'right')
           return 'start';
-        else if (this.labelPosition() == 'left')
+        else if (this.calculatedLabelPosition(d, i) == 'left')
           return 'end';
         else
           return 'middle';
       },
+      labelAlignment: function(d, i) {
+        // Set alignment-baseline so that font size does not play into calculations
+        // http://www.w3.org/TR/SVG/text.html#BaselineAlignmentProperties
+        var byPosition = {
+          top: 'after-edge',
+          right: 'middle',
+          bottom: 'before-edge',
+          left: 'middle'
+        };
 
-      // top, right, bottom, left
+        return byPosition[this.calculatedLabelPosition(d, i)];
+      },
+
+      calculatedLabelPosition: function(d, i) {
+        var position = this.labelPosition();
+        var parts = position.split('|');
+
+        if (parts.length > 1) {
+          var value = parts[0] == 'top' || parts[0] == 'bottom' ? this.yValue(d, i) : this.xValue(d, i);
+          return value >= 0 ? parts[0] : parts[1];
+        }
+        else {
+          return parts[0];
+        }
+      },
+
+      // top, right, bottom, left, 1|2 (1 for positive or 0, 2 for negative)
       labelPosition: property('labelPosition', {defaultValue: 'top'}),
       // px distance offset from (x,y) point
       labelOffset: property('labelOffset', {defaultValue: 14}),
 
       // Font size, px
-      labelFontSize: property('labelFontSize', {
-        defaultValue: 14,
-        get: function(value) {
-          // Make sure returned value is a string (add px if number)
-          return _.isNumber(value) ? value + 'px' : value;
-        }
-      }),
+      labelFontSize: property('labelFontSize', {defaultValue: '14px'}),
       labelFontFamily: property('labelFontFamily', {defaultValue: 'sans-serif'})
     });
   
@@ -780,11 +848,12 @@
     .mixin(d3.chart('Labels').prototype, extensions.Values)
     .extend('LabelValues', {
       labelX: function(d, i) {
-        return this.itemX(d, i) + this.calculatedLabelOffset().x;
+        return this.itemX(d, i) + this.calculatedLabelOffset(d, i).x;
       }
     });
 
   // ChartWithLabels: Chart with labels attached
+  // TODO: Attach labels after chart so that labels appear above chart
   d3.chart('Chart').extend('ChartWithLabels', {
     initialize: function() {
       if (this.showLabels()) {
@@ -1030,6 +1099,123 @@
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
 
+(function(d3, _, helpers, extensions) {
+  var property = helpers.property;
+
+  /**
+    Legend component
+  */
+  d3.chart('Component')
+    .mixin()
+    .extend('Legend', {
+      initialize: function() {
+        this.legend = this.base.append('g')
+          .classed('legend', true);
+
+        this.layer('Legend', this.legend, {
+          dataBind: function(data) {
+            var chart = this.chart();
+            return this.selectAll('g')
+              .data(data, chart.dataKey.bind(chart));
+          },
+          insert: function() {
+            var chart = this.chart();
+            var groups = this.append('g')
+              .attr('class', function(d, i) {
+                return 'legend-group index-' + i;
+              });
+
+            groups.append('g')
+              .attr('width', 20)
+              .attr('height', 20)
+              .attr('class', 'legend-swatch');
+            groups.append('text')
+              .attr('class', 'legend-label')
+              .attr('transform', helpers.translate(25, 0))
+              .attr('font-size', '20px');
+            console.log('inside');
+            return groups;
+          },
+          events: {
+            merge: function() {
+              var chart = this.chart();
+
+              this.select('g').each(chart.createSwatches());
+              this.select('text')
+                .text(chart.dataValue.bind(chart))
+                .attr('alignment-baseline', 'before-edge');
+
+              // Position groups after positioning everything inside
+              this.call(helpers.stack.bind(this, {origin: 'top', padding: 5}));
+            }
+          }
+        });
+      },
+
+      dataKey: function(d, i) {
+        return d.key;
+      },
+      dataValue: function(d, i) {
+        return d.value;
+      },
+
+      createSwatches: function() {
+        var chart = this;
+        return function(d, i) {
+          chart.createSwatch(d3.select(this), d, i);
+        };
+      },
+      createSwatch: function(selection, d, i) {
+        selection.empty();
+        selection.append('rect')
+          .attr('width', 20)
+          .attr('height', 20)
+          .attr('fill', 'red');
+          // .attr('transform', helpers.translate(10, 10));
+      },
+
+      // Position legend: top, right, bottom, left
+      legendPosition: property('legendPosition', {
+        defaultValue: 'right',
+        set: function(value) {
+          var offset = {top: 0, right: 0, bottom: 0, left: 0};
+
+          offset[value] = 100;
+          this.chartOffset(offset);
+        }
+      })
+    });
+
+  d3.chart('Legend').extend('InsetLegend', {
+    initialize: function() {
+      this.positionLegend();
+    },
+
+    positionLegend: function() {
+      if (this.legend) {
+        var position = this.legendPosition();
+        this.legend.attr('transform', helpers.translate(position.x, position.y));
+      }
+    },
+
+    // Position legend: (x,y) of top left corner
+    legendPosition: property('legendPosition', {
+      defaultValue: {x: 10, y: 10},
+      set: function(value, previous) {
+        value = (value && _.isObject(value)) ? value : {};
+        value = _.defaults(value, previous || {}, {x: 0, y: 0});
+
+        return {
+          override: value,
+          after: function() {
+            this.positionLegend();
+          }
+        };
+      }
+    })
+  });
+
+})(d3, _, d3.chart.helpers, d3.chart.extensions);
 
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
@@ -1098,7 +1284,15 @@
 
       // Setup legend
       if (this.options.legend) {
-        // ...
+        var legendOptions = _.defaults(this.options.legend, d3.chart('Configurable').defaultLegendOptions);
+
+        if (!d3.chart(legendOptions.type))
+          return; // No matching legend founct
+
+        var base = legendOptions.type == 'InsetLegend' ? this.chartBase() : this.base;
+        var legend = base.chart(legendOptions.type, legendOptions);
+
+        this.attachComponent('legend', legend);
       }
     },
     demux: function(name, data) {
@@ -1112,11 +1306,13 @@
     defaultChartOptions: {},
     defaultAxisOptions: {
       type: 'Axis'
+    },
+    defaultLegendOptions: {
+      type: 'Legend',
+      legendPosition: 'right'
     }
   });
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
 
-
-  return d3;
-}));
+//# sourceMappingURL=d3.chart.csnw.configurable.js.map

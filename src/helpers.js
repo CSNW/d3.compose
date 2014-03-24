@@ -115,14 +115,19 @@
       elements = options;
       options = {
         direction: 'vertical',
-        origin: 'top'
+        origin: 'top',
+        padding: 0
       };
+    }
+
+    function padding(d, i) {
+      return i > 0 && options.padding ? options.padding : 0;
     }
 
     if (elements && elements.attr) {
       var previous = 0;
       elements
-        .attr('transform', function(g, i) {
+        .attr('transform', function(d, i) {
           var dimensions = this.getBBox();
           var x = 0;
           var y = 0;
@@ -132,22 +137,22 @@
               options.origin = 'left';
 
             if (options.origin == 'left')
-              x = previous;
+              x = previous + padding(d, i);
             else
-              x = previous + dimensions.width;
+              x = previous + dimensions.width + padding(d, i);
 
-            previous = previous + dimensions.width;
+            previous = previous + dimensions.width + padding(d, i);
           }
           else {
             if (!(options.origin == 'top' || options.origin == 'bottom'))
               options.origin = 'top';
 
             if (options.origin == 'top')
-              y = previous;
+              y = previous + padding(d, i);
             else
-              y = previous + dimensions.height;
+              y = previous + dimensions.height + padding(d, i);
 
-            previous = previous + dimensions.height;
+            previous = previous + dimensions.height + padding(d, i);
           }
 
           return translate(x, y);

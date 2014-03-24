@@ -25,10 +25,14 @@
               });
 
             groups.append('g')
+              .attr('width', 20)
+              .attr('height', 20)
               .attr('class', 'legend-swatch');
             groups.append('text')
-              .attr('class', 'legend-label');
-
+              .attr('class', 'legend-label')
+              .attr('transform', helpers.translate(25, 0))
+              .attr('font-size', '20px');
+            
             return groups;
           },
           events: {
@@ -41,7 +45,7 @@
                 .attr('alignment-baseline', 'before-edge');
 
               // Position groups after positioning everything inside
-              this.call(helpers.stack.bind(this, {origin: 'top'}));
+              this.call(helpers.stack.bind(this, {origin: 'top', padding: 5}));
             }
           }
         });
@@ -66,6 +70,7 @@
           .attr('width', 20)
           .attr('height', 20)
           .attr('fill', 'red');
+          // .attr('transform', helpers.translate(10, 10));
       },
 
       // Position legend: top, right, bottom, left

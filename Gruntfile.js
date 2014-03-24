@@ -3,7 +3,23 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     meta: {
-      pkg: grunt.file.readJSON('package.json')
+      pkg: grunt.file.readJSON('package.json'),
+      srcFiles: [
+        'src/build/header.js',
+        'src/helpers.js',
+        'src/extensions.js',
+        'src/base.js',
+        'src/chart.js',
+        'src/component.js',
+        'src/container.js',
+        'src/charts/labels.js',
+        'src/charts/line.js',
+        'src/charts/bars.js',
+        'src/components/axis.js',
+        'src/components/legend.js',
+        'src/charts/configurable.js',
+        'src/build/footer.js'
+      ]
     },
 
     watch: {
@@ -22,45 +38,40 @@ module.exports = function(grunt) {
 
     jshint: {
       options: {
-        jshintrc: '.jshintrc'
+        jshintrc: '.jshintrc',
+        ignores: ['src/build/*.js']
       },
       src: ['src/**/*.js'],
       grunt: ['Gruntfile.js'],
       built: ['dist/d3.chart.csnw.configurable.js']
     },
 
-    preprocess: {
+    concat_sourcemap: {
       dist: {
+        options: {
+          sourceRoot: '../'
+        },
         files: {
-          'dist/d3.chart.csnw.configurable.js': 'src/build/d3.chart.csnw.configurable.js'
+          "dist/d3.chart.csnw.configurable.js": "<%= meta.srcFiles %>"
         }
       },
       release: {
         files: {
-          'd3.chart.csnw.configurable.js': 'src/build/d3.chart.csnw.configurable.js' 
+          "d3.chart.csnw.configurable.js": "<%= meta.srcFiles %>"
         }
-      }
-    },
-
-    concat: {
-      options: {
-        banner: '/*! <%= meta.pkg.name %> - v<%= meta.pkg.version %>\n' +
-          ' * <%= meta.pkg.homepage %>\n' +
-          ' *  License: <%= meta.pkg.license %>\n' +
-          ' */\n'
-      },
-      dist: {
-        'dist/d3.chart.csnw.configurable.js': 'd3.chart.csnw.configurable.js'
-      },
-      release: {
-        'd3.chart.csnw.configurable.js': 'd3.chart.csnw.configurable.js'
       }
     },
 
     uglify: {
       options: {
-        // Preserve banner
-        preserveComments: 'some'
+        banner: '/*! <%= meta.pkg.name %> - v<%= meta.pkg.version %>\n' +
+          ' * <%= meta.pkg.homepage %>\n' +
+          ' * License: <%= meta.pkg.license %>\n' +
+          ' */\n',
+        sourceMap: true,
+        mangle: {
+          except: ['d3']
+        }
       },
       dist: {
         files: {
@@ -69,7 +80,7 @@ module.exports = function(grunt) {
       },
       release: {
         files: {
-          "d3.chart.csnw.configurable.min.js": "dist/d3.chart.csnw.configurable.js"
+          "d3.chart.csnw.configurable.min.js": "d3.chart.csnw.configurable.js"
         }
       }
     }
@@ -77,12 +88,13 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-preprocess');
-  grunt.loadNpmTasks('grunt-contrib-concat');
+  // grunt-contrib-concat has pending support for sourcemap,
+  // use grunt-concat-sourcemap in the meantime
+  grunt.loadNpmTasks('grunt-concat-sourcemap');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   
   grunt.registerTask('default', ['build-dist']);
-  grunt.registerTask('build-dist', ['jshint:src', 'preprocess:dist', 'concat:dist', 'uglify:dist', 'jshint:built']);
-  grunt.registerTask('build', ['jshint:src', 'preprocess', 'concat', 'uglify', 'jshint:built']);
+  grunt.registerTask('build-dist', ['jshint:src', 'concat_sourcemap:dist', 'uglify:dist', 'jshint:built']);
+  grunt.registerTask('build', ['jshint:src', 'concat_sourcemap', 'uglify', 'jshint:built']);
   grunt.registerTask('release', ['build']);
 };
