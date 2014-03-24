@@ -1,5 +1,9 @@
 (function(d3, _) {
   
+  function isDefined(value) {
+    return !_.isNull(value) && !_.isUndefined(value);
+  }
+
   /**
     Property helper
     
@@ -11,7 +15,7 @@
     - type: 'function' if get/set value is function, otherwise get/set is evaluated if they're a function
   */ 
   function property(name, options) {
-    var prop_key = '__properties'
+    var prop_key = '__properties';
     options = options || {};
     
     function get(context) {
@@ -25,7 +29,7 @@
     var getSet = function(value) {
       var underlying = get(this);
       if (!arguments.length) {
-        value = underlying != null ? underlying : getSet.defaultValue;
+        value = isDefined(underlying) ? underlying : getSet.defaultValue;
 
         if (value && typeof value == 'function' && options.type != 'function')
           value = value.call(this);
@@ -52,11 +56,11 @@
 
     // For checking if function is a property
     getSet.isProperty = true;
-    getSet.setFromOptions = options.setFromOptions != null ? options.setFromOptions : true;
+    getSet.setFromOptions = isDefined(options.setFromOptions) ? options.setFromOptions : true;
     getSet.defaultValue = options.defaultValue;
 
     return getSet;
-  };
+  }
 
   // Dimensions helper for robustly determining width/height of given selector
   function dimensions(selector) {
@@ -66,7 +70,7 @@
       width: parseFloat((selector && selector.attr('width')) || (element && element.clientWidth) || 0),
       height: parseFloat((selector && selector.attr('height')) || (element && element.clientHeight) || 0)
     };
-  };
+  }
 
   // Translate helper for creating translate string
   function translate(x, y) {
@@ -122,7 +126,7 @@
           // else if (extension.prototype && extension.prototype.initialize)
           //   extension.prototype.initialize.apply(this, args);
         }, this);
-      }
+      };
     }
     if (mixed.transform) {
       mixed.transform = function transform(data) {
@@ -132,7 +136,7 @@
           else
             return data;
         }, data, this);
-      }
+      };
     }
     
     return mixed;
@@ -157,10 +161,11 @@
         return d3.chart().extend.call(parent, name, mixin(extensions), staticProps);
       }
     };
-  }
+  };
 
   // Add helpers to chart (static)
   d3.chart.helpers = {
+    isDefined: isDefined,
     property: property,
     dimensions: dimensions,
     translate: translate,

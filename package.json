@@ -10,11 +10,25 @@
     "type": "git",
     "url": "https://github.com/CSNW/d3.chart.csnw.line-bar.git"
   },
-  "keywords": ["d3-chart", "d3", "chart", "line", "bar"],
+  "keywords": [
+    "d3-chart",
+    "d3",
+    "chart",
+    "line",
+    "bar"
+  ],
   "author": "CSNW",
   "bugs": {
     "url": "https://github.com/CSNW/d3.chart.csnw.line-bar/issues"
   },
   "homepage": "https://github.com/CSNW/d3.chart.csnw.line-bar",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "~0.4.4",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-jshint": "~0.9.2",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.4.0",
+    "grunt-preprocess": "~4.0.0"
+  }
 }
