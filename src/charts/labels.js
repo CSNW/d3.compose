@@ -20,7 +20,8 @@
             return this.append('text')
               .classed('label', true)
               .attr('font-family', chart.labelFontFamily())
-              .attr('font-size', chart.labelFontSize());
+              .attr('font-size', chart.labelFontSize())
+              .attr('alignment-baseline', chart.labelAlignment.bind(chart));
           },
           events: {
             'enter': function() {
@@ -42,47 +43,64 @@
       },
 
       labelX: function(d, i) {
-        return this.x(d, i) + this.calculatedLabelOffset().x;
+        return this.x(d, i) + this.calculatedLabelOffset(d, i).x;
       },
       labelY: function(d, i) {
-        return this.y(d, i) + this.calculatedLabelOffset().y;
+        return this.y(d, i) + this.calculatedLabelOffset(d, i).y;
       },
 
-      calculatedLabelOffset: function() {
-        var fontSize = parseFloat(this.labelFontSize());
+      calculatedLabelOffset: function(d, i) {
         var offset = this.labelOffset();
 
         var byPosition = {
           top: {x: 0, y: -offset},
-          right: {x: offset, y: (fontSize/2)},
-          bottom: {x: 0, y: offset + fontSize},
-          left: {x: -offset, y: (fontSize/2)}
+          right: {x: offset, y: 0},
+          bottom: {x: 0, y: offset},
+          left: {x: -offset, y: 0}
         };
         
-        return byPosition[this.labelPosition()];
+        return byPosition[this.calculatedLabelPosition(d, i)];
       },
-      labelAnchor: function() {
-        if (this.labelPosition() == 'right')
+      labelAnchor: function(d, i) {
+        if (this.calculatedLabelPosition(d, i) == 'right')
           return 'start';
-        else if (this.labelPosition() == 'left')
+        else if (this.calculatedLabelPosition(d, i) == 'left')
           return 'end';
         else
           return 'middle';
       },
+      labelAlignment: function(d, i) {
+        // Set alignment-baseline so that font size does not play into calculations
+        // http://www.w3.org/TR/SVG/text.html#BaselineAlignmentProperties
+        var byPosition = {
+          top: 'after-edge',
+          right: 'middle',
+          bottom: 'before-edge',
+          left: 'middle'
+        };
 
-      // top, right, bottom, left
+        return byPosition[this.calculatedLabelPosition(d, i)];
+      },
+
+      calculatedLabelPosition: function(d, i) {
+        var position = this.labelPosition();
+        if (position == 'top|bottom')
+          return this.yValue(d, i) >= 0 ? 'top' : 'bottom';
+        else if (position == 'right|left')
+          return this.xValue(d, i) >= 0 ? 'right' : 'left';
+        else
+          return position;
+      },
+
+      // top, right, bottom, left, 
+      // top|bottom (above for positive, below for negative), 
+      // right|left (right for positive, left for negative)
       labelPosition: property('labelPosition', {defaultValue: 'top'}),
       // px distance offset from (x,y) point
       labelOffset: property('labelOffset', {defaultValue: 14}),
 
       // Font size, px
-      labelFontSize: property('labelFontSize', {
-        defaultValue: 14,
-        get: function(value) {
-          // Make sure returned value is a string (add px if number)
-          return _.isNumber(value) ? value + 'px' : value;
-        }
-      }),
+      labelFontSize: property('labelFontSize', {defaultValue: '14px'}),
       labelFontFamily: property('labelFontFamily', {defaultValue: 'sans-serif'})
     });
   
@@ -91,7 +109,7 @@
     .mixin(d3.chart('Labels').prototype, extensions.Values)
     .extend('LabelValues', {
       labelX: function(d, i) {
-        return this.itemX(d, i) + this.calculatedLabelOffset().x;
+        return this.itemX(d, i) + this.calculatedLabelOffset(d, i).x;
       }
     });
 

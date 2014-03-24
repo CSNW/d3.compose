@@ -24,7 +24,7 @@
       });
     },
     seriesClass: function(d, i) {
-      return 'series series_' + i + (d['class'] ? ' ' + d['class'] : '');
+      return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
     },
     seriesIndex: function(d, i) {
       return d.seriesIndex || 0;

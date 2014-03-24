@@ -7,10 +7,10 @@
   border: solid 1px #ddd;
 }
 
-.series_0 .line {stroke: blue;}
-.series_0 .bar {fill: steelblue; }
-.series_1 .line {stroke: red;}
-.series_1 .bar {fill: #fc3;}
+.series.index-0 .line {stroke: blue;}
+.series.index-0 .bar {fill: steelblue; }
+.series.index-1 .line {stroke: red;}
+.series.index-1 .bar {fill: #fc3;}
 
 .line {
   stroke-width: 1.5px;

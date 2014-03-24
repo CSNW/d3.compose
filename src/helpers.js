@@ -127,8 +127,6 @@
           var x = 0;
           var y = 0;
 
-          console.log('dimensions', dimensions);
-
           if (options.direction == 'horizontal') {
             if (!(options.origin == 'left' || options.origin == 'right'))
               options.origin = 'left';

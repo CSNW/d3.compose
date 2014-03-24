@@ -18,19 +18,30 @@
               .data(data, chart.dataKey.bind(chart));
           },
           insert: function() {
-            var groups = this.append('g');
-            groups.append('text');
+            var chart = this.chart();
+            var groups = this.append('g')
+              .attr('class', function(d, i) {
+                return 'legend-group index-' + i;
+              });
+
+            groups.append('g')
+              .attr('class', 'legend-swatch');
+            groups.append('text')
+              .attr('class', 'legend-label');
 
             return groups;
           },
           events: {
             merge: function() {
               var chart = this.chart();
+
+              this.select('g').each(chart.createSwatches());
               this.select('text')
-                .text(chart.dataValue.bind(chart));
+                .text(chart.dataValue.bind(chart))
+                .attr('alignment-baseline', 'before-edge');
 
               // Position groups after positioning everything inside
-              this.call(helpers.stack.bind(this, {origin: 'bottom'}));
+              this.call(helpers.stack.bind(this, {origin: 'top'}));
             }
           }
         });
@@ -41,6 +52,20 @@
       },
       dataValue: function(d, i) {
         return d.value;
+      },
+
+      createSwatches: function() {
+        var chart = this;
+        return function(d, i) {
+          chart.createSwatch(d3.select(this), d, i);
+        };
+      },
+      createSwatch: function(selection, d, i) {
+        selection.empty();
+        selection.append('rect')
+          .attr('width', 20)
+          .attr('height', 20)
+          .attr('fill', 'red');
       },
 
       // Position legend: top, right, bottom, left

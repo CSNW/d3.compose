@@ -138,8 +138,6 @@
           var x = 0;
           var y = 0;
 
-          console.log('dimensions', dimensions);
-
           if (options.direction == 'horizontal') {
             if (!(options.origin == 'left' || options.origin == 'right'))
               options.origin = 'left';
@@ -269,7 +267,7 @@
       });
     },
     seriesClass: function(d, i) {
-      return 'series series_' + i + (d['class'] ? ' ' + d['class'] : '');
+      return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
     },
     seriesIndex: function(d, i) {
       return d.seriesIndex || 0;
@@ -768,7 +766,8 @@
             return this.append('text')
               .classed('label', true)
               .attr('font-family', chart.labelFontFamily())
-              .attr('font-size', chart.labelFontSize());
+              .attr('font-size', chart.labelFontSize())
+              .attr('alignment-baseline', chart.labelAlignment.bind(chart));
           },
           events: {
             'enter': function() {
@@ -790,47 +789,64 @@
       },
 
       labelX: function(d, i) {
-        return this.x(d, i) + this.calculatedLabelOffset().x;
+        return this.x(d, i) + this.calculatedLabelOffset(d, i).x;
       },
       labelY: function(d, i) {
-        return this.y(d, i) + this.calculatedLabelOffset().y;
+        return this.y(d, i) + this.calculatedLabelOffset(d, i).y;
       },
 
-      calculatedLabelOffset: function() {
-        var fontSize = parseFloat(this.labelFontSize());
+      calculatedLabelOffset: function(d, i) {
         var offset = this.labelOffset();
 
         var byPosition = {
           top: {x: 0, y: -offset},
-          right: {x: offset, y: (fontSize/2)},
-          bottom: {x: 0, y: offset + fontSize},
-          left: {x: -offset, y: (fontSize/2)}
+          right: {x: offset, y: 0},
+          bottom: {x: 0, y: offset},
+          left: {x: -offset, y: 0}
         };
         
-        return byPosition[this.labelPosition()];
+        return byPosition[this.calculatedLabelPosition(d, i)];
       },
-      labelAnchor: function() {
-        if (this.labelPosition() == 'right')
+      labelAnchor: function(d, i) {
+        if (this.calculatedLabelPosition(d, i) == 'right')
           return 'start';
-        else if (this.labelPosition() == 'left')
+        else if (this.calculatedLabelPosition(d, i) == 'left')
           return 'end';
         else
           return 'middle';
       },
+      labelAlignment: function(d, i) {
+        // Set alignment-baseline so that font size does not play into calculations
+        // http://www.w3.org/TR/SVG/text.html#BaselineAlignmentProperties
+        var byPosition = {
+          top: 'after-edge',
+          right: 'middle',
+          bottom: 'before-edge',
+          left: 'middle'
+        };
 
-      // top, right, bottom, left
+        return byPosition[this.calculatedLabelPosition(d, i)];
+      },
+
+      calculatedLabelPosition: function(d, i) {
+        var position = this.labelPosition();
+        if (position == 'top|bottom')
+          return this.yValue(d, i) >= 0 ? 'top' : 'bottom';
+        else if (position == 'right|left')
+          return this.xValue(d, i) >= 0 ? 'right' : 'left';
+        else
+          return position;
+      },
+
+      // top, right, bottom, left, 
+      // top|bottom (above for positive, below for negative), 
+      // right|left (right for positive, left for negative)
       labelPosition: property('labelPosition', {defaultValue: 'top'}),
       // px distance offset from (x,y) point
       labelOffset: property('labelOffset', {defaultValue: 14}),
 
       // Font size, px
-      labelFontSize: property('labelFontSize', {
-        defaultValue: 14,
-        get: function(value) {
-          // Make sure returned value is a string (add px if number)
-          return _.isNumber(value) ? value + 'px' : value;
-        }
-      }),
+      labelFontSize: property('labelFontSize', {defaultValue: '14px'}),
       labelFontFamily: property('labelFontFamily', {defaultValue: 'sans-serif'})
     });
   
@@ -839,7 +855,7 @@
     .mixin(d3.chart('Labels').prototype, extensions.Values)
     .extend('LabelValues', {
       labelX: function(d, i) {
-        return this.itemX(d, i) + this.calculatedLabelOffset().x;
+        return this.itemX(d, i) + this.calculatedLabelOffset(d, i).x;
       }
     });
 
@@ -1109,19 +1125,30 @@
               .data(data, chart.dataKey.bind(chart));
           },
           insert: function() {
-            var groups = this.append('g');
-            groups.append('text');
+            var chart = this.chart();
+            var groups = this.append('g')
+              .attr('class', function(d, i) {
+                return 'legend-group index-' + i;
+              });
+
+            groups.append('g')
+              .attr('class', 'legend-swatch');
+            groups.append('text')
+              .attr('class', 'legend-label');
 
             return groups;
           },
           events: {
             merge: function() {
               var chart = this.chart();
+
+              this.select('g').each(chart.createSwatches());
               this.select('text')
-                .text(chart.dataValue.bind(chart));
+                .text(chart.dataValue.bind(chart))
+                .attr('alignment-baseline', 'before-edge');
 
               // Position groups after positioning everything inside
-              this.call(helpers.stack.bind(this, {origin: 'bottom'}));
+              this.call(helpers.stack.bind(this, {origin: 'top'}));
             }
           }
         });
@@ -1132,6 +1159,20 @@
       },
       dataValue: function(d, i) {
         return d.value;
+      },
+
+      createSwatches: function() {
+        var chart = this;
+        return function(d, i) {
+          chart.createSwatch(d3.select(this), d, i);
+        };
+      },
+      createSwatch: function(selection, d, i) {
+        selection.empty();
+        selection.append('rect')
+          .attr('width', 20)
+          .attr('height', 20)
+          .attr('fill', 'red');
       },
 
       // Position legend: top, right, bottom, left
