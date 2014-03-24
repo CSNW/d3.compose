@@ -21,6 +21,7 @@
 // @include ../charts/line.js
 // @include ../charts/bars.js
 // @include ../components/axis.js
+// @include ../components/legend.js
 
 // @include ../charts/configurable.js
 

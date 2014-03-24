@@ -111,6 +111,64 @@
   }
 
   /**
+    Stack given array of elements using options
+
+    @example
+    this.call(helpers.stack)
+    this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
+  
+    @param {Object} [options]
+    - {String} [direction=vertical] vertical or horizontal
+    - {String} [origin=top] top/bottom for vertical and left/right for horizontal
+  */
+  function stack(options, elements) {
+    if (options && !elements) {
+      elements = options;
+      options = {
+        direction: 'vertical',
+        origin: 'top'
+      };
+    }
+
+    if (elements && elements.attr) {
+      var previous = 0;
+      elements
+        .attr('transform', function(g, i) {
+          var dimensions = this.getBBox();
+          var x = 0;
+          var y = 0;
+
+          console.log('dimensions', dimensions);
+
+          if (options.direction == 'horizontal') {
+            if (!(options.origin == 'left' || options.origin == 'right'))
+              options.origin = 'left';
+
+            if (options.origin == 'left')
+              x = previous;
+            else
+              x = previous + dimensions.width;
+
+            previous = previous + dimensions.width;
+          }
+          else {
+            if (!(options.origin == 'top' || options.origin == 'bottom'))
+              options.origin = 'top';
+
+            if (options.origin == 'top')
+              y = previous;
+            else
+              y = previous + dimensions.height;
+
+            previous = previous + dimensions.height;
+          }
+
+          return translate(x, y);
+        });
+    }
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -181,6 +239,7 @@
     dimensions: dimensions,
     translate: translate,
     createScaleFromOptions: createScaleFromOptions,
+    stack: stack,
     mixin: mixin
   };
 })(d3, _);
@@ -654,15 +713,15 @@
     // Internal chart margins to separate from user-defined margins
     _chartMargins: property('_chartMargins', {
       defaultValue: function() {
-        return this.chartMargins();
+        return _.extend({}, this.chartMargins());
       }
     }),
     chartWidth: function() {
-      var margins = this.chartMargins();
+      var margins = this._chartMargins();
       return this.width() - margins.left - margins.right;
     },
     chartHeight: function() {
-      var margins = this.chartMargins();
+      var margins = this._chartMargins();
       return this.height() - margins.top - margins.bottom;
     },
 
@@ -1030,6 +1089,94 @@
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
 
+(function(d3, _, helpers, extensions) {
+  var property = helpers.property;
+
+  /**
+    Legend component
+  */
+  d3.chart('Component')
+    .mixin()
+    .extend('Legend', {
+      initialize: function() {
+        this.legend = this.base.append('g')
+          .classed('legend', true);
+
+        this.layer('Legend', this.legend, {
+          dataBind: function(data) {
+            var chart = this.chart();
+            return this.selectAll('g')
+              .data(data, chart.dataKey.bind(chart));
+          },
+          insert: function() {
+            var groups = this.append('g');
+            groups.append('text');
+
+            return groups;
+          },
+          events: {
+            merge: function() {
+              var chart = this.chart();
+              this.select('text')
+                .text(chart.dataValue.bind(chart));
+
+              // Position groups after positioning everything inside
+              this.call(helpers.stack.bind(this, {origin: 'bottom'}));
+            }
+          }
+        });
+      },
+
+      dataKey: function(d, i) {
+        return d.key;
+      },
+      dataValue: function(d, i) {
+        return d.value;
+      },
+
+      // Position legend: top, right, bottom, left
+      legendPosition: property('legendPosition', {
+        defaultValue: 'right',
+        set: function(value) {
+          var offset = {top: 0, right: 0, bottom: 0, left: 0};
+
+          offset[value] = 100;
+          this.chartOffset(offset);
+        }
+      })
+    });
+
+  d3.chart('Legend').extend('InsetLegend', {
+    initialize: function() {
+      this.positionLegend();
+    },
+
+    positionLegend: function() {
+      if (this.legend) {
+        var position = this.legendPosition();
+        this.legend.attr('transform', helpers.translate(position.x, position.y));
+      }
+    },
+
+    // Position legend: (x,y) of top left corner
+    legendPosition: property('legendPosition', {
+      defaultValue: {x: 10, y: 10},
+      set: function(value, previous) {
+        value = (value && _.isObject(value)) ? value : {};
+        value = _.defaults(value, previous || {}, {x: 0, y: 0});
+
+        return {
+          override: value,
+          after: function() {
+            this.positionLegend();
+          }
+        };
+      }
+    })
+  });
+
+})(d3, _, d3.chart.helpers, d3.chart.extensions);
+
 
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
@@ -1098,7 +1245,15 @@
 
       // Setup legend
       if (this.options.legend) {
-        // ...
+        var legendOptions = _.defaults(this.options.legend, d3.chart('Configurable').defaultLegendOptions);
+
+        if (!d3.chart(legendOptions.type))
+          return; // No matching legend founct
+
+        var base = legendOptions.type == 'InsetLegend' ? this.chartBase() : this.base;
+        var legend = base.chart(legendOptions.type, legendOptions);
+
+        this.attachComponent('legend', legend);
       }
     },
     demux: function(name, data) {
@@ -1112,6 +1267,10 @@
     defaultChartOptions: {},
     defaultAxisOptions: {
       type: 'Axis'
+    },
+    defaultLegendOptions: {
+      type: 'Legend',
+      legendPosition: 'right'
     }
   });
 

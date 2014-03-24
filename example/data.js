@@ -18,7 +18,11 @@
           {key: '3 year program', y: 4690},
           {key: '5 year program', y: 7817}
         ]
-      }]
+      }],
+      legend: [
+        {key: 'deathsPrevented', value: 'CRC Deaths prevented'},
+        {key: 'peopleParticipating', value: 'People participating'}
+      ]
     }
   };
 })(this);

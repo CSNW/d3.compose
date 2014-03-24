@@ -115,15 +115,15 @@
     // Internal chart margins to separate from user-defined margins
     _chartMargins: property('_chartMargins', {
       defaultValue: function() {
-        return this.chartMargins();
+        return _.extend({}, this.chartMargins());
       }
     }),
     chartWidth: function() {
-      var margins = this.chartMargins();
+      var margins = this._chartMargins();
       return this.width() - margins.left - margins.right;
     },
     chartHeight: function() {
-      var margins = this.chartMargins();
+      var margins = this._chartMargins();
       return this.height() - margins.top - margins.bottom;
     },
 

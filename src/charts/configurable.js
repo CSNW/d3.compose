@@ -65,7 +65,15 @@
 
       // Setup legend
       if (this.options.legend) {
-        // ...
+        var legendOptions = _.defaults(this.options.legend, d3.chart('Configurable').defaultLegendOptions);
+
+        if (!d3.chart(legendOptions.type))
+          return; // No matching legend founct
+
+        var base = legendOptions.type == 'InsetLegend' ? this.chartBase() : this.base;
+        var legend = base.chart(legendOptions.type, legendOptions);
+
+        this.attachComponent('legend', legend);
       }
     },
     demux: function(name, data) {
@@ -79,6 +87,10 @@
     defaultChartOptions: {},
     defaultAxisOptions: {
       type: 'Axis'
+    },
+    defaultLegendOptions: {
+      type: 'Legend',
+      legendPosition: 'right'
     }
   });
 

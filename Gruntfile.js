@@ -8,11 +8,11 @@ module.exports = function(grunt) {
 
     watch: {
       jshint: {
-        files: ['src/**/*.js', 'Gruntfile.js'],
-        tasks: ['jshint:grunt', 'jshint:src']
+        files: ['src/**/*.js'],
+        tasks: ['jshint:src']
       },
       build: {
-        files: ['src/**/*.js', 'Gruntfile.js'],
+        files: ['src/**/*.js'],
         tasks: ['build-dist']
       },
       styles: {
@@ -82,7 +82,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   
   grunt.registerTask('default', ['build-dist']);
-  grunt.registerTask('build-dist', ['jshint:grunt', 'jshint:src', 'preprocess:dist', 'concat:dist', 'uglify:dist', 'jshint:built']);
-  grunt.registerTask('build', ['jshint:grunt', 'jshint:src', 'preprocess', 'concat', 'uglify', 'jshint:built']);
+  grunt.registerTask('build-dist', ['jshint:src', 'preprocess:dist', 'concat:dist', 'uglify:dist', 'jshint:built']);
+  grunt.registerTask('build', ['jshint:src', 'preprocess', 'concat', 'uglify', 'jshint:built']);
   grunt.registerTask('release', ['build']);
 };

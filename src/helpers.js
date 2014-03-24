@@ -100,6 +100,64 @@
   }
 
   /**
+    Stack given array of elements using options
+
+    @example
+    this.call(helpers.stack)
+    this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
+  
+    @param {Object} [options]
+    - {String} [direction=vertical] vertical or horizontal
+    - {String} [origin=top] top/bottom for vertical and left/right for horizontal
+  */
+  function stack(options, elements) {
+    if (options && !elements) {
+      elements = options;
+      options = {
+        direction: 'vertical',
+        origin: 'top'
+      };
+    }
+
+    if (elements && elements.attr) {
+      var previous = 0;
+      elements
+        .attr('transform', function(g, i) {
+          var dimensions = this.getBBox();
+          var x = 0;
+          var y = 0;
+
+          console.log('dimensions', dimensions);
+
+          if (options.direction == 'horizontal') {
+            if (!(options.origin == 'left' || options.origin == 'right'))
+              options.origin = 'left';
+
+            if (options.origin == 'left')
+              x = previous;
+            else
+              x = previous + dimensions.width;
+
+            previous = previous + dimensions.width;
+          }
+          else {
+            if (!(options.origin == 'top' || options.origin == 'bottom'))
+              options.origin = 'top';
+
+            if (options.origin == 'top')
+              y = previous;
+            else
+              y = previous + dimensions.height;
+
+            previous = previous + dimensions.height;
+          }
+
+          return translate(x, y);
+        });
+    }
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -170,6 +228,7 @@
     dimensions: dimensions,
     translate: translate,
     createScaleFromOptions: createScaleFromOptions,
+    stack: stack,
     mixin: mixin
   };
 })(d3, _);
