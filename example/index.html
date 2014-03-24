@@ -3,100 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>d3.chart.csnw.line-bar Example</title>
+  <title>d3.chart.csnw.configurable Example</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    .chart {
-      background-color: #eee;
-      border: solid 1px #ddd;
-    }
-
-    .series_0 .line {stroke: blue;}
-    .series_0 .bar {fill: steelblue; }
-    .series_1 .line {stroke: red;}
-    .series_1 .bar {fill: #fc3;}
-
-    .line {
-      stroke-width: 1.5px;
-      fill: none;
-    }
-    .bar {
-
-    }
-    .axis {
-
-    }
-    .axis path {
-      stroke-width: 1.5px;
-      fill: none;
-      stroke: black;
-    }
-    .tick {
-      font-size: 90%;
-    }
-
-    .special .bar {
-      fill: yellow;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="../src/styles/csnw.configurable.base.css">
 </head>
 <body>
-  <h1>Example</h1>
-  <div id="chart"></div>
+  <h1>d3.chart.csnw.configurable Example</h1>
+  <div id="chart_1"></div>
 
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
   <script src="../d3.chart.csnw.extensions.js"></script>
-  <script src="../d3.chart.csnw.line-bar.js"></script>
+  <script src="../d3.chart.csnw.configurable.js"></script>
 
+  <script src="data.js"></script>
   <script type="text/javascript">
-    var deaths_prevented = {
-      key: 'deaths_prevented',
-      values: [
-        {key: '1 year program', y: 12},
-        {key: '2 year program', y: 23},
-        {key: '3 year program', y: 35},
-        {key: '5 year program', y: 58}
-      ]
-    };
-    var people_participating = {
-      key: 'people_participating',
-      values: [
-        {key: '1 year program', y: 1563},
-        {key: '2 year program', y: 3127},
-        {key: '3 year program', y: 4690},
-        {key: '5 year program', y: 7817}
-      ]
-    };
-
-    var bars_2 = {
-      key: 'bars_2',
-      values: [
-        {key: '1 year program', y: 1000},
-        {key: '2 year program', y: 2000},
-        {key: '3 year program', y: 3000},
-        {key: '5 year program', y: 4000},
-        {key: '10 year program', y: 5000}
-      ]
-    }
-
-    var chart = d3.select('#chart')
+    /**
+      Chart 1: Line-Bar Values with separate y-axes
+    */
+    var chart1 = d3.select('#chart_1')
       .append('svg')
       .chart('Configurable', {
         charts: [
           {
             type: 'Bars', 
-            data_key: 'people_participating', 
+            dataKey: 'peopleParticipating', 
             yScale: {domain: [0, 20000]}, 
             labelFontSize: 14,
             labelOffset: 5
           },
           {
             type: 'LineValues', 
-            data_key: 'deaths_prevented', 
+            dataKey: 'deathsPrevented', 
             yScale: {domain: [0, 70]}, 
             labelPosition: 'top'
           }
@@ -104,17 +45,17 @@
         axes: [
           {
             type: 'AxisValues',
-            data_key: 'people_participating',
+            dataKey: 'peopleParticipating',
             axisPosition: 'bottom'
           },
           {
             type: 'AxisValues',
-            data_key: 'people_participating',
+            dataKey: 'peopleParticipating',
             axisPosition: 'left'
           },
           {
             type: 'AxisValues',
-            data_key: 'deaths_prevented',
+            dataKey: 'deathsPrevented',
             axisPosition: 'right'
           }
         ]
@@ -123,11 +64,7 @@
       .height(400)
       .chartMargins({top: 10});
 
-    var data = {
-      'people_participating': [people_participating, bars_2], 
-      'deaths_prevented': [deaths_prevented]
-    };
-    chart.draw(data);
+    chart1.draw(data.chart1);
   </script>
 </body>
 </html>

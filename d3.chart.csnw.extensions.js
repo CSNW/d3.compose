@@ -140,7 +140,7 @@
 
   /**
     Mixin extensions with Chart prototype before calling extend
-    returns intermediate extended chart
+    returns object for extension
 
     @param {Array or Object...} extensions Array of extensions or seperate extension arguments
   */

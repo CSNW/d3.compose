@@ -1,10 +1,11 @@
 (function(d3, _) {
 
   // Add shortcuts to helpers
-  var property = d3.chart.helpers.property;
-  var dimensions = d3.chart.helpers.dimensions;
-  var translate = d3.chart.helpers.translate;
-  var createScaleFromOptions = d3.chart.helpers.createScaleFromOptions;
+  var helpers = d3.chart.helpers;
+  var property = helpers.property;
+  var dimensions = helpers.dimensions;
+  var translate = helpers.translate;
+  var createScaleFromOptions = helpers.createScaleFromOptions;
 
   /**
     Base
@@ -68,8 +69,6 @@
 
       this.updateDimensions();
       this.on('change:dimensions', function() {
-        if (this.components)
-          this.updateChartMargins();
         this.updateDimensions();
         this.redraw();
       });
@@ -82,7 +81,7 @@
         .attr('height', this.height());
 
       // Place chart base within container
-      var margins = this._chartMargins();
+      var margins = this.updateChartMargins();
       this.chartBase()
         .attr('transform', translate(margins.left, margins.top))
         .attr('width', this.chartWidth())
@@ -130,6 +129,7 @@
       }, this);
       
       this._chartMargins(margins);
+      return margins;
     },
 
     rawData: property('rawData'),
@@ -155,6 +155,7 @@
         };
       }
     }),
+    // Internal chart margins to separate from user-defined margins
     _chartMargins: property('_chartMargins', {
       defaultValue: function() {
         return this.chartMargins();
@@ -198,14 +199,14 @@
       return d.key;
     },
     seriesValues: function(d, i) {
-      // Store series_index on series and values
+      // Store seriesIndex on series and values
       // TODO: Look at more elegant way to do this that avoids changing data
       if (i != null)
-        d.series_index = i;
+        d.seriesIndex = i;
 
       return _.map(d.values, function(value) {
         if (i != null)
-          value.series_index = i;
+          value.seriesIndex = i;
         return value;
       });
     },
@@ -213,7 +214,7 @@
       return 'series series_' + i + (d['class'] ? ' ' + d['class'] : '');
     },
     seriesIndex: function(d, i) {
-      return d.series_index || 0;
+      return d.seriesIndex || 0;
     },
     seriesCount: function(d, i) {
       return this.data() ? this.data().length : 1;
@@ -510,14 +511,14 @@
         var fontSize = parseFloat(this.labelFontSize());
         var offset = this.labelOffset();
 
-        var by_position = {
+        var byPosition = {
           top: {x: 0, y: -offset},
           right: {x: offset, y: (fontSize/2)},
           bottom: {x: 0, y: offset + fontSize},
           left: {x: -offset, y: (fontSize/2)}
         };
         
-        return by_position[this.labelPosition()];
+        return byPosition[this.labelPosition()];
       },
       labelAnchor: function() {
         if (this.labelPosition() == 'right')
@@ -686,8 +687,8 @@
       .append('svg')
       .chart('Configurable', {
         charts: [
-          {type: 'Bars', data_key: 'participation', yScale: {domain: [0, 20000]}, itemPadding: 20},
-          {type: 'LineValues', data_key: 'results', yScale: {domain: [0, 70]}, labelPosition: 'top'}
+          {type: 'Bars', dataKey: 'participation', yScale: {domain: [0, 20000]}, itemPadding: 20},
+          {type: 'LineValues', dataKey: 'results', yScale: {domain: [0, 70]}, labelPosition: 'top'}
         ]
       })
       .width(600)
@@ -698,44 +699,40 @@
     @param {Object} options
     - charts: {Array} of chart definitions
       - type: Matches Chart name (Line, LineValues, Bars)
-      - data_key: Key for extracting chart data from data object
+      - dataKey: Key for extracting chart data from data object
       - other chart properties (e.g. xScale/yScale: {type, domain}, itemPadding, labelPosition, etc.)
     - axes: {Array} of axis definitions
       - type: [Axis] Matches Axis name (Axis, AxisValues)
-      - data_key: Key for extracting axis data from data object
+      - dataKey: Key for extracting axis data from data object
       - other axis properties
     - legend: {Object} of legend properties
-      - data_key: Key for extracting legend data from data object
+      - dataKey: Key for extracting legend data from data object
       - position: top, right, bottom, left
       - other legend properties
   */
   d3.chart('Container').extend('Configurable', {
     initialize: function() {
       // Setup charts
-      _.each(this.options.charts, function(chart_options, i) {
-        chart_options = _.defaults(chart_options || {}, {
+      _.each(this.options.charts, function(chartOptions, i) {
+        chartOptions = _.defaults(chartOptions || {}, d3.chart('Configurable').defaultChartOptions);
 
-        });
-
-        if (!d3.chart(chart_options.type))
+        if (!d3.chart(chartOptions.type))
           return; // No matching chart found...
 
-        var chart = this.chartBase().chart(chart_options.type, chart_options);
+        var chart = this.chartBase().chart(chartOptions.type, chartOptions);
         var id = 'chart_' + i;
 
         this.attachChart(id, chart);
       }, this);
 
       // Setup axes
-      _.each(this.options.axes, function(axis_options, i) {
-        axis_options = _.defaults(axis_options || {}, {
-          type: 'Axis'
-        });
+      _.each(this.options.axes, function(axisOptions, i) {
+        axisOptions = _.defaults(axisOptions || {}, d3.chart('Configurable').defaultAxisOptions);
 
-        if (!d3.chart(axis_options.type))
+        if (!d3.chart(axisOptions.type))
           return; // No matching axis found...
 
-        var axis = this.chartBase().chart(axis_options.type, axis_options);
+        var axis = this.chartBase().chart(axisOptions.type, axisOptions);
         var id = 'axis_' + i;
 
         this.attachComponent(id, axis);
@@ -749,9 +746,14 @@
     demux: function(name, data) {
       var search = {id: name};
       var item = this.chartsById[name] || this.componentsById[name];
-      var data_key = item && item.options && item.options.data_key || name;
+      var dataKey = item && item.options && item.options.dataKey || name;
       
-      return data[data_key];
+      return data[dataKey];
+    }
+  }, {
+    defaultChartOptions: {},
+    defaultAxisOptions: {
+      type: 'Axis'
     }
   });
 
@@ -799,21 +801,13 @@
             var position = chart.axisPosition();
             var orientation = chart.axisOrientation();
 
-            // Get scale by orientation (and if y-scale, flip range for correct values)
+            // Get scale by orientation
             var scale = orientation == 'horizontal' ? chart._xScale() : chart._yScale();
 
             // Setup axis
             chart.axis
               .scale(scale)
               .orient(chart.axisOrient());
-
-            if (orientation == 'horizontal') {
-
-              // chart.axis.ticks(function(d, i) {
-              //   console.log('ticks', d, i);
-              //   return d;
-              // });
-            }
 
             return this.append('g');
           },
@@ -877,7 +871,7 @@
         }
       }),
       axisOrientation: function() {
-        var by_position = {
+        var byPosition = {
           top: 'horizontal',
           right: 'vertical',
           bottom: 'horizontal',
@@ -886,7 +880,7 @@
           y0: 'horizontal'
         };
 
-        return by_position[this.axisPosition()];
+        return byPosition[this.axisPosition()];
       }
     });
   
