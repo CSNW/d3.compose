@@ -4,7 +4,9 @@
   "description": "d3-chart configurable chart",
   "main": "dist/d3.chart.csnw.configurable.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test",
+    "lint": "jshint src",
+    "prepublish": "grunt build"
   },
   "repository": {
     "type": "git",
@@ -30,6 +32,7 @@
     "grunt-contrib-concat": "~0.3.0",
     "grunt-concat-sourcemap": "~0.4.1",
     "grunt-es6-module-transpiler": "~0.6.0",
-    "load-grunt-config": "~0.8.0-beta.1"
+    "load-grunt-config": "~0.8.0-beta.1",
+    "jshint": "~2.4.4"
   }
 }

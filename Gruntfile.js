@@ -1,9 +1,16 @@
 module.exports = function(grunt) {
+  // load-grunt-config does the following automatically
+  // - load tasks/options into config
+  // - load grunt-* npm tasks in package.json
   var config = require('load-grunt-config')(grunt, {
     configPath: require('path').join(process.cwd(), 'tasks/options'),
-    init: false
+    init: false,
+    loadGruntTasks: {
+      pattern: 'grunt-*',
+      config: require('./package.json'),
+      scope: 'devDependencies'
+    }
   });
-  grunt.loadTasks('tasks');
 
   config.env = process.env;
   config.pkg = grunt.file.readJSON('package.json');
@@ -31,34 +38,20 @@ module.exports = function(grunt) {
   };
   grunt.initConfig(config);
 
+  grunt.loadTasks('tasks');
   this.registerTask('default', ['build']);
-
-  // Build a new version of the library
-  this.registerTask('build', 'Builds a temporary version', [
+  
+  this.registerTask('build', 'Builds a new version', [
     'jshint:src',
-    'concat_sourcemap:temp',
-    'uglify:temp',
-    'jshint:temp'
-  ]);
-
-  this.registerTask('build-release', 'Build a release version', [
-    'jshint:src',
-    'concat:release',
-    'uglify:release',
-    'jshint:release'
+    'concat_sourcemap',
+    'uglify',
+    'jshint:built'
   ]);
 
   this.registerTask('tests', 'Builds the test package', []);
   
-  this.registerTask('test', [
+  this.registerTask('test', 'Build library and tests and run tests' [
     'build', 
     'tests'
   ]);
-
-  // grunt.loadNpmTasks('grunt-contrib-watch');
-  // grunt.loadNpmTasks('grunt-contrib-jshint');
-  // grunt.loadNpmTasks('grunt-contrib-concat');
-  // grunt.loadNpmTasks('grunt-concat-sourcemap');
-  // grunt.loadNpmTasks('grunt-contrib-uglify');
-  // grunt.loadNpmTasks('grunt-es6-module-transpiler');
 };

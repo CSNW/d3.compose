@@ -5,6 +5,5 @@ module.exports = {
   },
 
   src: ['src/**/*.js'],
-  temp: ['tmp/<%= pkg.name %>.js'],
-  release: ['dist/<%= pkg.name %>.js']
+  built: ['dist/<%= pkg.name %>.js']
 };

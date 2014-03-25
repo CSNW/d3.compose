@@ -7,7 +7,7 @@ module.exports = {
       sourceRoot: '../'
     },
     files: {
-      "tmp/<%= pkg.name %>.js": "<%= meta.srcFiles %>"
+      "dist/<%= pkg.name %>.js": "<%= meta.srcFiles %>"
     }
   }
 };
