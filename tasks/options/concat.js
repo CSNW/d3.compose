@@ -2,7 +2,7 @@ module.exports = {
   options: {
     banner: '<%= meta.banner %>'
   },
-  release: {
+  build: {
     files: {
       "dist/<%= pkg.name %>.js": "<%= meta.srcFiles %>"
     }

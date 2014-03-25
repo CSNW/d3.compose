@@ -1,28 +1,26 @@
 /**
   Base styles for configurable chart
 */
+
 .chart {
   background-color: #eee;
   border: solid 1px #ddd;
 }
-.series.index-0 .line {
-  stroke: blue;
-}
-.series.index-0 .bar {
-  fill: steelblue;
-}
-.series.index-1 .line {
-  stroke: red;
-}
-.series.index-1 .bar {
-  fill: #fc3;
-}
+
+.series.index-0 .line {stroke: blue;}
+.series.index-0 .bar {fill: steelblue; }
+.series.index-1 .line {stroke: red;}
+.series.index-1 .bar {fill: #fc3;}
+
 .line {
   stroke-width: 1.5px;
   fill: none;
 }
 .bar {
   fill: steelblue;
+}
+.axis {
+
 }
 .axis path {
   stroke-width: 1.5px;
@@ -32,6 +30,11 @@
 .tick {
   font-size: 90%;
 }
+
 .special .bar {
   fill: yellow;
+}
+
+.legend {
+
 }

@@ -133,4 +133,121 @@
     showLabels: property('showLabels', {defaultValue: true})
   });
 
+  // Bars: Bar graph with centered key,value data and adjacent display for series
+  d3.chart('ChartWithLabels')
+    .mixin(extensions.XY, extensions.Values)
+    .extend('Bars', {
+      initialize: function() {
+        this.seriesLayer('Bars', this.base.append('g').classed('bar-chart', true), {
+          dataBind: function(data) {
+            var chart = this.chart();
+            return this.selectAll('rect')
+              .data(data, chart.keyValue.bind(chart));
+          },
+          insert: function() {
+            return this.append('rect')
+              .classed('bar', true);
+          },
+          events: {
+            'enter': function() {
+              var chart = this.chart();
+              this
+                  .attr('x', chart.barX.bind(chart))
+                  .attr('y', chart.y0.bind(chart))
+                  .attr('width', chart.itemWidth.bind(chart))
+                  .attr('height', 0);
+            },
+            'merge:transition': function() {
+              var chart = this.chart();
+              this
+                  .attr('y', chart.barY.bind(chart))
+                  .attr('height', chart.barHeight.bind(chart));
+            }
+          }
+        });
+      },
+      barHeight: function(d, i) {
+        return Math.abs(this.y0(d, i) - this.y(d, i));
+      },
+      barX: function(d, i) {
+        return this.itemX(d, i) - this.itemWidth(d, i) / 2;
+      },
+      barY: function(d, i) {
+        var y = this.y(d, i);
+        var y0 = this.y0();
+        
+        return y < y0 ? y : y0;
+      },
+      displayAdjacent: property('displayAdjacent', {defaultValue: true})
+    });
+
+  // Line: (x,y) line graph
+  d3.chart('ChartWithLabels')
+    .mixin(extensions.XY)
+    .extend('Line', {
+      initialize: function() {
+        this.seriesLayer('Line', this.base.append('g').classed('line-chart', true), {
+          dataBind: function(data) {
+            var chart = this.chart();
+
+            // Add lines based on underlying series data
+            chart.lines(_.map(chart.data(), function(series) {
+              return chart.createLine(series);
+            }));
+
+            // Rather than use provided series data
+            return this.selectAll('path')
+              .data(function(d, i) {
+                return [chart.data()[i]];
+              }, chart.seriesKey.bind(chart));
+          },
+          insert: function() {
+            return this.append('path')
+              .classed('line', true);
+          },
+          events: {
+            'merge:transition': function() {
+              var chart = this.chart();
+              var lines = chart.lines();
+
+              this
+                .attr('d', function(d, i) {
+                  return lines[chart.seriesIndex(d, i)](chart.seriesValues(d, i));
+                })
+                .attr('style', chart.lineStyle.bind(chart));
+            }
+          }
+        });
+      },
+      lines: property('lines', {defaultValue: []}),
+      lineStyle: function(d, i) {
+        return helpers.style({
+          stroke: this.lineStroke(d, i),
+          'stroke-dasharray': this.lineStrokeDashArray(d, i)
+        });
+      },
+      lineStroke: function(d, i) {
+        return helpers.getValue(['stroke', 'color'], d, this.options);
+      },
+      lineStrokeDashArray: function(d, i) {
+        return helpers.getValue(['stroke-dasharray'], d, this.options);
+      },
+      createLine: function(series) {
+        var line = d3.svg.line()
+          .x(this.x.bind(this))
+          .y(this.y.bind(this));
+
+        var interpolate = series.interpolate || this.options.interpolate;
+        if (interpolate)
+          line.interpolate(interpolate);
+
+        return line;
+      }
+    });
+  
+  // LineValues: Line graph for centered key,value data
+  d3.chart('ChartWithLabels')
+    .mixin(d3.chart('Line').prototype, extensions.Values)
+    .extend('LineValues');
+
 })(d3, _, d3.chart.helpers, d3.chart.extensions);

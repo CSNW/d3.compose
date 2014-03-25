@@ -1,14 +1,7 @@
-(function (root, factory) {
-  if (typeof exports === 'object') {
-    module.exports = factory(require('d3', 'underscore'));
-  } else if (typeof define === 'function' && define.amd) {
-    define(['d3', 'underscore'], factory);
-  } else {
-    factory(root.d3, root._);
-  }
-}(this, function (d3, _) {
-  'use strict';
-
+/*! d3.chart.csnw.configurable - v0.0.0
+ * https://github.com/CSNW/d3.chart.csnw.configurable
+ * License: MIT
+ */
 (function(d3, _) {
   
   function isDefined(value) {
@@ -600,49 +593,10 @@
     })
   });
 
-  
-
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
-
-(function(d3, _, helpers, extensions) {
-  var property = helpers.property;
-
   /**
     Chart: Foundation for building charts with series data
   */
   d3.chart('Base').mixin(extensions.Series).extend('Chart');
-
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
-
-(function(d3, _, helpers, extensions) {
-  var property = helpers.property;
-
-  d3.chart('Base').extend('Component', {
-    chartOffset: property('chartOffset', {
-      get: function(values) {
-        values = (values && typeof values == 'object') ? values : {};
-        values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return values;
-      },
-      set: function(values, previous) {
-        values = (values && typeof values == 'object') ? values : {};
-        values = _.defaults(values, previous, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return {
-          override: values,
-          after: function() {
-            this.trigger('change:dimensions');
-          }
-        };
-      }
-    })
-  });
-
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
-
-(function(d3, _, helpers, extensions) {
-  var property = helpers.property;
 
   /**
     Container
@@ -787,6 +741,7 @@
       }
     })
   });
+  
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
 
@@ -925,11 +880,54 @@
     showLabels: property('showLabels', {defaultValue: true})
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
+  // Bars: Bar graph with centered key,value data and adjacent display for series
+  d3.chart('ChartWithLabels')
+    .mixin(extensions.XY, extensions.Values)
+    .extend('Bars', {
+      initialize: function() {
+        this.seriesLayer('Bars', this.base.append('g').classed('bar-chart', true), {
+          dataBind: function(data) {
+            var chart = this.chart();
+            return this.selectAll('rect')
+              .data(data, chart.keyValue.bind(chart));
+          },
+          insert: function() {
+            return this.append('rect')
+              .classed('bar', true);
+          },
+          events: {
+            'enter': function() {
+              var chart = this.chart();
+              this
+                  .attr('x', chart.barX.bind(chart))
+                  .attr('y', chart.y0.bind(chart))
+                  .attr('width', chart.itemWidth.bind(chart))
+                  .attr('height', 0);
+            },
+            'merge:transition': function() {
+              var chart = this.chart();
+              this
+                  .attr('y', chart.barY.bind(chart))
+                  .attr('height', chart.barHeight.bind(chart));
+            }
+          }
+        });
+      },
+      barHeight: function(d, i) {
+        return Math.abs(this.y0(d, i) - this.y(d, i));
+      },
+      barX: function(d, i) {
+        return this.itemX(d, i) - this.itemWidth(d, i) / 2;
+      },
+      barY: function(d, i) {
+        var y = this.y(d, i);
+        var y0 = this.y0();
+        
+        return y < y0 ? y : y0;
+      },
+      displayAdjacent: property('displayAdjacent', {defaultValue: true})
+    });
 
-(function(d3, _, helpers, extensions) {
-  var property = helpers.property;
-  
   // Line: (x,y) line graph
   d3.chart('ChartWithLabels')
     .mixin(extensions.XY)
@@ -1004,58 +1002,27 @@
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
 
-  // Bars: Bar graph with centered key,value data and adjacent display for series
-  d3.chart('ChartWithLabels')
-    .mixin(extensions.XY, extensions.Values)
-    .extend('Bars', {
-      initialize: function() {
-        this.seriesLayer('Bars', this.base.append('g').classed('bar-chart', true), {
-          dataBind: function(data) {
-            var chart = this.chart();
-            return this.selectAll('rect')
-              .data(data, chart.keyValue.bind(chart));
-          },
-          insert: function() {
-            return this.append('rect')
-              .classed('bar', true);
-          },
-          events: {
-            'enter': function() {
-              var chart = this.chart();
-              this
-                  .attr('x', chart.barX.bind(chart))
-                  .attr('y', chart.y0.bind(chart))
-                  .attr('width', chart.itemWidth.bind(chart))
-                  .attr('height', 0);
-            },
-            'merge:transition': function() {
-              var chart = this.chart();
-              this
-                  .attr('y', chart.barY.bind(chart))
-                  .attr('height', chart.barHeight.bind(chart));
-            }
+  d3.chart('Base').extend('Component', {
+    chartOffset: property('chartOffset', {
+      get: function(values) {
+        values = (values && typeof values == 'object') ? values : {};
+        values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
+
+        return values;
+      },
+      set: function(values, previous) {
+        values = (values && typeof values == 'object') ? values : {};
+        values = _.defaults(values, previous, {top: 0, right: 0, bottom: 0, left: 0});
+
+        return {
+          override: values,
+          after: function() {
+            this.trigger('change:dimensions');
           }
-        });
-      },
-      barHeight: function(d, i) {
-        return Math.abs(this.y0(d, i) - this.y(d, i));
-      },
-      barX: function(d, i) {
-        return this.itemX(d, i) - this.itemWidth(d, i) / 2;
-      },
-      barY: function(d, i) {
-        var y = this.y(d, i);
-        var y0 = this.y0();
-        
-        return y < y0 ? y : y0;
-      },
-      displayAdjacent: property('displayAdjacent', {defaultValue: true})
-    });
-
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
-
-(function(d3, _, helpers, extensions) {
-  var property = helpers.property;
+        };
+      }
+    })
+  });
 
   // Axis: Add axis for given (x,y) series data
   d3.chart('Component')
@@ -1163,11 +1130,6 @@
   d3.chart('Component')
     .mixin(d3.chart('Axis').prototype, extensions.Values)
     .extend('AxisValues');
-
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
-
-(function(d3, _, helpers, extensions) {
-  var property = helpers.property;
 
   /**
     Legend component
@@ -1438,8 +1400,3 @@
   });
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
-
-
-  return d3;
-}));
-//# sourceMappingURL=d3.chart.csnw.configurable.js.map

@@ -5,5 +5,5 @@ module.exports = {
   },
 
   src: ['src/**/*.js'],
-  built: ['dist/<%= pkg.name %>.js']
+  build: ['dist/<%= pkg.name %>.js']
 };

@@ -30,10 +30,8 @@
     "grunt-contrib-jshint": "~0.9.2",
     "grunt-contrib-uglify": "~0.4.0",
     "grunt-contrib-concat": "~0.3.0",
-    "grunt-concat-sourcemap": "~0.4.1",
-    "grunt-es6-module-transpiler": "~0.6.0",
     "load-grunt-config": "~0.8.0-beta.1",
     "jshint": "~2.4.4",
-    "grunt-contrib-less": "~0.11.0"
+    "grunt-contrib-copy": "~0.5.0"
   }
 }

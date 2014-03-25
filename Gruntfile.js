@@ -20,20 +20,12 @@ module.exports = function(grunt) {
       ' * License: <%= pkg.license %>\n' +
       ' */\n',
     srcFiles: [
-      'src/build/header.js',
       'src/helpers.js',
       'src/extensions.js',
       'src/base.js',
-      'src/chart.js',
-      'src/component.js',
-      'src/container.js',
-      'src/charts/labels.js',
-      'src/charts/line.js',
-      'src/charts/bars.js',
-      'src/components/axis.js',
-      'src/components/legend.js',
-      'src/charts/configurable.js',
-      'src/build/footer.js'
+      'src/charts.js',
+      'src/components.js',
+      'src/configurable.js'
     ]
   };
   grunt.initConfig(config);
@@ -43,16 +35,19 @@ module.exports = function(grunt) {
   
   this.registerTask('build', 'Builds a new version', [
     'jshint:src',
-    'concat_sourcemap',
+    'concat',
     'uglify',
-    'jshint:built',
-    'less'
+    'jshint:build',
+    'copy'
   ]);
 
-  this.registerTask('tests', 'Builds the test package', []);
+  this.registerTask('tests', 'Prepares the test package', [
+    // TODO Prepare test package
+  ]);
   
   this.registerTask('test', 'Build library and tests and run tests' [
     'build', 
     'tests'
+    // TODO Run tests
   ]);
 };

@@ -4,15 +4,11 @@ module.exports = {
     tasks: ['jshint:src']
   },
   build: {
-    files: ['src/**/*.js', 'vendor/*'],
+    files: ['src/**/*.js'],
     tasks: ['build']
   },
-  server: {
-    files: ['src/**/*.js', 'vendor/*', 'test/**/*'],
+  test: {
+    files: ['src/**/*.js', 'test/**/*'],
     tasks: ['test']
-  },
-  styles: {
-    files: ['src/styles/*.less'],
-    tasks: ['less']
   }
 };
