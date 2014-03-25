@@ -4,5 +4,6 @@
   "devel": true,
   "debug": true,
   "validthis": true,
-  "sub": true
+  "sub": true,
+  "esnext": true
 }

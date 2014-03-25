@@ -5,8 +5,11 @@ Generic bar+line chart
 
 Getting started
 ---------------
-1. Install bower (if necessary) `npm install -g bower`
-2. Install components `npm install && bower install`
+Install bower (if necessary) `npm install -g bower`
+
+1. Install components `npm install && bower install`
+2. Build testing version `grunt build`
+3. Open example `example/index.html`
 
 Development
 -----------

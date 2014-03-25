@@ -1,27 +1,26 @@
 {
-  "name": "d3.chart.csnw.line-bar",
+  "name": "d3.chart.csnw.configurable",
   "version": "0.0.0",
-  "description": "d3-chart line-bar chart",
-  "main": "d3.chart.csnw.line-bar.js",
+  "description": "d3-chart configurable chart",
+  "main": "dist/d3.chart.csnw.configurable.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/CSNW/d3.chart.csnw.line-bar.git"
+    "url": "https://github.com/CSNW/d3.chart.csnw.configurable.git"
   },
   "keywords": [
     "d3-chart",
     "d3",
     "chart",
-    "line",
-    "bar"
+    "configurable"
   ],
   "author": "CSNW",
   "bugs": {
-    "url": "https://github.com/CSNW/d3.chart.csnw.line-bar/issues"
+    "url": "https://github.com/CSNW/d3.chart.csnw.configurable/issues"
   },
-  "homepage": "https://github.com/CSNW/d3.chart.csnw.line-bar",
+  "homepage": "https://github.com/CSNW/d3.chart.csnw.configurable",
   "license": "MIT",
   "devDependencies": {
     "grunt": "~0.4.4",
@@ -29,6 +28,8 @@
     "grunt-contrib-jshint": "~0.9.2",
     "grunt-contrib-uglify": "~0.4.0",
     "grunt-contrib-concat": "~0.3.0",
-    "grunt-concat-sourcemap": "~0.4.1"
+    "grunt-concat-sourcemap": "~0.4.1",
+    "grunt-es6-module-transpiler": "~0.6.0",
+    "load-grunt-config": "~0.8.0-beta.1"
   }
 }

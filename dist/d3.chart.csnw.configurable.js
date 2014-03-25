@@ -1,3 +1,7 @@
+/*! d3.chart.csnw.configurable - v0.0.0
+ * https://github.com/CSNW/d3.chart.csnw.configurable
+ * License: MIT
+ */
 (function (root, factory) {
   if (typeof exports === 'object') {
     module.exports = factory(require('d3', 'underscore'));
@@ -1442,4 +1446,3 @@
 
   return d3;
 }));
-//# sourceMappingURL=d3.chart.csnw.configurable.js.map
