@@ -12,6 +12,7 @@ module.exports = {
     tasks: ['test']
   },
   styles: {
-    // TODO: Add LESS/SCSS -> dist: styles/d3.chart.csnw.configurable.base.css
+    files: ['src/styles/*.less'],
+    tasks: ['less']
   }
 };

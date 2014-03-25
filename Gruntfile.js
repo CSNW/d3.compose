@@ -45,7 +45,8 @@ module.exports = function(grunt) {
     'jshint:src',
     'concat_sourcemap',
     'uglify',
-    'jshint:built'
+    'jshint:built',
+    'less'
   ]);
 
   this.registerTask('tests', 'Builds the test package', []);
