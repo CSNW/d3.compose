@@ -1,0 +1,24 @@
+{
+  "name": "d3.chart.csnw.line-bar",
+  "main": "d3.chart.csnw.line-bar.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/CSNW/d3.chart.csnw.line-bar",
+  "authors": [
+    "CSNW",
+    "Tim Hall <tim.hall.engr@gmail.com>"
+  ],
+  "description": "d3-chart line-bar",
+  "keywords": [
+    "d3-chart",
+    "d3",
+    "chart",
+    "line",
+    "bar"
+  ],
+  "private": true,
+  "dependencies": {
+    "d3.chart": "~0.2.0",
+    "underscore": "~1.6.0"
+  },
+  "license": "MIT"
+}

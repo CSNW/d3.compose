@@ -1,0 +1,8 @@
+node_modules
+bower_components
+
+# OS Junk
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
