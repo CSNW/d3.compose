@@ -1,4 +1,4 @@
-d3.chart.csnw.line-bar
+d3.chart.csnw.configurable
 ======================
 
-Generic bar+line chart
+Configurable chart based on the d3.chart framework.
