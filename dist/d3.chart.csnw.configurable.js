@@ -172,6 +172,47 @@
   }
 
   /**
+    Convert key,values to style string
+
+    @example
+    style({color: 'red', display: 'block'}) -> color: red; display: block;
+
+    @param {Object} styles
+  */
+  function style(styles) {
+    styles = _.reduce(styles, function(memo, value, key) {
+      if (value)
+        return memo + key + ': ' + value + ';';
+      else
+        return memo;
+    }, '');
+
+    return styles;
+  }
+
+  /**
+    Get value for key(s) from search objects
+    searching from first to last keys and objects
+
+    @param {String or Array} key
+    @param {Objects...}
+  */
+  function getValue(key, objects) {
+    var keys = _.isArray(key) ? key : [key];
+    objects = _.toArray(arguments).slice(1);
+
+    var value;
+    _.find(objects, function(object) {
+      return _.isObject(object) && _.find(keys, function(key) {
+        value = object[key];
+        return isDefined(value);
+      });
+    });
+
+    return isDefined(value) ? value : undefined;
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -243,6 +284,8 @@
     translate: translate,
     createScaleFromOptions: createScaleFromOptions,
     stack: stack,
+    style: style,
+    getValue: getValue,
     mixin: mixin
   };
 })(d3, _);
@@ -538,8 +581,8 @@
     transform: function(data) {
       // Base is last transform to be called,
       // so stored data has been fully transformed
-      this.data(data);
-      return data;
+      this.data(data || []);
+      return data || [];
     },
 
     width: function width() {
@@ -919,12 +962,25 @@
               this
                 .attr('d', function(d, i) {
                   return lines[chart.seriesIndex(d, i)](chart.seriesValues(d, i));
-                });
+                })
+                .attr('style', chart.lineStyle.bind(chart));
             }
           }
         });
       },
       lines: property('lines', {defaultValue: []}),
+      lineStyle: function(d, i) {
+        return helpers.style({
+          stroke: this.lineStroke(d, i),
+          'stroke-dasharray': this.lineStrokeDashArray(d, i)
+        });
+      },
+      lineStroke: function(d, i) {
+        return helpers.getValue(['stroke', 'color'], d, this.options);
+      },
+      lineStrokeDashArray: function(d, i) {
+        return helpers.getValue(['stroke-dasharray'], d, this.options);
+      },
       createLine: function(series) {
         var line = d3.svg.line()
           .x(this.x.bind(this))
@@ -1142,8 +1198,7 @@
               .attr('class', 'legend-swatch');
             groups.append('text')
               .attr('class', 'legend-label')
-              .attr('transform', helpers.translate(25, 0))
-              .attr('font-size', '20px');
+              .attr('transform', helpers.translate(25, 0));
             
             return groups;
           },
@@ -1167,7 +1222,15 @@
         return d.key;
       },
       dataValue: function(d, i) {
-        return d.value;
+        return d.name;
+      },
+      dataSwatchProperties: function(d, i) {
+        // Extract swatch properties from data
+        return _.defaults({}, d, {
+          type: 'swatch',
+          color: 'blue',
+          'class': ''
+        });
       },
 
       createSwatches: function() {
@@ -1177,12 +1240,27 @@
         };
       },
       createSwatch: function(selection, d, i) {
+        var properties = this.dataSwatchProperties(d, i);
+
+        // Clear existing swatch
         selection.empty();
-        selection.append('rect')
-          .attr('width', 20)
-          .attr('height', 20)
-          .attr('fill', 'red');
-          // .attr('transform', helpers.translate(10, 10));
+        selection
+          .classed(properties['class'], true);
+
+        if (properties.type == 'Line' || properties.type == 'LineValues') {
+          var line = selection.append('line')
+            .attr('x1', 0).attr('y1', 10)
+            .attr('x2', 20).attr('y2', 10)
+            .attr('class', 'line');
+        }
+        else {
+          // Simple colored swatch
+          selection.append('circle')
+            .attr('cx', 10)
+            .attr('cy', 10)
+            .attr('r', 10)
+            .attr('class', 'bar'); // TODO: Temporary
+        }
       },
 
       // Position legend: top, right, bottom, left
@@ -1307,11 +1385,46 @@
       }
     },
     demux: function(name, data) {
-      var search = {id: name};
       var item = this.chartsById[name] || this.componentsById[name];
+      return name == 'legend' ? this.extractLegendData(item, data) : this.extractData(item, name, data);
+    },
+    extractData: function(item, name, data) {
       var dataKey = item && item.options && item.options.dataKey || name;
+      return data[dataKey] || [];
+    },
+    extractLegendData: function(legend, data) {
+      if (legend && legend.options && legend.options.dataKey) return this.extractData(legend, 'legend', data);
+      var options = legend && legend.options && legend.options.data || {};
+
+      var series;
+      if (options.charts) {
+        series = _.reduce(options.charts, function(memo, index) {
+          return memo.concat(getChartData.call(this, this.charts && this.charts[index]));
+        }, [], this);
+      }
+      else {
+        series = _.reduce(this.charts, function(memo, chart) {
+          return memo.concat(getChartData.call(this, chart));
+        }, [], this);
+      }
+
+      function getChartData(chart) {
+        if (chart) {
+          var chartData = this.extractData(chart, chart.id, data);
+
+          // Extend each series in data with information from chart
+          // (Don't overwrite series information with chart information)
+          return _.map(chartData, function(chartSeries) {
+            // TODO: Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
+            return _.defaults(chartSeries, chart.options);
+          }, this);
+        }
+        else {
+          return [];
+        }
+      }
       
-      return data[dataKey];
+      return series;
     }
   }, {
     defaultChartOptions: {},

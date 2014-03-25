@@ -1,3 +1,14 @@
+(function (root, factory) {
+  if (typeof exports === 'object') {
+    module.exports = factory(require('d3', 'underscore'));
+  } else if (typeof define === 'function' && define.amd) {
+    define(['d3', 'underscore'], factory);
+  } else {
+    factory(root.d3, root._);
+  }
+}(this, function (d3, _) {
+  'use strict';
+
 (function(d3, _) {
   
   function isDefined(value) {
@@ -1133,7 +1144,7 @@
               .attr('class', 'legend-label')
               .attr('transform', helpers.translate(25, 0))
               .attr('font-size', '20px');
-            console.log('inside');
+            
             return groups;
           },
           events: {
@@ -1315,4 +1326,7 @@
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
 
+
+  return d3;
+}));
 //# sourceMappingURL=d3.chart.csnw.configurable.js.map

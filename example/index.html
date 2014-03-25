@@ -8,6 +8,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" type="text/css" href="../src/styles/csnw.configurable.base.css">
+  <style>
+    .series.deaths-prevented .line, .legend-swatch.deaths-prevented .line {
+      stroke: red;
+      stroke-dasharray: 4,4;
+    }
+  </style>
 </head>
 <body>
   <h1>d3.chart.csnw.configurable Example</h1>
@@ -62,7 +68,6 @@
         ],
         legend: {
           type: 'InsetLegend',
-          dataKey: 'legend',
           legendPosition: {x: 10, y: 0}
         }
       })

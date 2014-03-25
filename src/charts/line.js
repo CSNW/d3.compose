@@ -33,12 +33,25 @@
               this
                 .attr('d', function(d, i) {
                   return lines[chart.seriesIndex(d, i)](chart.seriesValues(d, i));
-                });
+                })
+                .attr('style', chart.lineStyle.bind(chart));
             }
           }
         });
       },
       lines: property('lines', {defaultValue: []}),
+      lineStyle: function(d, i) {
+        return helpers.style({
+          stroke: this.lineStroke(d, i),
+          'stroke-dasharray': this.lineStrokeDashArray(d, i)
+        });
+      },
+      lineStroke: function(d, i) {
+        return helpers.getValue(['stroke', 'color'], d, this.options);
+      },
+      lineStrokeDashArray: function(d, i) {
+        return helpers.getValue(['stroke-dasharray'], d, this.options);
+      },
       createLine: function(series) {
         var line = d3.svg.line()
           .x(this.x.bind(this))

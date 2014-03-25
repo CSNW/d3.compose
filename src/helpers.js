@@ -161,6 +161,47 @@
   }
 
   /**
+    Convert key,values to style string
+
+    @example
+    style({color: 'red', display: 'block'}) -> color: red; display: block;
+
+    @param {Object} styles
+  */
+  function style(styles) {
+    styles = _.reduce(styles, function(memo, value, key) {
+      if (value)
+        return memo + key + ': ' + value + ';';
+      else
+        return memo;
+    }, '');
+
+    return styles;
+  }
+
+  /**
+    Get value for key(s) from search objects
+    searching from first to last keys and objects
+
+    @param {String or Array} key
+    @param {Objects...}
+  */
+  function getValue(key, objects) {
+    var keys = _.isArray(key) ? key : [key];
+    objects = _.toArray(arguments).slice(1);
+
+    var value;
+    _.find(objects, function(object) {
+      return _.isObject(object) && _.find(keys, function(key) {
+        value = object[key];
+        return isDefined(value);
+      });
+    });
+
+    return isDefined(value) ? value : undefined;
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -232,6 +273,8 @@
     translate: translate,
     createScaleFromOptions: createScaleFromOptions,
     stack: stack,
+    style: style,
+    getValue: getValue,
     mixin: mixin
   };
 })(d3, _);

@@ -19,8 +19,8 @@
     transform: function(data) {
       // Base is last transform to be called,
       // so stored data has been fully transformed
-      this.data(data);
-      return data;
+      this.data(data || []);
+      return data || [];
     },
 
     width: function width() {

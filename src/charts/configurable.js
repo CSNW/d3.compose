@@ -77,11 +77,46 @@
       }
     },
     demux: function(name, data) {
-      var search = {id: name};
       var item = this.chartsById[name] || this.componentsById[name];
+      return name == 'legend' ? this.extractLegendData(item, data) : this.extractData(item, name, data);
+    },
+    extractData: function(item, name, data) {
       var dataKey = item && item.options && item.options.dataKey || name;
+      return data[dataKey] || [];
+    },
+    extractLegendData: function(legend, data) {
+      if (legend && legend.options && legend.options.dataKey) return this.extractData(legend, 'legend', data);
+      var options = legend && legend.options && legend.options.data || {};
+
+      var series;
+      if (options.charts) {
+        series = _.reduce(options.charts, function(memo, index) {
+          return memo.concat(getChartData.call(this, this.charts && this.charts[index]));
+        }, [], this);
+      }
+      else {
+        series = _.reduce(this.charts, function(memo, chart) {
+          return memo.concat(getChartData.call(this, chart));
+        }, [], this);
+      }
+
+      function getChartData(chart) {
+        if (chart) {
+          var chartData = this.extractData(chart, chart.id, data);
+
+          // Extend each series in data with information from chart
+          // (Don't overwrite series information with chart information)
+          return _.map(chartData, function(chartSeries) {
+            // TODO: Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
+            return _.defaults(chartSeries, chart.options);
+          }, this);
+        }
+        else {
+          return [];
+        }
+      }
       
-      return data[dataKey];
+      return series;
     }
   }, {
     defaultChartOptions: {},

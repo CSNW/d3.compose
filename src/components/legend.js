@@ -30,8 +30,7 @@
               .attr('class', 'legend-swatch');
             groups.append('text')
               .attr('class', 'legend-label')
-              .attr('transform', helpers.translate(25, 0))
-              .attr('font-size', '20px');
+              .attr('transform', helpers.translate(25, 0));
             
             return groups;
           },
@@ -55,7 +54,15 @@
         return d.key;
       },
       dataValue: function(d, i) {
-        return d.value;
+        return d.name;
+      },
+      dataSwatchProperties: function(d, i) {
+        // Extract swatch properties from data
+        return _.defaults({}, d, {
+          type: 'swatch',
+          color: 'blue',
+          'class': ''
+        });
       },
 
       createSwatches: function() {
@@ -65,12 +72,27 @@
         };
       },
       createSwatch: function(selection, d, i) {
+        var properties = this.dataSwatchProperties(d, i);
+
+        // Clear existing swatch
         selection.empty();
-        selection.append('rect')
-          .attr('width', 20)
-          .attr('height', 20)
-          .attr('fill', 'red');
-          // .attr('transform', helpers.translate(10, 10));
+        selection
+          .classed(properties['class'], true);
+
+        if (properties.type == 'Line' || properties.type == 'LineValues') {
+          var line = selection.append('line')
+            .attr('x1', 0).attr('y1', 10)
+            .attr('x2', 20).attr('y2', 10)
+            .attr('class', 'line');
+        }
+        else {
+          // Simple colored swatch
+          selection.append('circle')
+            .attr('cx', 10)
+            .attr('cy', 10)
+            .attr('r', 10)
+            .attr('class', 'bar'); // TODO: Temporary
+        }
       },
 
       // Position legend: top, right, bottom, left
