@@ -300,11 +300,11 @@
     var keys = _.isArray(key) ? key : [key];
     objects = _.toArray(arguments).slice(1);
 
-    var value = undefined;
+    var value;
     _.find(objects, function(object) {
       return _.isObject(object) && _.find(keys, function(key) {
         value = object[key];
-        return isDefined(value);
+        return !_.isUndefined(value);
       });
     });
 
@@ -375,16 +375,15 @@
     };
   };
 
-  function isDefined(value) {
-    return !_.isNull(value) && !_.isUndefined(value);
-  }
+  /**
+    If value isn't undefined, return value, otherwise use defaultValue
+  */
   function valueOrDefault(value, defaultValue) {
-    return isDefined(value) ? value : defaultValue;
+    return !_.isUndefined(value) ? value : defaultValue;
   }
 
   // Add helpers to chart (static)
   d3.chart.helpers = {
-    isDefined: isDefined,
     valueOrDefault: valueOrDefault,
     property: property,
     dimensions: dimensions,
