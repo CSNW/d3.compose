@@ -1,6 +1,6 @@
 (function(d3, helpers) {
   var property = helpers.property;
-  var isDefined = helpers.isDefined;
+  var valueOrDefault = helpers.valueOrDefault;
   
   // Extensions
   // ----------------------------------------------------------- //
@@ -14,12 +14,10 @@
     seriesValues: function(d, i) {
       // Store seriesIndex on series and values
       // TODO: Look at more elegant way to do this that avoids changing data
-      if (isDefined(i))
-        d.seriesIndex = i;
+      d.seriesIndex = i;
 
       return _.map(d.values, function(value) {
-        if (isDefined(i))
-          value.seriesIndex = i;
+        value.seriesIndex = i;
         return value;
       });
     },
@@ -153,7 +151,7 @@
           return min < memo ? min : memo;
         }, Infinity, this);
 
-        return isDefined(value) ? value : (min < 0 ? min : 0);
+        return valueOrDefault(value, (min < 0 ? min : 0));
       }
     }),
     xMax: property('xMax', {
@@ -164,7 +162,7 @@
           return max > memo ? max : memo;
         }, -Infinity, this);
 
-        return isDefined(value) ? value : max;
+        return valueOrDefault(value, max);
       }
     }),
     yMin: property('yMin', {
@@ -176,7 +174,7 @@
         }, Infinity, this);
         
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return isDefined(value) ? value : (min < 0 ? min : 0);
+        return valueOrDefault(value, (min < 0 ? min : 0));
       }
     }),
     yMax: property('yMax', {
@@ -187,7 +185,7 @@
           return max > memo ? max : memo;
         }, -Infinity, this);
 
-        return isDefined(value) ? value : max;
+        return valueOrDefault(value, max);
       }
     })
   };
@@ -202,7 +200,7 @@
           item = _.isObject(item) ? item : {y: item};
 
           return {
-            x: isDefined(item.x) ? item.x : item.key,
+            x: valueOrDefault(item.x, item.key),
             y: item.y,
             key: item.key
           };

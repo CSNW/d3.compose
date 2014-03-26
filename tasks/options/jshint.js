@@ -1,9 +1,10 @@
 module.exports = {
   options: {
-    'jshintrc': '.jshintrc',
-    ignores: ['src/build/*.js']
+    'jshintrc': '.jshintrc'
   },
 
   src: ['src/**/*.js'],
-  build: ['dist/<%= pkg.name %>.js']
+  specs: ['specs/*.spec.js'],
+  build: ['dist/<%= pkg.name %>.js'],
+  grunt: ['Gruntfile.js']
 };

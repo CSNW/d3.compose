@@ -4,7 +4,7 @@ module.exports = {
   },
   build: {
     files: {
-      "dist/<%= pkg.name %>.js": "<%= meta.srcFiles %>"
+      'dist/<%= pkg.name %>.js': '<%= meta.srcFiles %>'
     }
   }
 };

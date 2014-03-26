@@ -1,35 +1,73 @@
 (function(d3, _) {
-  
-  function isDefined(value) {
-    return !_.isNull(value) && !_.isUndefined(value);
-  }
 
   /**
     Property helper
+
+    @example
+    ```javascript
+    var obj = {};
+    obj.simple = property('simple');
     
+    // Default value
+    obj.hasDefault = property('hasDefault', {
+      defaultValue: 'Howdy!'
+    });
+
+    obj.hasDefault() == 'Howdy!';
+    obj.hasDefault('Hello');
+    obj.hasDefault() == 'Hello';
+    obj.hasDefault(undefined);
+    obj.hasDefault() == 'Howdy!';
+
+    // Custom getter
+    obj.getter = property('getter', {
+      get: function(value) {
+        return value + '!';
+      }
+    });
+
+    obj.getter('Howdy');
+    obj.getter() == 'Howdy!';
+
+    // Custom setter, that can override set value and do something after overriding
+    obj.setter = property('setter', {
+      set: function(value, previous) {
+        if (value == 'Hate') {
+          return {
+            override: 'Love',
+            after: function() {
+              this.setter() == 'Love';
+            }
+          };
+        }
+      }
+    });
+    ```
+
     @param {String} name of stored property
     @param {Object} options
+    - defaultValue: {...} default value for property (when set value is undefined)
     - get: function(value) {return ...} getter, where value is the stored value, return desired value
     - set: function(value, previous) {return {override, after}} 
            setter, return override to set stored value and after() to run after set
     - type: 'function' if get/set value is function, otherwise get/set is evaluated if they're a function
   */ 
   function property(name, options) {
-    var prop_key = '__properties';
     options = options || {};
+    var propKey = options.propKey || '__properties';
     
     function get(context) {
-      return context[prop_key] ? context[prop_key][name] : null;
+      return !_.isUndefined(context[propKey]) ? context[propKey][name] : undefined;
     }
     function set(context, value) {
-      context[prop_key] = context[prop_key] || {};
-      context[prop_key][name] = value;
+      context[propKey] = context[propKey] || {};
+      context[propKey][name] = value;
     }
 
     var getSet = function(value) {
       var underlying = get(this);
       if (!arguments.length) {
-        value = isDefined(underlying) ? underlying : getSet.defaultValue;
+        value = !_.isUndefined(underlying) ? underlying : getSet.defaultValue;
 
         if (value && typeof value == 'function' && options.type != 'function')
           value = value.call(this);
@@ -56,7 +94,7 @@
 
     // For checking if function is a property
     getSet.isProperty = true;
-    getSet.setFromOptions = isDefined(options.setFromOptions) ? options.setFromOptions : true;
+    getSet.setFromOptions = valueOrDefault(options.setFromOptions, true);
     getSet.defaultValue = options.defaultValue;
 
     return getSet;
@@ -72,17 +110,62 @@
     };
   }
 
-  // Translate helper for creating translate string
-  function translate(x, y) {
-    if (_.isObject(x)) {
-      y = x.y;
-      x = x.x;
-    }
+  // Set of helpers for creating transforms
+  var transform = {
+    /**
+      Translate by (x, y) distance
       
-    return 'translate(' + x + ', ' + y + ')';
-  }
+      @example
+      ```javascript
+      transform.translate(10, 15) == 'translate(10, 15)'
+      transform.translate({x: 10, y: 15}) == 'translate(10, 15)'
+      ```
 
-  // Create scale from options
+      @param {Number|Object} [x] value or object with x and y
+      @param {Number} [y]
+    */
+    translate: function translate(x, y) {
+      if (_.isObject(x)) {
+        y = x.y;
+        x = x.x;
+      }
+        
+      return 'translate(' + (x || 0) + ', ' + (y || 0) + ')';
+    }
+  };
+
+  /**
+    Create scale from options
+    
+    @example
+    ```javascript
+    // Simple type, range, and domain
+    var scale = createScaleFromOptions({
+      type: 'linear', 
+      domain: [0, 100], 
+      range: [0, 500]
+    });
+
+    // Scale is passed through
+    var original = d3.scale.linear();
+    var scale = createScaleFromOptions(original);
+    scale === original;
+
+    // Set other properties by passing in "arguments" array
+    var scale = createScaleFromOptions({
+      type: 'ordinal',
+      domain: ['a', 'b', 'c', 'd', 'e'],
+      rangeRoundBands: [[0, 100], 0.1, 0.05]
+    });
+    ```
+
+    @param {Object|function} options
+    - (passing in function returns original function with no changes)
+    - type: {String} Any available d3 scale (linear, ordinal, log, etc.) or time
+    - domain: {Array} Domain for scale
+    - range: {Array} Range for scale
+    - ...: {Arguments Array} Set any other scale properties by passing in "arguments" array
+  */
   function createScaleFromOptions(options) {
     options = options || {};
 
@@ -90,11 +173,26 @@
     if (_.isFunction(options))
       return options;
 
-    var scale = options.type && d3.scale[options.type] ? d3.scale[options.type]() : d3.scale.linear();
-    if (options.domain)
-      scale.domain(options.domain);
-    if (options.range)
-      scale.range(options.range);
+    // Create scale (using d3.time.scale() if type is 'time')
+    var scale;
+    if (options.type && options.type == 'time')
+      scale = d3.time.scale();
+    else if (options.type && d3.scale[options.type])
+      scale = d3.scale[options.type]();
+    else
+      scale = d3.scale.linear();
+
+    _.each(options, function(value, key) {
+      if (scale[key]) {
+        // If option is standard property (domain or range), pass in directly
+        // otherwise, pass in as arguments
+        // (don't pass through type)
+        if (key == 'range' || key == 'domain')
+          scale[key](value);
+        else if (key != 'type')
+          scale[key].apply(scale, value);  
+      }
+    });
 
     return scale;
   }
@@ -155,7 +253,7 @@
             previous = previous + dimensions.height + padding(d, i);
           }
 
-          return translate(x, y);
+          return transform.translate(x, y);
         });
     }
   }
@@ -164,14 +262,14 @@
     Convert key,values to style string
 
     @example
-    style({color: 'red', display: 'block'}) -> color: red; display: block;
+    style({color: 'red', display: 'block'}) -> color:red;display:block;
 
     @param {Object} styles
   */
   function style(styles) {
     styles = _.reduce(styles, function(memo, value, key) {
       if (value)
-        return memo + key + ': ' + value + ';';
+        return memo + key + ':' + value + ';';
       else
         return memo;
     }, '');
@@ -182,6 +280,18 @@
   /**
     Get value for key(s) from search objects
     searching from first to last keys and objects
+    
+    @example
+    ```javascript
+    var obj1 = {a: 'b', c: 'd'};
+    var obj2 = {c: 4, e: 6};
+
+    getValue('c', obj1) == 'd'
+    getValue(['a', 'b'], obj1, obj2) == 'b'
+    getValue(['b', 'c'], obj1, obj2) == 'd'
+    getValue(['e', 'f'], obj1, obj2) == 6
+    getValue(['y', 'z'], obj1, obj2) === undefined
+    ```
 
     @param {String or Array} key
     @param {Objects...}
@@ -194,11 +304,11 @@
     _.find(objects, function(object) {
       return _.isObject(object) && _.find(keys, function(key) {
         value = object[key];
-        return isDefined(value);
+        return !_.isUndefined(value);
       });
     });
 
-    return isDefined(value) ? value : undefined;
+    return value;
   }
 
   /**
@@ -265,12 +375,20 @@
     };
   };
 
+  /**
+    If value isn't undefined, return value, otherwise use defaultValue
+  */
+  function valueOrDefault(value, defaultValue) {
+    return !_.isUndefined(value) ? value : defaultValue;
+  }
+
   // Add helpers to chart (static)
   d3.chart.helpers = {
-    isDefined: isDefined,
+    valueOrDefault: valueOrDefault,
     property: property,
     dimensions: dimensions,
-    translate: translate,
+    transform: transform,
+    translate: transform.translate,
     createScaleFromOptions: createScaleFromOptions,
     stack: stack,
     style: style,

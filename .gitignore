@@ -1,5 +1,7 @@
 node_modules
 bower_components
+.grunt
+specs/index.html
 
 # OS Junk
 Thumbs.db

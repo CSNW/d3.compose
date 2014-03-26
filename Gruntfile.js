@@ -33,21 +33,16 @@ module.exports = function(grunt) {
   grunt.loadTasks('tasks');
   this.registerTask('default', ['build']);
   
-  this.registerTask('build', 'Builds a new version', [
+  this.registerTask('build', 'Builds a new version of the library', [
     'jshint:src',
     'concat',
     'uglify',
     'jshint:build',
     'copy'
   ]);
-
-  this.registerTask('tests', 'Prepares the test package', [
-    // TODO Prepare test package
-  ]);
   
-  this.registerTask('test', 'Build library and tests and run tests' [
-    'build', 
-    'tests'
-    // TODO Run tests
+  this.registerTask('test', 'Lint and run specs', [
+    'jshint:specs', 
+    'jasmine'
   ]);
 };
