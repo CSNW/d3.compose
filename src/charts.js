@@ -118,7 +118,7 @@
     .mixin(d3.chart('Labels').prototype, extensions.Values)
     .extend('LabelValues', {
       labelX: di(function(chart, d, i) {
-        return chart.itemX(d, i) + chart.calculatedLabelOffset(d, i).x;
+        return chart.itemX.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).x;
       })
     });
 
@@ -156,6 +156,7 @@
         this.seriesLayer('Bars', this.base.append('g').classed('bar-chart', true), {
           dataBind: function(data) {
             var chart = this.chart();
+
             return this.selectAll('rect')
               .data(data, chart.keyValue);
           },
@@ -230,7 +231,7 @@
 
               this
                 .attr('d', function(d, i) {
-                  return lines[chart.seriesIndex(d, i)](chart.seriesValues(d, i));
+                  return lines[chart.seriesIndex.call(this, d, i)](chart.seriesValues.call(this, d, i));
                 })
                 .attr('style', chart.lineStyle);
             }

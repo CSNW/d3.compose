@@ -275,6 +275,21 @@
       });
     });
 
+    describe('getParentData', function() {
+      it('should get data from parent', function() {
+        var element = {
+          parentNode: {
+            data: function() {
+              return [[1,2,3]];
+            }
+          }
+        };
+        spyOn(d3, 'select').and.callFake(function(element) { return element; });
+
+        expect(helpers.getParentData(element)).toEqual([1,2,3]);
+      });
+    });
+
     describe('mixin', function() {
       
     });

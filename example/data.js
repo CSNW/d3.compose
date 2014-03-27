@@ -21,6 +21,15 @@
           {key: '3 year program', y: 4690},
           {key: '5 year program', y: 7817}
         ]
+      }, {
+        key: 'bars2',
+        name: 'Bars 2',
+        values: [
+          {key: '1 year program', y: 1000},
+          {key: '2 year program', y: 2000},
+          {key: '3 year program', y: 4000},
+          {key: '5 year program', y: 8000},
+        ]
       }]
     }
   };

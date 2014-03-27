@@ -369,6 +369,19 @@
   }
 
   /**
+    Get parent data for element
+
+    @param {Element} element
+  */
+  function getParentData(element) {
+    var parent = element && element.parentNode;
+    if (parent) {
+      var data = d3.select(parent).data();
+      return data && data[0];
+    }
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -443,9 +456,10 @@
     stack: stack,
     style: style,
     getValue: getValue,
+    di: di,
     bindDi: bindDi,
     bindAllDi: bindAllDi,
-    di: di,
+    getParentData: getParentData,
     mixin: mixin
   };
 })(d3, _);

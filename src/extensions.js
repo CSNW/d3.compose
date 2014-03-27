@@ -13,20 +13,16 @@
       return d.key;
     }),
     seriesValues: di(function(chart, d, i) {
-      // Store seriesIndex on series and values
-      // TODO: Look at more elegant way to do this that avoids changing data
+      // Store seriesIndex on series
       d.seriesIndex = i;
-
-      return _.map(d.values, function(value) {
-        value.seriesIndex = i;
-        return value;
-      });
+      return d.values;
     }),
     seriesClass: di(function(chart, d, i) {
       return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
     }),
     seriesIndex: di(function(chart, d, i) {
-      return d.seriesIndex || 0;
+      var data = helpers.getParentData(this);
+      return data && data.seriesIndex || 0;
     }),
     seriesCount: di(function(chart, d, i) {
       return chart.data() ? chart.data().length : 1;
