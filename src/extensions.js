@@ -220,13 +220,13 @@
     },
 
     setXScaleDomain: function(xScale, data, chart) {
-      // Extract keys from series with most data to ensure loading all keys
-      var keys = _.reduce(data, function(memo, series, index) {
-        var keys = _.map(this.seriesValues(series, index), this.xValue.bind(this));
-        return keys.length > memo.length ? keys : memo;
-      }, [], this);
+      // Extract keys from all series
+      var allKeys = _.map(data, function(series, index) {
+        return _.map(this.seriesValues(series, index), this.xValue);
+      }, this);
+      var uniqueKeys = _.uniq(_.flatten(allKeys));
 
-      return xScale.domain(keys);
+      return xScale.domain(uniqueKeys);
     },
 
     setXScaleRange: function(xScale, data, chart) {

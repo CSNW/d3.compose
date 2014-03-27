@@ -1,34 +1,34 @@
 (function(global) {
   var data = global.data = {
     chart1: {
-      deathsPrevented: [{
-        key: 'deathsPrevented',
-        name: 'CRC Deaths prevented',
+      input: [{
+        key: 'input',
+        name: 'Input',
         values: [
-          {key: '1 year program', y: 12},
-          {key: '2 year program', y: 23},
-          {key: '3 year program', y: 35},
-          {key: '5 year program', y: 58}
+          {key: 'Year 1', y: 12},
+          {key: 'Year 2', y: 23},
+          {key: 'Year 3', y: 35},
+          {key: 'Year 4', y: 58}
         ],
-        'class': 'deaths-prevented'
+        'class': 'input'
       }],
-      peopleParticipating: [{
-        key: 'peopleParticipating',
-        name: 'People participating',
+      results: [{
+        key: 'output',
+        name: 'Output',
         values: [
-          {key: '1 year program', y: 1563},
-          {key: '2 year program', y: 3127},
-          {key: '3 year program', y: 4690},
-          {key: '5 year program', y: 7817}
+          {key: 'Year 1', y: 1563},
+          {key: 'Year 2', y: 3127},
+          {key: 'Year 3', y: 4690},
+          {key: 'Year 4', y: 7817}
         ]
       }, {
-        key: 'bars2',
-        name: 'Bars 2',
+        key: 'normalized',
+        name: 'Normalized Output',
         values: [
-          {key: '1 year program', y: 1000},
-          {key: '2 year program', y: 2000},
-          {key: '3 year program', y: 4000},
-          {key: '5 year program', y: 8000},
+          {key: 'Year 1', y: 2000},
+          {key: 'Year 2', y: 3000},
+          {key: 'Year 3', y: 5000},
+          {key: 'Year 4', y: 8000},
         ]
       }]
     }

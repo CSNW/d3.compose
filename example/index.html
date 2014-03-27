@@ -9,7 +9,7 @@
 
   <link rel="stylesheet" type="text/css" href="../src/styles/base.css">
   <style>
-    .series.deaths-prevented .line, .legend-swatch.deaths-prevented .line {
+    .series.input .line, .legend-swatch.input .line {
       stroke: red;
       stroke-dasharray: 4,4;
     }
@@ -41,7 +41,7 @@
         charts: [
           {
             type: 'Bars', 
-            dataKey: 'peopleParticipating', 
+            dataKey: 'results', 
             yScale: {domain: [0, 20000]}, 
             labelFontSize: 14,
             labelOffset: 10,
@@ -50,7 +50,7 @@
           },
           {
             type: 'LineValues', 
-            dataKey: 'deathsPrevented', 
+            dataKey: 'input', 
             yScale: {domain: [0, 70]}, 
             labelPosition: 'top'
           }
@@ -58,17 +58,17 @@
         axes: [
           {
             type: 'AxisValues',
-            dataKey: 'peopleParticipating',
+            dataKey: 'results',
             axisPosition: 'bottom'
           },
           {
             type: 'AxisValues',
-            dataKey: 'peopleParticipating',
+            dataKey: 'results',
             axisPosition: 'left'
           },
           {
             type: 'AxisValues',
-            dataKey: 'deathsPrevented',
+            dataKey: 'input',
             axisPosition: 'right'
           }
         ],
