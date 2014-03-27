@@ -48,10 +48,10 @@
       },
 
       labelX: di(function(chart, d, i) {
-        return chart.x(d, i) + chart.calculatedLabelOffset(d, i).x;
+        return chart.x.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).x;
       }),
       labelY: di(function(chart, d, i) {
-        return chart.y(d, i) + chart.calculatedLabelOffset(d, i).y;
+        return chart.y.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).y;
       }),
 
       calculatedLabelOffset: di(function(chart, d, i) {
@@ -64,12 +64,12 @@
           left: {x: -offset, y: 0}
         };
         
-        return byPosition[chart.calculatedLabelPosition(d, i)];
+        return byPosition[chart.calculatedLabelPosition.call(this, d, i)];
       }),
       labelAnchor: di(function(chart, d, i) {
-        if (chart.calculatedLabelPosition(d, i) == 'right')
+        if (chart.calculatedLabelPosition.call(this, d, i) == 'right')
           return 'start';
-        else if (chart.calculatedLabelPosition(d, i) == 'left')
+        else if (chart.calculatedLabelPosition.call(this, d, i) == 'left')
           return 'end';
         else
           return 'middle';
@@ -84,7 +84,7 @@
           left: 'middle'
         };
 
-        return byPosition[chart.calculatedLabelPosition(d, i)];
+        return byPosition[chart.calculatedLabelPosition.call(this, d, i)];
       }),
 
       calculatedLabelPosition: di(function(chart, d, i) {
@@ -92,7 +92,7 @@
         var parts = position.split('|');
 
         if (parts.length > 1) {
-          var value = parts[0] == 'top' || parts[0] == 'bottom' ? chart.yValue(d, i) : chart.xValue(d, i);
+          var value = parts[0] == 'top' || parts[0] == 'bottom' ? chart.yValue.call(this, d, i) : chart.xValue.call(this, d, i);
           return value >= 0 ? parts[0] : parts[1];
         }
         else {
@@ -182,13 +182,13 @@
         });
       },
       barHeight: di(function(chart, d, i) {
-        return Math.abs(chart.y0(d, i) - chart.y(d, i));
+        return Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
       }),
       barX: di(function(chart, d, i) {
-        return chart.itemX(d, i) - chart.itemWidth(d, i) / 2;
+        return chart.itemX.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
       }),
       barY: di(function(chart, d, i) {
-        var y = chart.y(d, i);
+        var y = chart.y.call(this, d, i);
         var y0 = chart.y0();
         
         return y < y0 ? y : y0;
@@ -240,8 +240,8 @@
       lines: property('lines', {defaultValue: []}),
       lineStyle: di(function(chart, d, i) {
         return helpers.style({
-          stroke: chart.lineStroke(d, i),
-          'stroke-dasharray': chart.lineStrokeDashArray(d, i)
+          stroke: chart.lineStroke.call(this, d, i),
+          'stroke-dasharray': chart.lineStrokeDashArray.call(this, d, i)
         });
       }),
       lineStroke: di(function(chart, d, i) {
@@ -252,8 +252,8 @@
       }),
       createLine: function(series) {
         var line = d3.svg.line()
-          .x(this.x.bind(this))
-          .y(this.y.bind(this));
+          .x(this.x)
+          .y(this.y);
 
         var interpolate = series.interpolate || this.options.interpolate;
         if (interpolate)

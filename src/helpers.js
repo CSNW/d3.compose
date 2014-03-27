@@ -321,19 +321,39 @@
   /**
     Create wrapped (d, i) function that adds chart instance as first argument
     Wrapped function uses standard d3 arguments and context
+  
+    Note: in order to pass proper context to di-functions called within di-function
+          use `.call(this, d, i)` (where "this" is d3 context)
 
     @example
     ```javascript
     Chart.prototype.x = helpers.di(function(chart, d, i) {
-      // "this" is traditional d3: node
-      return chart._xScale()(chart.xValue(d, i));
+      // "this" is traditional d3 context: node
+      return chart._xScale()(chart.xValue.call(this, d, i));
     });
+  
+    // In order for chart to be specified, bind to chart
+    chart.x = helpers.bindDi(chart.x, chart);
+    // or
+    helpers.bindAllDi(chart);
 
-    chart.x = bindDi(chart.x, chart);
     this.select('point').attr('cx', chart.x);
     // (d, i) and "this" used from d3, "chart" injected automatically
     ```
+
+    @param {function} callback with (chart, d, i) arguments
   */
+  function di(callback) {
+    // Create intermediate wrapping in case it's called without binding
+    var wrapped = function wrapped(d, i, j) {
+      return callback.call(this, undefined, d, i, j);
+    }
+    wrapped._isDi = true;
+    wrapped.original = callback;
+
+    return wrapped;
+  }
+
   function bindDi(di, chart) {
     return function wrapped(d, i, j) {
       return di.call(this, chart, d, i, j);
@@ -346,18 +366,6 @@
       if (chart[key] && chart[key]._isDi)
         chart[key] = bindDi(chart[key].original, chart);
     }
-  }
-
-  // Add di-function identification to callback
-  function di(callback) {
-    // Create intermediate wrapping in case it's called without binding
-    var wrapped = function wrapped(d, i, j) {
-      return callback.call(this, undefined, d, i, j);
-    }
-    wrapped._isDi = true;
-    wrapped.original = callback;
-
-    return wrapped;
   }
 
   /**
