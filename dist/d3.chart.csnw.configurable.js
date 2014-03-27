@@ -97,11 +97,18 @@
     };
 
     // For checking if function is a property
-    getSet.isProperty = true;
+    getSet._isProperty = true;
     getSet.setFromOptions = valueOrDefault(options.setFromOptions, true);
     getSet.defaultValue = options.defaultValue;
 
     return getSet;
+  }
+
+  /**
+    If value isn't undefined, return value, otherwise use defaultValue
+  */
+  function valueOrDefault(value, defaultValue) {
+    return !_.isUndefined(value) ? value : defaultValue;
   }
 
   // Dimensions helper for robustly determining width/height of given selector
@@ -316,6 +323,69 @@
   }
 
   /**
+    Create wrapped (d, i) function that adds chart instance as first argument
+    Wrapped function uses standard d3 arguments and context
+  
+    Note: in order to pass proper context to di-functions called within di-function
+          use `.call(this, d, i)` (where "this" is d3 context)
+
+    @example
+    ```javascript
+    Chart.prototype.x = helpers.di(function(chart, d, i) {
+      // "this" is traditional d3 context: node
+      return chart._xScale()(chart.xValue.call(this, d, i));
+    });
+  
+    // In order for chart to be specified, bind to chart
+    chart.x = helpers.bindDi(chart.x, chart);
+    // or
+    helpers.bindAllDi(chart);
+
+    this.select('point').attr('cx', chart.x);
+    // (d, i) and "this" used from d3, "chart" injected automatically
+    ```
+
+    @param {function} callback with (chart, d, i) arguments
+  */
+  function di(callback) {
+    // Create intermediate wrapping in case it's called without binding
+    var wrapped = function wrapped(d, i, j) {
+      return callback.call(this, undefined, d, i, j);
+    };
+    wrapped._isDi = true;
+    wrapped.original = callback;
+
+    return wrapped;
+  }
+
+  function bindDi(di, chart) {
+    return function wrapped(d, i, j) {
+      return di.call(this, chart, d, i, j);
+    };
+  }
+
+  // Bind all di-functions found in chart
+  function bindAllDi(chart) {
+    for (var key in chart) {
+      if (chart[key] && chart[key]._isDi)
+        chart[key] = bindDi(chart[key].original, chart);
+    }
+  }
+
+  /**
+    Get parent data for element
+
+    @param {Element} element
+  */
+  function getParentData(element) {
+    var parent = element && element.parentNode;
+    if (parent) {
+      var data = d3.select(parent).data();
+      return data && data[0];
+    }
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -379,17 +449,10 @@
     };
   };
 
-  /**
-    If value isn't undefined, return value, otherwise use defaultValue
-  */
-  function valueOrDefault(value, defaultValue) {
-    return !_.isUndefined(value) ? value : defaultValue;
-  }
-
   // Add helpers to chart (static)
   d3.chart.helpers = {
-    valueOrDefault: valueOrDefault,
     property: property,
+    valueOrDefault: valueOrDefault,
     dimensions: dimensions,
     transform: transform,
     translate: transform.translate,
@@ -397,12 +460,17 @@
     stack: stack,
     style: style,
     getValue: getValue,
+    di: di,
+    bindDi: bindDi,
+    bindAllDi: bindAllDi,
+    getParentData: getParentData,
     mixin: mixin
   };
 })(d3, _);
-(function(d3, helpers) {
+(function(d3, _, helpers) {
   var property = helpers.property;
   var valueOrDefault = helpers.valueOrDefault;
+  var di = helpers.di;
   
   // Extensions
   // ----------------------------------------------------------- //
@@ -410,28 +478,35 @@
 
   // Extensions for handling series data
   extensions.Series = {
-    seriesKey: function(d, i) {
+    seriesKey: di(function(chart, d, i) {
       return d.key;
-    },
-    seriesValues: function(d, i) {
-      // Store seriesIndex on series and values
-      // TODO: Look at more elegant way to do this that avoids changing data
+    }),
+    seriesValues: di(function(chart, d, i) {
+      // Store seriesIndex on series
       d.seriesIndex = i;
-
-      return _.map(d.values, function(value) {
-        value.seriesIndex = i;
-        return value;
-      });
-    },
-    seriesClass: function(d, i) {
+      return d.values;
+    }),
+    seriesClass: di(function(chart, d, i) {
       return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
-    },
-    seriesIndex: function(d, i) {
-      return d.seriesIndex || 0;
-    },
-    seriesCount: function(d, i) {
-      return this.data() ? this.data().length : 1;
-    },
+    }),
+    seriesIndex: di(function(chart, d, i) {
+      var series = chart.dataSeries.call(this, d, i);
+      return series && series.seriesIndex || 0;
+    }),
+    seriesCount: di(function(chart, d, i) {
+      return chart.data() ? chart.data().length : 1;
+    }),
+    dataSeries: di(function(chart, d, i) {
+      return helpers.getParentData(this);
+    }),
+    itemStyle: di(function(chart, d, i) {
+      // Get style for data item in the following progression
+      // data.style -> series.style -> chart.style
+      var series = chart.dataSeries.call(this, d, i) || {};
+      var styles = _.defaults({}, d.style, series.style, chart.options.style);
+      console.log(d, d.style, series.style, chart.options.style);
+      return helpers.style(styles) || null;
+    }),
 
     /**
       seriesLayer
@@ -452,14 +527,14 @@
         options.dataBind = function(data) {
           var chart = this.chart();
           var series = this.selectAll('g')
-            .data(data, chart.seriesKey.bind(chart));
+            .data(data, chart.seriesKey);
 
           series.enter()
             .append('g')
-            .attr('class', chart.seriesClass.bind(chart));
+            .attr('class', chart.seriesClass);
           series.chart = function() { return chart; };
 
-          return dataBind.call(series, chart.seriesValues.bind(chart));
+          return dataBind.call(series, chart.seriesValues);
         };
       }
       
@@ -467,7 +542,9 @@
     }
   };
 
-  // Extensions for handling XY data
+  /**
+    Extensions for handling XY data
+  */
   extensions.XY = {
     initialize: function() {
       this.on('change:data', this.setScales);
@@ -478,28 +555,28 @@
         this.yScale(helpers.createScaleFromOptions(this.options.yScale));
     },
 
-    x: function(d, i) {
-      return this._xScale()(this.xValue(d, i));
-    },
-    y: function(d, i) {
-      return this._yScale()(this.yValue(d, i));
-    },
-    x0: function(d, i) {
-      return this._xScale()(0);
-    },
-    y0: function(d, i) {
-      return this._yScale()(0);
-    },
+    x: di(function(chart, d, i) {
+      return chart._xScale()(chart.xValue.call(this, d, i));
+    }),
+    y: di(function(chart, d, i) {
+      return chart._yScale()(chart.yValue.call(this, d, i));
+    }),
+    x0: di(function(chart, d, i) {
+      return chart._xScale()(0);
+    }),
+    y0: di(function(chart, d, i) {
+      return chart._yScale()(0);
+    }),
 
-    xValue: function(d, i) {
+    xValue: di(function(chart, d, i) {
       return d.x;
-    },
-    yValue: function(d, i) {
+    }),
+    yValue: di(function(chart, d, i) {
       return d.y;
-    },
-    keyValue: function(d, i) {
+    }),
+    keyValue: di(function(chart, d, i) {
       return d.key;
-    },
+    }),
 
     setScales: function() {
       var xScale = this.xScale();
@@ -592,7 +669,9 @@
     })
   };
 
-  // Extensions for charts of centered key,value data (x: index, y: value, key)
+  /**
+    Extensions for charts of centered key,value data (x: index, y: value, key)
+  */
   extensions.Values = {
     isValues: true,
     transform: function(data) {
@@ -600,34 +679,31 @@
       _.each(data, function(series) {
         series.values = _.map(series.values, function(item, index) {
           item = _.isObject(item) ? item : {y: item};
+          item.x = valueOrDefault(item.x, item.key);
 
-          return {
-            x: valueOrDefault(item.x, item.key),
-            y: item.y,
-            key: item.key
-          };
+          return item;
         }, this);
       }, this);
 
       return data;
     },
 
-    x: function(d, i) {
-      return this._xScale()(this.xValue(d, i)) + 0.5 * this.layeredWidth();
-    },
+    x: di(function(chart, d, i) {
+      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
+    }),
 
     defaultXScale: function() {
       return d3.scale.ordinal();
     },
 
     setXScaleDomain: function(xScale, data, chart) {
-      // Extract keys from series with most data to ensure loading all keys
-      var keys = _.reduce(data, function(memo, series, index) {
-        var keys = _.map(this.seriesValues(series, index), this.xValue.bind(this));
-        return keys.length > memo.length ? keys : memo;
-      }, [], this);
+      // Extract keys from all series
+      var allKeys = _.map(data, function(series, index) {
+        return _.map(this.seriesValues(series, index), this.xValue);
+      }, this);
+      var uniqueKeys = _.uniq(_.flatten(allKeys));
 
-      return xScale.domain(keys);
+      return xScale.domain(uniqueKeys);
     },
 
     setXScaleRange: function(xScale, data, chart) {
@@ -635,31 +711,31 @@
     },
 
     // AdjacentX/Width is used in cases where series are presented next to each other at each value
-    adjacentX: function(d, i) {
-      var adjacentWidth = this.adjacentWidth(d, i);
-      var left = this.x(d, i) - this.layeredWidth(d, i) / 2 + adjacentWidth / 2;
+    adjacentX: di(function(chart, d, i) {
+      var adjacentWidth = chart.adjacentWidth.call(this, d, i);
+      var left = chart.x.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
       
-      return left + adjacentWidth * this.seriesIndex(d, i);
-    },
-    adjacentWidth: function(d, i) {
-      return this.layeredWidth(d, i) / this.seriesCount();
-    },
+      return left + adjacentWidth * chart.seriesIndex.call(this, d, i);
+    }),
+    adjacentWidth: di(function(chart, d, i) {
+      return chart.layeredWidth.call(this, d, i) / chart.seriesCount.call(this);
+    }),
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
-    layeredX: function(d, i) {
-      return this.x(d, i);
-    },
-    layeredWidth: function(d, i) {
-      return this._xScale().rangeBand();
-    },
+    layeredX: di(function(chart, d, i) {
+      return chart.x.call(this, d, i);
+    }),
+    layeredWidth: di(function(chart, d, i) {
+      return chart._xScale().rangeBand();
+    }),
 
     // itemX/Width determine centered-x and width based on series display type (adjacent or layered)
-    itemX: function(d, i) {
-      return this.displayAdjacent() ? this.adjacentX(d, i) : this.layeredX(d, i);
-    },
-    itemWidth: function(d, i) {
-      return this.displayAdjacent() ? this.adjacentWidth(d, i) : this.layeredWidth(d, i);
-    },
+    itemX: di(function(chart, d, i) {
+      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
+    }),
+    itemWidth: di(function(chart, d, i) {
+      return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
+    }),
 
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
@@ -667,7 +743,7 @@
     displayAdjacent: property('displayAdjacent', {defaultValue: false})
   };
 
-})(d3, d3.chart.helpers);
+})(d3, _, d3.chart.helpers);
 
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
@@ -683,9 +759,12 @@
 
       // Call any setters that match options
       _.each(this.options, function(value, key) {
-        if (this[key] && this[key].isProperty && this[key].setFromOptions)
+        if (this[key] && this[key]._isProperty && this[key].setFromOptions)
           this[key](value);
       }, this);
+
+      // Bind all di-functions to this chart
+      helpers.bindAllDi(this);
     },
     transform: function(data) {
       // Base is last transform to be called,
@@ -863,8 +942,12 @@
 
 (function(d3, _, helpers, extensions) {
   var property = helpers.property;
+  var di = helpers.di;
 
-  // Labels: Chart with labels positioned at (x,y) points
+  /**
+    Labels
+    Chart with labels positioned at (x,y) points
+  */
   d3.chart('Chart')
     .mixin(extensions.XY)
     .extend('Labels', {
@@ -873,47 +956,44 @@
           dataBind: function(data) {
             var chart = this.chart();
             return this.selectAll('text')
-              .data(data, chart.keyValue.bind(chart));
+              .data(data, chart.keyValue);
           },
           insert: function() {
             var chart = this.chart();
 
-            // TODO: set font-family, font-size in style to override css
-
             return this.append('text')
               .classed('label', true)
-              .attr('font-family', chart.labelFontFamily())
-              .attr('font-size', chart.labelFontSize())
-              .attr('alignment-baseline', chart.labelAlignment.bind(chart));
+              .attr('alignment-baseline', chart.labelAlignment)
+              .attr('style', chart.itemStyle);
           },
           events: {
             'enter': function() {
               var chart = this.chart();
               this
-                .attr('x', chart.labelX.bind(chart))
-                .attr('y', chart.y0.bind(chart))
-                .attr('text-anchor', chart.labelAnchor.bind(chart))
+                .attr('x', chart.labelX)
+                .attr('y', chart.y0)
+                .attr('text-anchor', chart.labelAnchor)
                 .text(0);
             },
             'merge:transition': function() {
               var chart = this.chart();
               this
-                .attr('y', chart.labelY.bind(chart))
-                .text(chart.yValue.bind(chart));
+                .attr('y', chart.labelY)
+                .text(chart.yValue);
             }
           }
         });
       },
 
-      labelX: function(d, i) {
-        return this.x(d, i) + this.calculatedLabelOffset(d, i).x;
-      },
-      labelY: function(d, i) {
-        return this.y(d, i) + this.calculatedLabelOffset(d, i).y;
-      },
+      labelX: di(function(chart, d, i) {
+        return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
+      }),
+      labelY: di(function(chart, d, i) {
+        return chart.y.call(this, d, i) + chart.calculatedOffset.call(this, d, i).y;
+      }),
 
-      calculatedLabelOffset: function(d, i) {
-        var offset = this.labelOffset();
+      calculatedOffset: di(function(chart, d, i) {
+        var offset = chart.offset();
 
         var byPosition = {
           top: {x: 0, y: -offset},
@@ -922,17 +1002,17 @@
           left: {x: -offset, y: 0}
         };
         
-        return byPosition[this.calculatedLabelPosition(d, i)];
-      },
-      labelAnchor: function(d, i) {
-        if (this.calculatedLabelPosition(d, i) == 'right')
+        return byPosition[chart.calculatedPosition.call(this, d, i)];
+      }),
+      labelAnchor: di(function(chart, d, i) {
+        if (chart.calculatedPosition.call(this, d, i) == 'right')
           return 'start';
-        else if (this.calculatedLabelPosition(d, i) == 'left')
+        else if (chart.calculatedPosition.call(this, d, i) == 'left')
           return 'end';
         else
           return 'middle';
-      },
-      labelAlignment: function(d, i) {
+      }),
+      labelAlignment: di(function(chart, d, i) {
         // Set alignment-baseline so that font size does not play into calculations
         // http://www.w3.org/TR/SVG/text.html#BaselineAlignmentProperties
         var byPosition = {
@@ -942,52 +1022,72 @@
           left: 'middle'
         };
 
-        return byPosition[this.calculatedLabelPosition(d, i)];
-      },
+        return byPosition[chart.calculatedPosition.call(this, d, i)];
+      }),
 
-      calculatedLabelPosition: function(d, i) {
-        var position = this.labelPosition();
+      calculatedPosition: di(function(chart, d, i) {
+        var position = chart.position();
         var parts = position.split('|');
 
         if (parts.length > 1) {
-          var value = parts[0] == 'top' || parts[0] == 'bottom' ? this.yValue(d, i) : this.xValue(d, i);
+          var value = parts[0] == 'top' || parts[0] == 'bottom' ? chart.yValue.call(this, d, i) : chart.xValue.call(this, d, i);
           return value >= 0 ? parts[0] : parts[1];
         }
         else {
           return parts[0];
         }
-      },
+      }),
+
+      itemStyle: di(function(chart, d, i) {
+        // For labels, only pull in label styles
+        // - data.labels.style
+        // - series.labels.style
+
+        var data = d.labels || {};
+        var series = chart.dataSeries.call(this, d, i) || {};
+        series = series.labels || {};
+
+        var styles = _.defaults({}, data.style, series.style, chart.options.style);
+        
+        return helpers.style(styles) || null;
+      }),
 
       // top, right, bottom, left, 1|2 (1 for positive or 0, 2 for negative)
-      labelPosition: property('labelPosition', {defaultValue: 'top'}),
+      position: property('position', {defaultValue: 'top'}),
       // px distance offset from (x,y) point
-      labelOffset: property('labelOffset', {defaultValue: 14}),
-
-      // Font size, px
-      labelFontSize: property('labelFontSize', {defaultValue: '14px'}),
-      labelFontFamily: property('labelFontFamily', {defaultValue: 'sans-serif'})
+      offset: property('offset', {defaultValue: 14}),
     });
   
-  // LabelValues: Chart with labels for centered values
+  /**
+    LabelValues
+    Chart with labels for centered values
+  */
   d3.chart('Chart')
     .mixin(d3.chart('Labels').prototype, extensions.Values)
     .extend('LabelValues', {
-      labelX: function(d, i) {
-        return this.itemX(d, i) + this.calculatedLabelOffset(d, i).x;
-      }
+      labelX: di(function(chart, d, i) {
+        return chart.itemX.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
+      })
     });
 
-  // ChartWithLabels: Chart with labels attached
-  // TODO: Attach labels after chart so that labels appear above chart
+  /**
+    ChartWithLabels
+    Chart with labels attached
+
+    TODO: Attach labels after chart so that labels appear above chart
+  */
   d3.chart('Chart').extend('ChartWithLabels', {
     initialize: function() {
       if (this.showLabels()) {
-        // Create labels chart
-        this.labels = this.base.chart(this.isValues ? 'LabelValues' : 'Labels', this.options);  
+        // Transfer certain options to labels
+        var labelOptions = _.extend(this.options.labels || {}, {
+          displayAdjacent: this.options.displayAdjacent,
+          xScale: this.options.xScale,
+          yScale: this.options.yScale
+        });
 
-        // Transfer certain properties to labels
-        if (this.labels.displayAdjacent && this.displayAdjacent)
-          this.labels.displayAdjacent(this.displayAdjacent());
+        // Create labels chart
+        this.labels = this.base.chart(this.isValues ? 'LabelValues' : 'Labels', labelOptions);
 
         // Attach labels chart
         this.attach('Labels', this.labels);
@@ -996,7 +1096,10 @@
     showLabels: property('showLabels', {defaultValue: true})
   });
 
-  // Bars: Bar graph with centered key,value data and adjacent display for series
+  /**
+    Bars
+    Bar graph with centered key,value data and adjacent display for series
+  */
   d3.chart('ChartWithLabels')
     .mixin(extensions.XY, extensions.Values)
     .extend('Bars', {
@@ -1004,47 +1107,54 @@
         this.seriesLayer('Bars', this.base.append('g').classed('bar-chart', true), {
           dataBind: function(data) {
             var chart = this.chart();
+
             return this.selectAll('rect')
-              .data(data, chart.keyValue.bind(chart));
+              .data(data, chart.keyValue);
           },
           insert: function() {
+            var chart = this.chart();
+
             return this.append('rect')
-              .classed('bar', true);
+              .classed('bar', true)
+              .attr('style', chart.itemStyle);
           },
           events: {
             'enter': function() {
               var chart = this.chart();
               this
-                  .attr('x', chart.barX.bind(chart))
-                  .attr('y', chart.y0.bind(chart))
-                  .attr('width', chart.itemWidth.bind(chart))
+                  .attr('x', chart.barX)
+                  .attr('y', chart.y0)
+                  .attr('width', chart.itemWidth)
                   .attr('height', 0);
             },
             'merge:transition': function() {
               var chart = this.chart();
               this
-                  .attr('y', chart.barY.bind(chart))
-                  .attr('height', chart.barHeight.bind(chart));
+                  .attr('y', chart.barY)
+                  .attr('height', chart.barHeight);
             }
           }
         });
       },
-      barHeight: function(d, i) {
-        return Math.abs(this.y0(d, i) - this.y(d, i));
-      },
-      barX: function(d, i) {
-        return this.itemX(d, i) - this.itemWidth(d, i) / 2;
-      },
-      barY: function(d, i) {
-        var y = this.y(d, i);
-        var y0 = this.y0();
+      barHeight: di(function(chart, d, i) {
+        return Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+      }),
+      barX: di(function(chart, d, i) {
+        return chart.itemX.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
+      }),
+      barY: di(function(chart, d, i) {
+        var y = chart.y.call(this, d, i);
+        var y0 = chart.y0();
         
         return y < y0 ? y : y0;
-      },
+      }),
       displayAdjacent: property('displayAdjacent', {defaultValue: true})
     });
 
-  // Line: (x,y) line graph
+  /**
+    Line
+    (x,y) line graph
+  */
   d3.chart('ChartWithLabels')
     .mixin(extensions.XY)
     .extend('Line', {
@@ -1062,11 +1172,14 @@
             return this.selectAll('path')
               .data(function(d, i) {
                 return [chart.data()[i]];
-              }, chart.seriesKey.bind(chart));
+              }, chart.seriesKey);
           },
           insert: function() {
+            var chart = this.chart();
+
             return this.append('path')
-              .classed('line', true);
+              .classed('line', true)
+              .attr('style', chart.itemStyle);
           },
           events: {
             'merge:transition': function() {
@@ -1075,30 +1188,30 @@
 
               this
                 .attr('d', function(d, i) {
-                  return lines[chart.seriesIndex(d, i)](chart.seriesValues(d, i));
+                  return lines[chart.seriesIndex.call(this, d, i)](chart.seriesValues.call(this, d, i));
                 })
-                .attr('style', chart.lineStyle.bind(chart));
+                .attr('style', chart.lineStyle);
             }
           }
         });
       },
       lines: property('lines', {defaultValue: []}),
-      lineStyle: function(d, i) {
+      lineStyle: di(function(chart, d, i) {
         return helpers.style({
-          stroke: this.lineStroke(d, i),
-          'stroke-dasharray': this.lineStrokeDashArray(d, i)
+          stroke: chart.lineStroke.call(this, d, i),
+          'stroke-dasharray': chart.lineStrokeDashArray.call(this, d, i)
         });
-      },
-      lineStroke: function(d, i) {
-        return helpers.getValue(['stroke', 'color'], d, this.options);
-      },
-      lineStrokeDashArray: function(d, i) {
-        return helpers.getValue(['stroke-dasharray'], d, this.options);
-      },
+      }),
+      lineStroke: di(function(chart, d, i) {
+        return helpers.getValue(['stroke', 'color'], d, chart.options);
+      }),
+      lineStrokeDashArray: di(function(chart, d, i) {
+        return helpers.getValue(['stroke-dasharray'], d, chart.options);
+      }),
       createLine: function(series) {
         var line = d3.svg.line()
-          .x(this.x.bind(this))
-          .y(this.y.bind(this));
+          .x(this.x)
+          .y(this.y);
 
         var interpolate = series.interpolate || this.options.interpolate;
         if (interpolate)
@@ -1108,7 +1221,10 @@
       }
     });
   
-  // LineValues: Line graph for centered key,value data
+  /**
+    LineValues
+    Line graph for centered key,value data
+  */
   d3.chart('ChartWithLabels')
     .mixin(d3.chart('Line').prototype, extensions.Values)
     .extend('LineValues');
@@ -1267,7 +1383,7 @@
             var chart = this.chart();
             var groups = this.append('g')
               .attr('class', function(d, i) {
-                return 'legend-group index-' + i;
+                return 'legend-group series index-' + i;
               });
 
             groups.append('g')
@@ -1325,6 +1441,8 @@
         selection
           .classed(properties['class'], true);
 
+        // TODO: Pull styles from itemStyle
+        // (most of this is temporary)
         if (properties.type == 'Line' || properties.type == 'LineValues') {
           var line = selection.append('line')
             .attr('x1', 0).attr('y1', 10)
@@ -1337,7 +1455,7 @@
             .attr('cx', 10)
             .attr('cy', 10)
             .attr('r', 10)
-            .attr('class', 'bar'); // TODO: Temporary
+            .attr('class', 'bar');
         }
       },
 

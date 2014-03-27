@@ -93,11 +93,18 @@
     };
 
     // For checking if function is a property
-    getSet.isProperty = true;
+    getSet._isProperty = true;
     getSet.setFromOptions = valueOrDefault(options.setFromOptions, true);
     getSet.defaultValue = options.defaultValue;
 
     return getSet;
+  }
+
+  /**
+    If value isn't undefined, return value, otherwise use defaultValue
+  */
+  function valueOrDefault(value, defaultValue) {
+    return !_.isUndefined(value) ? value : defaultValue;
   }
 
   // Dimensions helper for robustly determining width/height of given selector
@@ -312,6 +319,69 @@
   }
 
   /**
+    Create wrapped (d, i) function that adds chart instance as first argument
+    Wrapped function uses standard d3 arguments and context
+  
+    Note: in order to pass proper context to di-functions called within di-function
+          use `.call(this, d, i)` (where "this" is d3 context)
+
+    @example
+    ```javascript
+    Chart.prototype.x = helpers.di(function(chart, d, i) {
+      // "this" is traditional d3 context: node
+      return chart._xScale()(chart.xValue.call(this, d, i));
+    });
+  
+    // In order for chart to be specified, bind to chart
+    chart.x = helpers.bindDi(chart.x, chart);
+    // or
+    helpers.bindAllDi(chart);
+
+    this.select('point').attr('cx', chart.x);
+    // (d, i) and "this" used from d3, "chart" injected automatically
+    ```
+
+    @param {function} callback with (chart, d, i) arguments
+  */
+  function di(callback) {
+    // Create intermediate wrapping in case it's called without binding
+    var wrapped = function wrapped(d, i, j) {
+      return callback.call(this, undefined, d, i, j);
+    };
+    wrapped._isDi = true;
+    wrapped.original = callback;
+
+    return wrapped;
+  }
+
+  function bindDi(di, chart) {
+    return function wrapped(d, i, j) {
+      return di.call(this, chart, d, i, j);
+    };
+  }
+
+  // Bind all di-functions found in chart
+  function bindAllDi(chart) {
+    for (var key in chart) {
+      if (chart[key] && chart[key]._isDi)
+        chart[key] = bindDi(chart[key].original, chart);
+    }
+  }
+
+  /**
+    Get parent data for element
+
+    @param {Element} element
+  */
+  function getParentData(element) {
+    var parent = element && element.parentNode;
+    if (parent) {
+      var data = d3.select(parent).data();
+      return data && data[0];
+    }
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -375,17 +445,10 @@
     };
   };
 
-  /**
-    If value isn't undefined, return value, otherwise use defaultValue
-  */
-  function valueOrDefault(value, defaultValue) {
-    return !_.isUndefined(value) ? value : defaultValue;
-  }
-
   // Add helpers to chart (static)
   d3.chart.helpers = {
-    valueOrDefault: valueOrDefault,
     property: property,
+    valueOrDefault: valueOrDefault,
     dimensions: dimensions,
     transform: transform,
     translate: transform.translate,
@@ -393,6 +456,10 @@
     stack: stack,
     style: style,
     getValue: getValue,
+    di: di,
+    bindDi: bindDi,
+    bindAllDi: bindAllDi,
+    getParentData: getParentData,
     mixin: mixin
   };
 })(d3, _);

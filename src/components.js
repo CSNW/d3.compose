@@ -150,7 +150,7 @@
             var chart = this.chart();
             var groups = this.append('g')
               .attr('class', function(d, i) {
-                return 'legend-group index-' + i;
+                return 'legend-group series index-' + (d.seriesIndex || 0);
               });
 
             groups.append('g')
@@ -208,6 +208,8 @@
         selection
           .classed(properties['class'], true);
 
+        // TODO: Pull styles from itemStyle
+        // (most of this is temporary)
         if (properties.type == 'Line' || properties.type == 'LineValues') {
           var line = selection.append('line')
             .attr('x1', 0).attr('y1', 10)
@@ -220,7 +222,7 @@
             .attr('cx', 10)
             .attr('cy', 10)
             .attr('r', 10)
-            .attr('class', 'bar'); // TODO: Temporary
+            .attr('class', 'bar');
         }
       },
 

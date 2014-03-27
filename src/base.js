@@ -12,9 +12,12 @@
 
       // Call any setters that match options
       _.each(this.options, function(value, key) {
-        if (this[key] && this[key].isProperty && this[key].setFromOptions)
+        if (this[key] && this[key]._isProperty && this[key].setFromOptions)
           this[key](value);
       }, this);
+
+      // Bind all di-functions to this chart
+      helpers.bindAllDi(this);
     },
     transform: function(data) {
       // Base is last transform to be called,

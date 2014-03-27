@@ -6,7 +6,11 @@
     // Process data to mimic actual data that is passed to (d, i) methods
     function processData(data) {
       return _.map(data, function(series, index) {
-        return chart.seriesValues(series, index);
+        // Add series index to values for mocking
+        _.each(chart.seriesValues(series, index), function(value) {
+          value.series = series;
+        });
+        return series;
       });
     }
 
@@ -26,6 +30,7 @@
       Chart = d3.chart('Test', {
         initialize: function() {
           this.options = {};
+          helpers.bindAllDi(this);
         },
         data: function() {
           return data || [];
@@ -40,28 +45,50 @@
     });
 
     describe('Series', function() {
+      // Because seriesIndex get parent data of element, mock element
+      function element(seriesIndex, dataIndex) {
+        return {
+          data: function() {
+            return [processed[seriesIndex][dataIndex]];
+          },
+          parentNode: {
+            data: function() {
+              return [processed[seriesIndex]];
+            }
+          }
+        };
+      }
+
       beforeEach(function() {
         chart = new Chart();
-      });
-
-      /**
-        Note: the underlying behavior to retrieve the seriesIndex from a data point is potentially expensive
-        TODO: Refactor usage to find series index from series only (below)
-      
-        Currently, only extensions.Values.adjacentX uses seriesIndex
-      */
-      it('(TEMP) should get series index of given data point after passing through seriesValues', function() {
         processed = processData(data);
 
-        expect(chart.seriesIndex(processed[0][3], 3)).toEqual(0);
-        expect(chart.seriesIndex(processed[1][2], 2)).toEqual(1);
-        expect(chart.seriesIndex(processed[2][1], 1)).toEqual(2);
+        spyOn(d3, 'select').and.callFake(function(element) { return element; });
       });
 
-      xit('should get series index for given series after passing through seriesValues', function() {
-        processed = processData(data);
+      it('should get series for element', function() {
+        expect(chart.dataSeries.call(element(1, 2), processed[1].values[2])).toEqual(data[1]);
+        expect(chart.dataSeries.call(element(2, 1), processed[2].values[1])).toEqual(data[2]);
+      });
 
-        expect(chart.seriesIndex(processed[1])).toEqual(1);
+      it('should get series index for given series after passing through seriesValues', function() {
+        expect(chart.seriesIndex.call(element(1, 2), processed[1].values[2])).toEqual(1);
+        expect(chart.seriesIndex.call(element(2, 1), processed[2].values[1])).toEqual(2);
+      });
+
+      it('should get style from data -> series -> options', function() {
+        var context = element(1, 2);
+        var d = processed[1].values[2];
+        var i = 2;
+
+        chart.options.style = {fill: 'red', stroke: 'blue'};
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:red;stroke:blue;');
+
+        data[1].style = {fill: 'yellow', 'stroke-width': '1.5px'};
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:yellow;stroke-width:1.5px;stroke:blue;');
+
+        data[1].values[2].style = {fill: 'purple', 'font-size': '16px'};
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:purple;font-size:16px;stroke-width:1.5px;stroke:blue;');
       });
     });
 
@@ -69,7 +96,6 @@
       beforeEach(function() {
         Chart = Chart.mixin(extensions.Series).extend('XY', extensions.XY);
         chart = new Chart();
-        data = data;
         chart.setScales();
       });
 
@@ -113,13 +139,18 @@
         Chart = Chart
           .mixin(extensions.Series, extensions.XY)
           .extend('Values', extensions.Values);
-        chart = new Chart();
         data = values;
         width = 500;
-        chart.itemPadding(0.0);
 
+        chart = new Chart();
+        chart.itemPadding(0.0);
         chart.setScales();
+
         processed = processData(data);
+
+        spyOn(chart, 'seriesIndex').and.callFake(function(d, i) {
+          return d.series.seriesIndex;
+        });
       });
 
       it('should set x-scale to ordinal with x-values', function() {
@@ -131,18 +162,18 @@
       });
 
       it('should find adjacent centered x-value', function() {
-        expect(chart.adjacentX(processed[0][2])).toEqual(225);
-        expect(chart.adjacentX(processed[1][2])).toEqual(275);
+        expect(chart.adjacentX(processed[0].values[2])).toEqual(225);
+        expect(chart.adjacentX(processed[1].values[2])).toEqual(275);
       });
 
       it('should update itemX and itemWidth with displayAdjacent', function() {
         chart.displayAdjacent(false);
-        expect(chart.itemX(processed[0][2])).toEqual(250);
-        expect(chart.itemX(processed[1][2])).toEqual(250);
+        expect(chart.itemX(processed[0].values[2])).toEqual(250);
+        expect(chart.itemX(processed[1].values[2])).toEqual(250);
 
         chart.displayAdjacent(true);
-        expect(chart.itemX(processed[0][2])).toEqual(225);
-        expect(chart.itemX(processed[1][2])).toEqual(275);
+        expect(chart.itemX(processed[0].values[2])).toEqual(225);
+        expect(chart.itemX(processed[1].values[2])).toEqual(275);
       });
     });
   });

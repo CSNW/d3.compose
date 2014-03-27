@@ -1,6 +1,7 @@
-(function(d3, helpers) {
+(function(d3, _, helpers) {
   var property = helpers.property;
   var valueOrDefault = helpers.valueOrDefault;
+  var di = helpers.di;
   
   // Extensions
   // ----------------------------------------------------------- //
@@ -8,28 +9,35 @@
 
   // Extensions for handling series data
   extensions.Series = {
-    seriesKey: function(d, i) {
+    seriesKey: di(function(chart, d, i) {
       return d.key;
-    },
-    seriesValues: function(d, i) {
-      // Store seriesIndex on series and values
-      // TODO: Look at more elegant way to do this that avoids changing data
+    }),
+    seriesValues: di(function(chart, d, i) {
+      // Store seriesIndex on series
       d.seriesIndex = i;
-
-      return _.map(d.values, function(value) {
-        value.seriesIndex = i;
-        return value;
-      });
-    },
-    seriesClass: function(d, i) {
+      return d.values;
+    }),
+    seriesClass: di(function(chart, d, i) {
       return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
-    },
-    seriesIndex: function(d, i) {
-      return d.seriesIndex || 0;
-    },
-    seriesCount: function(d, i) {
-      return this.data() ? this.data().length : 1;
-    },
+    }),
+    seriesIndex: di(function(chart, d, i) {
+      var series = chart.dataSeries.call(this, d, i);
+      return series && series.seriesIndex || 0;
+    }),
+    seriesCount: di(function(chart, d, i) {
+      return chart.data() ? chart.data().length : 1;
+    }),
+    dataSeries: di(function(chart, d, i) {
+      return helpers.getParentData(this);
+    }),
+    itemStyle: di(function(chart, d, i) {
+      // Get style for data item in the following progression
+      // data.style -> series.style -> chart.style
+      var series = chart.dataSeries.call(this, d, i) || {};
+      var styles = _.defaults({}, d.style, series.style, chart.options.style);
+      
+      return helpers.style(styles) || null;
+    }),
 
     /**
       seriesLayer
@@ -50,14 +58,14 @@
         options.dataBind = function(data) {
           var chart = this.chart();
           var series = this.selectAll('g')
-            .data(data, chart.seriesKey.bind(chart));
+            .data(data, chart.seriesKey);
 
           series.enter()
             .append('g')
-            .attr('class', chart.seriesClass.bind(chart));
+            .attr('class', chart.seriesClass);
           series.chart = function() { return chart; };
 
-          return dataBind.call(series, chart.seriesValues.bind(chart));
+          return dataBind.call(series, chart.seriesValues);
         };
       }
       
@@ -65,7 +73,9 @@
     }
   };
 
-  // Extensions for handling XY data
+  /**
+    Extensions for handling XY data
+  */
   extensions.XY = {
     initialize: function() {
       this.on('change:data', this.setScales);
@@ -76,28 +86,28 @@
         this.yScale(helpers.createScaleFromOptions(this.options.yScale));
     },
 
-    x: function(d, i) {
-      return this._xScale()(this.xValue(d, i));
-    },
-    y: function(d, i) {
-      return this._yScale()(this.yValue(d, i));
-    },
-    x0: function(d, i) {
-      return this._xScale()(0);
-    },
-    y0: function(d, i) {
-      return this._yScale()(0);
-    },
+    x: di(function(chart, d, i) {
+      return chart._xScale()(chart.xValue.call(this, d, i));
+    }),
+    y: di(function(chart, d, i) {
+      return chart._yScale()(chart.yValue.call(this, d, i));
+    }),
+    x0: di(function(chart, d, i) {
+      return chart._xScale()(0);
+    }),
+    y0: di(function(chart, d, i) {
+      return chart._yScale()(0);
+    }),
 
-    xValue: function(d, i) {
+    xValue: di(function(chart, d, i) {
       return d.x;
-    },
-    yValue: function(d, i) {
+    }),
+    yValue: di(function(chart, d, i) {
       return d.y;
-    },
-    keyValue: function(d, i) {
+    }),
+    keyValue: di(function(chart, d, i) {
       return d.key;
-    },
+    }),
 
     setScales: function() {
       var xScale = this.xScale();
@@ -190,7 +200,9 @@
     })
   };
 
-  // Extensions for charts of centered key,value data (x: index, y: value, key)
+  /**
+    Extensions for charts of centered key,value data (x: index, y: value, key)
+  */
   extensions.Values = {
     isValues: true,
     transform: function(data) {
@@ -198,34 +210,31 @@
       _.each(data, function(series) {
         series.values = _.map(series.values, function(item, index) {
           item = _.isObject(item) ? item : {y: item};
+          item.x = valueOrDefault(item.x, item.key);
 
-          return {
-            x: valueOrDefault(item.x, item.key),
-            y: item.y,
-            key: item.key
-          };
+          return item;
         }, this);
       }, this);
 
       return data;
     },
 
-    x: function(d, i) {
-      return this._xScale()(this.xValue(d, i)) + 0.5 * this.layeredWidth();
-    },
+    x: di(function(chart, d, i) {
+      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
+    }),
 
     defaultXScale: function() {
       return d3.scale.ordinal();
     },
 
     setXScaleDomain: function(xScale, data, chart) {
-      // Extract keys from series with most data to ensure loading all keys
-      var keys = _.reduce(data, function(memo, series, index) {
-        var keys = _.map(this.seriesValues(series, index), this.xValue.bind(this));
-        return keys.length > memo.length ? keys : memo;
-      }, [], this);
+      // Extract keys from all series
+      var allKeys = _.map(data, function(series, index) {
+        return _.map(this.seriesValues(series, index), this.xValue);
+      }, this);
+      var uniqueKeys = _.uniq(_.flatten(allKeys));
 
-      return xScale.domain(keys);
+      return xScale.domain(uniqueKeys);
     },
 
     setXScaleRange: function(xScale, data, chart) {
@@ -233,31 +242,31 @@
     },
 
     // AdjacentX/Width is used in cases where series are presented next to each other at each value
-    adjacentX: function(d, i) {
-      var adjacentWidth = this.adjacentWidth(d, i);
-      var left = this.x(d, i) - this.layeredWidth(d, i) / 2 + adjacentWidth / 2;
+    adjacentX: di(function(chart, d, i) {
+      var adjacentWidth = chart.adjacentWidth.call(this, d, i);
+      var left = chart.x.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
       
-      return left + adjacentWidth * this.seriesIndex(d, i);
-    },
-    adjacentWidth: function(d, i) {
-      return this.layeredWidth(d, i) / this.seriesCount();
-    },
+      return left + adjacentWidth * chart.seriesIndex.call(this, d, i);
+    }),
+    adjacentWidth: di(function(chart, d, i) {
+      return chart.layeredWidth.call(this, d, i) / chart.seriesCount.call(this);
+    }),
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
-    layeredX: function(d, i) {
-      return this.x(d, i);
-    },
-    layeredWidth: function(d, i) {
-      return this._xScale().rangeBand();
-    },
+    layeredX: di(function(chart, d, i) {
+      return chart.x.call(this, d, i);
+    }),
+    layeredWidth: di(function(chart, d, i) {
+      return chart._xScale().rangeBand();
+    }),
 
     // itemX/Width determine centered-x and width based on series display type (adjacent or layered)
-    itemX: function(d, i) {
-      return this.displayAdjacent() ? this.adjacentX(d, i) : this.layeredX(d, i);
-    },
-    itemWidth: function(d, i) {
-      return this.displayAdjacent() ? this.adjacentWidth(d, i) : this.layeredWidth(d, i);
-    },
+    itemX: di(function(chart, d, i) {
+      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
+    }),
+    itemWidth: di(function(chart, d, i) {
+      return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
+    }),
 
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
@@ -265,4 +274,4 @@
     displayAdjacent: property('displayAdjacent', {defaultValue: false})
   };
 
-})(d3, d3.chart.helpers);
+})(d3, _, d3.chart.helpers);

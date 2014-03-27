@@ -9,8 +9,7 @@
 
   <link rel="stylesheet" type="text/css" href="../src/styles/base.css">
   <style>
-    .series.deaths-prevented .line, .legend-swatch.deaths-prevented .line {
-      stroke: red;
+    .series.input .line, .legend-swatch.input .line {
       stroke-dasharray: 4,4;
     }
   </style>
@@ -41,15 +40,20 @@
         charts: [
           {
             type: 'Bars', 
-            dataKey: 'peopleParticipating', 
+            dataKey: 'results', 
             yScale: {domain: [0, 20000]}, 
-            labelFontSize: 14,
-            labelOffset: 10,
-            labelPosition: 'top|bottom'
+            displayAdjacent: true,
+            labels: {
+              offset: 10,
+              position: 'top|bottom',
+              style: {
+                'font-size': '16px'
+              }
+            }
           },
           {
             type: 'LineValues', 
-            dataKey: 'deathsPrevented', 
+            dataKey: 'input', 
             yScale: {domain: [0, 70]}, 
             labelPosition: 'top'
           }
@@ -57,17 +61,17 @@
         axes: [
           {
             type: 'AxisValues',
-            dataKey: 'peopleParticipating',
+            dataKey: 'results',
             axisPosition: 'bottom'
           },
           {
             type: 'AxisValues',
-            dataKey: 'peopleParticipating',
+            dataKey: 'results',
             axisPosition: 'left'
           },
           {
             type: 'AxisValues',
-            dataKey: 'deathsPrevented',
+            dataKey: 'input',
             axisPosition: 'right'
           }
         ],
