@@ -45,29 +45,50 @@
     });
 
     describe('Series', function() {
+      // Because seriesIndex get parent data of element, mock element
+      function element(seriesIndex, dataIndex) {
+        return {
+          data: function() {
+            return [processed[seriesIndex][dataIndex]];
+          },
+          parentNode: {
+            data: function() {
+              return [processed[seriesIndex]];
+            }
+          }
+        };
+      }
+
       beforeEach(function() {
         chart = new Chart();
         processed = processData(data);
+
+        spyOn(d3, 'select').and.callFake(function(element) { return element; });
+      });
+
+      it('should get series for element', function() {
+        expect(chart.dataSeries.call(element(1, 2), processed[1].values[2])).toEqual(data[1]);
+        expect(chart.dataSeries.call(element(2, 1), processed[2].values[1])).toEqual(data[2]);
       });
 
       it('should get series index for given series after passing through seriesValues', function() {
-        // Because seriesIndex get parent data of element, mock element
-        function element(seriesIndex, dataIndex) {
-          return {
-            data: function() {
-              return [processed[seriesIndex][dataIndex]];
-            },
-            parentNode: {
-              data: function() {
-                return [processed[seriesIndex]];
-              }
-            }
-          };
-        }
-        spyOn(d3, 'select').and.callFake(function(element) { return element; });
-
         expect(chart.seriesIndex.call(element(1, 2), processed[1].values[2])).toEqual(1);
         expect(chart.seriesIndex.call(element(2, 1), processed[2].values[1])).toEqual(2);
+      });
+
+      it('should get style from data -> series -> options', function() {
+        var context = element(1, 2);
+        var d = processed[1].values[2];
+        var i = 2;
+
+        chart.options.style = {fill: 'red', stroke: 'blue'};
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:red;stroke:blue;');
+
+        data[1].style = {fill: 'yellow', 'stroke-width': '1.5px'};
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:yellow;stroke-width:1.5px;stroke:blue;');
+
+        data[1].values[2].style = {fill: 'purple', 'font-size': '16px'};
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:purple;font-size:16px;stroke-width:1.5px;stroke:blue;');
       });
     });
 

@@ -43,10 +43,14 @@
             type: 'Bars', 
             dataKey: 'results', 
             yScale: {domain: [0, 20000]}, 
-            labelFontSize: 14,
-            labelOffset: 10,
-            labelPosition: 'top|bottom',
-            displayAdjacent: true
+            displayAdjacent: true,
+            labels: {
+              offset: 10,
+              position: 'top|bottom',
+              style: {
+                'font-size': '16px'
+              }
+            }
           },
           {
             type: 'LineValues', 

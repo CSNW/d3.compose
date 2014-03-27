@@ -347,7 +347,7 @@
     // Create intermediate wrapping in case it's called without binding
     var wrapped = function wrapped(d, i, j) {
       return callback.call(this, undefined, d, i, j);
-    }
+    };
     wrapped._isDi = true;
     wrapped.original = callback;
 
@@ -357,7 +357,7 @@
   function bindDi(di, chart) {
     return function wrapped(d, i, j) {
       return di.call(this, chart, d, i, j);
-    }
+    };
   }
 
   // Bind all di-functions found in chart

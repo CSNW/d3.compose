@@ -150,7 +150,7 @@
             var chart = this.chart();
             var groups = this.append('g')
               .attr('class', function(d, i) {
-                return 'legend-group index-' + i;
+                return 'legend-group series index-' + i;
               });
 
             groups.append('g')

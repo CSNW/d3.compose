@@ -21,11 +21,22 @@
       return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
     }),
     seriesIndex: di(function(chart, d, i) {
-      var data = helpers.getParentData(this);
-      return data && data.seriesIndex || 0;
+      var series = chart.dataSeries.call(this, d, i);
+      return series && series.seriesIndex || 0;
     }),
     seriesCount: di(function(chart, d, i) {
       return chart.data() ? chart.data().length : 1;
+    }),
+    dataSeries: di(function(chart, d, i) {
+      return helpers.getParentData(this);
+    }),
+    itemStyle: di(function(chart, d, i) {
+      // Get style for data item in the following progression
+      // data.style -> series.style -> chart.style
+      var series = chart.dataSeries.call(this, d, i) || {};
+      var styles = _.defaults({}, d.style, series.style, chart.options.style);
+      console.log(d, d.style, series.style, chart.options.style);
+      return helpers.style(styles) || null;
     }),
 
     /**
@@ -199,12 +210,9 @@
       _.each(data, function(series) {
         series.values = _.map(series.values, function(item, index) {
           item = _.isObject(item) ? item : {y: item};
+          item.x = valueOrDefault(item.x, item.key);
 
-          return {
-            x: valueOrDefault(item.x, item.key),
-            y: item.y,
-            key: item.key
-          };
+          return item;
         }, this);
       }, this);
 

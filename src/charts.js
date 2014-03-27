@@ -10,7 +10,6 @@
     .mixin(extensions.XY)
     .extend('Labels', {
       initialize: function() {
-        this.type = 'Labels';
         this.seriesLayer('Labels', this.base.append('g').classed('labels', true), {
           dataBind: function(data) {
             var chart = this.chart();
@@ -20,13 +19,10 @@
           insert: function() {
             var chart = this.chart();
 
-            // TODO: set font-family, font-size in style to override css
-
             return this.append('text')
               .classed('label', true)
-              .attr('font-family', chart.labelFontFamily())
-              .attr('font-size', chart.labelFontSize())
-              .attr('alignment-baseline', chart.labelAlignment);
+              .attr('alignment-baseline', chart.labelAlignment)
+              .attr('style', chart.itemStyle);
           },
           events: {
             'enter': function() {
@@ -48,14 +44,14 @@
       },
 
       labelX: di(function(chart, d, i) {
-        return chart.x.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).x;
+        return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
       }),
       labelY: di(function(chart, d, i) {
-        return chart.y.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).y;
+        return chart.y.call(this, d, i) + chart.calculatedOffset.call(this, d, i).y;
       }),
 
-      calculatedLabelOffset: di(function(chart, d, i) {
-        var offset = chart.labelOffset();
+      calculatedOffset: di(function(chart, d, i) {
+        var offset = chart.offset();
 
         var byPosition = {
           top: {x: 0, y: -offset},
@@ -64,12 +60,12 @@
           left: {x: -offset, y: 0}
         };
         
-        return byPosition[chart.calculatedLabelPosition.call(this, d, i)];
+        return byPosition[chart.calculatedPosition.call(this, d, i)];
       }),
       labelAnchor: di(function(chart, d, i) {
-        if (chart.calculatedLabelPosition.call(this, d, i) == 'right')
+        if (chart.calculatedPosition.call(this, d, i) == 'right')
           return 'start';
-        else if (chart.calculatedLabelPosition.call(this, d, i) == 'left')
+        else if (chart.calculatedPosition.call(this, d, i) == 'left')
           return 'end';
         else
           return 'middle';
@@ -84,11 +80,11 @@
           left: 'middle'
         };
 
-        return byPosition[chart.calculatedLabelPosition.call(this, d, i)];
+        return byPosition[chart.calculatedPosition.call(this, d, i)];
       }),
 
-      calculatedLabelPosition: di(function(chart, d, i) {
-        var position = chart.labelPosition();
+      calculatedPosition: di(function(chart, d, i) {
+        var position = chart.position();
         var parts = position.split('|');
 
         if (parts.length > 1) {
@@ -100,14 +96,24 @@
         }
       }),
 
-      // top, right, bottom, left, 1|2 (1 for positive or 0, 2 for negative)
-      labelPosition: property('labelPosition', {defaultValue: 'top'}),
-      // px distance offset from (x,y) point
-      labelOffset: property('labelOffset', {defaultValue: 14}),
+      itemStyle: di(function(chart, d, i) {
+        // For labels, only pull in label styles
+        // - data.labels.style
+        // - series.labels.style
 
-      // Font size, px
-      labelFontSize: property('labelFontSize', {defaultValue: '14px'}),
-      labelFontFamily: property('labelFontFamily', {defaultValue: 'sans-serif'})
+        var data = d.labels || {};
+        var series = chart.dataSeries.call(this, d, i) || {};
+        series = series.labels || {};
+
+        var styles = _.defaults({}, data.style, series.style, chart.options.style);
+        
+        return helpers.style(styles) || null;
+      }),
+
+      // top, right, bottom, left, 1|2 (1 for positive or 0, 2 for negative)
+      position: property('position', {defaultValue: 'top'}),
+      // px distance offset from (x,y) point
+      offset: property('offset', {defaultValue: 14}),
     });
   
   /**
@@ -118,7 +124,7 @@
     .mixin(d3.chart('Labels').prototype, extensions.Values)
     .extend('LabelValues', {
       labelX: di(function(chart, d, i) {
-        return chart.itemX.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).x;
+        return chart.itemX.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
       })
     });
 
@@ -131,12 +137,15 @@
   d3.chart('Chart').extend('ChartWithLabels', {
     initialize: function() {
       if (this.showLabels()) {
-        // Create labels chart
-        this.labels = this.base.chart(this.isValues ? 'LabelValues' : 'Labels', this.options);  
+        // Transfer certain options to labels
+        var labelOptions = _.extend(this.options.labels || {}, {
+          displayAdjacent: this.options.displayAdjacent,
+          xScale: this.options.xScale,
+          yScale: this.options.yScale
+        });
 
-        // Transfer certain properties to labels
-        if (this.labels.displayAdjacent && this.displayAdjacent)
-          this.labels.displayAdjacent(this.displayAdjacent());
+        // Create labels chart
+        this.labels = this.base.chart(this.isValues ? 'LabelValues' : 'Labels', labelOptions);
 
         // Attach labels chart
         this.attach('Labels', this.labels);
@@ -161,8 +170,11 @@
               .data(data, chart.keyValue);
           },
           insert: function() {
+            var chart = this.chart();
+
             return this.append('rect')
-              .classed('bar', true);
+              .classed('bar', true)
+              .attr('style', chart.itemStyle);
           },
           events: {
             'enter': function() {
@@ -221,8 +233,11 @@
               }, chart.seriesKey);
           },
           insert: function() {
+            var chart = this.chart();
+
             return this.append('path')
-              .classed('line', true);
+              .classed('line', true)
+              .attr('style', chart.itemStyle);
           },
           events: {
             'merge:transition': function() {
