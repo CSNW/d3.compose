@@ -26,6 +26,7 @@
       Chart = d3.chart('Test', {
         initialize: function() {
           this.options = {};
+          helpers.bindAllDi(this);
         },
         data: function() {
           return data || [];
@@ -69,7 +70,6 @@
       beforeEach(function() {
         Chart = Chart.mixin(extensions.Series).extend('XY', extensions.XY);
         chart = new Chart();
-        data = data;
         chart.setScales();
       });
 
@@ -113,12 +113,13 @@
         Chart = Chart
           .mixin(extensions.Series, extensions.XY)
           .extend('Values', extensions.Values);
-        chart = new Chart();
         data = values;
         width = 500;
-        chart.itemPadding(0.0);
 
+        chart = new Chart();
+        chart.itemPadding(0.0);
         chart.setScales();
+
         processed = processData(data);
       });
 

@@ -93,11 +93,18 @@
     };
 
     // For checking if function is a property
-    getSet.isProperty = true;
+    getSet._isProperty = true;
     getSet.setFromOptions = valueOrDefault(options.setFromOptions, true);
     getSet.defaultValue = options.defaultValue;
 
     return getSet;
+  }
+
+  /**
+    If value isn't undefined, return value, otherwise use defaultValue
+  */
+  function valueOrDefault(value, defaultValue) {
+    return !_.isUndefined(value) ? value : defaultValue;
   }
 
   // Dimensions helper for robustly determining width/height of given selector
@@ -312,6 +319,48 @@
   }
 
   /**
+    Create wrapped (d, i) function that adds chart instance as first argument
+    Wrapped function uses standard d3 arguments and context
+
+    @example
+    ```javascript
+    Chart.prototype.x = helpers.di(function(chart, d, i) {
+      // "this" is traditional d3: node
+      return chart._xScale()(chart.xValue(d, i));
+    });
+
+    chart.x = bindDi(chart.x, chart);
+    this.select('point').attr('cx', chart.x);
+    // (d, i) and "this" used from d3, "chart" injected automatically
+    ```
+  */
+  function bindDi(di, chart) {
+    return function wrapped(d, i, j) {
+      return di.call(this, chart, d, i, j);
+    }
+  }
+
+  // Bind all di-functions found in chart
+  function bindAllDi(chart) {
+    for (var key in chart) {
+      if (chart[key] && chart[key]._isDi)
+        chart[key] = bindDi(chart[key].original, chart);
+    }
+  }
+
+  // Add di-function identification to callback
+  function di(callback) {
+    // Create intermediate wrapping in case it's called without binding
+    var wrapped = function wrapped(d, i, j) {
+      return callback.call(this, undefined, d, i, j);
+    }
+    wrapped._isDi = true;
+    wrapped.original = callback;
+
+    return wrapped;
+  }
+
+  /**
     Mixin extensions into prototype
 
     Designed specifically to work with d3-chart
@@ -375,17 +424,10 @@
     };
   };
 
-  /**
-    If value isn't undefined, return value, otherwise use defaultValue
-  */
-  function valueOrDefault(value, defaultValue) {
-    return !_.isUndefined(value) ? value : defaultValue;
-  }
-
   // Add helpers to chart (static)
   d3.chart.helpers = {
-    valueOrDefault: valueOrDefault,
     property: property,
+    valueOrDefault: valueOrDefault,
     dimensions: dimensions,
     transform: transform,
     translate: transform.translate,
@@ -393,6 +435,9 @@
     stack: stack,
     style: style,
     getValue: getValue,
+    bindDi: bindDi,
+    bindAllDi: bindAllDi,
+    di: di,
     mixin: mixin
   };
 })(d3, _);

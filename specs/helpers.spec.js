@@ -66,7 +66,7 @@
 
       it('should expose isProperty and setFromOptions on property', function() {
         instance.message = property('message', {setFromOptions: false});
-        expect(instance.message.isProperty).toEqual(true);
+        expect(instance.message._isProperty).toEqual(true);
         expect(instance.message.setFromOptions).toEqual(false);
       });
 
@@ -237,6 +237,41 @@
         expect(helpers.getValue(['e', 'f'], obj1, obj2)).toEqual(6);
         expect(helpers.getValue('g', obj2)).toEqual(null);
         expect(helpers.getValue(['y', 'z'], obj1, obj2)).toEqual(undefined);
+      });
+    });
+
+    describe('di', function() {
+      var wrapped, spy, instance;
+      beforeEach(function() {
+        spy = jasmine.createSpy('callback');
+        wrapped = helpers.di(spy);
+
+        instance = {};
+        instance.x = wrapped;
+        helpers.bindAllDi(instance);
+      });
+
+      it('should call callback when bound di is called', function() {
+        instance.x();
+        expect(spy).toHaveBeenCalled();
+      });
+
+      it('should pass through d, i, and j to callback', function() {
+        instance.x('data', 1, 2);
+        var args = spy.calls.mostRecent().args;
+        expect(args[1]).toEqual('data');
+        expect(args[2]).toEqual(1);
+        expect(args[3]).toEqual(2);
+      });
+
+      it('should expose isDi property', function() {
+        expect(wrapped._isDi).toEqual(true);
+      });
+
+      it('should pass in chart instance to bound di', function() {
+        instance.x('data', 1, 2);
+        var args = spy.calls.mostRecent().args;
+        expect(args[0]).toBe(instance);
       });
     });
 

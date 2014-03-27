@@ -1,6 +1,7 @@
-(function(d3, helpers) {
+(function(d3, _, helpers) {
   var property = helpers.property;
   var valueOrDefault = helpers.valueOrDefault;
+  var di = helpers.di;
   
   // Extensions
   // ----------------------------------------------------------- //
@@ -8,10 +9,10 @@
 
   // Extensions for handling series data
   extensions.Series = {
-    seriesKey: function(d, i) {
+    seriesKey: di(function(chart, d, i) {
       return d.key;
-    },
-    seriesValues: function(d, i) {
+    }),
+    seriesValues: di(function(chart, d, i) {
       // Store seriesIndex on series and values
       // TODO: Look at more elegant way to do this that avoids changing data
       d.seriesIndex = i;
@@ -20,16 +21,16 @@
         value.seriesIndex = i;
         return value;
       });
-    },
-    seriesClass: function(d, i) {
+    }),
+    seriesClass: di(function(chart, d, i) {
       return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
-    },
-    seriesIndex: function(d, i) {
+    }),
+    seriesIndex: di(function(chart, d, i) {
       return d.seriesIndex || 0;
-    },
-    seriesCount: function(d, i) {
-      return this.data() ? this.data().length : 1;
-    },
+    }),
+    seriesCount: di(function(chart, d, i) {
+      return chart.data() ? chart.data().length : 1;
+    }),
 
     /**
       seriesLayer
@@ -50,14 +51,14 @@
         options.dataBind = function(data) {
           var chart = this.chart();
           var series = this.selectAll('g')
-            .data(data, chart.seriesKey.bind(chart));
+            .data(data, chart.seriesKey);
 
           series.enter()
             .append('g')
-            .attr('class', chart.seriesClass.bind(chart));
+            .attr('class', chart.seriesClass);
           series.chart = function() { return chart; };
 
-          return dataBind.call(series, chart.seriesValues.bind(chart));
+          return dataBind.call(series, chart.seriesValues);
         };
       }
       
@@ -65,7 +66,9 @@
     }
   };
 
-  // Extensions for handling XY data
+  /**
+    Extensions for handling XY data
+  */
   extensions.XY = {
     initialize: function() {
       this.on('change:data', this.setScales);
@@ -76,28 +79,28 @@
         this.yScale(helpers.createScaleFromOptions(this.options.yScale));
     },
 
-    x: function(d, i) {
-      return this._xScale()(this.xValue(d, i));
-    },
-    y: function(d, i) {
-      return this._yScale()(this.yValue(d, i));
-    },
-    x0: function(d, i) {
-      return this._xScale()(0);
-    },
-    y0: function(d, i) {
-      return this._yScale()(0);
-    },
+    x: di(function(chart, d, i) {
+      return chart._xScale()(chart.xValue(d, i));
+    }),
+    y: di(function(chart, d, i) {
+      return chart._yScale()(chart.yValue(d, i));
+    }),
+    x0: di(function(chart, d, i) {
+      return chart._xScale()(0);
+    }),
+    y0: di(function(chart, d, i) {
+      return chart._yScale()(0);
+    }),
 
-    xValue: function(d, i) {
+    xValue: di(function(chart, d, i) {
       return d.x;
-    },
-    yValue: function(d, i) {
+    }),
+    yValue: di(function(chart, d, i) {
       return d.y;
-    },
-    keyValue: function(d, i) {
+    }),
+    keyValue: di(function(chart, d, i) {
       return d.key;
-    },
+    }),
 
     setScales: function() {
       var xScale = this.xScale();
@@ -190,7 +193,9 @@
     })
   };
 
-  // Extensions for charts of centered key,value data (x: index, y: value, key)
+  /**
+    Extensions for charts of centered key,value data (x: index, y: value, key)
+  */
   extensions.Values = {
     isValues: true,
     transform: function(data) {
@@ -210,9 +215,9 @@
       return data;
     },
 
-    x: function(d, i) {
-      return this._xScale()(this.xValue(d, i)) + 0.5 * this.layeredWidth();
-    },
+    x: di(function(chart, d, i) {
+      return chart._xScale()(chart.xValue(d, i)) + 0.5 * chart.layeredWidth();
+    }),
 
     defaultXScale: function() {
       return d3.scale.ordinal();
@@ -233,31 +238,31 @@
     },
 
     // AdjacentX/Width is used in cases where series are presented next to each other at each value
-    adjacentX: function(d, i) {
-      var adjacentWidth = this.adjacentWidth(d, i);
-      var left = this.x(d, i) - this.layeredWidth(d, i) / 2 + adjacentWidth / 2;
+    adjacentX: di(function(chart, d, i) {
+      var adjacentWidth = chart.adjacentWidth(d, i);
+      var left = chart.x(d, i) - chart.layeredWidth(d, i) / 2 + adjacentWidth / 2;
       
-      return left + adjacentWidth * this.seriesIndex(d, i);
-    },
-    adjacentWidth: function(d, i) {
-      return this.layeredWidth(d, i) / this.seriesCount();
-    },
+      return left + adjacentWidth * chart.seriesIndex(d, i);
+    }),
+    adjacentWidth: di(function(chart, d, i) {
+      return chart.layeredWidth(d, i) / chart.seriesCount();
+    }),
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
-    layeredX: function(d, i) {
-      return this.x(d, i);
-    },
-    layeredWidth: function(d, i) {
-      return this._xScale().rangeBand();
-    },
+    layeredX: di(function(chart, d, i) {
+      return chart.x(d, i);
+    }),
+    layeredWidth: di(function(chart, d, i) {
+      return chart._xScale().rangeBand();
+    }),
 
     // itemX/Width determine centered-x and width based on series display type (adjacent or layered)
-    itemX: function(d, i) {
-      return this.displayAdjacent() ? this.adjacentX(d, i) : this.layeredX(d, i);
-    },
-    itemWidth: function(d, i) {
-      return this.displayAdjacent() ? this.adjacentWidth(d, i) : this.layeredWidth(d, i);
-    },
+    itemX: di(function(chart, d, i) {
+      return chart.displayAdjacent() ? chart.adjacentX(d, i) : chart.layeredX(d, i);
+    }),
+    itemWidth: di(function(chart, d, i) {
+      return chart.displayAdjacent() ? chart.adjacentWidth(d, i) : chart.layeredWidth(d, i);
+    }),
 
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
@@ -265,4 +270,4 @@
     displayAdjacent: property('displayAdjacent', {defaultValue: false})
   };
 
-})(d3, d3.chart.helpers);
+})(d3, _, d3.chart.helpers);
