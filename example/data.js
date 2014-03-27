@@ -20,10 +20,7 @@
           {key: 'Year 2', y: 3127},
           {key: 'Year 3', y: 4690},
           {key: 'Year 4', y: 7817}
-        ],
-        style: {
-          fill: 'steelblue'
-        }
+        ]
       }, {
         key: 'normalized',
         name: 'Normalized Output',

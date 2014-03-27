@@ -35,7 +35,7 @@
       // data.style -> series.style -> chart.style
       var series = chart.dataSeries.call(this, d, i) || {};
       var styles = _.defaults({}, d.style, series.style, chart.options.style);
-      console.log(d, d.style, series.style, chart.options.style);
+      
       return helpers.style(styles) || null;
     }),
 
