@@ -31,10 +31,10 @@ module.exports = function(grunt) {
   grunt.initConfig(config);
 
   grunt.loadTasks('tasks');
-  this.registerTask('default', ['build']);
+  this.registerTask('default', ['test']);
   
-  this.registerTask('build', 'Builds a new version of the library', [
-    'jshint:src',
+  this.registerTask('release', 'Builds a new release of the library', [
+    'test',
     'concat',
     'uglify',
     'jshint:build',
@@ -42,6 +42,7 @@ module.exports = function(grunt) {
   ]);
   
   this.registerTask('test', 'Lint and run specs', [
+    'jshint:src',
     'jshint:specs', 
     'jasmine'
   ]);

@@ -37,11 +37,11 @@
     var chart1 = d3.select('#chart_1')
       .append('svg')
       .chart('Configurable', {
+        type: 'Values',
         charts: [
           {
             type: 'Bars', 
             dataKey: 'results', 
-            yScale: {domain: [0, 20000]}, 
             displayAdjacent: true,
             labels: {
               offset: 10,
@@ -52,31 +52,19 @@
             }
           },
           {
-            type: 'LineValues', 
-            dataKey: 'input', 
-            yScale: {domain: [0, 70]}, 
-            labelPosition: 'top'
-          }
-        ],
-        axes: [
-          {
-            type: 'AxisValues',
-            dataKey: 'results',
-            axisPosition: 'bottom'
-          },
-          {
-            type: 'AxisValues',
-            dataKey: 'results',
-            axisPosition: 'left'
-          },
-          {
-            type: 'AxisValues',
+            type: 'Line',
             dataKey: 'input',
-            axisPosition: 'right'
+            labels: {
+              position: 'top'
+            }
           }
         ],
+        axes: {
+          y: {scale: {domain: [0, 20000]}},
+          secondaryY: {dataKey: 'input', scale: {domain: [0, 70]}}
+        },
         legend: {
-          type: 'InsetLegend',
+          type: 'Inset',
           legendPosition: {x: 10, y: 0}
         }
       })
