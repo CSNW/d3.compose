@@ -52,14 +52,16 @@
             }
           },
           {
-            type: 'LineValues', 
-            dataKey: 'input', 
-            labelPosition: 'top'
+            type: 'Line',
+            dataKey: 'input',
+            labels: {
+              position: 'top'
+            }
           }
         ],
         axes: {
-          y: {scale: {domain: [0, 70]}},
-          y2: {dataKey: 'results', scale: {domain: [0, 20000]}}
+          y: {scale: {domain: [0, 20000]}},
+          y2: {dataKey: 'input', scale: {domain: [0, 70]}}
         },
         legend: {
           type: 'Inset',
