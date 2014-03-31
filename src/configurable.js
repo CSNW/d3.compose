@@ -37,95 +37,204 @@
   */
   d3.chart('Container').extend('Configurable', {
     initialize: function() {
-      // Setup charts
-      _.each(this.options.charts, function(chartOptions, i) {
-        chartOptions = _.defaults(chartOptions || {}, d3.chart('Configurable').defaultChartOptions);
+      this.type = this.options.type || 'XY';
+      this.setupAxes(this.options.axes);
+      this.setupCharts(this.options.charts);
+      this.setupLegend(this.options.legend);
+    },
 
-        if (!d3.chart(chartOptions.type))
-          return; // No matching chart found...
+    setupAxes: function(options) {
+      options = options || {};
+      this.axes = {};
 
-        var chart = this.chartBase().chart(chartOptions.type, chartOptions);
+      var axisKeys = _.uniq(['x', 'y'].concat(_.keys(this.options.axes)));
+      _.each(axisKeys, function(axisKey) {
+        positionByKey = {
+          x: 'bottom',
+          y: 'left',
+          x2: 'top',
+          y2: 'right'
+        };
+        var defaultOptions = {
+          display: true,
+          axisPosition: positionByKey[axisKey]
+        };
+
+        var axisOptions;
+        if (options[axisKey] === false)
+          axisOptions = _.defaults({display: false}, defaultOptions, d3.chart('Configurable').defaultAxisOptions);
+        else
+          axisOptions = _.defaults({}, options[axisKey], defaultOptions, d3.chart('Configurable').defaultAxisOptions);
+
+        if (axisKey != 'x' && axisKey != 'y' && !axisOptions.dataKey)
+          throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');
+
+        var Axis = helpers.resolveChart(axisOptions.type, 'Axis', this.type);
+        var axis = new Axis(this.chartBase(), axisOptions);
+        var id = 'axis_' + axisKey;
+
+        this.attachComponent(id, axis);
+        this.axes[axisKey] = axis;
+      }, this);
+
+      // Setup filter keys for x and y axes
+      _.each(['x', 'y'], function(axisKey) {
+        var axis = this.axes[axisKey];
+
+        // Don't need to filter keys if dataKey already set
+        if (axis.options.dataKey)
+          return;  
+
+        var filterKeys = [];
+        _.each(this.axes, function(filterAxis, filterKey) {
+          if ((axisKey == 'x' && !filterAxis.isXAxis()) || (axisKey == 'y' && !filterAxis.isYAxis()))
+            return;
+
+          var dataKey = filterAxis.options.dataKey;
+          if (dataKey)
+            filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
+        }, this);
+
+        axis.options.filterKeys = filterKeys;
+      }, this);
+    },
+
+    setupCharts: function(charts) {
+      charts = charts || [];
+
+      _.each(charts, function(chartOptions, i) {
+        chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaultChartOptions);
+
+        var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type);
+        var chart = new Chart(this.chartBase(), chartOptions);
         var id = 'chart_' + i;
+
+        // Load matching axis scales (if necessary)
+        var scale;
+        if (!chartOptions.xScale) {
+          scale = this.getMatchingAxisScale(chartOptions.dataKey, 'x');
+          if (scale)
+            chart.xScale = scale;
+        }
+        if (!chartOptions.yScale) {
+          scale = this.getMatchingAxisScale(chartOptions.dataKey, 'y');
+          if (scale)
+            chart.yScale = scale;
+        }
 
         this.attachChart(id, chart);
       }, this);
-
-      // Setup axes
-      _.each(this.options.axes, function(axisOptions, i) {
-        axisOptions = _.defaults(axisOptions || {}, d3.chart('Configurable').defaultAxisOptions);
-
-        if (!d3.chart(axisOptions.type))
-          return; // No matching axis found...
-
-        var axis = this.chartBase().chart(axisOptions.type, axisOptions);
-        var id = 'axis_' + i;
-
-        this.attachComponent(id, axis);
-      }, this);
-
-      // Setup legend
-      if (this.options.legend) {
-        var legendOptions = _.defaults(this.options.legend, d3.chart('Configurable').defaultLegendOptions);
-
-        if (!d3.chart(legendOptions.type))
-          return; // No matching legend founct
-
-        var base = legendOptions.type == 'InsetLegend' ? this.chartBase() : this.base;
-        var legend = base.chart(legendOptions.type, legendOptions);
-
-        this.attachComponent('legend', legend);
-      }
     },
+
+    setupLegend: function(options) {
+      options = options === false ? {display: false}: (options || {});
+      options = _.defaults({}, options, d3.chart('Configurable').defaultLegendOptions);
+
+      var Legend = helpers.resolveChart(options.type, 'Legend', this.type);
+      var legend = new Legend(this.base, options);
+
+      this.attachComponent('legend', legend);
+    },
+
     demux: function(name, data) {
       var item = this.chartsById[name] || this.componentsById[name];
-      return name == 'legend' ? this.extractLegendData(item, data) : this.extractData(item, name, data);
-    },
-    extractData: function(item, name, data) {
-      var dataKey = item && item.options && item.options.dataKey || name;
-      return data[dataKey] || [];
-    },
-    extractLegendData: function(legend, data) {
-      if (legend && legend.options && legend.options.dataKey) return this.extractData(legend, 'legend', data);
-      var options = legend && legend.options && legend.options.data || {};
 
-      var series;
-      if (options.charts) {
-        series = _.reduce(options.charts, function(memo, index) {
-          return memo.concat(getChartData.call(this, this.charts && this.charts[index]));
-        }, [], this);
+      if (item)
+        return this.extractData(item, name, data);
+      else
+        return data;
+    },
+
+    extractData: function(item, name, data) {
+      var dataKey = item.options.dataKey;
+      var filterKeys = item.options.filterKeys;
+
+      // Use dataKey or filterKeys if specified, otherwise use all data
+      if (dataKey || filterKeys) {
+        var dataKeys = _.isArray(dataKey) ? dataKey : (dataKey ? [dataKey] : []);
+        filterKeys = _.isArray(filterKeys) ? filterKeys : (filterKeys ? [filterKeys] : []);
+
+        var filtered = _.reduce(data, function(memo, series, key) {
+          var exclude = _.contains(filterKeys, key);
+          var include = _.contains(dataKeys, key);
+          var includeAll = !dataKeys.length;
+
+          if ((include || includeAll) && !exclude)
+            return memo.concat(series);
+          else
+            return memo;
+        }, []);
+
+        return filtered;
       }
       else {
-        series = _.reduce(this.charts, function(memo, chart) {
-          return memo.concat(getChartData.call(this, chart));
-        }, [], this);
+        return data;
       }
+    },
 
-      function getChartData(chart) {
-        if (chart) {
-          var chartData = this.extractData(chart, chart.id, data);
+    // TODO: Move functionality to legend
+    // extractLegendData: function(legend, data) {
+    //   if (legend && legend.options && legend.options.dataKey) return this.extractData(legend, 'legend', data);
+    //   var options = legend && legend.options && legend.options.data || {};
 
-          // Extend each series in data with information from chart
-          // (Don't overwrite series information with chart information)
-          return _.map(chartData, function(chartSeries) {
-            // TODO: Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
-            return _.defaults(chartSeries, chart.options);
-          }, this);
-        }
-        else {
-          return [];
-        }
-      }
+    //   var series;
+    //   if (options.charts) {
+    //     series = _.reduce(options.charts, function(memo, index) {
+    //       return memo.concat(getChartData.call(this, this.charts && this.charts[index]));
+    //     }, [], this);
+    //   }
+    //   else {
+    //     series = _.reduce(this.charts, function(memo, chart) {
+    //       return memo.concat(getChartData.call(this, chart));
+    //     }, [], this);
+    //   }
+
+    //   function getChartData(chart) {
+    //     if (chart) {
+    //       var chartData = this.extractData(chart, chart.id, data);
+
+    //       // Extend each series in data with information from chart
+    //       // (Don't overwrite series information with chart information)
+    //       return _.map(chartData, function(chartSeries) {
+    //         // TODO: Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
+    //         return _.defaults(chartSeries, chart.options);
+    //       }, this);
+    //     }
+    //     else {
+    //       return [];
+    //     }
+    //   }
       
-      return series;
+    //   return series;
+    // },
+
+    getMatchingAxisScale: function(dataKey, type) {
+      var match = _.find(this.axes, function(axis) {
+        if ((type == 'x' && !axis.isXAxis()) || (type == 'y' && !axis.isYAxis()))
+          return false;
+
+        var axisDataKey = axis.options.dataKey;
+        return _.isArray(axisDataKey) ? _.contains(axisDataKey, dataKey) : axisDataKey == dataKey;
+      });
+
+      var scaleKey = type == 'x' ? '_xScale' : '_yScale';
+      var axis = match || this.axes[type];
+
+      return property(type + 'Scale', {
+        get: function () {
+          return axis[scaleKey]();
+        }
+      });
     }
   }, {
-    defaultChartOptions: {},
+    defaultChartOptions: {
+      type: 'Line'
+    },
     defaultAxisOptions: {
-      type: 'Axis'
+      display: true
     },
     defaultLegendOptions: {
-      type: 'Legend',
-      legendPosition: 'right'
+      position: 'right'
     }
   });
 

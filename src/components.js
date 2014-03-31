@@ -28,6 +28,12 @@
     .mixin(extensions.Series, extensions.XY)
     .extend('Axis', {
       initialize: function() {
+        // Transfer generic scale options to specific scale for axis
+        if (this.options.scale) {
+          var scale = this.isXAxis() ? 'xScale' : 'yScale';
+          this[scale](helpers.createScaleFromOptions(this.options.scale));
+        }
+
         this.axis = d3.svg.axis();
 
         this.layer('Axis', this.base.append('g').classed('axis', true), {
@@ -61,6 +67,13 @@
             }
           }
         });
+      },
+
+      isXAxis: function() {
+        return this.axisOrientation() == 'horizontal';
+      },
+      isYAxis: function() {
+        return this.axisOrientation() == 'vertical';
       },
 
       axisTranlation: function(d, i) {

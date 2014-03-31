@@ -51,6 +51,7 @@
     - set: function(value, previous) {return {override, after}} 
            setter, return override to set stored value and after() to run after set
     - type: 'function' if get/set value is function, otherwise get/set is evaluated if they're a function
+    - context: 'Object' context to evaluate get/set/after functions
   */ 
   function property(name, options) {
     options = options || {};
@@ -66,6 +67,8 @@
 
     var getSet = function(value) {
       var underlying = get(this);
+      var context = !_.isUndefined(getSet.context) ? getSet.context : this;
+
       if (!arguments.length) {
         value = !_.isUndefined(underlying) ? underlying : getSet.defaultValue;
 
@@ -73,7 +76,7 @@
           value = value.call(this);
 
         if (typeof options.get == 'function')
-          return options.get.call(this, value);
+          return options.get.call(context, value);
         else
           return value;
       }
@@ -82,11 +85,11 @@
       set(this, value);
       
       if (typeof options.set == 'function') {
-        var response = options.set.call(this, value, previous);
+        var response = options.set.call(context, value, previous);
         if (response && response.override)
           set(this, response.override);
         if (response && response.after)
-          response.after.call(this, get(this));
+          response.after.call(context, get(this));
       }
 
       return this;
@@ -96,6 +99,7 @@
     getSet._isProperty = true;
     getSet.setFromOptions = valueOrDefault(options.setFromOptions, true);
     getSet.defaultValue = options.defaultValue;
+    getSet.context = options.context;
 
     return getSet;
   }
@@ -356,7 +360,7 @@
 
   function bindDi(di, chart) {
     return function wrapped(d, i, j) {
-      return di.call(this, chart, d, i, j);
+      return (di.original || di).call(this, chart, d, i, j);
     };
   }
 
@@ -364,7 +368,7 @@
   function bindAllDi(chart) {
     for (var key in chart) {
       if (chart[key] && chart[key]._isDi)
-        chart[key] = bindDi(chart[key].original, chart);
+        chart[key] = bindDi(chart[key], chart);
     }
   }
 
@@ -380,6 +384,29 @@
       return data && data[0];
     }
   }
+
+  function resolveChart(type, componentType, chartType) {
+      type = type || '';
+      componentType = componentType || '';
+      chartType = chartType || '';
+
+      // What to look for:
+      // 1. type + chart type (e.g. Line + Values = LineValues)
+      // 2. type
+      // 3. component + type (e.g. Axis + Values = AxisValues)
+      // 4. type + component (e.g. Inset + Legend = InsetLegend) 
+      // 5. component + chart type (e.g. Axis + Values = AxisValues)
+      var Chart = d3.chart(type + chartType) || 
+        d3.chart(type) || 
+        d3.chart(componentType + type) || 
+        d3.chart(type + componentType) || 
+        d3.chart(componentType + chartType);
+
+      if (!Chart)
+        throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + type + ' and component ' + component);
+
+      return Chart;
+    }
 
   /**
     Mixin extensions into prototype
@@ -460,6 +487,7 @@
     bindDi: bindDi,
     bindAllDi: bindAllDi,
     getParentData: getParentData,
+    resolveChart: resolveChart,
     mixin: mixin
   };
 })(d3, _);

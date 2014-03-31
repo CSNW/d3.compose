@@ -82,7 +82,7 @@
           expect(instance.message()).toEqual('Howdy!');
         });
 
-        it('should use context of object', function() {
+        it('should use context of object by default', function() {
           instance.message = property('message', {
             get: function(value) {
               return value + ' from ' + this.name + '!';
@@ -91,6 +91,18 @@
 
           instance.message('Howdy');
           expect(instance.message()).toEqual('Howdy from Chart!');
+        });
+
+        it('should use context if set', function() {
+          instance.message = property('message', {
+            get: function(value) {
+              return value + ' from ' + this.name + '!';
+            },
+            context: {name: 'Context'}
+          });
+
+          instance.message('Howdy');
+          expect(instance.message()).toEqual('Howdy from Context!');
         });
       });
 
@@ -143,6 +155,33 @@
           instance.message('Message');
           expect(before).toEqual('Message');
           expect(after).toEqual('Overridden');
+        });
+
+        it('should use context of object by default', function() {
+          instance.message = property('message', {
+            set: function(value, previous) {
+              return {
+                override: value + ' from ' + this.name + '!'
+              };
+            }
+          });
+
+          instance.message('Hello');
+          expect(instance.message()).toEqual('Hello from Chart!');
+        });
+
+        it('should use context if set', function() {
+          instance.message = property('message', {
+            set: function(value, previous) {
+              return {
+                override: value + ' from ' + this.name + '!'
+              };
+            },
+            context: {name: 'Context'}
+          });
+
+          instance.message('Hello');
+          expect(instance.message()).toEqual('Hello from Context!');
         });
       });
     });
@@ -287,6 +326,41 @@
         spyOn(d3, 'select').and.callFake(function(element) { return element; });
 
         expect(helpers.getParentData(element)).toEqual([1,2,3]);
+      });
+    });
+
+    describe('resolveChart', function() {
+      d3.chart('TEST-AxisSpecial', {});
+      
+      // chart type - type - component
+      // 1. Values - Line - Chart -> LineValues
+      // 2. XY - Line - Chart -> Line
+      // 3. XY - Special - Axis -> AxisSpecial
+      // 4. Values - Inset - Legend -> InsetLegend
+      // 5. Values - Unknown - Axis -> AxisValues
+
+      it('should find by type + chart type first', function() {
+        expect(helpers.resolveChart('Line', 'Chart', 'Values')).toBe(d3.chart('LineValues'));
+      });
+
+      it('should then find by type', function() {
+        expect(helpers.resolveChart('Line', 'Chart', 'XY')).toBe(d3.chart('Line'));
+      });
+
+      it('should then find by type + component', function() {
+        expect(helpers.resolveChart('Special', 'TEST-Axis', 'XY')).toBe(d3.chart('TEST-AxisSpecial'));
+      });
+
+      it('should then find by component + type', function() {
+        expect(helpers.resolveChart('Inset', 'Legend', 'Values')).toBe(d3.chart('InsetLegend'));
+      });
+
+      it('should then find by chart type + component', function() {
+        expect(helpers.resolveChart('Unknown', 'Axis', 'Values')).toBe(d3.chart('AxisValues'));
+      });
+
+      it('should throw if not chart is found', function() {
+        expect(helpers.resolveChart).toThrow();
       });
     });
 
