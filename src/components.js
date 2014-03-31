@@ -192,6 +192,31 @@
         });
       },
 
+      transform: function(allData) {
+        var extractData = d3.chart('Configurable').prototype.extractData;
+        var series = _.reduce(this.options.charts, function(memo, chart) {
+          return memo.concat(getChartData.call(this, chart));
+        }, [], this);
+
+        return series;
+                
+        function getChartData(chart) {
+          if (chart) {
+            var chartData = extractData(chart, allData);
+
+            // Extend each series of data with information from chart
+            // (Don't overwrite series information with chart information)
+            return _.map(chartData, function(chartSeries) {
+              // TODO: Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
+              return _.defaults(chartSeries, chart.options);
+            }, this);
+          }
+          else {
+            return [];
+          }
+        }
+      },
+
       dataKey: function(d, i) {
         return d.key;
       },

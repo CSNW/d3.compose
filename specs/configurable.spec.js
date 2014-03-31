@@ -96,30 +96,30 @@
 
     describe('data', function() {
       it('should extract data by dataKey(s)', function() {
-        var extracted = chart.extractData({options: {dataKey: 'a'}}, 'Name', data);
+        var extracted = chart.extractData({options: {dataKey: 'a'}}, data);
         expect(_.pluck(extracted, 'key')).toEqual(['a1', 'a2']);
 
-        extracted = chart.extractData({options: {dataKey: 'b'}}, 'Name', values);
+        extracted = chart.extractData({options: {dataKey: 'b'}}, values);
         expect(_.pluck(extracted, 'key')).toEqual(['b']);
 
-        extracted = chart.extractData({options: {dataKey: ['a', 'b']}}, 'Name', data);
+        extracted = chart.extractData({options: {dataKey: ['a', 'b']}}, data);
         expect(_.pluck(extracted, 'key')).toEqual(['a1', 'a2', 'b']);
 
-        extracted = chart.extractData({options: {dataKey: ['b', 'c']}}, 'Name', values);
+        extracted = chart.extractData({options: {dataKey: ['b', 'c']}}, values);
         expect(_.pluck(extracted, 'key')).toEqual(['b', 'c']);
       });
 
       it('should extract data by filterKeys', function() {
-        var extracted = chart.extractData({options: {filterKeys: ['a']}}, 'Name', data);
+        var extracted = chart.extractData({options: {filterKeys: ['a']}}, data);
         expect(_.pluck(extracted, 'key')).toEqual(['b', 'c']);
 
-        extracted = chart.extractData({options: {filterKeys: ['b']}}, 'Name', values);
+        extracted = chart.extractData({options: {filterKeys: ['b']}}, values);
         expect(_.pluck(extracted, 'key')).toEqual(['a1', 'a2', 'c']);
 
-        extracted = chart.extractData({options: {filterKeys: ['a', 'b']}}, 'Name', data);
+        extracted = chart.extractData({options: {filterKeys: ['a', 'b']}}, data);
         expect(_.pluck(extracted, 'key')).toEqual(['c']);
 
-        extracted = chart.extractData({options: {filterKeys: ['b', 'c']}}, 'Name', values);
+        extracted = chart.extractData({options: {filterKeys: ['b', 'c']}}, values);
         expect(_.pluck(extracted, 'key')).toEqual(['a1', 'a2']);
       });
     });

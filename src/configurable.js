@@ -130,8 +130,21 @@
       options = options === false ? {display: false}: (options || {});
       options = _.defaults({}, options, d3.chart('Configurable').defaultLegendOptions);
 
+      // Load chart information
+      if (options.dataKey) {
+        // Load only charts matching dataKey(s)
+        var dataKeys = _.isArray(options.dataKey) ? options.dataKey : [options.dataKey];
+        options.charts = _.filter(this.charts, function(chart) {
+          return _.contains(dataKeys, chart.options.dataKey);
+        });
+      }
+      else {
+        options.charts = this.charts;  
+      }
+
       var Legend = helpers.resolveChart(options.type, 'Legend', this.type);
-      var legend = new Legend(this.base, options);
+      var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartBase() : this.base;
+      var legend = new Legend(base, options);
 
       this.attachComponent('legend', legend);
     },
@@ -140,12 +153,12 @@
       var item = this.chartsById[name] || this.componentsById[name];
 
       if (item)
-        return this.extractData(item, name, data);
+        return this.extractData(item, data);
       else
         return data;
     },
 
-    extractData: function(item, name, data) {
+    extractData: function(item, data) {
       var dataKey = item.options.dataKey;
       var filterKeys = item.options.filterKeys;
 
@@ -171,42 +184,6 @@
         return data;
       }
     },
-
-    // TODO: Move functionality to legend
-    // extractLegendData: function(legend, data) {
-    //   if (legend && legend.options && legend.options.dataKey) return this.extractData(legend, 'legend', data);
-    //   var options = legend && legend.options && legend.options.data || {};
-
-    //   var series;
-    //   if (options.charts) {
-    //     series = _.reduce(options.charts, function(memo, index) {
-    //       return memo.concat(getChartData.call(this, this.charts && this.charts[index]));
-    //     }, [], this);
-    //   }
-    //   else {
-    //     series = _.reduce(this.charts, function(memo, chart) {
-    //       return memo.concat(getChartData.call(this, chart));
-    //     }, [], this);
-    //   }
-
-    //   function getChartData(chart) {
-    //     if (chart) {
-    //       var chartData = this.extractData(chart, chart.id, data);
-
-    //       // Extend each series in data with information from chart
-    //       // (Don't overwrite series information with chart information)
-    //       return _.map(chartData, function(chartSeries) {
-    //         // TODO: Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
-    //         return _.defaults(chartSeries, chart.options);
-    //       }, this);
-    //     }
-    //     else {
-    //       return [];
-    //     }
-    //   }
-      
-    //   return series;
-    // },
 
     getMatchingAxisScale: function(dataKey, type) {
       var match = _.find(this.axes, function(axis) {
