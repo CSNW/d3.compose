@@ -52,8 +52,8 @@
         positionByKey = {
           x: 'bottom',
           y: 'left',
-          x2: 'top',
-          y2: 'right'
+          secondaryX: 'top',
+          secondaryY: 'right'
         };
         var defaultOptions = {
           display: true,

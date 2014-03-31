@@ -42,7 +42,6 @@
       selection = d3.select('#chart')
         .append('svg');
 
-      // TODO axis should just need scale, not xScale/yScale
       configuration = {
         type: 'Values',
         charts: [
@@ -50,8 +49,8 @@
           {type: 'Line', dataKey: 'b'}
         ],
         axes: {
-          x: {xScale: {type: 'ordinal', domain: ['a', 'b', 'c'], roundRangeBands: [[0, 600]]}},
-          y: {yScale: {domain: [0, 1000], range: [400, 0]}}
+          x: {scale: {type: 'ordinal', domain: ['a', 'b', 'c'], roundRangeBands: [[0, 600]]}},
+          y: {scale: {domain: [0, 1000], range: [400, 0]}}
         },
         legend: {},
         title: ''
@@ -76,12 +75,12 @@
 
       it('should pass matching axis to chart', function() {
         _.extend(configuration.axes, {
-          x2: {
-            xScale: {type: 'ordinal', domain: ['d', 'e', 'f'], rangeRoundBands: [[0, 600]]},
+          secondaryX: {
+            scale: {type: 'ordinal', domain: ['d', 'e', 'f'], rangeRoundBands: [[0, 600]]},
             dataKey: 'a'
           },
-          y2: {
-            yScale: {domain: [0, 500], range: [400, 0]},
+          secondaryY: {
+            scale: {domain: [0, 500], range: [400, 0]},
             dataKey: 'b'
           }
         });
