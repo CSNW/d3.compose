@@ -216,7 +216,32 @@
     });
 
     describe('dimensions', function() {
+      var fixture, selection, dimensions;
+      beforeEach(function() {
+        fixture = setFixtures('<div id="chart"></div>');
+        selection = d3.select('#chart')
+          .append('svg');
+      });
 
+      function height() {
+        return helpers.dimensions(selection).height;
+      }
+      function width() {
+        return helpers.dimensions(selection).width;
+      }
+
+      it('should find width/height of selection', function() {
+        expect(width()).toEqual(0);
+        expect(height()).toEqual(0);
+
+        selection.append('rect').attr('width', 50).attr('height', 100);
+        expect(width()).toEqual(50);
+        expect(height()).toEqual(100);
+
+        selection.attr('width', 600).attr('height', 300);
+        expect(width()).toEqual(600);
+        expect(height()).toEqual(300);
+      });
     });
 
     describe('transform', function() {
@@ -289,7 +314,7 @@
           'border-radius': '4px',
           'stroke-dasharray': '4,4'
         };
-        var expected = 'color:blue;border:solid 1px #ccc;border-radius:4px;stroke-dasharray:4,4;';
+        var expected = 'color: blue; border: solid 1px #ccc; border-radius: 4px; stroke-dasharray: 4,4;';
 
         expect(helpers.style(styles)).toEqual(expected);
       });
