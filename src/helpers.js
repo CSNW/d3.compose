@@ -82,6 +82,18 @@
       }
 
       var previous = underlying;
+      if (typeof options.validate == 'function' && !options.validate(value)) {
+        // Assumption: Previous value already had set called, so don't call set for previous value
+        //             Default value has not had set called, so call set for default value
+        //             Neither previous nor default, don't set value and don't call set
+        if (!_.isUndefined(previous))
+          return set(this, previous);
+        else if (!_.isUndefined(getSet.defaultValue))
+          value = getSet.defaultValue;
+        else
+          return;
+      }
+
       set(this, value);
       
       if (typeof options.set == 'function') {
@@ -403,7 +415,7 @@
         d3.chart(componentType + chartType);
 
       if (!Chart)
-        throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + type + ' and component ' + component);
+        throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + type + ' and component ' + componentType);
 
       return Chart;
     }

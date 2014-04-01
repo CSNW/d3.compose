@@ -183,6 +183,35 @@
           instance.message('Hello');
           expect(instance.message()).toEqual('Hello from Context!');
         });
+
+        describe('validate', function() {
+          var spy;
+          beforeEach(function() {
+            spy = jasmine.createSpy('set');
+            instance.message = property('message', {
+              validate: function(value) {
+                return value != 'INVALID';
+              },
+              set: spy,
+              defaultValue: 'Default'
+            });
+          });
+
+          it('should reset to previous value when invalid and not call set', function() {
+            instance.message('Valid');
+            expect(spy.calls.argsFor(0)).toEqual(['Valid', undefined]);
+
+            instance.message('INVALID');
+            expect(instance.message()).toEqual('Valid');
+            expect(spy.calls.count()).toEqual(1);
+          });
+
+          it('should reset to default value if no previous value when invalid', function() {
+            instance.message('INVALID');
+            expect(spy.calls.argsFor(0)).toEqual(['Default', undefined]);
+            expect(instance.message()).toEqual('Default');
+          });
+        });
       });
     });
 
