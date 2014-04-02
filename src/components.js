@@ -2,23 +2,51 @@
   var property = helpers.property;
 
   d3.chart('Base').extend('Component', {
-    chartOffset: property('chartOffset', {
-      get: function(values) {
-        values = (values && typeof values == 'object') ? values : {};
-        values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
+    initialize: function() {
+      
+    },
 
-        return values;
+    width: property('width', {
+      defaultValue: function() {
+        return helpers.dimensions(this.base).width;
+      }
+    }),
+    height: property('height', {
+      defaultValue: function() {
+        return helpers.dimensions(this.base).height;
+      }
+    }),
+
+    /**
+      Height/width to use in layout calculations
+      (Override for more specific sizing in layout calculations)
+    */
+    layoutWidth: function() {
+      return this.width();
+    },
+    layoutHeight: function() {
+      return this.height();
+    },
+
+    /**
+      Set layout of underlying base
+      (Override for elements placed within chart)
+    */
+    setLayout: function(x, y, options) {
+      this.base.attr('transform', helpers.transform.translate(x, y));
+      if (options && !_.isUndefined(options.height))
+        this.height(options.height);
+      if (options && !_.isUndefined(options.width))
+        this.width(options.width);
+    },
+
+    position: property('position', {
+      defaultValue: 'top',
+      validate: function(value) {
+        return _.contains(['top', 'right', 'bottom', 'left'], value);
       },
-      set: function(values, previous) {
-        values = (values && typeof values == 'object') ? values : {};
-        values = _.defaults(values, previous, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return {
-          override: values,
-          after: function() {
-            this.trigger('change:dimensions');
-          }
-        };
+      set: function(value, previous) {
+        this.trigger('change:position');
       }
     })
   });
@@ -35,8 +63,9 @@
         }
 
         this.axis = d3.svg.axis();
+        this.axisLayer = this.base.append('g').attr('class', 'axis');
 
-        this.layer('Axis', this.base.append('g').classed('axis', true), {
+        this.layer('Axis', this.axisLayer, {
           dataBind: function(data) {
             // Force addition of just one axis with dummy data array
             // (Axis will be drawn using underlying chart scales and data)
@@ -45,7 +74,7 @@
           },
           insert: function() {
             var chart = this.chart();
-            var position = chart.axisPosition();
+            var position = chart.position();
             var orientation = chart.axisOrientation();
 
             // Get scale by orientation
@@ -69,6 +98,17 @@
         });
       },
 
+      layoutHeight: function() {
+        return this._labelOverhang().height;
+      },
+      layoutWidth: function() {
+        return this._labelOverhang().width;
+      },
+      setLayout: function(x, y, options) {
+        // Axis is positioned with chartBase, so don't set layout
+        return;
+      },
+
       isXAxis: function() {
         return this.axisOrientation() == 'horizontal';
       },
@@ -86,22 +126,19 @@
           y0: {x: 0, y: this.y0(d, i)}
         };
         
-        return helpers.translate(translationByPosition[this.axisPosition()]);
+        return helpers.translate(translationByPosition[this.position()]);
       },
 
       // Position axis: top, right, bottom, left, x0, y0
-      axisPosition: property('axisPosition', {
+      position: property('position', {
         defaultValue: 'bottom',
         set: function(value) {
-          // Update chartOffset by position
-          var offset = this.chartOffset();
-          var offsetDistance = this.axisOffset();
-          var orient = this.axisOrient();
-          
-          if (!offset[orient]) {
-            offset[orient] = offsetDistance;
-            this.chartOffset(offset);
-          }
+          // TODO Do this automatically for properties
+          this.trigger('change:position');
+        },
+        validate: function(value) {
+          // TODO Add back x0 and y0
+          return _.contains(['top', 'right', 'bottom', 'left'], value);
         }
       }),
       // Distance to offset chart margin on axis side
@@ -112,18 +149,16 @@
         }
       }),
 
-      axisOrient: property('axisOrient', {
-        defaultValue: function() {
-          var orient = this.axisPosition();
-          
-          if (orient == 'x0')
-            orient = 'left';
-          else if (orient == 'y0')
-            orient = 'bottom';
-          
-          return orient;
-        }
-      }),
+      axisOrient: function() {
+        var orient = this.position();
+        
+        if (orient == 'x0')
+          orient = 'left';
+        else if (orient == 'y0')
+          orient = 'bottom';
+        
+        return orient;
+      },
       axisOrientation: function() {
         var byPosition = {
           top: 'horizontal',
@@ -134,7 +169,25 @@
           y0: 'horizontal'
         };
 
-        return byPosition[this.axisPosition()];
+        return byPosition[this.position()];
+      },
+
+      _labelOverhang: function() {
+        // TODO Look into overhang relative to chartBase (for x0, y0)
+        var overhangs = {width: [0], height: [0]};
+        var orientation = this.axisOrientation();
+
+        this.axisLayer.selectAll('.tick').each(function() {
+          if (orientation == 'horizontal')
+            overhangs.height.push(this.getBBox().height);
+          else
+            overhangs.width.push(this.getBBox().width);
+        });
+        
+        return {
+          width: _.max(overhangs.width),
+          height: _.max(overhangs.height)
+        };
       }
     });
   
@@ -194,27 +247,19 @@
 
       transform: function(allData) {
         var extractData = d3.chart('Configurable').prototype.extractData;
-        var series = _.reduce(this.options.charts, function(memo, chart) {
-          return memo.concat(getChartData.call(this, chart));
+        var data = _.reduce(this.options.charts, function(data, chart) {
+          var chartData = _.map(extractData(chart, allData), function(series, index) {
+            return {
+              chart: chart,
+              series: series,
+              seriesIndex: index
+            };
+          });
+
+          return data.concat(chartData);
         }, [], this);
 
-        return series;
-                
-        function getChartData(chart) {
-          if (chart) {
-            var chartData = extractData(chart, allData);
-
-            // Extend each series of data with information from chart
-            // (Don't overwrite series information with chart information)
-            return _.map(chartData, function(chartSeries) {
-              // TODO: Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
-              return _.defaults(chartSeries, chart.options);
-            }, this);
-          }
-          else {
-            return [];
-          }
-        }
+        return data;
       },
 
       dataKey: function(d, i) {
@@ -262,18 +307,7 @@
             .attr('r', 10)
             .attr('class', 'bar');
         }
-      },
-
-      // Position legend: top, right, bottom, left
-      legendPosition: property('legendPosition', {
-        defaultValue: 'right',
-        set: function(value) {
-          var offset = {top: 0, right: 0, bottom: 0, left: 0};
-
-          offset[value] = 100;
-          this.chartOffset(offset);
-        }
-      })
+      }
     });
 
   d3.chart('Legend').extend('InsetLegend', {
@@ -281,15 +315,26 @@
       this.positionLegend();
     },
 
+    layoutHeight: function() {
+      return 0;
+    },
+    layoutWidth: function() {
+      return 0;
+    },
+    setLayout: function(x, y, options) {
+      // Positioned within chartBase, so don't set layout
+      return;
+    },
+
     positionLegend: function() {
       if (this.legend) {
-        var position = this.legendPosition();
+        var position = this.position();
         this.legend.attr('transform', helpers.translate(position.x, position.y));
       }
     },
 
     // Position legend: (x,y) of top left corner
-    legendPosition: property('legendPosition', {
+    position: property('position', {
       defaultValue: {x: 10, y: 10},
       set: function(value, previous) {
         value = (value && _.isObject(value)) ? value : {};
