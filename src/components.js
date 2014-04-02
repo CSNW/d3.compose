@@ -82,7 +82,7 @@ d3.chart('Component')
 
             // this.select('text')
             this
-              .attr('transform', helpers.transform.translate(chart.width() / 2, chart.height() / 2))
+              .attr('transform', chart.transform())
               .attr('style', chart.style())
               .attr('alignment-baseline', 'middle')
               .attr('text-anchor', 'middle')
@@ -92,10 +92,27 @@ d3.chart('Component')
       });
     },
 
+    transform: function() {
+      var translate = helpers.transform.translate(this.width() / 2, this.height() / 2);
+      var rotate = helpers.transform.rotate(this.rotation());
+
+      return translate + rotate;
+    },
+
     title: property('title'),
     style: property('style', {
       get: function(value) {
-        return helpers.style(value);
+        return helpers.style(value) || null;
+      }
+    }),
+    rotation: property('rotation', {
+      defaultValue: function() {
+        var rotateByPosition = {
+          right: 90,
+          left: -90
+        };
+
+        return rotateByPosition[this.position()] || 0;
       }
     })
   });

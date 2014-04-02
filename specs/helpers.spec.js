@@ -257,6 +257,18 @@
           expect(helpers.transform.translate({y: 10})).toEqual('translate(0, 10)');
         });
       });
+
+      describe('rotate', function() {
+        it('should create rotation without center (default to 0)', function() {
+          expect(helpers.transform.rotate(10)).toEqual('rotate(10)');
+          expect(helpers.transform.rotate()).toEqual('rotate(0)');
+        });
+
+        it('should create rotation with center (default to 0,0)', function() {
+          expect(helpers.transform.rotate(10, {x: 5, y: 6})).toEqual('rotate(10 5,6)');
+          expect(helpers.transform.rotate(10, {z: 5, r: 10})).toEqual('rotate(10 0,0)');
+        });
+      });
     });
 
     describe('createScaleFromOptions', function() {

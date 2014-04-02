@@ -155,6 +155,20 @@
       }
         
       return 'translate(' + (x || 0) + ', ' + (y || 0) + ')';
+    },
+
+    /**
+      Rotate by degrees, with optional center
+
+      @param {Number} degrees
+      @param {Object} [center = {x: 0, y: 0}]
+    */
+    rotate: function rotate(degrees, center) {
+      var rotation = 'rotate(' + (degrees || 0);
+      if (center)
+        rotation += ' ' + (center.x || 0) + ',' + (center.y || 0);
+
+      return rotation += ')';
     }
   };
 

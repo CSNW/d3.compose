@@ -84,6 +84,17 @@
 
         this.attachComponent(id, axis);
         this.axes[axisKey] = axis;
+
+        if (axisOptions.title) {
+          var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
+          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position});
+          
+          var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type);
+          var title = new Title(this.componentBase(), titleOptions);
+          id = id + '_title';
+
+          this.attachComponent(id, title);
+        }
       }, this);
 
       // Setup filter keys for x and y axes

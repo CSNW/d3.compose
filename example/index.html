@@ -60,8 +60,9 @@
           }
         ],
         axes: {
-          y: {scale: {domain: [0, 20000]}},
-          secondaryY: {dataKey: 'input', scale: {domain: [0, 70]}}
+          x: {title: 'X Title'},
+          y: {scale: {domain: [0, 20000]}, title: 'Y1 Title'},
+          secondaryY: {dataKey: 'input', scale: {domain: [0, 70]}, title: 'Y2 Title'}
         },
         legend: {
           type: 'Inset',
