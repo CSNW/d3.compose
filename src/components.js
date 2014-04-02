@@ -273,7 +273,7 @@ d3.chart('Component')
               .attr('height', 20)
               .attr('class', 'legend-swatch');
             groups.append('text')
-              .attr('class', 'legend-label')
+              .attr('class', 'legend-label label')
               .attr('transform', helpers.translate(25, 0));
             
             return groups;
@@ -296,19 +296,41 @@ d3.chart('Component')
 
       transform: function(allData) {
         var extractData = d3.chart('Configurable').prototype.extractData;
-        var data = _.reduce(this.options.charts, function(data, chart) {
-          var chartData = _.map(extractData(chart, allData), function(series, index) {
-            return {
-              chart: chart,
-              series: series,
-              seriesIndex: index
-            };
-          });
-
-          return data.concat(chartData);
+        var series = _.reduce(this.options.charts, function(memo, chart) {
+          return memo.concat(getChartData.call(this, chart));
         }, [], this);
 
-        return data;
+        return series;
+
+        function getChartData(chart) {
+          if (chart) {
+            var chartData = extractData(chart, allData);
+
+            // Extend each series of data with information from chart
+            // (Don't overwrite series information with chart information)
+            return _.map(chartData, function(chartSeries) {
+              // TODO Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
+              return _.defaults(chartSeries, chart.options);
+            }, this);
+          }
+          else {
+            return [];
+          }
+        }
+
+        // var data = _.reduce(this.options.charts, function(data, chart) {
+        //   var chartData = _.map(extractData(chart, allData), function(series, index) {
+        //     return {
+        //       chart: chart,
+        //       series: series,
+        //       seriesIndex: index
+        //     };
+        //   });
+
+        //   return data.concat(chartData);
+        // }, [], this);
+
+        // return data;
       },
 
       dataKey: function(d, i) {
