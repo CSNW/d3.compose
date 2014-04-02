@@ -51,6 +51,55 @@
     })
   });
 
+  // Title
+d3.chart('Component')
+  .extend('Title', {
+    initialize: function() {
+      this.layer('Title', this.base.append('g').classed('title', true), {
+        dataBind: function(data) {
+          // TODO Look into databound titles
+
+          // return this.selectAll('g')
+          return this.selectAll('text')
+            .data([0]);
+        },
+        insert: function() {
+          // var group = this.append('g');
+          // group.append('rect');
+          // group.append('text');
+          // return group;
+
+          return this.append('text');
+        },
+        events: {
+          merge: function() {
+            var chart = this.chart();
+
+            // this.select('rect')
+            //   .attr('width', chart.width() / 2)
+            //   .attr('height', chart.height() / 2)
+            //   .attr('fill', '#999');
+
+            // this.select('text')
+            this
+              .attr('transform', helpers.transform.translate(chart.width() / 2, chart.height() / 2))
+              .attr('style', chart.style())
+              .attr('alignment-baseline', 'middle')
+              .attr('text-anchor', 'middle')
+              .text(chart.title());
+          }
+        }
+      });
+    },
+
+    title: property('title'),
+    style: property('style', {
+      get: function(value) {
+        return helpers.style(value);
+      }
+    })
+  });
+
   // Axis: Add axis for given (x,y) series data
   d3.chart('Component')
     .mixin(extensions.Series, extensions.XY)
