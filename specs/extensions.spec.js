@@ -82,13 +82,13 @@
         var i = 2;
 
         chart.options.style = {fill: 'red', stroke: 'blue'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:red;stroke:blue;');
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: red; stroke: blue;');
 
         data[1].style = {fill: 'yellow', 'stroke-width': '1.5px'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:yellow;stroke-width:1.5px;stroke:blue;');
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: yellow; stroke-width: 1.5px; stroke: blue;');
 
         data[1].values[2].style = {fill: 'purple', 'font-size': '16px'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill:purple;font-size:16px;stroke-width:1.5px;stroke:blue;');
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: purple; font-size: 16px; stroke-width: 1.5px; stroke: blue;');
       });
     });
 

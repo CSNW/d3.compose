@@ -82,6 +82,18 @@
       }
 
       var previous = underlying;
+      if (typeof options.validate == 'function' && !options.validate(value)) {
+        // Assumption: Previous value already had set called, so don't call set for previous value
+        //             Default value has not had set called, so call set for default value
+        //             Neither previous nor default, don't set value and don't call set
+        if (!_.isUndefined(previous))
+          return set(this, previous);
+        else if (!_.isUndefined(getSet.defaultValue))
+          value = getSet.defaultValue;
+        else
+          return;
+      }
+
       set(this, value);
       
       if (typeof options.set == 'function') {
@@ -112,12 +124,13 @@
   }
 
   // Dimensions helper for robustly determining width/height of given selector
-  function dimensions(selector) {
-    var element = selector && selector.length && selector[0] && selector[0].length && selector[0][0];
+  function dimensions(selection) {
+    var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
+    var boundingBox = element && typeof element.getBBox == 'function' && element.getBBox() || {};
 
     return {
-      width: parseFloat((selector && selector.attr('width')) || (element && element.clientWidth) || 0),
-      height: parseFloat((selector && selector.attr('height')) || (element && element.clientHeight) || 0)
+      width: parseFloat((selection && selection.attr('width')) || boundingBox.width || 0),
+      height: parseFloat((selection && selection.attr('height')) || boundingBox.height || 0)
     };
   }
 
@@ -142,6 +155,20 @@
       }
         
       return 'translate(' + (x || 0) + ', ' + (y || 0) + ')';
+    },
+
+    /**
+      Rotate by degrees, with optional center
+
+      @param {Number} degrees
+      @param {Object} [center = {x: 0, y: 0}]
+    */
+    rotate: function rotate(degrees, center) {
+      var rotation = 'rotate(' + (degrees || 0);
+      if (center)
+        rotation += ' ' + (center.x || 0) + ',' + (center.y || 0);
+
+      return rotation += ')';
     }
   };
 
@@ -273,19 +300,19 @@
     Convert key,values to style string
 
     @example
-    style({color: 'red', display: 'block'}) -> color:red;display:block;
+    style({color: 'red', display: 'block'}) -> color: red; display: block;
 
     @param {Object} styles
   */
   function style(styles) {
-    styles = _.reduce(styles, function(memo, value, key) {
-      if (value)
-        return memo + key + ':' + value + ';';
-      else
-        return memo;
-    }, '');
+    if (!styles) return '';
 
-    return styles;
+    styles = _.map(styles, function(value, key) {
+      return key + ': ' + value;
+    });
+    styles = styles.join('; ');
+
+    return styles ? styles + ';' : '';
   }
 
   /**
@@ -385,28 +412,36 @@
     }
   }
 
-  function resolveChart(type, componentType, chartType) {
-      type = type || '';
-      componentType = componentType || '';
-      chartType = chartType || '';
+  /**
+    Resolve chart by type, component, and chart type
 
-      // What to look for:
-      // 1. type + chart type (e.g. Line + Values = LineValues)
-      // 2. type
-      // 3. component + type (e.g. Axis + Values = AxisValues)
-      // 4. type + component (e.g. Inset + Legend = InsetLegend) 
-      // 5. component + chart type (e.g. Axis + Values = AxisValues)
-      var Chart = d3.chart(type + chartType) || 
-        d3.chart(type) || 
-        d3.chart(componentType + type) || 
-        d3.chart(type + componentType) || 
-        d3.chart(componentType + chartType);
+    What to look for:
+    1. chart type + container type (e.g. Line + Values = LineValues)
+    2. chart type
+    3. component type + chart type (e.g. Axis + Values = AxisValues)
+    4. chart type + component type (e.g. Inset + Legend = InsetLegend) 
+    5. component type + container type (e.g. Axis + Values = AxisValues)
 
-      if (!Chart)
-        throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + type + ' and component ' + component);
+    @param {String} chartType type of chart
+    @param {String} componentType type of component
+    @param {String} containerType type of container
+  */
+  function resolveChart(chartType, componentType, containerType) {
+    chartType = chartType || '';
+    componentType = componentType || '';
+    containerType = containerType || '';
 
-      return Chart;
-    }
+    var Chart = d3.chart(chartType + containerType) || 
+      d3.chart(chartType) || 
+      d3.chart(componentType + chartType) || 
+      d3.chart(chartType + componentType) || 
+      d3.chart(componentType + containerType);
+
+    if (!Chart)
+      throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + chartType + ' and component ' + componentType + ' and container ' + containerType);
+
+    return Chart;
+  }
 
   /**
     Mixin extensions into prototype
@@ -427,13 +462,8 @@
         var args = _.toArray(arguments);
 
         _.each(extensions, function(extension) {
-          // if (extension.prototype)
-          //   extension.apply(this, args);
-          // else
           if (extension.initialize)
             extension.initialize.apply(this, args);
-          // else if (extension.prototype && extension.prototype.initialize)
-          //   extension.prototype.initialize.apply(this, args);
         }, this);
       };
     }

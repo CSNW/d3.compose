@@ -11,14 +11,19 @@
     var chart = d3.select('#chart')
       .append('svg')
       .chart('Configurable', {
+        type: 'Values'
         charts: [
-          {type: 'Bars', dataKey: 'participation', yScale: {domain: [0, 20000]}, itemPadding: 20},
-          {type: 'LineValues', dataKey: 'results', yScale: {domain: [0, 70]}, labelPosition: 'top'}
-        ]
+          {type: 'Bars', dataKey: 'participation', itemPadding: 20},
+          {type: 'Line', dataKey: 'results', labels: {position: 'top'}}
+        ],
+        axes: {
+          y: {scale: {domain: [0, 20000]}},
+          secondaryY: {dataKey: 'results', scale: {domain: [0, 70]}}
+        }
       })
       .width(600)
       .height(400)
-      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+      .chartMargins({top: 10});
     ```
 
     @param {Object} options
@@ -40,7 +45,11 @@
       this.type = this.options.type || 'XY';
       this.setupAxes(this.options.axes);
       this.setupCharts(this.options.charts);
+
+      // TODO Look into placing axes layers below charts
+
       this.setupLegend(this.options.legend);
+      this.setupTitle(this.options.title);
     },
 
     setupAxes: function(options) {
@@ -57,7 +66,7 @@
         };
         var defaultOptions = {
           display: true,
-          axisPosition: positionByKey[axisKey]
+          position: positionByKey[axisKey]
         };
 
         var axisOptions;
@@ -75,6 +84,17 @@
 
         this.attachComponent(id, axis);
         this.axes[axisKey] = axis;
+
+        if (axisOptions.title) {
+          var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
+          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position});
+          
+          var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type);
+          var title = new Title(this.componentBase(), titleOptions);
+          id = id + '_title';
+
+          this.attachComponent(id, title);
+        }
       }, this);
 
       // Setup filter keys for x and y axes
@@ -143,10 +163,26 @@
       }
 
       var Legend = helpers.resolveChart(options.type, 'Legend', this.type);
-      var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartBase() : this.base;
+      var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartBase() : this.componentBase();
       var legend = new Legend(base, options);
 
       this.attachComponent('legend', legend);
+    },
+
+    setupTitle: function(options) {
+      if (!options)
+        return;
+
+      // Title may be set directly
+      if (_.isString(options))
+        options = {title: options};
+
+      options = _.defaults({}, options, d3.chart('Configurable').defaultTitleOptions);
+
+      var Title = helpers.resolveChart(options.type, 'Title', this.type);
+      var title = new Title(this.componentBase(), options);
+
+      this.attachComponent('title', title);
     },
 
     demux: function(name, data) {
@@ -212,6 +248,9 @@
     },
     defaultLegendOptions: {
       position: 'right'
+    },
+    defaultTitleOptions: {
+      position: 'top'
     }
   });
 

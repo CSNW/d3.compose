@@ -16,7 +16,7 @@
 </head>
 <body>
   <h1>d3.chart.csnw.configurable Example</h1>
-  <div id="chart_1"></div>
+  <div id="chart-1"></div>
 
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
@@ -34,7 +34,7 @@
     /**
       Chart 1: Line-Bar Values with separate y-axes
     */
-    var chart1 = d3.select('#chart_1')
+    var chart1 = d3.select('#chart-1')
       .append('svg')
       .chart('Configurable', {
         type: 'Values',
@@ -60,13 +60,15 @@
           }
         ],
         axes: {
-          y: {scale: {domain: [0, 20000]}},
-          secondaryY: {dataKey: 'input', scale: {domain: [0, 70]}}
+          x: {title: 'X Title'},
+          y: {scale: {domain: [0, 20000]}, title: 'Y1 Title'},
+          secondaryY: {dataKey: 'input', scale: {domain: [0, 70]}, title: 'Y2 Title'}
         },
         legend: {
           type: 'Inset',
-          legendPosition: {x: 10, y: 0}
-        }
+          position: {x: 10, y: 0}
+        },
+        title: 'Chart Title'
       })
       .width(600)
       .height(400)

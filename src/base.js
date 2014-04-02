@@ -69,25 +69,25 @@
       this.base.classed('chart', true);
       this.chartBase(this.base.append('g').classed('chart-base', true));
 
-      this.updateDimensions();
       this.on('change:dimensions', function() {
-        this.updateDimensions();
         this.redraw();
       });
     },
 
-    updateDimensions: function() {
+    draw: function(data) {
       // Explicitly set width and height of container
       this.base
         .attr('width', this.width())
         .attr('height', this.height());
 
-      // Place chart base within container
-      var margins = this.updateChartMargins();
-      this.chartBase()
-        .attr('transform', helpers.translate(margins.left, margins.top))
-        .attr('width', this.chartWidth())
-        .attr('height', this.chartHeight());
+      // Pre-draw for accurate dimensions for layout
+      this._preDraw(data);
+
+      // Layout now that components' dimensions are known
+      this.updateLayout();
+
+      // Full draw now that everything has been laid out
+      d3.chart().prototype.draw.call(this, data);
     },
 
     redraw: function() {
@@ -109,29 +109,21 @@
       this.components.push(component);
       this.componentsById[id] = component;
 
-      component.on('change:dimensions', function() {
+      component.on('change:position', function() {
         this.trigger('change:dimensions');
       });
     },
 
-    updateChartMargins: function() {
-      // Get user-defined chart margins
-      var margins = this.chartMargins();
+    componentBase: function() {
+      // Return new group so that "this.base" can be translated within component
+      return this.base.append('g').attr('class', 'component');
+    },
 
-      // Update overall chart margins with component chartOffsets
-      _.each(this.components, function(component) {
-        var offset = component && component.chartOffset && component.chartOffset();
-
-        if (offset) {
-          margins.top += offset.top || 0;
-          margins.right += offset.right || 0;
-          margins.bottom += offset.bottom || 0;
-          margins.left += offset.left || 0;
-        }
-      }, this);
-      
-      this._chartMargins(margins);
-      return margins;
+    updateLayout: function() {
+      var layout = this._extractLayout();
+      this._updateChartMargins(layout);
+      this._positionChartBase();
+      this._positionComponents(layout);
     },
 
     rawData: property('rawData'),
@@ -157,12 +149,7 @@
         };
       }
     }),
-    // Internal chart margins to separate from user-defined margins
-    _chartMargins: property('_chartMargins', {
-      defaultValue: function() {
-        return _.extend({}, this.chartMargins());
-      }
-    }),
+    
     chartWidth: function() {
       var margins = this._chartMargins();
       return this.width() - margins.left - margins.right;
@@ -187,7 +174,109 @@
       set: function(value) {
         this.trigger('change:dimensions');
       }
-    })
+    }),
+
+    _preDraw: function(data) {
+      _.each(this.componentsById, function(component, id) {
+        component.draw(this.demux ? this.demux(id, data) : data);
+      }, this);
+    },
+
+    _positionChartBase: function() {
+      var margins = this._chartMargins();
+
+      this.chartBase()
+        .attr('transform', helpers.transform.translate(margins.left, margins.top))
+        .attr('width', this.chartWidth())
+        .attr('height', this.chartHeight());
+    },
+
+    _positionComponents: function(layout) {
+      var margins = this._chartMargins();
+      var width = this.width();
+      var height = this.height();
+      var chartWidth = this.chartWidth();
+      var chartHeight = this.chartHeight();
+
+      _.reduce(layout.top, function(previous, part, index, parts) {
+        var y = previous - part.offset;
+        setLayout(part.component, margins.left, y, {width: chartWidth});
+        
+        return y;
+      }, margins.top);
+
+      _.reduce(layout.right, function(previous, part, index, parts) {
+        var previousPart = parts[index - 1] || {offset: 0};
+        var x = previous + previousPart.offset;
+        setLayout(part.component, x, margins.top, {height: chartHeight});
+
+        return x;
+      }, width - margins.right);
+
+      _.reduce(layout.bottom, function(previous, part, index, parts) {
+        var previousPart = parts[index - 1] || {offset: 0};
+        var y = previous + previousPart.offset;
+        setLayout(part.component, margins.left, y, {width: chartWidth});
+
+        return y;
+      }, height - margins.bottom);
+
+      _.reduce(layout.left, function(previous, part, index, parts) {
+        var x = previous - part.offset;
+        setLayout(part.component, x, margins.top, {height: chartHeight});
+
+        return x;
+      }, margins.left);
+
+      function setLayout(component, x, y, options) {
+        if (component && _.isFunction(component.setLayout))
+          component.setLayout(x, y, options);
+      }
+    },
+
+    // Update margins from components layout
+    _updateChartMargins: function(layout) {
+      var margins = this.chartMargins();
+      _.each(layout, function(parts, key) {
+        _.each(parts, function(part) {
+          margins[key] += part.offset || 0;
+        });
+      });
+      this._chartMargins(margins);
+
+      return margins;
+    },
+
+    // Extract layout from components
+    _extractLayout: function() {
+      var layout = {top: [], right: [], bottom: [], left: []};
+      _.each(this.components, function(component) {
+        var position = component.position();
+        if (!_.contains(['top', 'right', 'bottom', 'left'], position))
+          return;
+
+        var offset;
+        if (position == 'top' || position == 'bottom')
+          offset = component.layoutHeight();
+        else
+          offset = component.layoutWidth();
+        
+
+        layout[position].push({
+          offset: offset,
+          component: component
+        });
+      });
+
+      return layout;
+    },
+
+    // Internal chart margins to separate from user-defined margins
+    _chartMargins: property('_chartMargins', {
+      defaultValue: function() {
+        return _.extend({}, this.chartMargins());
+      }
+    }),
   });
   
 

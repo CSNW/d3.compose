@@ -183,11 +183,65 @@
           instance.message('Hello');
           expect(instance.message()).toEqual('Hello from Context!');
         });
+
+        describe('validate', function() {
+          var spy;
+          beforeEach(function() {
+            spy = jasmine.createSpy('set');
+            instance.message = property('message', {
+              validate: function(value) {
+                return value != 'INVALID';
+              },
+              set: spy,
+              defaultValue: 'Default'
+            });
+          });
+
+          it('should reset to previous value when invalid and not call set', function() {
+            instance.message('Valid');
+            expect(spy.calls.argsFor(0)).toEqual(['Valid', undefined]);
+
+            instance.message('INVALID');
+            expect(instance.message()).toEqual('Valid');
+            expect(spy.calls.count()).toEqual(1);
+          });
+
+          it('should reset to default value if no previous value when invalid', function() {
+            instance.message('INVALID');
+            expect(spy.calls.argsFor(0)).toEqual(['Default', undefined]);
+            expect(instance.message()).toEqual('Default');
+          });
+        });
       });
     });
 
     describe('dimensions', function() {
+      var fixture, selection, dimensions;
+      beforeEach(function() {
+        fixture = setFixtures('<div id="chart"></div>');
+        selection = d3.select('#chart')
+          .append('svg');
+      });
 
+      function height() {
+        return helpers.dimensions(selection).height;
+      }
+      function width() {
+        return helpers.dimensions(selection).width;
+      }
+
+      it('should find width/height of selection', function() {
+        expect(width()).toEqual(0);
+        expect(height()).toEqual(0);
+
+        selection.append('rect').attr('width', 50).attr('height', 100);
+        expect(width()).toEqual(50);
+        expect(height()).toEqual(100);
+
+        selection.attr('width', 600).attr('height', 300);
+        expect(width()).toEqual(600);
+        expect(height()).toEqual(300);
+      });
     });
 
     describe('transform', function() {
@@ -201,6 +255,18 @@
           expect(helpers.transform.translate()).toEqual('translate(0, 0)');
           expect(helpers.transform.translate(10)).toEqual('translate(10, 0)');
           expect(helpers.transform.translate({y: 10})).toEqual('translate(0, 10)');
+        });
+      });
+
+      describe('rotate', function() {
+        it('should create rotation without center (default to 0)', function() {
+          expect(helpers.transform.rotate(10)).toEqual('rotate(10)');
+          expect(helpers.transform.rotate()).toEqual('rotate(0)');
+        });
+
+        it('should create rotation with center (default to 0,0)', function() {
+          expect(helpers.transform.rotate(10, {x: 5, y: 6})).toEqual('rotate(10 5,6)');
+          expect(helpers.transform.rotate(10, {z: 5, r: 10})).toEqual('rotate(10 0,0)');
         });
       });
     });
@@ -260,7 +326,7 @@
           'border-radius': '4px',
           'stroke-dasharray': '4,4'
         };
-        var expected = 'color:blue;border:solid 1px #ccc;border-radius:4px;stroke-dasharray:4,4;';
+        var expected = 'color: blue; border: solid 1px #ccc; border-radius: 4px; stroke-dasharray: 4,4;';
 
         expect(helpers.style(styles)).toEqual(expected);
       });
