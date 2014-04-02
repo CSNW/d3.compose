@@ -195,10 +195,12 @@
       var margins = this._chartMargins();
       var width = this.width();
       var height = this.height();
+      var chartWidth = this.chartWidth();
+      var chartHeight = this.chartHeight();
 
       _.reduce(layout.top, function(previous, part, index, parts) {
         var y = previous - part.offset;
-        setLayout(part.component, margins.left, y, {width: width});
+        setLayout(part.component, margins.left, y, {width: chartWidth});
         
         return y;
       }, margins.top);
@@ -206,7 +208,7 @@
       _.reduce(layout.right, function(previous, part, index, parts) {
         var previousPart = parts[index - 1] || {offset: 0};
         var x = previous + previousPart.offset;
-        setLayout(part.component, x, margins.top, {height: height});
+        setLayout(part.component, x, margins.top, {height: chartHeight});
 
         return x;
       }, width - margins.right);
@@ -214,14 +216,14 @@
       _.reduce(layout.bottom, function(previous, part, index, parts) {
         var previousPart = parts[index - 1] || {offset: 0};
         var y = previous + previousPart.offset;
-        setLayout(part.component, margins.left, y, {width: width});
+        setLayout(part.component, margins.left, y, {width: chartWidth});
 
         return y;
       }, height - margins.bottom);
 
       _.reduce(layout.left, function(previous, part, index, parts) {
         var x = previous - part.offset;
-        setLayout(part.component, x, margins.top, {height: height});
+        setLayout(part.component, x, margins.top, {height: chartHeight});
 
         return x;
       }, margins.left);
