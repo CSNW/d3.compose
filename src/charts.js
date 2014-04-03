@@ -143,7 +143,7 @@
       this.once('transform', function() {
         if (this.showLabels()) {
           var labelOptions = _.defaults({}, this.options.labels, {
-            displayAdjacent: this.options.displayAdjacent
+            displayAdjacent: this.displayAdjacent()
           });
 
           var Labels = helpers.resolveChart(this.isValues ? 'LabelValues' : 'Labels', 'Chart', this.isValues);
@@ -297,7 +297,8 @@
           line.interpolate(interpolate);
 
         return line;
-      }
+      },
+      isLine: true
     });
   
   /**

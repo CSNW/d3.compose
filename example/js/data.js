@@ -31,6 +31,75 @@
           {key: 'Year 5', y: 8000},
         ]
       }]
+    },
+
+    chart2: {
+      lines: [{
+        key: 'a',
+        name: 'Series A',
+        values: [
+          {x: 2000, y: 0},
+          {x: 2005, y: 50},
+          {x: 2010, y: 80},
+          {x: 2015, y: 90},
+          {x: 2020, y: 100}
+        ]
+      }, {
+        key: 'b',
+        name: 'Series B',
+        values: [
+          {x: 2000, y: 0},
+          {x: 2005, y: 20},
+          {x: 2010, y: 40},
+          {x: 2015, y: 45},
+          {x: 2020, y: 50}
+        ]
+      }, {
+        key: 'c',
+        name: 'Series C',
+        values: [
+          {x: 2000, y: 0},
+          {x: 2005, y: 10},
+          {x: 2010, y: 30},
+          {x: 2015, y: 35},
+          {x: 2020, y: 40}
+        ]
+      }, {
+        key: 'd',
+        name: 'Series D',
+        values: [
+          {x: 2000, y: 0},
+          {x: 2005, y: 80},
+          {x: 2010, y: 120},
+          {x: 2015, y: 130},
+          {x: 2020, y: 140}
+        ]
+      }],
+      labels: [{
+        key: 'labels',
+        name: 'Labels',
+        values: [
+          {x: 2018, y: 100, key: 'a'},
+          {x: 2018, y: 50, key: 'b'},
+          {x: 2018, y: 40, key: 'c'},
+          {x: 2018, y: 140, key: 'd'}
+        ]
+      }]
+    },
+
+    chart3: {
+      bars: [
+        {
+          key: 'a',
+          name: 'Series A',
+          values: [{x: 0, y: 14707}]
+        },
+        {
+          key: 'b',
+          name: 'Series B',
+          values: [{x: 0, y: 28295}]
+        }
+      ]
     }
   };
 })(this);

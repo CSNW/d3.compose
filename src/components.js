@@ -86,6 +86,7 @@ d3.chart('Component')
               .attr('style', chart.style())
               .attr('alignment-baseline', 'middle')
               .attr('text-anchor', 'middle')
+              .attr('class', chart.options['class'])
               .text(chart.title());
           }
         }
@@ -313,52 +314,30 @@ d3.chart('Component')
 
       transform: function(allData) {
         var extractData = d3.chart('Configurable').prototype.extractData;
-        var series = _.reduce(this.options.charts, function(memo, chart) {
-          return memo.concat(getChartData.call(this, chart));
+        var data = _.reduce(this.options.charts, function(data, chart) {
+          var chartData = _.map(extractData(chart, allData), function(series, index) {
+            return {
+              chart: chart,
+              series: series,
+              seriesIndex: index
+            };
+          });
+
+          return data.concat(chartData);
         }, [], this);
-
-        return series;
-
-        function getChartData(chart) {
-          if (chart) {
-            var chartData = extractData(chart, allData);
-
-            // Extend each series of data with information from chart
-            // (Don't overwrite series information with chart information)
-            return _.map(chartData, function(chartSeries) {
-              // TODO Be much more targeted in options transferred from chart (e.g. just styles, name, etc.)
-              return _.defaults(chartSeries, chart.options);
-            }, this);
-          }
-          else {
-            return [];
-          }
-        }
-
-        // var data = _.reduce(this.options.charts, function(data, chart) {
-        //   var chartData = _.map(extractData(chart, allData), function(series, index) {
-        //     return {
-        //       chart: chart,
-        //       series: series,
-        //       seriesIndex: index
-        //     };
-        //   });
-
-        //   return data.concat(chartData);
-        // }, [], this);
-
-        // return data;
+        
+        return data;
       },
 
       dataKey: function(d, i) {
-        return d.key;
+        return d.chart.id + '.' + d.series.name;
       },
       dataValue: function(d, i) {
-        return d.name;
+        return d.series.name;
       },
       dataSwatchProperties: function(d, i) {
         // Extract swatch properties from data
-        return _.defaults({}, d, {
+        return _.defaults({}, d.chart, d.series, {
           type: 'swatch',
           color: 'blue',
           'class': ''
@@ -381,7 +360,7 @@ d3.chart('Component')
 
         // TODO: Pull styles from itemStyle
         // (most of this is temporary)
-        if (properties.type == 'Line' || properties.type == 'LineValues') {
+        if (properties.isLine) {
           var line = selection.append('line')
             .attr('x1', 0).attr('y1', 10)
             .attr('x2', 20).attr('y2', 10)
@@ -395,7 +374,9 @@ d3.chart('Component')
             .attr('r', 10)
             .attr('class', 'chart-bar');
         }
-      }
+      },
+
+      isLegend: true
     });
 
   d3.chart('Legend').extend('InsetLegend', {

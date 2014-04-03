@@ -418,9 +418,9 @@
     What to look for:
     1. chart type + container type (e.g. Line + Values = LineValues)
     2. chart type
-    3. component type + chart type (e.g. Axis + Values = AxisValues)
-    4. chart type + component type (e.g. Inset + Legend = InsetLegend) 
-    5. component type + container type (e.g. Axis + Values = AxisValues)
+    3. component type + container type (e.g. Axis + Values = AxisValues)
+    4. component type + chart type (e.g. Axis + '' = Axis)
+    5. chart type + component type (e.g. Inset + Legend = InsetLegend) 
 
     @param {String} chartType type of chart
     @param {String} componentType type of component
@@ -433,9 +433,9 @@
 
     var Chart = d3.chart(chartType + containerType) || 
       d3.chart(chartType) || 
+      d3.chart(componentType + containerType) ||
       d3.chart(componentType + chartType) || 
-      d3.chart(chartType + componentType) || 
-      d3.chart(componentType + containerType);
+      d3.chart(chartType + componentType);
 
     if (!Chart)
       throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + chartType + ' and component ' + componentType + ' and container ' + containerType);
@@ -456,6 +456,9 @@
   function mixin(extensions) {
     extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
     var mixed = _.extend.apply(this, [{}].concat(extensions));
+
+    // Don't mixin constructor with prototype
+    delete mixed.constructor;
 
     if (mixed.initialize) {
       mixed.initialize = function initialize() {

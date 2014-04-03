@@ -12,7 +12,6 @@
 .chart {
   background-color: #eee;
   border: solid 1px #ddd;
-  shape-rendering: crispEdges;
 }
 
 .index-0 {stroke: blue; fill: blue;}
@@ -33,6 +32,7 @@
 /* Bars */
 .chart-bar {
   stroke: none;
+  shape-rendering: crispEdges;
 }
 
 /* Labels */
@@ -40,7 +40,17 @@
   stroke: none;
 }
 
-/* Axis styling */
+/* Title */
+.chart-title {
+  font-size: 110%;
+  font-weight: bold;
+}
+.chart-title-main {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+/* Axis */
 .chart-axis {
 
 }
