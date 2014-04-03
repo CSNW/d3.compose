@@ -79,10 +79,10 @@
         key: 'labels',
         name: 'Labels',
         values: [
-          {x: 2018, y: 100, key: 'a'},
-          {x: 2018, y: 50, key: 'b'},
-          {x: 2018, y: 40, key: 'c'},
-          {x: 2018, y: 140, key: 'd'}
+          {x: 2019, y: 100, key: 'a'},
+          {x: 2019, y: 50, key: 'b'},
+          {x: 2019, y: 40, key: 'c'},
+          {x: 2019, y: 140, key: 'd'}
         ]
       }]
     },

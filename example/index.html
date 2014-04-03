@@ -30,10 +30,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>d3.chart.csnw.configurable Example</h1>
+    <h1>d3.chart.csnw.configurable Examples</h1>
 
     <section class="example clearfix">
-      <h2>Line-Bar Chart with Labels and Separate Y-Axes</h2>
+      <h2>Line-Bar</h2>
       <div class="example-chart" id="chart-1"></div>
       <!-- <div class="example-code">
 <pre><code>
@@ -109,7 +109,7 @@ var config = {
     hljs.initHighlightingOnLoad();
 
     /**
-      Chart 1: Line-Bar Values with separate y-axes
+      Chart 1: Line-Bar
     */
     var chart1Config = {
       type: 'Values',
@@ -126,7 +126,7 @@ var config = {
           }
         },
         {
-          type: 'Lines',
+          type: 'Line',
           dataKey: 'input',
           labels: {
             position: 'top'
@@ -169,8 +169,8 @@ var config = {
     var chart2Config = {
       type: 'XY',
       charts: [
-        {type: 'Lines', dataKey: 'lines', showLabels: false},
-        {type: 'Labels', dataKey: 'labels'}
+        {type: 'Line', dataKey: 'lines', showLabels: false},
+        {type: 'Labels', dataKey: 'labels', offset: 5}
       ],
       axes: {
         x: {scale: {domain: [2000, 2020]}, title: 'Year'},
@@ -193,7 +193,7 @@ var config = {
     chart2.draw(data.chart2);
 
     /**
-      Chart 3: Simple Bars
+      Chart 3: Bars
     */
     var chart3Config = {
       type: 'Values',

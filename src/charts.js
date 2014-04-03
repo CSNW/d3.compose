@@ -236,7 +236,7 @@
   */
   d3.chart('ChartWithLabels')
     .mixin(extensions.XY)
-    .extend('Lines', {
+    .extend('Line', {
       initialize: function() {
         this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
           dataBind: function(data) {
@@ -306,7 +306,7 @@
     Line graph for centered key,value data
   */
   d3.chart('ChartWithLabels')
-    .mixin(d3.chart('Lines').prototype, extensions.Values)
-    .extend('LinesValues');
+    .mixin(d3.chart('Line').prototype, extensions.Values)
+    .extend('LineValues');
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
