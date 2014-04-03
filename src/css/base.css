@@ -25,35 +25,35 @@
 .index-7 {stroke: gray; fill: gray;}
 
 /* Lines */
-.line {
+.chart-line {
   stroke-width: 1.5px;
   fill: none;
 }
 
 /* Bars */
-.bar {
+.chart-bar {
   stroke: none;
 }
 
 /* Labels */
-.label {
+.chart-label {
   stroke: none;
 }
 
 /* Axis styling */
-.axis {
+.chart-axis {
 
 }
-.axis path {
+.chart-axis path {
   stroke-width: 2px;
   fill: none;
   stroke: black;
 }
-.axis .tick {
+.chart-axis .tick {
   font-size: 90%;
 }
 
 /* Legend */
-.legend {
+.chart-legend {
 
 }

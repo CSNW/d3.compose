@@ -116,7 +116,7 @@
 
     componentBase: function() {
       // Return new group so that "this.base" can be translated within component
-      return this.base.append('g').attr('class', 'component');
+      return this.base.append('g').attr('class', 'chart-component');
     },
 
     updateLayout: function() {

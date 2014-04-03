@@ -55,7 +55,7 @@
 d3.chart('Component')
   .extend('Title', {
     initialize: function() {
-      this.layer('Title', this.base.append('g').classed('title', true), {
+      this.layer('Title', this.base.append('g').classed('chart-title', true), {
         dataBind: function(data) {
           // TODO Look into databound titles
 
@@ -129,7 +129,7 @@ d3.chart('Component')
         }
 
         this.axis = d3.svg.axis();
-        this.axisLayer = this.base.append('g').attr('class', 'axis');
+        this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
 
         this.layer('Axis', this.axisLayer, {
           dataBind: function(data) {
@@ -270,7 +270,7 @@ d3.chart('Component')
     .extend('Legend', {
       initialize: function() {
         this.legend = this.base.append('g')
-          .classed('legend', true);
+          .classed('chart-legend', true);
 
         this.layer('Legend', this.legend, {
           dataBind: function(data) {
@@ -282,15 +282,15 @@ d3.chart('Component')
             var chart = this.chart();
             var groups = this.append('g')
               .attr('class', function(d, i) {
-                return 'legend-group series index-' + (d.seriesIndex || 0);
+                return 'chart-legend-group chart-series index-' + (d.seriesIndex || 0);
               });
 
             groups.append('g')
               .attr('width', 20)
               .attr('height', 20)
-              .attr('class', 'legend-swatch');
+              .attr('class', 'chart-legend-swatch');
             groups.append('text')
-              .attr('class', 'legend-label label')
+              .attr('class', 'chart-legend-label chart-label')
               .attr('transform', helpers.translate(25, 0));
             
             return groups;
@@ -385,7 +385,7 @@ d3.chart('Component')
           var line = selection.append('line')
             .attr('x1', 0).attr('y1', 10)
             .attr('x2', 20).attr('y2', 10)
-            .attr('class', 'line');
+            .attr('class', 'chart-line');
         }
         else {
           // Simple colored swatch
@@ -393,7 +393,7 @@ d3.chart('Component')
             .attr('cx', 10)
             .attr('cy', 10)
             .attr('r', 10)
-            .attr('class', 'bar');
+            .attr('class', 'chart-bar');
         }
       }
     });

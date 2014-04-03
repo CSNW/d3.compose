@@ -10,7 +10,7 @@
     .mixin(extensions.XY)
     .extend('Labels', {
       initialize: function() {
-        this.seriesLayer('Labels', this.base.append('g').classed('labels', true), {
+        this.seriesLayer('Labels', this.base.append('g').classed('chart-labels', true), {
           dataBind: function(data) {
             var chart = this.chart();
             return this.selectAll('text')
@@ -20,7 +20,7 @@
             var chart = this.chart();
 
             return this.append('text')
-              .classed('label', true)
+              .classed('chart-label', true)
               .attr('alignment-baseline', chart.labelAlignment)
               .attr('style', chart.itemStyle);
           },
@@ -183,7 +183,7 @@
     .mixin(extensions.XY, extensions.Values)
     .extend('Bars', {
       initialize: function() {
-        this.seriesLayer('Bars', this.base.append('g').classed('bar-chart', true), {
+        this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
           dataBind: function(data) {
             var chart = this.chart();
 
@@ -194,7 +194,7 @@
             var chart = this.chart();
 
             return this.append('rect')
-              .classed('bar', true)
+              .classed('chart-bar', true)
               .attr('style', chart.itemStyle);
           },
           events: {
@@ -236,9 +236,9 @@
   */
   d3.chart('ChartWithLabels')
     .mixin(extensions.XY)
-    .extend('Line', {
+    .extend('Lines', {
       initialize: function() {
-        this.seriesLayer('Line', this.base.append('g').classed('line-chart', true), {
+        this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
           dataBind: function(data) {
             var chart = this.chart();
 
@@ -257,7 +257,7 @@
             var chart = this.chart();
 
             return this.append('path')
-              .classed('line', true)
+              .classed('chart-line', true)
               .attr('style', chart.itemStyle);
           },
           events: {
@@ -305,7 +305,7 @@
     Line graph for centered key,value data
   */
   d3.chart('ChartWithLabels')
-    .mixin(d3.chart('Line').prototype, extensions.Values)
-    .extend('LineValues');
+    .mixin(d3.chart('Lines').prototype, extensions.Values)
+    .extend('LinesValues');
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);

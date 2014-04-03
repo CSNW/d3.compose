@@ -7,16 +7,81 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" type="text/css" href="../src/styles/base.css">
+  <!-- <link rel="stylesheet" type="text/css" href="css/bootstrap.css"> -->
+  <!--<link rel="stylesheet" type="text/css" href="css/main.css">-->
+  <link rel="stylesheet" type="text/css" href="css/default.css">
+
+  <link rel="stylesheet" type="text/css" href="../src/css/base.css">
   <style>
     .series.input .line, .legend-swatch.input .line {
       stroke-dasharray: 4,4;
     }
+
+    .example {
+
+    }
+    .example-chart {
+      float: left;
+      margin-right: 20px;
+    }
+    .example-code {
+      float: left;
+    }
   </style>
 </head>
 <body>
-  <h1>d3.chart.csnw.configurable Example</h1>
-  <div id="chart-1"></div>
+  <div class="container">
+    <h1>d3.chart.csnw.configurable Example</h1>
+
+    <section class="example">
+      <h2>Line-Bar Chart with Labels and Separate Y-Axes</h2>
+      <div class="example-chart" id="chart-1"></div>
+      <div class="example-code">
+<pre><code>
+var config = {
+  type: 'Values',
+  charts: [
+    {
+      type: 'Bars', 
+      dataKey: 'results', 
+      displayAdjacent: true,
+      labels: {
+        offset: 10,
+        position: 'top|bottom',
+        style: {
+          'font-size': '14px'
+        }
+      }
+    },
+    {
+      type: 'Line',
+      dataKey: 'input',
+      labels: {
+        position: 'top'
+      }
+    }
+  ],
+  axes: {
+    x: {title: 'X Title'},
+    y: {
+      scale: {domain: [0, 20000]}, 
+      title: 'Y1 Title'
+    },
+    secondaryY: {
+      dataKey: 'input', 
+      scale: {domain: [0, 70]}, 
+      title: 'Y2 Title'
+    }
+  },
+  legend: {
+    type: 'Inset',
+    position: {x: 10, y: 0}
+  },
+  title: 'Chart Title'
+};</code></pre>
+      </div>
+    </section>
+  </div>
 
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
@@ -29,8 +94,11 @@
   <script src="../src/components.js"></script>
   <script src="../src/configurable.js"></script>
 
-  <script src="data.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/highlight.pack.js"></script>
   <script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+
     /**
       Chart 1: Line-Bar Values with separate y-axes
     */
@@ -44,15 +112,15 @@
             dataKey: 'results', 
             displayAdjacent: true,
             labels: {
-              offset: 10,
+              offset: 8,
               position: 'top|bottom',
               style: {
-                'font-size': '16px'
+                'font-size': '14px'
               }
             }
           },
           {
-            type: 'Line',
+            type: 'Lines',
             dataKey: 'input',
             labels: {
               position: 'top'
@@ -60,9 +128,18 @@
           }
         ],
         axes: {
-          x: {title: 'X Title'},
-          y: {scale: {domain: [0, 20000]}, title: 'Y1 Title'},
-          secondaryY: {dataKey: 'input', scale: {domain: [0, 70]}, title: 'Y2 Title'}
+          x: {
+            title: 'X Title'
+          },
+          y: {
+            scale: {domain: [0, 20000]}, 
+            title: 'Y1 Title'
+          },
+          secondaryY: {
+            dataKey: 'input', 
+            scale: {domain: [0, 70]}, 
+            title: 'Y2 Title'
+          }
         },
         legend: {
           type: 'Inset',
