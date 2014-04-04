@@ -501,8 +501,8 @@
     return mixed;
   }
 
-  // Add helpers to chart (static)
-  d3.chart.helpers = {
+  // Add helpers to d3.chart (static)
+  d3.chart.helpers = _.extend({}, d3.chart.helpers, {
     property: property,
     valueOrDefault: valueOrDefault,
     dimensions: dimensions,
@@ -518,5 +518,5 @@
     getParentData: getParentData,
     resolveChart: resolveChart,
     mixin: mixin
-  };
+  });
 })(d3, _);

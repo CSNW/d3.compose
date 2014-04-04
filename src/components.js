@@ -297,7 +297,7 @@
     AxisValues
     Axis component for (key,value) series data
   */
-  d3.chart('Component').extend('AxisValues', mixin(d3.chart('Axis').prototype, extensions.Values));
+  d3.chart('Axis').extend('AxisValues', extensions.Values);
 
   /**
     Legend

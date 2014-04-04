@@ -119,7 +119,7 @@
     LabelValues
     Chart with labels for centered values
   */
-  d3.chart('Chart').extend('LabelValues', mixin(d3.chart('Labels').prototype, extensions.Values, {
+  d3.chart('Labels').extend('LabelValues', mixin(extensions.Values, {
     labelX: di(function(chart, d, i) {
       return chart.itemX.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
     })
@@ -128,8 +128,6 @@
   /**
     ChartWithLabels
     Chart with labels attached
-
-    TODO: Attach labels after chart so that labels appear above chart
   */
   d3.chart('Chart').extend('ChartWithLabels', {
     initialize: function() {
@@ -298,6 +296,6 @@
     LineValues
     Line graph for centered key,value data
   */
-  d3.chart('ChartWithLabels').extend('LineValues', mixin(d3.chart('Line').prototype, extensions.Values));
+  d3.chart('Line').extend('LineValues', extensions.Values);
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);

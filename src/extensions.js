@@ -5,7 +5,7 @@
   
   // Extensions
   // ----------------------------------------------------------- //
-  var extensions = d3.chart.extensions = {};
+  var extensions = (d3.chart.extensions = d3.chart.extensions || {});
 
   // Extensions for handling series data
   extensions.Series = {
