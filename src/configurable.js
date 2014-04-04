@@ -87,7 +87,7 @@
 
         if (axisOptions.title) {
           var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
-          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position});
+          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
           
           var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type);
           var title = new Title(this.componentBase(), titleOptions);

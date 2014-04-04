@@ -136,37 +136,42 @@
         this.axis = d3.svg.axis();
         this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
 
-        this.layer('Axis', this.axisLayer, {
-          dataBind: function(data) {
-            // Force addition of just one axis with dummy data array
-            // (Axis will be drawn using underlying chart scales)
-            return this.selectAll('g')
-              .data([0]);
-          },
-          insert: function() {
-            var chart = this.chart();
-            var position = chart.position();
-            var orientation = chart.orientation();
-
-            // Get scale by orientation
-            var scale = orientation == 'horizontal' ? chart._xScale() : chart._yScale();
-
-            // Setup axis
-            chart.axis
-              .scale(scale)
-              .orient(chart.orient());
-
-            return this.append('g');
-          },
-          events: {
-            merge: function() {
+        if (this.options.display) {
+          this.layer('Axis', this.axisLayer, {
+            dataBind: function(data) {
+              // Force addition of just one axis with dummy data array
+              // (Axis will be drawn using underlying chart scales)
+              return this.selectAll('g')
+                .data([0]);
+            },
+            insert: function() {
               var chart = this.chart();
-              this
-                .attr('transform', chart.tranlation())
-                .call(chart.axis);
+              var position = chart.position();
+              var orientation = chart.orientation();
+
+              // Get scale by orientation
+              var scale = orientation == 'horizontal' ? chart._xScale() : chart._yScale();
+
+              // Setup axis
+              chart.axis
+                .scale(scale)
+                .orient(chart.orient());
+
+              return this.append('g');
+            },
+            events: {
+              merge: function() {
+                var chart = this.chart();
+                this
+                  .attr('transform', chart.tranlation())
+                  .call(chart.axis);
+              }
             }
-          }
-        });
+          });
+        }
+        else {
+          this.skipLayout = true;
+        }
       },
 
       position: property('position', {

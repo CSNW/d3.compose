@@ -188,6 +188,7 @@
     }),
 
     _preDraw: function(data) {
+      this._positionChartBase();
       _.each(this.componentsById, function(component, id) {
         if (!component.skipLayout)
           component.draw(this.demux ? this.demux(id, data) : data);
@@ -275,14 +276,13 @@
           offset = component.layoutHeight();
         else
           offset = component.layoutWidth();
-        
 
         layout[position].push({
           offset: offset,
           component: component
         });
       });
-
+      
       return layout;
     },
 
