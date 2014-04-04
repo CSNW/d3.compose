@@ -52,7 +52,7 @@
 
 /* Axis */
 .chart-axis {
-
+  shape-rendering: crispEdges;
 }
 .chart-axis path {
   stroke-width: 2px;
@@ -61,6 +61,9 @@
 }
 .chart-axis .tick {
   font-size: 90%;
+}
+.chart-axis .tick line {
+  stroke: black;
 }
 
 /* Legend */

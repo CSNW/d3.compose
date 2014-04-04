@@ -240,7 +240,7 @@
 
             expect(instance.trigger).toHaveBeenCalled();
             expect(instance.trigger).toHaveBeenCalledWith('invalid:message', 'INVALID');
-          })
+          });
         });
       });
     });

@@ -19,7 +19,8 @@
           {key: 'Year 1', y: 1563},
           {key: 'Year 2', y: 3127},
           {key: 'Year 3', y: 4690},
-          {key: 'Year 4', y: 7817}
+          {key: 'Year 4', y: 7817},
+          {key: 'Year 5', y: 0}
         ]
       }, {
         key: 'normalized',
@@ -28,7 +29,8 @@
           {key: 'Year 1', y: 2000},
           {key: 'Year 2', y: 3000},
           {key: 'Year 3', y: 5000},
-          {key: 'Year 5', y: 8000},
+          {key: 'Year 4', y: 0},
+          {key: 'Year 5', y: 8000}
         ]
       }]
     },
