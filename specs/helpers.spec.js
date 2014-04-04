@@ -220,7 +220,8 @@
       beforeEach(function() {
         fixture = setFixtures('<div id="chart"></div>');
         selection = d3.select('#chart')
-          .append('svg');
+          .append('svg')
+          .attr('style', 'width: 20px; height: 20px');
       });
 
       function height() {
@@ -231,8 +232,8 @@
       }
 
       it('should find width/height of selection', function() {
-        expect(width()).toEqual(0);
-        expect(height()).toEqual(0);
+        expect(width()).toEqual(20);
+        expect(height()).toEqual(20);
 
         selection.append('rect').attr('width', 50).attr('height', 100);
         expect(width()).toEqual(50);
@@ -241,6 +242,10 @@
         selection.attr('width', 600).attr('height', 300);
         expect(width()).toEqual(600);
         expect(height()).toEqual(300);
+
+        selection.attr('style', 'width: 800px; height: 400px');
+        expect(width()).toEqual(800);
+        expect(height()).toEqual(400);
       });
     });
 

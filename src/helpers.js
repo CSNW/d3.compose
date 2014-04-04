@@ -123,14 +123,25 @@
     return !_.isUndefined(value) ? value : defaultValue;
   }
 
-  // Dimensions helper for robustly determining width/height of given selector
+  /**
+    Dimensions
+    Helper for robustly determining width/height of given selector
+
+    @param {d3 Selection} selection
+  */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
     var boundingBox = element && typeof element.getBBox == 'function' && element.getBBox() || {};
+    var client = element ? {width: element.clientWidth, height: element.clientHeight} : {width: 0, height: 0};
+    var attr = selection ? {width: selection.attr('width'), height: selection.attr('height')} : {width: 0, height: 0};
+    var isSVG = element ? element.nodeName == 'svg' : false;
 
+    // Size set by css -> client (only valid for svg and some other elements)
+    // Size set by svg -> attr override or boundingBox
+    // -> Take maximum
     return {
-      width: parseFloat((selection && selection.attr('width')) || boundingBox.width || 0),
-      height: parseFloat((selection && selection.attr('height')) || boundingBox.height || 0)
+      width: _.max([client.width, attr.width || boundingBox.width]) || 0,
+      height: _.max([client.height, attr.height || boundingBox.height]) || 0
     };
   }
 
