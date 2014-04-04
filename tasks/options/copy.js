@@ -2,9 +2,9 @@ module.exports = {
   styles: {
     files: [{
       expand: true,
-      cwd: 'src/styles',
+      cwd: 'src/css',
       src: ['*.css'],
-      dest: 'dist/styles/',
+      dest: 'dist/css/',
       rename: function(dest, name) {
         return dest + '<%= pkg.name %>.' + name;
       }

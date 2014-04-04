@@ -83,6 +83,9 @@
 
       var previous = underlying;
       if (typeof options.validate == 'function' && !options.validate(value)) {
+        if (_.isFunction(this.trigger))
+          this.trigger('invalid:' + name, value);
+
         // Assumption: Previous value already had set called, so don't call set for previous value
         //             Default value has not had set called, so call set for default value
         //             Neither previous nor default, don't set value and don't call set
@@ -104,6 +107,9 @@
           response.after.call(context, get(this));
       }
 
+      if (!_.isEqual(get(this), previous) && _.isFunction(this.trigger))
+        this.trigger('change:' + name, get(this));
+
       return this;
     };
 
@@ -123,14 +129,25 @@
     return !_.isUndefined(value) ? value : defaultValue;
   }
 
-  // Dimensions helper for robustly determining width/height of given selector
+  /**
+    Dimensions
+    Helper for robustly determining width/height of given selector
+
+    @param {d3 Selection} selection
+  */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
     var boundingBox = element && typeof element.getBBox == 'function' && element.getBBox() || {};
+    var client = element ? {width: element.clientWidth, height: element.clientHeight} : {width: 0, height: 0};
+    var attr = selection ? {width: selection.attr('width'), height: selection.attr('height')} : {width: 0, height: 0};
+    var isSVG = element ? element.nodeName == 'svg' : false;
 
+    // Size set by css -> client (only valid for svg and some other elements)
+    // Size set by svg -> attr override or boundingBox
+    // -> Take maximum
     return {
-      width: parseFloat((selection && selection.attr('width')) || boundingBox.width || 0),
-      height: parseFloat((selection && selection.attr('height')) || boundingBox.height || 0)
+      width: _.max([client.width, attr.width || boundingBox.width]) || 0,
+      height: _.max([client.height, attr.height || boundingBox.height]) || 0
     };
   }
 
@@ -418,9 +435,9 @@
     What to look for:
     1. chart type + container type (e.g. Line + Values = LineValues)
     2. chart type
-    3. component type + chart type (e.g. Axis + Values = AxisValues)
-    4. chart type + component type (e.g. Inset + Legend = InsetLegend) 
-    5. component type + container type (e.g. Axis + Values = AxisValues)
+    3. component type + container type (e.g. Axis + Values = AxisValues)
+    4. component type + chart type (e.g. Axis + '' = Axis)
+    5. chart type + component type (e.g. Inset + Legend = InsetLegend) 
 
     @param {String} chartType type of chart
     @param {String} componentType type of component
@@ -433,9 +450,9 @@
 
     var Chart = d3.chart(chartType + containerType) || 
       d3.chart(chartType) || 
+      d3.chart(componentType + containerType) ||
       d3.chart(componentType + chartType) || 
-      d3.chart(chartType + componentType) || 
-      d3.chart(componentType + containerType);
+      d3.chart(chartType + componentType);
 
     if (!Chart)
       throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + chartType + ' and component ' + componentType + ' and container ' + containerType);
@@ -456,6 +473,9 @@
   function mixin(extensions) {
     extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
     var mixed = _.extend.apply(this, [{}].concat(extensions));
+
+    // Don't mixin constructor with prototype
+    delete mixed.constructor;
 
     if (mixed.initialize) {
       mixed.initialize = function initialize() {
@@ -481,29 +501,8 @@
     return mixed;
   }
 
-  /**
-    Mixin extensions with Chart prototype before calling extend
-    returns object for extension
-
-    @param {Array or Object...} extensions Array of extensions or seperate extension arguments
-  */
-  d3.chart().mixin = function(extensions) {
-    var parent = this;
-    extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
-
-    // By design, mixin should always be followed by extend()
-    // (May be updated in the future)
-    return {
-      extend: function(name, protoProps, staticProps) {
-        if (protoProps)
-          extensions.push(protoProps);
-        return d3.chart().extend.call(parent, name, mixin(extensions), staticProps);
-      }
-    };
-  };
-
-  // Add helpers to chart (static)
-  d3.chart.helpers = {
+  // Add helpers to d3.chart (static)
+  d3.chart.helpers = _.extend({}, d3.chart.helpers, {
     property: property,
     valueOrDefault: valueOrDefault,
     dimensions: dimensions,
@@ -519,5 +518,5 @@
     getParentData: getParentData,
     resolveChart: resolveChart,
     mixin: mixin
-  };
+  });
 })(d3, _);

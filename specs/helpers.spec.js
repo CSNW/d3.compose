@@ -184,6 +184,28 @@
           expect(instance.message()).toEqual('Hello from Context!');
         });
 
+        it('should trigger change (if changed)', function() {
+          instance.message = property('message', {
+            defaultValue: 'Hello'
+          });
+          instance.trigger = jasmine.createSpy();
+
+          instance.message('Hello');
+          expect(instance.trigger.calls.count()).toEqual(1);
+          expect(instance.trigger.calls.argsFor(0)).toEqual(['change:message', 'Hello']);
+
+          instance.message('Howdy');
+          expect(instance.trigger.calls.count()).toEqual(2);
+          expect(instance.trigger.calls.argsFor(1)).toEqual(['change:message', 'Howdy']);
+
+          instance.message('Howdy');
+          expect(instance.trigger.calls.count()).toEqual(2);
+
+          instance.message({key: 'value', complex: [1,2,3]});
+          instance.message({key: 'value', complex: [1,2,3]});
+          expect(instance.trigger.calls.count()).toEqual(3);
+        });
+
         describe('validate', function() {
           var spy;
           beforeEach(function() {
@@ -211,6 +233,14 @@
             expect(spy.calls.argsFor(0)).toEqual(['Default', undefined]);
             expect(instance.message()).toEqual('Default');
           });
+
+          it('should trigger invalid event', function() {
+            instance.trigger = jasmine.createSpy();
+            instance.message('INVALID');
+
+            expect(instance.trigger).toHaveBeenCalled();
+            expect(instance.trigger).toHaveBeenCalledWith('invalid:message', 'INVALID');
+          });
         });
       });
     });
@@ -220,7 +250,8 @@
       beforeEach(function() {
         fixture = setFixtures('<div id="chart"></div>');
         selection = d3.select('#chart')
-          .append('svg');
+          .append('svg')
+          .attr('style', 'width: 20px; height: 20px');
       });
 
       function height() {
@@ -231,8 +262,8 @@
       }
 
       it('should find width/height of selection', function() {
-        expect(width()).toEqual(0);
-        expect(height()).toEqual(0);
+        expect(width()).toEqual(20);
+        expect(height()).toEqual(20);
 
         selection.append('rect').attr('width', 50).attr('height', 100);
         expect(width()).toEqual(50);
@@ -241,6 +272,10 @@
         selection.attr('width', 600).attr('height', 300);
         expect(width()).toEqual(600);
         expect(height()).toEqual(300);
+
+        selection.attr('style', 'width: 800px; height: 400px');
+        expect(width()).toEqual(800);
+        expect(height()).toEqual(400);
       });
     });
 

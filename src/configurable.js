@@ -87,7 +87,7 @@
 
         if (axisOptions.title) {
           var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
-          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position});
+          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
           
           var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type);
           var title = new Title(this.componentBase(), titleOptions);
@@ -198,6 +198,10 @@
       var dataKey = item.options.dataKey;
       var filterKeys = item.options.filterKeys;
 
+      // Legends need all data (filter by charts)
+      if (item && item.isLegend)
+        return data;
+
       // Use dataKey or filterKeys if specified, otherwise use all data
       if (dataKey || filterKeys) {
         var dataKeys = _.isArray(dataKey) ? dataKey : (dataKey ? [dataKey] : []);
@@ -250,7 +254,8 @@
       position: 'right'
     },
     defaultTitleOptions: {
-      position: 'top'
+      position: 'top',
+      'class': 'chart-title-main'
     }
   });
 

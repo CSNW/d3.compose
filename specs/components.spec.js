@@ -9,7 +9,6 @@
 
       Component = d3.chart('Component').extend('SimpleComponent', {
         initialize: function() {
-          console.log('init component');
           this.base.append('rect')
             .attr('width', 50)
             .attr('height', 100);

@@ -5,7 +5,7 @@
   
   // Extensions
   // ----------------------------------------------------------- //
-  var extensions = d3.chart.extensions = {};
+  var extensions = (d3.chart.extensions = d3.chart.extensions || {});
 
   // Extensions for handling series data
   extensions.Series = {
@@ -18,7 +18,7 @@
       return d.values;
     }),
     seriesClass: di(function(chart, d, i) {
-      return 'series index-' + i + (d['class'] ? ' ' + d['class'] : '');
+      return 'chart-series chart-index-' + i + (d['class'] ? ' ' + d['class'] : '');
     }),
     seriesIndex: di(function(chart, d, i) {
       var series = chart.dataSeries.call(this, d, i);
