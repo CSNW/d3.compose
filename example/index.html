@@ -122,7 +122,8 @@ var config = {
             position: 'top|bottom',
             style: {
               'font-size': '14px'
-            }
+            },
+            format: d3.format(',0d')
           }
         },
         {
@@ -198,7 +199,11 @@ var config = {
     var chart3Config = {
       type: 'Values',
       charts: [
-        {type: 'Bars', dataKey: 'bars'}
+        {
+          type: 'Bars', 
+          dataKey: 'bars', 
+          labels: {format: d3.format(',0d')}
+        }
       ],
       axes: {
         x: false,

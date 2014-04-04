@@ -6,6 +6,11 @@
   /**
     Labels
     Chart with labels positioned at (x,y) points
+
+    Properties:
+    - {String} [position = top] top, right, bottom, left, or a|b (a for positive values or 0, b for negative)
+    - {Number} [offset = 10] px distance offset from data point
+    - {String|Function} format String to be used in d3.format(...) or format function
   */
   d3.chart('Chart').extend('Labels', mixin(extensions.XY, {
     initialize: function() {
@@ -36,17 +41,32 @@
             var chart = this.chart();
             this
               .attr('y', chart.labelY)
-              .text(chart.yValue);
+              .text(chart.labelValue);
           }
         }
       });
     },
+
+    position: property('position', {defaultValue: 'top'}),
+    offset: property('offset', {defaultValue: 14}),
+    format: property('format', {
+      type: 'function',
+      set: function(value) {
+        if (_.isString(value)) {
+          return {override: d3.format(value)};
+        }
+      }
+    }),
 
     labelX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
     }),
     labelY: di(function(chart, d, i) {
       return chart.y.call(this, d, i) + chart.calculatedOffset.call(this, d, i).y;
+    }),
+    labelValue: di(function(chart, d, i) {
+      var value = chart.yValue.call(this, d, i);
+      return chart.format() ? chart.format()(value) : value;
     }),
 
     calculatedOffset: di(function(chart, d, i) {
@@ -108,11 +128,6 @@
       
       return helpers.style(styles) || null;
     }),
-
-    // top, right, bottom, left, 1|2 (1 for positive or 0, 2 for negative)
-    position: property('position', {defaultValue: 'top'}),
-    // px distance offset from (x,y) point
-    offset: property('offset', {defaultValue: 14}),
   }));
   
   /**
