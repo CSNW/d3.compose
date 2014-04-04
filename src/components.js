@@ -23,9 +23,6 @@
       defaultValue: 'top',
       validate: function(value) {
         return _.contains(['top', 'right', 'bottom', 'left'], value);
-      },
-      set: function(value, previous) {
-        this.trigger('change:position');
       }
     }),
     width: property('width', {
@@ -174,9 +171,6 @@
 
       position: property('position', {
         defaultValue: 'bottom',
-        set: function(value) {
-          this.trigger('change:position');
-        },
         validate: function(value) {
           return _.contains(['top', 'right', 'bottom', 'left', 'x0', 'y0'], value);
         }

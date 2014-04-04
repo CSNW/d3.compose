@@ -3,8 +3,11 @@
   
   /**
     Base
-  
     Shared functionality between all charts, components, and containers
+
+    Properties:
+    - {Object|Array} data Store fully-transformed data
+    - {Object} style Overall style of chart/component
   */
   d3.chart('Base', {
     initialize: function(options) {
@@ -19,12 +22,20 @@
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
     },
-    transform: function(data) {
-      // Base is last transform to be called,
-      // so stored data has been fully transformed
-      this.data(data || []);
-      return data || [];
-    },
+
+    data: property('data', {
+      set: function(data) {
+        // This trigger is relied on by other components
+        // and must be called even when the data doesn't necessarily change
+        // TODO Look into why it needs to called every time (even on no change)
+        this.trigger('change:data', data);
+      }
+    }),
+    style: property('style', {
+      get: function(value) {
+        return helpers.style(value) || null;
+      }
+    }),
 
     width: function width() {
       return helpers.dimensions(this.base).width;
@@ -33,12 +44,12 @@
       return helpers.dimensions(this.base).height;
     },
 
-    // Store data after it has been fully transformed
-    data: property('data', {
-      set: function(data) {
-        this.trigger('change:data', data);
-      }
-    })
+    transform: function(data) {
+      // Base is last transform to be called,
+      // so stored data has been fully transformed
+      this.data(data || []);
+      return data || [];
+    }
   });
 
   /**
@@ -178,7 +189,8 @@
 
     _preDraw: function(data) {
       _.each(this.componentsById, function(component, id) {
-        component.draw(this.demux ? this.demux(id, data) : data);
+        if (!component.skipLayout)
+          component.draw(this.demux ? this.demux(id, data) : data);
       }, this);
     },
 
@@ -251,7 +263,10 @@
     _extractLayout: function() {
       var layout = {top: [], right: [], bottom: [], left: []};
       _.each(this.components, function(component) {
-        var position = component.position();
+        if (component.skipLayout)
+          return;
+
+        var position = component.layoutPosition();
         if (!_.contains(['top', 'right', 'bottom', 'left'], position))
           return;
 
