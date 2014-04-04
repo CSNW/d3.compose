@@ -14,14 +14,14 @@
   border: solid 1px #ddd;
 }
 
-.index-0 {stroke: blue; fill: blue;}
-.index-1 {stroke: red; fill: red;}
-.index-2 {stroke: green; fill: green;}
-.index-3 {stroke: yellow; fill: yellow;}
-.index-4 {stroke: purple; fill: purple;}
-.index-5 {stroke: orange; fill: orange;}
-.index-6 {stroke: black; fill: black;}
-.index-7 {stroke: gray; fill: gray;}
+.chart-index-0 {stroke: blue; fill: blue;}
+.chart-index-1 {stroke: red; fill: red;}
+.chart-index-2 {stroke: green; fill: green;}
+.chart-index-3 {stroke: yellow; fill: yellow;}
+.chart-index-4 {stroke: purple; fill: purple;}
+.chart-index-5 {stroke: orange; fill: orange;}
+.chart-index-6 {stroke: black; fill: black;}
+.chart-index-7 {stroke: gray; fill: gray;}
 
 /* Lines */
 .chart-line {

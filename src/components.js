@@ -316,9 +316,7 @@
         insert: function() {
           var chart = this.chart();
           var groups = this.append('g')
-            .attr('class', function(d, i) {
-              return 'chart-legend-group chart-series index-' + (d.seriesIndex || 0);
-            });
+            .attr('class', chart.dataGroupClass);
 
           groups.append('g')
             .attr('width', 20)
@@ -370,38 +368,52 @@
     dataValue: di(function(chart, d, i) {
       return d.series.name;
     }),
-    dataSwatchProperties: di(function(chart, d, i) {
-      // Extract swatch properties from data
-      return _.defaults({}, d.chart, d.series, {
-        type: 'swatch',
-        color: 'blue',
-        'class': ''
-      });
+    dataGroupClass: di(function(chart, d, i) {
+      return 'chart-legend-group';
+    }),
+    dataSeriesClass: di(function(chart, d, i) {
+      return 'chart-series chart-index-' + (d.seriesIndex || 0);
+    }),
+    dataClass: di(function(chart, d, i) {
+      var classes = [chart.dataSeriesClass.call(this, d, i)];
+      if (d.chart.options['class'])
+        classes.push(d.chart.options['class']);
+      if (d.series['class'])
+        classes.push(d.series['class']);
+
+      return classes.join(' ') || null;
+    }),
+    dataStyle: di(function(chart, d, i) {
+      var styles = _.defaults({}, d.series.style, d.chart.options.style);
+      
+      return helpers.style(styles) || null;
     }),
 
     createSwatch: di(function(chart, d, i) {
       var selection = d3.select(this);
-      var properties = chart.dataSwatchProperties.call(this, d, i);
 
       // Clear existing swatch
       selection.empty();
       selection
-        .classed(properties['class'], true);
+        .attr('class', chart.dataClass);
 
-      // TODO: Pull styles from itemStyle and add chart.createSwatch override (e.g. for line)
-      if (properties.isLine) {
-        selection.append('line')
-          .attr('x1', 0).attr('y1', 10)
-          .attr('x2', 20).attr('y2', 10)
-          .attr('class', 'chart-line');
+      var inserted;
+      if (d && d.chart && _.isFunction(d.chart.insertSwatch)) {
+        selection.chart = function() { return chart; };
+        inserted = d.chart.insertSwatch.call(selection);
       }
       else {
-        // Simple colored swatch
-        selection.append('circle')
+        // Simple colored circle
+        inserted = selection.append('circle')
           .attr('cx', 10)
           .attr('cy', 10)
           .attr('r', 10)
-          .attr('class', 'chart-bar');
+          .attr('class', 'chart-swatch');
+      }
+
+      // Style inserted element
+      if (inserted && _.isFunction(inserted.attr)) {
+        inserted.attr('style', chart.dataStyle.call(this, d, i));
       }
     })
   });

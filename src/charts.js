@@ -289,7 +289,12 @@
 
       return line;
     },
-    isLine: true
+    insertSwatch: function() {
+      return this.append('line')
+        .attr('x1', 0).attr('y1', 10)
+        .attr('x2', 20).attr('y2', 10)
+        .attr('class', 'chart-line');
+    }
   }));
   
   /**
