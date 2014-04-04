@@ -233,6 +233,14 @@
             expect(spy.calls.argsFor(0)).toEqual(['Default', undefined]);
             expect(instance.message()).toEqual('Default');
           });
+
+          it('should trigger invalid event', function() {
+            instance.trigger = jasmine.createSpy();
+            instance.message('INVALID');
+
+            expect(instance.trigger).toHaveBeenCalled();
+            expect(instance.trigger).toHaveBeenCalledWith('invalid:message', 'INVALID');
+          })
         });
       });
     });

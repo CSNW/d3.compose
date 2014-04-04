@@ -83,6 +83,9 @@
 
       var previous = underlying;
       if (typeof options.validate == 'function' && !options.validate(value)) {
+        if (_.isFunction(this.trigger))
+          this.trigger('invalid:' + name, value);
+
         // Assumption: Previous value already had set called, so don't call set for previous value
         //             Default value has not had set called, so call set for default value
         //             Neither previous nor default, don't set value and don't call set
