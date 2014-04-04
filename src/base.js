@@ -55,7 +55,7 @@
   /**
     Chart: Foundation for building charts with series data
   */
-  d3.chart('Base').mixin(extensions.Series).extend('Chart');
+  d3.chart('Base').extend('Chart', extensions.Series);
 
   /**
     Container

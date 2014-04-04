@@ -501,27 +501,6 @@
     return mixed;
   }
 
-  /**
-    Mixin extensions with Chart prototype before calling extend
-    returns object for extension
-
-    @param {Array or Object...} extensions Array of extensions or seperate extension arguments
-  */
-  d3.chart().mixin = function(extensions) {
-    var parent = this;
-    extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
-
-    // By design, mixin should always be followed by extend()
-    // (May be updated in the future)
-    return {
-      extend: function(name, protoProps, staticProps) {
-        if (protoProps)
-          extensions.push(protoProps);
-        return d3.chart().extend.call(parent, name, mixin(extensions), staticProps);
-      }
-    };
-  };
-
   // Add helpers to chart (static)
   d3.chart.helpers = {
     property: property,
