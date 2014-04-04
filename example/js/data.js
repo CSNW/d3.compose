@@ -5,13 +5,24 @@
         key: 'input',
         name: 'Input',
         values: [
-          {key: 'Year 1', y: 12},
+          {key: 'Year 1', y: 14},
           {key: 'Year 2', y: 23},
           {key: 'Year 3', y: 35},
           {key: 'Year 4', y: 58}
         ],
         'class': 'input'
+      }, {
+        key: 'input2',
+        name: 'Normalized input',
+        values: [
+          {key: 'Year 1', y: 22},
+          {key: 'Year 2', y: 35},
+          {key: 'Year 3', y: 45},
+          {key: 'Year 4', y: 75}
+        ],
+        'class': 'input2'
       }],
+
       results: [{
         key: 'output',
         name: 'Output',
@@ -29,7 +40,7 @@
           {key: 'Year 1', y: 2000},
           {key: 'Year 2', y: 3000},
           {key: 'Year 3', y: 5000},
-          {key: 'Year 4', y: 0},
+          {key: 'Year 4', y: 6000},
           {key: 'Year 5', y: 8000}
         ]
       }]
