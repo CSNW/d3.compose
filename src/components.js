@@ -145,25 +145,18 @@
                 .data([0]);
             },
             insert: function() {
-              var chart = this.chart();
-              var position = chart.position();
-              var orientation = chart.orientation();
-
-              // Get scale by orientation
-              var scale = orientation == 'horizontal' ? chart._xScale() : chart._yScale();
-
-              // Setup axis
-              chart.axis
-                .scale(scale)
-                .orient(chart.orient());
-
               return this.append('g');
             },
             events: {
               merge: function() {
                 var chart = this.chart();
+
+                // Setup axis (scale and properties)
+                chart._setupAxis();
+
+                // Place and render axis
                 this
-                  .attr('transform', chart.tranlation())
+                  .attr('transform', chart.translation())
                   .call(chart.axis);
               }
             }
@@ -180,6 +173,60 @@
           return _.contains(['top', 'right', 'bottom', 'left', 'x0', 'y0'], value);
         }
       }),
+
+      translation: property('translation', {
+        defaultValue: function() {
+          var translationByPosition = {
+            top: {x: 0, y: 0},
+            right: {x: this.width(), y: 0},
+            bottom: {x: 0, y: this.height()},
+            left: {x: 0, y: 0},
+            x0: {x: this.x0(), y: 0},
+            y0: {x: 0, y: this.y0()}
+          };
+          
+          return helpers.translate(translationByPosition[this.position()]);
+        }
+      }),
+
+      orient: property('orient', {
+        defaultValue: function() {
+          var orient = this.position();
+          
+          if (orient == 'x0')
+            orient = 'left';
+          else if (orient == 'y0')
+            orient = 'bottom';
+          
+          return orient;
+        }
+      }),
+
+      orientation: property('orientation', {
+        validate: function(value) {
+          return _.contains(['horizontal', 'vertical'], value);
+        },
+        defaultValue: function() {
+          var byPosition = {
+            top: 'horizontal',
+            right: 'vertical',
+            bottom: 'horizontal',
+            left: 'vertical',
+            x0: 'vertical',
+            y0: 'horizontal'
+          };
+
+          return byPosition[this.position()];
+        }
+      }),
+
+      ticks: property('ticks', {type: 'function'}),
+      tickValues: property('tickValues', {type: 'function'}),
+      tickSize: property('tickSize', {type: 'function'}),
+      innerTickSize: property('innerTickSize', {type: 'function'}),
+      outerTickSize: property('outerTickSize', {type: 'function'}),
+      tickPadding: property('tickPadding', {type: 'function'}),
+      tickFormat: property('tickFormat', {type: 'function'}),
 
       layoutHeight: function() {
         return this._labelOverhang().height;
@@ -207,41 +254,27 @@
         return this.orientation() == 'vertical';
       },
 
-      tranlation: function() {
-        var translationByPosition = {
-          top: {x: 0, y: 0},
-          right: {x: this.width(), y: 0},
-          bottom: {x: 0, y: this.height()},
-          left: {x: 0, y: 0},
-          x0: {x: this.x0(), y: 0},
-          y0: {x: 0, y: this.y0()}
-        };
-        
-        return helpers.translate(translationByPosition[this.position()]);
-      },
+      _setupAxis: function() {
+        // Get scale by orientation
+        var scale = this.isXAxis() ? this._xScale() : this._yScale();
 
-      orient: function() {
-        var orient = this.position();
-        
-        if (orient == 'x0')
-          orient = 'left';
-        else if (orient == 'y0')
-          orient = 'bottom';
-        
-        return orient;
-      },
+        // Setup axis
+        this.axis.scale(scale);
 
-      orientation: function() {
-        var byPosition = {
-          top: 'horizontal',
-          right: 'vertical',
-          bottom: 'horizontal',
-          left: 'vertical',
-          x0: 'vertical',
-          y0: 'horizontal'
-        };
+        var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
+        _.each(extensions, function(key) {
+          var value = this[key] && this[key]();
+          if (!_.isUndefined(value)) {
+            console.log(key, value);
 
-        return byPosition[this.position()];
+            // If value is array, treat as arguments array
+            // otherwise, pass in directly
+            if (_.isArray(value))
+              this.axis[key].apply(this.axis, value);
+            else
+              this.axis[key](value);
+          }
+        }, this);
       },
 
       _labelOverhang: function() {
@@ -255,7 +288,7 @@
           else
             overhangs.width.push(this.getBBox().width);
         });
-        
+
         return {
           width: _.max(overhangs.width),
           height: _.max(overhangs.height)
