@@ -104,6 +104,9 @@
           response.after.call(context, get(this));
       }
 
+      if (!_.isEqual(get(this), previous) && _.isFunction(this.trigger))
+        this.trigger('change:' + name, get(this));
+
       return this;
     };
 

@@ -184,6 +184,28 @@
           expect(instance.message()).toEqual('Hello from Context!');
         });
 
+        it('should trigger change (if changed)', function() {
+          instance.message = property('message', {
+            defaultValue: 'Hello'
+          });
+          instance.trigger = jasmine.createSpy();
+
+          instance.message('Hello');
+          expect(instance.trigger.calls.count()).toEqual(1);
+          expect(instance.trigger.calls.argsFor(0)).toEqual(['change:message', 'Hello']);
+
+          instance.message('Howdy');
+          expect(instance.trigger.calls.count()).toEqual(2);
+          expect(instance.trigger.calls.argsFor(1)).toEqual(['change:message', 'Howdy']);
+
+          instance.message('Howdy');
+          expect(instance.trigger.calls.count()).toEqual(2);
+
+          instance.message({key: 'value', complex: [1,2,3]});
+          instance.message({key: 'value', complex: [1,2,3]});
+          expect(instance.trigger.calls.count()).toEqual(3);
+        });
+
         describe('validate', function() {
           var spy;
           beforeEach(function() {
