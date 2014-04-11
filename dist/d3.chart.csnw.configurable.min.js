@@ -1,4 +1,4 @@
-/*! d3.chart.csnw.configurable - v0.0.0
+/*! d3.chart.csnw.configurable - v0.5.0
  * https://github.com/CSNW/d3.chart.csnw.configurable
  * License: MIT
  */
