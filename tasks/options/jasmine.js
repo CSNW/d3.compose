@@ -1,5 +1,4 @@
 module.exports = {
-  src: '<%= meta.srcFiles %>',
   options: {
     specs: 'specs/**/*.spec.js',
     helpers: [
@@ -10,8 +9,17 @@ module.exports = {
       'bower_components/d3/d3.js',
       'bower_components/underscore/underscore.js',
       'bower_components/d3.chart/d3.chart.js'
-    ],
+    ]
+  },
+
+  src: {
+    src: '<%= meta.srcFiles %>',
     outfile: 'specs/index.html',
     keepRunner: true
+  },
+
+  build: {
+    src: 'dist/d3.chart.csnw.configurable.js',
+    keepRunner: false
   }
 };

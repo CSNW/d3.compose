@@ -38,12 +38,13 @@ module.exports = function(grunt) {
     'concat',
     'uglify',
     'jshint:build',
+    'jasmine:build',
     'copy'
   ]);
   
   this.registerTask('test', 'Lint and run specs', [
     'jshint:src',
     'jshint:specs', 
-    'jasmine'
+    'jasmine:src'
   ]);
 };

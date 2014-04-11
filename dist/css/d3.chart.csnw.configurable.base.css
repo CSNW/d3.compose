@@ -14,58 +14,59 @@
   border: solid 1px #ddd;
 }
 
-/**
-  Base line graph styling
-*/
-.line {
+.chart-index-0 {stroke: #1f77b4; fill: #1f77b4;}
+.chart-index-1 {stroke: #ff7f0e; fill: #ff7f0e;}
+.chart-index-2 {stroke: #2ca02c; fill: #2ca02c;}
+.chart-index-3 {stroke: #d62728; fill: #d62728;}
+.chart-index-4 {stroke: #9467bd; fill: #9467bd;}
+.chart-index-5 {stroke: #8c564b; fill: #8c564b;}
+.chart-index-6 {stroke: #e377c2; fill: #e377c2;}
+.chart-index-7 {stroke: #7f7f7f; fill: #7f7f7f;}
+
+/* Lines */
+.chart-line {
   stroke-width: 1.5px;
-  stroke: blue;
   fill: none;
 }
 
-.series.index-0 .line {stroke: blue;}
-.series.index-1 .line {stroke: red;}
-.series.index-2 .line {stroke: green;}
-.series.index-3 .line {stroke: yellow;}
-.series.index-4 .line {stroke: purple;}
-.series.index-5 .line {stroke: orange;}
-.series.index-6 .line {stroke: black;}
-.series.index-7 .line {stroke: gray;}
-
-/**
-  Base bars graph styling
-*/
-.bar {
-  fill: blue;
+/* Bars */
+.chart-bar {
+  stroke: none;
+  shape-rendering: crispEdges;
 }
 
-.series.index-0 .bar {fill: blue;}
-.series.index-1 .bar {fill: red;}
-.series.index-2 .bar {fill: green;}
-.series.index-3 .bar {fill: yellow;}
-.series.index-4 .bar {fill: purple;}
-.series.index-5 .bar {fill: orange;}
-.series.index-6 .bar {fill: black;}
-.series.index-7 .bar {fill: gray;}
-
-/**
-  Base axis styling
-*/
-.axis {
-
+/* Labels */
+.chart-label {
+  stroke: none;
 }
-.axis path {
-  stroke-width: 1.5px;
+
+/* Title */
+.chart-title {
+  font-size: 110%;
+  font-weight: bold;
+}
+.chart-title-main {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+/* Axis */
+.chart-axis {
+  shape-rendering: crispEdges;
+}
+.chart-axis path {
+  stroke-width: 2px;
   fill: none;
   stroke: black;
 }
-.axis .tick {
+.chart-axis .tick {
   font-size: 90%;
 }
+.chart-axis .tick line {
+  stroke: black;
+}
 
-/**
-  Base legend styling
-*/
-.legend {
+/* Legend */
+.chart-legend {
 
 }
