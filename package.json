@@ -1,6 +1,6 @@
 {
   "name": "d3.chart.csnw.configurable",
-  "version": "0.0.0",
+  "version": "0.5.0",
   "description": "d3-chart configurable chart",
   "main": "dist/d3.chart.csnw.configurable.js",
   "scripts": {
