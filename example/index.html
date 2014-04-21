@@ -162,7 +162,9 @@ var config = {
       .height(400)
       .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-    chart1.draw(data.chart1);
+    data.chart1.values(function(values) {
+      chart1.draw(values);
+    });
 
     /**
       Chart 2: Lines
@@ -191,7 +193,9 @@ var config = {
       .height(400)
       .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-    chart2.draw(data.chart2);
+    data.chart2.values(function(values) {
+      chart2.draw(values);
+    });
 
     /**
       Chart 3: Bars
@@ -219,7 +223,9 @@ var config = {
       .height(400)
       .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-    chart3.draw(data.chart3);
+    data.chart3.values(function(values) {
+      chart3.draw(values);
+    });
   </script>
 </body>
 </html>
