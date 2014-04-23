@@ -108,124 +108,184 @@ var config = {
   <script type="text/javascript">
     hljs.initHighlightingOnLoad();
 
-    /**
-      Chart 1: Line-Bar
-    */
-    var chart1Config = {
-      type: 'Values',
-      charts: [
-        {
-          type: 'Bars', 
-          dataKey: 'results', 
-          labels: {
-            offset: 8,
-            position: 'top|bottom',
-            style: {
-              'font-size': '14px'
+    var config = {
+      /**
+        Chart 1: Line-Bar
+      */
+      chart1: {
+        id: '#chart-1',
+        chart: {
+          type: 'Values',
+          charts: [
+            {
+              type: 'Bars', 
+              dataKey: 'results', 
+              labels: {
+                offset: 8,
+                position: 'top|bottom',
+                style: {
+                  'font-size': '14px'
+                },
+                format: d3.format(',0d')
+              }
             },
-            format: d3.format(',0d')
-          }
+            {
+              type: 'Line',
+              dataKey: 'input',
+              labels: {
+                position: 'top'
+              }
+            }
+          ],
+          axes: {
+            x: {
+              title: 'X Title'
+            },
+            y: {
+              scale: {domain: [0, 20000]}, 
+              title: 'Y1 Title'
+            },
+            secondaryY: {
+              dataKey: 'input', 
+              scale: {domain: [0, 90]}, 
+              title: 'Y2 Title'
+            }
+          },
+          legend: {
+            type: 'Inset',
+            position: {x: 10, y: 0}
+          },
+          title: 'Chart Title'
         },
-        {
-          type: 'Line',
-          dataKey: 'input',
+        data: {
+          /*
+            Raw: year, input, normalizedInput, output, normalizedOutput
+            Denormalize (at store level):
+              year -> transform('Year ' + (year - 2000)) -> x
+              input, normalizedInput, output, normalizedOutput -> y, {
+                input: {input: true, output: false, normalized: false},
+                normalizedInput: {input: true, output: false, normalized: true},
+                output: {input: false, output: true, normalized: false},
+                normalizedOutput: {input: false, output: true, normalized: true},
+              }
+              
+              x, y, input, output, normalized, _filename = chart1.csv
+          */
+          input: {
+            filter: {input: true},
+            group: {
+              normalized: {
+                true: {key: 'normalized-input', name: 'Normalized Input'},
+                false: {key: 'input', name: 'Input'}
+              }
+            }
+          },
+          results: {
+            filter: {input: {$ne: true}}, // Use mongoDB operators for filter
+            group: {
+              normalized: {
+                true: {key: 'normalized-results', name: 'Normalized Results'},
+                false: {key: 'results', name: 'Results'}
+              }
+            }
+          },
+          needs: 'chart1.csv'
+        }
+      },
+
+      /**
+        Chart 2: Lines
+      */
+      chart2: {
+        id: '#chart-2',
+        chart: {
+          type: 'XY',
+          charts: [
+            {type: 'Line', dataKey: 'lines', showLabels: false},
+            {type: 'Labels', dataKey: 'labels', offset: 5}
+          ],
+          axes: {
+            x: {scale: {domain: [2000, 2020]}, title: 'Year', tickFormat: d3.format('####')},
+            y: {title: 'Results'}
+          },
+          legend: {
+            display: 'right',
+            dataKey: 'lines'
+          },
+          title: 'Results by Year'
+        },
+        data: {
+          /*
+            Raw: year, a, b, c, d
+            Denormalize (at store level):
+              year -> x
+              a, b, c, d -> y, 'type'
+              
+              x, y, type (a, b, c, d), _filename = chart2.csv
+          */
+          lines: {
+            group: 'type'
+          },
           labels: {
-            position: 'top'
+            filter: {x: 2020}
           }
+          needs: 'chart2.csv'
         }
-      ],
-      axes: {
-        x: {
-          title: 'X Title'
+      },
+
+      /**
+        Chart 3: Bars
+      */
+      chart3: {
+        id: '#chart-3',
+        chart: {
+          type: 'Values',
+          charts: [
+            {
+              type: 'Bars', 
+              dataKey: 'bars', 
+              labels: {format: d3.format(',0d')}
+            }
+          ],
+          axes: {
+            x: false,
+            y: {title: 'Results', scale: {domain: [0, 35000]}}
+          },
+          title: 'Results'
         },
-        y: {
-          scale: {domain: [0, 20000]}, 
-          title: 'Y1 Title'
-        },
-        secondaryY: {
-          dataKey: 'input', 
-          scale: {domain: [0, 90]}, 
-          title: 'Y2 Title'
+        data: {
+          /*
+            Raw: year, a, b
+            Denormalize (at store level):
+              year -> x
+              a, b -> y, 'type'
+              
+              x, y, type (a, b), _filename = chart3.csv
+          */
+          bars: {
+            group: 'type',
+            reduce: 'total' // Reduction type: total, avg, or function
+          }
+          needs: 'chart3.csv'
         }
-      },
-      legend: {
-        type: 'Inset',
-        position: {x: 10, y: 0}
-      },
-      title: 'Chart Title'
+      }
     };
+    
+    // Add charts by configuration
+    var charts = {}
+    _.each(config, function(chartConfig, chartId) {
+      charts[chartId] = d3.select(chartConfig.id)
+        .append('svg')
+        .chart('Configurable', chartConfig.chart)
+        .width(600)
+        .height(400)
+        .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-    var chart1 = d3.select('#chart-1')
-      .append('svg')
-      .chart('Configurable', chart1Config)
-      .width(600)
-      .height(400)
-      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
-
-    data.chart1.values(function(values) {
-      chart1.draw(values);
-    });
-
-    /**
-      Chart 2: Lines
-    */
-    var chart2Config = {
-      type: 'XY',
-      charts: [
-        {type: 'Line', dataKey: 'lines', showLabels: false},
-        {type: 'Labels', dataKey: 'labels', offset: 5}
-      ],
-      axes: {
-        x: {scale: {domain: [2000, 2020]}, title: 'Year', tickFormat: d3.format('####')},
-        y: {title: 'Results'}
-      },
-      legend: {
-        display: 'right',
-        dataKey: 'lines'
-      },
-      title: 'Results by Year'
-    };
-
-    var chart2 = d3.select('#chart-2')
-      .append('svg')
-      .chart('Configurable', chart2Config)
-      .width(600)
-      .height(400)
-      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
-
-    data.chart2.values(function(values) {
-      chart2.draw(values);
-    });
-
-    /**
-      Chart 3: Bars
-    */
-    var chart3Config = {
-      type: 'Values',
-      charts: [
-        {
-          type: 'Bars', 
-          dataKey: 'bars', 
-          labels: {format: d3.format(',0d')}
-        }
-      ],
-      axes: {
-        x: false,
-        y: {title: 'Results', scale: {domain: [0, 35000]}}
-      },
-      title: 'Results'
-    };
-
-    var chart3 = d3.select('#chart-3')
-      .append('svg')
-      .chart('Configurable', chart3Config)
-      .width(600)
-      .height(400)
-      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
-
-    data.chart3.values(function(values) {
-      chart3.draw(values);
-    });
+      var query = charts[chartId].query = data.store.query(chartConfig.data);
+      charts[chartId].subscription = query.subscribe(function(values) {
+        charts[chartId].draw(values);
+      });
+    }, this);
   </script>
 </body>
 </html>

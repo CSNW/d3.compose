@@ -1,6 +1,6 @@
 module.exports = {
   options: {
-    specs: 'specs/**/*.spec.js',
+    specs: ['specs/**/*.spec.js', '!specs/data.spec.js'],
     helpers: [
       'bower_components/jquery/dist/jquery.js',
       'bower_components/jasmine-jquery/lib/jasmine-jquery.js'
@@ -14,12 +14,29 @@ module.exports = {
 
   src: {
     src: '<%= meta.srcFiles %>',
-    outfile: 'specs/index.html',
-    keepRunner: true
+    options: {
+      outfile: 'specs/index.html',
+      keepRunner: true  
+    }
   },
 
   build: {
     src: 'dist/d3.chart.csnw.configurable.js',
-    keepRunner: false
+    options: {
+      keepRunner: false  
+    }
+  },
+
+  data: {
+    src: 'src/data.js',
+    options: {
+      specs: 'specs/data-spec.js',
+      keepRunner: true,
+      vendor: [
+        'bower_components/d3/d3.js',
+        'bower_components/underscore/underscore.js',
+        'bower_components/backbone/backbone.js'
+      ]
+    }
   }
 };
