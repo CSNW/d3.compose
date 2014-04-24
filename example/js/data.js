@@ -1,333 +1,140 @@
-(function(global, _) {
+(function(global, _, data) {
   'use strict';
 
-  // Attach properties to global data object
-  var data = global.data = {};
-
-  /**
-    Store
-    Generic data store with collection of rows
-  */
-  var Store = data.Store = function Store() {
-    this._raw = [];
-    this._rows = [];
-    this._subscriptions = [];
-  };
-
-  _.extend(Store.prototype, {
-    /**
-      Get rows from store (asynchromously)
-
-      @param {Function} callback
-      @param {Object} [context]
-    */
-    rows: function rows(callback, context) {
-      // TODO Actual async (e.g. waiting for load to finish)
-      _.defer(function() {
-        callback.call(context || null, this._rows);
-      }.bind(this));
-    },
-
-    /**
-      Get current state of store
-    */
-    state: function state() {
-      // TODO determine state by loading/etc.
-      return 'loaded';
-    },
-
-    /**
-      Subscribe to changes from store
-      - calls initially if data has already been loaded (unless options.existing == false)
-
-      Example:
-      ```js
-      // some data has already been loaded...
-      store.subscribe(function(rows, event) {
-        console.log('new rows');
-      });
-  
-      // Subscription is called initially since data has already been loaded
-      // -> "new rows"
-
-      store.load('another.csv')
-      // ... loads async
-      // -> "new rows"
-
-      // turn off initial trigger
-      store.subscribe(function(rows, event) {
-        console.log('truly only new rows');
-      }, {existing: false});
-
-      // nothing logged
-
-      store.load('new.csv')
-      // ... loads async
-      // -> "new rows"
-      // -> "truly only new rows"
-      ```
-
-      @param {Function} callback to call with (values, event: name, store)
-      @param {Object} [options]
-      - existing: [Boolean=true] trigger on existing records
-    */
-    subscribe: function(callback, context, options) {
-      options = _.defaults(options, {
-        existing: true
-      });
-
-      // Create new subscription (listening to load and remove)
-      var subscription = new Subscription(this, ['load', 'remove'], callback, context);
-      this._subscriptions.push[subscription];
-
-      // If trigger on existing and loaded, mimic load event for callback
-      if (options.existing && this.state() == 'loaded') {
-        this.rows(function(rows) {
-          subscription.callback(rows, {
-            name: 'load',
-            store: this
-          });
-        }, this);
-      }
-
-      return subscription;
-    },
-
-    /**
-      Register denormalization iterator/config to be called with every incoming row
-
-      @param {Object|Function} config or iterator
-      @param {Object} [context] if config is iterator
-    */
-    denormalize: function denormalize(config, context) {
-      this._denormalize = {context: context};
-      if (_.isFunction(config))
-        this._denormalize.iterator = config;
-      else
-        this._denormalize.config = config;
-
-      // Denormalize any existing data
-      this._rows = this._denormalizeRows(this._raw, this._denormalize);
-    },
-
-    /**
-      Create new query of data store
-
-      @param {Object} config to pass to query
-      @returns {Query}
-    */
-    query: function query(config) {
-      return new Query(this, config);
-    },
-
-    // Denormalize rows with given options (config/iterator, context)
-    _denormalizeRows: function _denormalizeRows(rows, options) {
-      options = options || {};
-
-      var denormalized = _.map(rows, function(row, index, rows) {
-        if (_.isFunction(options.iterator))
-          return options.iterator.call(options.context || this, row, index, rows);
-        else if (_.isObject(options.config))
-          return this._denormalizeRowByConfig(row, index, rows, options.config);
-        else
-          return row;
-      }, this);
-
-      // Flatten single layer to return rows as single array (not array of arrays)
-      return _.flatten(denormalized, true);
-    },
-    _denormalizeRowByConfig: function _denormalizeRowByConfig(row, index, rows, config) {
-      // TODO...
-    }
-  });
-
-  /**
-    Query
-    Perform query on data store and get formatted series data
-
-    @param {Store} store instance to query
-  */
-  var Query = data.Query = function Query(store, config) {
-    this.store = store;
-    this._results = [];
-    this._subscriptions = [];
-
-    if (config)
-      this.alter(config);
-
-    // Listen to store changes and update results
-    this._subscription = store.subscribe(this.calculate);
-  };
-
-  _.extend(Query.prototype, {
-    /**
-      Get results of query
-
-      @param {Function} callback
-      @param {Object} [context]
-    */
-    results: function results(callback, context) {
-      // TODO Actual async (e.g. waiting for load to finish)
-      _.defer(function() {
-        callback.call(context || null, this._results);
-      }.bind(this));
-    },
-
-    /**
-      Calculate results for rows
-
-      @param {Array} rows
-    */
-    calculate: function calculate(rows) {
-      // TODO perform calculation...
-      this._results = rows;
-
-      // Trigger change (for subscribers and listeners)
-      this.trigger('change', this._results, {
-        name: 'change',
-        query: this,
-        store: this.store
-      });
-    },
-
-    /**
-      Alter underlying query
-
-      @param {Object} config
-    */
-    alter: function alter(config) {
-      // TODO store config
-
-      // Recalculate if store is loaded
-      if (this.store.state() == 'loaded') {
-        this.store.rows(function(rows) {
-          this.calculate(rows)
-        }, this);
-      }
-    },
-
-    /**
-      Subscribe to changes in query results (including load)
-
-      @param {Function} callback to call with (values, event: name, query, store)
-      @param {Object} [options]
-      - {Boolean} [existing=true] trigger on existing records
-    */
-    subscribe: function subscribe(callback, context, options) {
-      options = _.defaults(options, {
-        existing: true
-      });
-
-      var subscription = new Subscription(this, 'change', callback, context);
-      this._subscriptions.push(subscription);
-
-      // If trigger on existing and loaded, mimic load event for callback
-      if (options.existing) {
-        this.results(function(results) {
-          subscription.callback(results, {
-            name: 'change',
-            query: this,
-            store: this.store
-          });
-        }, this);
-      }
-
-      return subscription;
-    }
-  });
-
-  /**
-    Subscription
-    Disposable subscription
-
-    @param {Object} target to attach listeners to
-    @param {Array} events to listen to
-    @param {Function} callback to call on events
-    @param {Object} [context] to use for callback
-  */
-  var Subscription = data.Subscription = function Subscription(target, events, callback, context) {
-    this.options = {
-      target: target,
-      events: events,
-      callback: callback,
-      context: context
-    };
-
-    // Create callback "bound" to given context
-    this.callback = function subscription() {
-      return this.options.callback.apply(this.options.context || null, arguments);
-    };
-
-    this.attachListeners();
-  };
-
-  _.extend(Subscription.prototype, {
-    attachListeners: function() {
-      if (this.listeners)
-        this.dispose();
-
-      var target = this.options.target;
-      if (target && _.isFunction(target.on)) {
-        this.listeners = _.map(this.options.events, function(name) {
-          target.on(name, this.callback);
-
-          return {
-            name: name,
-            callback: this.callback
-          };
-        }, this);
-      }
-    },
-
-    /**
-      Stop listening to changes
-    */
-    dispose: function dispose() {
-      // Stop listeners
-      var target = this.options.target;
-      if (target) {
-        _.each(this.listeners, function(listener) {
-          target.off(listener.name, listener.callback);
-        }, this);
-      }
-
-      delete this.listeners;
-    }
-  });
-
   // === START FIXTURES
-  // This fixture data is just for example and should not be used for reference
-  data.store = new Store();
-  data.store._raw = [
-    // chart1.csv
+  // DISCLAIMER This fixture data is just for example and should not be used for reference
+  data.example = {}
+  var store = data.example.store = new data.Store();
 
+  // Setup FIXTURE
+  store.FIXTURE = {
+    meta: {
+      year: {range: [2000, 2050], increment: 5},
+      x: {range: [0, 100], round: true, increment: 5},
+      a: {range: [0, 100], round: true, count: 2},
+      b: {range: [1000, 10000], round: true, count: 2},
+      c: {range: [0, 1000], round: true, count: 4},
+      d: {range: [0, 1], round: false},
+      gender: {choices: ['male', 'female']}
+    },
+    createRow: function() {
+      var newRow = {};
+      var rows = store.rows();
+      var previousRow = rows[rows.length - 1];
 
-    // chart2.csv
+      _.each(this.meta, function(options, key) {
+        var choices = options.choices || [];
+        var min = options.range ? options.range[0] : 0;
+        var max = options.range ? options.range[1] : 1;
+        var count = options.count || 1;
+        var itemKey;
 
+        for (var i = 0; i <= count; i += 1) {
+          itemKey = (count > 1) ? key + i : key;
 
-    // chart3.csv
-
-  ];
-  data.store.denormalize(function(row, index, rows) {
-    // Typically, standard denormalize for every data row, regardless of source
-    // but since unrelated data for charts is being used, denormalize by source
-    if (row._filename == 'chart1.csv') {
-      return data.store._denormalizeRowByConfig(row, index, rows, {
-
+          if (options.increment) {
+            if (previousRow) {
+              newRow[itemKey] = previousRow[itemKey] + options.increment;
+            }
+            else {
+              newRow[itemKey] = min;
+            }
+          }
+          else if (choices.length) {
+            newRow[itemKey] = choices[Math.floor(Math.random() * choices.length)];
+          }
+          else if (options.round) {
+            newRow[itemKey] = Math.floor(Math.random() * (max - min + 1) + min);
+          }
+          else {
+            newRow[itemKey] = Math.random() & (max - min) + min;
+          }
+        }
       });
-    }
-    else if (row._filename == 'chart2.csv') {
-      return data.store._denormalizeRowByConfig(row, index, rows, {
 
-      });
+      return newRow;
+    },
+    setup: function(cache) {
+      store.cache = cache || {};
+      store._raw = store._rows = _.flatten(_.values(store.cache), true);
     }
-    else if (row._filename == 'chart3.csv') {
-      return data.store._denormalizeRowByConfig(row, index, rows, {
+  };
 
-      });
-    }
-  })
+  // Load fixture rows manually
+  store.FIXTURE.setup({
+    'chart1.csv': [
+      {year: 2000, input: 14, normalizedInput: 22, output: 1563, normalizedOutput: 2000, __filename: 'chart1.csv'},
+      {year: 2005, input: 23, normalizedInput: 35, output: 3127, normalizedOutput: 3000, __filename: 'chart1.csv'},
+      {year: 2010, input: 35, normalizedInput: 45, output: 4690, normalizedOutput: 5000, __filename: 'chart1.csv'},
+      {year: 2015, input: 58, normalizedInput: 75, output: 7817, normalizedOutput: 6000, __filename: 'chart1.csv'},
+      {year: 2020,                                 output: 0,    normalizedOutput: 8000, __filename: 'chart1.csv'}
+    ],
+
+    'chart2.csv': [
+      {year: 2000, a: 0, b: 0, c: 0, d: 0, __filename: 'chart2.csv'},
+      {year: 2005, a: 50, b: 20, c: 10, d: 80, __filename: 'chart2.csv'},
+      {year: 2010, a: 80, b: 40, c: 30, d: 120, __filename: 'chart2.csv'},
+      {year: 2015, a: 90, b: 45, c: 35, d: 130, __filename: 'chart2.csv'},
+      {year: 2020, a: 100, b: 50, c: 40, d: 140, __filename: 'chart2.csv'}
+    ]
+  });
+
+  // Create separate denormalizers by filename
+  data.example.denormalize = {
+    /*
+      Raw: year, input, normalizedInput, output, normalizedOutput
+      Denormalize (at store level):
+        year -> transform('Year ' + (year - 2000)) -> x
+        input, normalizedInput, output, normalizedOutput -> y, {
+          input: {input: true, output: false, normalized: false},
+          normalizedInput: {input: true, output: false, normalized: true},
+          output: {input: false, output: true, normalized: false},
+          normalizedOutput: {input: false, output: true, normalized: true},
+        }
+        
+        x, y, input, output, normalized, _filename = chart1.csv
+    */
+    'chart1.csv': store._generateDenormalize({
+      x: 'relativeYear',
+      y: {
+        columns: ['input', 'normalizedInput', 'output', 'normalizedOutput'],
+        categories: {
+          input: {input: true, output: false, normalized: false},
+          normalizedInput: {input: true, output: false, normalized: true},
+          output: {input: false, output: true, normalized: false},
+          normalizedOutput: {input: false, output: true, normalized: true}
+        }
+      }
+    }),
+
+    /*
+      Raw: year, a, b, c, d
+      Denormalize (at store level):
+        year -> x
+        a, b, c, d -> y, 'type'
+        
+        x, y, type (a, b, c, d), _filename = chart2.csv
+    */
+    'chart2.csv': store._generateDenormalize({
+      x: 'year',
+      y: {
+        columns: ['a', 'b', 'c', 'd'],
+        category: 'type'
+      }
+    })
+  };
+
+  // Add relative year to all rows
+  store.normalize(function(row) {
+    row.relativeYear = 'Year ' + ((row.year - 2000) / 5 + 1);
+    return row;
+  });
+
+  // Denormalize all rows (by filename)
+  store.denormalize(function(row) {
+    return data.example.denormalize[row.__filename](row);
+  });
 
   // === END FIXTURES
 
-})(this, _);
+})(this, _, data);

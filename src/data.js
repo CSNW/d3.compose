@@ -157,35 +157,8 @@
         };
       }
       else {
-        var xColumn = options.x || 'x';
-
-        // Convert y to standard form (if column or array of columns)
-        var yOptions = _.isObject(options.y) ? options.y : {
-          category: 'from',
-          columns: _.isArray(options.y) ? options.y : [options.y || 'y']
-        };
-
-        // setup iterator by options
-        this._denormalize = function(row) {
-          // Perform denomalization by y
-          return _.map(yOptions.columns, function(yColumn) {
-            // Copy columns from row that aren't used in x or y
-            var copyColumns = _.difference(_.keys(row), xColumn, yOptions.columns);
-            var normalized = _.pick(row, copyColumns);
-
-            normalized.x = row[xColumn];
-            normalized.y = row[yColumn];
-
-            if (yOptions.categories) {
-              _.extend(normalized, yOptions.categories[yColumn]);
-            }
-            else if (yOptions.category) {
-              normalized[yOptions.category] = yColumn;
-            }
-
-            return normalized;
-          });
-        };
+        // Generate iterator from options
+        this._denormalize = this._generateDenormalize(options);
       }
 
       // Denormalize any existing data
@@ -238,6 +211,39 @@
       var denormalized = _.flatten(_.map(normalized, this._denormalize, this), true);
 
       return denormalized;
+    },
+
+    // Generate denormalize function for options
+    _generateDenormalize: function _generateDenormalize(options) {
+      var xColumn = options.x || 'x';
+
+      // Convert y to standard form (if column or array of columns)
+      var yOptions = _.isObject(options.y) ? options.y : {
+        category: '__yColumn',
+        columns: _.isArray(options.y) ? options.y : [options.y || 'y']
+      };
+
+      // setup iterator by options
+      return function _denormalize(row) {
+        // Perform denomalization by y
+        return _.map(yOptions.columns, function(yColumn) {
+          // Copy columns from row that aren't used in x or y
+          var copyColumns = _.difference(_.keys(row), xColumn, yOptions.columns);
+          var normalized = _.pick(row, copyColumns);
+
+          normalized.x = row[xColumn];
+          normalized.y = row[yColumn];
+
+          if (yOptions.categories) {
+            _.extend(normalized, yOptions.categories[yColumn]);
+          }
+          else if (yOptions.category) {
+            normalized[yOptions.category] = yColumn;
+          }
+
+          return normalized;
+        });
+      };
     },
 
     // Load (with caching)
@@ -337,7 +343,7 @@
       - {Boolean} [existing=true] trigger on existing records
     */
     subscribe: function subscribe(callback, context, options) {
-      options = _.defaults(options, {
+      options = _.defaults({}, options, {
         existing: true
       });
 

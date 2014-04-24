@@ -103,6 +103,9 @@ var config = {
   <script src="../src/components.js"></script>
   <script src="../src/configurable.js"></script>
 
+  <script src="../bower_components/rsvp/rsvp.js"></script>
+  <script src="../src/data.js"></script>
+
   <script src="js/data.js"></script>
   <script src="js/highlight.pack.js"></script>
   <script type="text/javascript">
@@ -228,7 +231,7 @@ var config = {
           },
           labels: {
             filter: {x: 2020}
-          }
+          },
           needs: 'chart2.csv'
         }
       },
@@ -265,7 +268,7 @@ var config = {
           bars: {
             group: 'type',
             reduce: 'total' // Reduction type: total, avg, or function
-          }
+          },
           needs: 'chart3.csv'
         }
       }
