@@ -1,10 +1,46 @@
-(function(d3, _, data) {
+(function(d3, _, RSVP, data) {
 
   describe('data', function() {
     describe('Store', function() {
-      var store;
+      var store, _loadCsv;
       beforeEach(function() {
         store = new data.Store();
+
+        _loadCsv = spyOn(store, '_loadCsv').and.callFake(function(path) {
+          return new RSVP.Promise(function(resolve, reject) {
+            resolve([{value: path}]);
+          });
+        });
+      });
+
+      describe('normalize', function() {
+        beforeEach(function() {
+          store._raw = [
+            {year: '2000', b: '14', c: '3.14', d: 'Hello'},
+            {year: '2010', b: '24', c: '13.14', d: 'Goodbye'}
+          ];
+        });
+
+        it('should call normalized for each row', function() {
+          store.normalize(function(row, index, rows) {
+            return {
+              year: new Date(+row.year, 1, 0),
+              b: +row.b,
+              c: +row.c
+            };
+          });
+
+          var rows = store.rows();
+          expect(rows.length).toEqual(2);
+          expect(rows[0].year.getFullYear()).toEqual(2000);
+          expect(rows[0].b).toEqual(14);
+          expect(rows[0].c).toEqual(3.14);
+          expect(rows[0].d).toBeUndefined();
+          expect(rows[1].year.getFullYear()).toEqual(2010);
+          expect(rows[1].b).toEqual(24);
+          expect(rows[1].c).toEqual(13.14);
+          expect(rows[1].d).toBeUndefined();
+        });
       });
 
       describe('denormalize', function() {
@@ -17,58 +53,54 @@
           ];
         });
 
-        it('should map single x', function(done) {
+        it('should map single x', function() {
           store.denormalize({x: 'a'});
-          store.values(function(rows) {
-            expect(rows.length).toEqual(4);
-            expect(rows[0].x).toEqual(1);
-            expect(rows[0].a).toBeUndefined();
-            done();
-          });
+
+          var rows = store.rows();
+          expect(rows.length).toEqual(4);
+          expect(rows[0].x).toEqual(1);
+          expect(rows[0].a).toBeUndefined();
         });
 
-        it('should map single y', function(done) {
+        it('should map single y', function() {
           store.denormalize({y: 'b'});
-          store.values(function(rows) {
-            expect(rows.length).toEqual(4);
-            expect(rows[0].y).toEqual(2);
-            expect(rows[0].b).toBeUndefined();
-            done();
-          });
+
+          var rows = store.rows();
+          expect(rows.length).toEqual(4);
+          expect(rows[0].y).toEqual(2);
+          expect(rows[0].b).toBeUndefined();
         });
 
-        it('should map single x and y', function(done) {
+        it('should map single x and y', function() {
           store.denormalize({x: 'a', y: 'b'});
-          store.values(function(rows) {
-            expect(rows.length).toEqual(4);
-            expect(rows[0].x).toEqual(1);
-            expect(rows[0].y).toEqual(2);
-            expect(rows[0].a).toBeUndefined();
-            expect(rows[0].b).toBeUndefined();
-            done();
-          });
+
+          var rows = store.rows();
+          expect(rows.length).toEqual(4);
+          expect(rows[0].x).toEqual(1);
+          expect(rows[0].y).toEqual(2);
+          expect(rows[0].a).toBeUndefined();
+          expect(rows[0].b).toBeUndefined();
         });
 
-        it('should map multiple y to single category', function(done) {
+        it('should map multiple y to single category', function() {
           store.denormalize({
             y: {
               columns: ['b', 'c'],
               category: 'type'
             }
           });
-          store.values(function(rows) {
-            expect(rows.length).toEqual(8);
-            expect(rows[0].y).toEqual(2);
-            expect(rows[0].type).toEqual('b');
-            expect(rows[1].y).toEqual(3);
-            expect(rows[1].type).toEqual('c');
-            expect(rows[0].b).toBeUndefined();
-            expect(rows[0].c).toBeUndefined();
-            done();
-          });
+
+          var rows = store.rows();
+          expect(rows.length).toEqual(8);
+          expect(rows[0].y).toEqual(2);
+          expect(rows[0].type).toEqual('b');
+          expect(rows[1].y).toEqual(3);
+          expect(rows[1].type).toEqual('c');
+          expect(rows[0].b).toBeUndefined();
+          expect(rows[0].c).toBeUndefined();
         });
 
-        it('should map values to categories', function(done) {
+        it('should map values to categories', function() {
           store.denormalize({
             y: {
               columns: ['b', 'c'],
@@ -78,19 +110,18 @@
               }
             }
           });
-          store.values(function(rows) {
-            expect(rows.length).toEqual(8);
-            expect(rows[0].y).toEqual(2);
-            expect(rows[1].y).toEqual(3);
-            expect(rows[0].isB).toEqual(true);
-            expect(rows[1].isB).toEqual(false);
-            expect(rows[0].b).toBeUndefined();
-            expect(rows[0].c).toBeUndefined();
-            done();
-          });
+
+          var rows = store.rows();
+          expect(rows.length).toEqual(8);
+          expect(rows[0].y).toEqual(2);
+          expect(rows[1].y).toEqual(3);
+          expect(rows[0].isB).toEqual(true);
+          expect(rows[1].isB).toEqual(false);
+          expect(rows[0].b).toBeUndefined();
+          expect(rows[0].c).toBeUndefined();
         });
 
-        it('should map multiple y to multiple categories', function(done) {
+        it('should map multiple y to multiple categories', function() {
           store.denormalize({
             y: {
               columns: ['b', 'c', 'd'],
@@ -101,214 +132,111 @@
               }
             }
           });
-          store.values(function(rows) {
-            expect(rows.length).toEqual(12);
-            expect(rows[0].y).toEqual(2);
-            expect(rows[1].y).toEqual(3);
-            expect(rows[2].y).toEqual(4);
-            expect(rows[0].category).toEqual('b');
-            expect(rows[1].category).toEqual('c');
-            expect(rows[2].category).toEqual('d');
-            expect(rows[0].categoryId).toEqual(1);
-            expect(rows[1].categoryId).toEqual(2);
-            expect(rows[2].categoryId).toEqual(3);
-            expect(rows[0].b).toBeUndefined();
-            expect(rows[0].c).toBeUndefined();
-            expect(rows[0].d).toBeUndefined();
-            done();
-          });
+
+          var rows = store.rows();
+          expect(rows.length).toEqual(12);
+          expect(rows[0].y).toEqual(2);
+          expect(rows[1].y).toEqual(3);
+          expect(rows[2].y).toEqual(4);
+          expect(rows[0].category).toEqual('b');
+          expect(rows[1].category).toEqual('c');
+          expect(rows[2].category).toEqual('d');
+          expect(rows[0].categoryId).toEqual(1);
+          expect(rows[1].categoryId).toEqual(2);
+          expect(rows[2].categoryId).toEqual(3);
+          expect(rows[0].b).toBeUndefined();
+          expect(rows[0].c).toBeUndefined();
+          expect(rows[0].d).toBeUndefined();
         });
       });
 
       describe('values', function() {
-        beforeEach(function() {
-          spyOn(store, 'load').and.callFake(function(csv, rows) {
-            this._load(csv, function(csv, callback) {
-              _.defer(function() {
-                callback(null, rows)
-              });
-            });
-
-            return this;
-          });
-        })
-
         it('should get values for everything loaded/loading up to that point', function(done) {
-          store
-            .load('a.csv', [{a: 1}])
-            .load('b.csv', [{a: 2}])
-            .values(function(rows) {
-              expect(rows.length).toEqual(2);
-              done();
-            });
+          store.load('a.csv');
+          store.load('b.csv');
+          store.values(function(rows) {
+            expect(rows.length).toEqual(2);
+            done();
+          });
         });
 
-        it('should not wait for subsequent loads', function() {
-          store
-            .load('a.csv', [{a: 1}])
-            .values(function(rows) {
-              expect(rows.length).toEqual(1);
-            })
-            .load('b.csv', [{a: 2}])
-            .values(function(rows) {
+        it('should not wait for subsequent loads', function(done) {
+          store.load('a.csv');
+          store.values(function(rows) {
+            expect(rows.length).toEqual(1);
+          });
+
+          _.defer(function() {
+            store.load('b.csv');
+            store.values(function(rows) {
               expect(rows.length).toEqual(2);
               done();
-            });
+            });  
+          });
         });
       });
 
       describe('subscribe', function() {
-        it('should notify subscribers on each load', function() {
+        it('should notify subscribers on each load', function(done) {
+          var spy = jasmine.createSpy();
 
-        })
+          store.subscribe(spy);
+
+          RSVP.all([store.load('a.csv'), store.load('b.csv'), store.load('c.csv')]).then(function() {
+            expect(spy.calls.count()).toEqual(3);
+            done();
+          });
+        });
+
+        it('should notify initially if not loading (unless options.existing == false)', function(done) {
+          var spies = [
+            jasmine.createSpy('existing'),
+            jasmine.createSpy('not existing')
+          ];
+
+          store.load('a.csv').then(function() {
+            store.subscribe(spies[0]);
+            store.subscribe(spies[1], null, {existing: false});
+
+            store.ready().then(function() {
+              expect(spies[0]).toHaveBeenCalled();
+              expect(spies[1]).not.toHaveBeenCalled();
+              done();
+            });
+          });
+        });
+      });
+
+      describe('caching', function() {
+        it('should cache loaded values', function(done) {
+          store.cache['a.csv'] = [{__filename: 'a.csv'}];
+
+          store.load(['a.csv', 'b.csv']).then(function() {
+            expect(_loadCsv.calls.count()).toEqual(1);
+
+            expect(store.rows().length).toEqual(2);
+            expect(store.cache['b.csv']).not.toBeUndefined();
+            expect(store.cache['b.csv'].length).toEqual(1);
+            done();
+          });
+        });
+
+        it('should not load again if currently loading', function(done) {
+          store.load(['a.csv', 'b.csv']);
+          store.load('a.csv');
+          store.load('b.csv');
+
+          store.ready().then(function() {
+            expect(_loadCsv.calls.count()).toEqual(2);
+            done();
+          });
+        });
       });
     });
 
     describe('Query', function() {
 
     });
-
-    describe('Subscription', function() {
-      var Target = function() {};
-      _.extend(Target.prototype, data.Events);
-
-      var target, subscription, callback, context;
-
-      beforeEach(function() {
-        target = new Target();
-        callback = jasmine.createSpy('callback');
-        context = {message: 'Howdy!'};
-
-        subscription = new data.Subscription(target, ['a', 'b'], callback, context);
-      });
-
-      it('should listen to events on target', function() {
-        target.trigger('a', 1);
-        target.trigger('b', 2);
-        target.trigger('not listening', 3);
-        expect(callback.calls.count()).toEqual(2);
-      });
-
-      it('should pass values from event', function() {
-        target.trigger('a', 1, 2, 3);
-        expect(callback.calls.argsFor(0)).toEqual([1, 2, 3]);
-      });
-
-      it('should callback with context', function() {
-        target.trigger('a', 1);
-        expect(callback.calls.mostRecent()).toEqual({'object': context, args: [1]});
-      });
-
-      it('should dispose of listeners', function() {
-        subscription.dispose();
-
-        target.trigger('a', 1);
-        target.trigger('b', 2);
-        expect(callback).not.toHaveBeenCalled();
-      });
-
-      it('should trigger subscription directly', function() {
-        subscription.trigger(1, 2, 3);
-
-        expect(callback.calls.mostRecent()).toEqual({'object': context, args: [1, 2, 3]});
-      });
-    });
-
-    describe('EventedStack', function() {
-      var stack, Element;
-      beforeEach(function() {
-        stack = new data.EventedStack();
-
-        Element = function() {};
-        _.extend(Element.prototype, data.Events);
-      });
-
-      it('should add items to stack', function() {
-        stack.add(new Element());
-        stack.add(new Element());
-
-        expect(stack.items().length).toEqual(2);
-        expect(stack.count()).toEqual(2);
-      })
-
-      it('should trigger all() once all items that were in stack trigger', function() {
-        var a = new Element();
-        var b = new Element();
-        var c = new Element();
-        var d = new Element();
-
-        stack.add(a);
-        stack.add(b);
-
-        var spy = jasmine.createSpy();
-        stack.all('done', spy);
-
-        // c and d added after all() and aren't listened to
-        stack.add(c);
-        stack.add(d);
-
-        c.trigger('done');
-        expect(spy).not.toHaveBeenCalled();
-
-        b.trigger('done');
-        expect(spy).not.toHaveBeenCalled();
-
-        a.trigger('done');
-        expect(spy).toHaveBeenCalled();
-      });
-
-      it('should pass responses (in order of stack) to all()', function() {
-        var a = new Element();
-        var b = new Element();
-
-        stack.add(a);
-        stack.add(b);
-
-        var spy = jasmine.createSpy();
-        stack.all('done', spy);
-
-        b.trigger('done', 'b', 4, 5, 6);
-        a.trigger('done', 'a', 1, 2, 3);
-
-        expect(spy.calls.argsFor(0)[0]).toEqual([['a', 1, 2, 3], ['b', 4, 5, 6]]);
-      });
-
-      it('should automatically remove elements on event', function() {
-        var a = new Element();
-        var b = new Element();
-
-        stack.add(a);
-        stack.add(b);
-
-        stack.removeOn('done');
-
-        b.trigger('done');
-
-        expect(stack.items()).toEqual([a]);
-
-        a.trigger('done');
-
-        expect(stack.items().length).toEqual(0);
-      });
-
-      it('should bubble events from elements', function() {
-        var a = new Element();
-        var b = new Element();
-
-        stack.add(a);
-        stack.add(b);
-
-        var spy = jasmine.createSpy();
-        stack.on('message', spy);
-
-        a.trigger('message', 'Howdy!');
-        b.trigger('message', 'Goodbye');
-
-        expect(spy.calls.count()).toEqual(2);
-        expect(spy.calls.argsFor(0)).toEqual(['Howdy!']);
-        expect(spy.calls.argsFor(1)).toEqual(['Goodbye']);
-      })
-    });
   });
 
-})(d3, _, data);
+})(d3, _, RSVP, data);

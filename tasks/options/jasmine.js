@@ -35,7 +35,7 @@ module.exports = {
       vendor: [
         'bower_components/d3/d3.js',
         'bower_components/underscore/underscore.js',
-        'bower_components/backbone/backbone.js'
+        'bower_components/rsvp/rsvp.js'
       ]
     }
   }

@@ -1,19 +1,8 @@
-(function(d3, _, Backbone, global) {
-
+(function(d3, _, RSVP, global) {
   'use strict';
 
   // Attach properties to global data object
   var data = global.data = {};
-
-  /**
-    Events (eventually remove Backbone dependency)
-  */
-  var Events = data.Events = {
-    on: Backbone.Events.on,
-    once: Backbone.Events.once,
-    off: Backbone.Events.off,
-    trigger: Backbone.Events.trigger
-  };
 
   /**
     Store
@@ -22,40 +11,50 @@
   var Store = data.Store = function Store() {
     this._raw = [];
     this._rows = [];
-    this._subscriptions = [];
+    
+    this.keys = {
+      filename: '__filename'
+    };
+    this.subscriptions = [];
+    this.loading = [];
+    this.errors = [];
 
-    // Setup loading stack
-    this.loading = new EventedStack();
-    this.loading.removeOn('error load');
-    this.loading.on('load', function(rows) {
-      this._raw = this._raw.concat(rows);
-      this._rows = this._rows.concat(this._denormalizeRows(rows));
+    // Initialize cache
+    this.cache = {};
 
-      this.trigger('load', rows);
-    }, this);
-
+    this._normalize = function(row) { return row; };
     this._denormalize = function(row) { return row; };
   };
 
-  _.extend(Store.prototype, Events, {
+  _.extend(Store.prototype, {
+    /**
+      Get/set rows
+
+      @param {Array} [values]
+    */
+    rows: function rows(values) {
+      if (!arguments.length) return this._rows;
+
+      // Store rows as clone of values
+      this._rows = [].concat(values);
+
+      // Notify subscribers
+      _.each(this.subscriptions, function(subscription) {
+        subscription.trigger(this._rows);
+      }, this);
+    },
+
     /**
       Get values from store (asynchromously)
 
       @param {Function} callback
       @param {Object} [context]
+      @chainable
     */
     values: function values(callback, context) {
-      var finished = function() {
-        callback.call(context, this._rows);
-      }.bind(this);
-
-      if (this.loading.count() > 0) {
-        this.loading.all('load error', finished);
-      }
-      else {
-        // Values is always async, even when not loading
-        _.defer(finished);
-      }
+      this.ready().then(function() {
+        callback.call(context || null, this.rows());
+      }.bind(this));
 
       return this;
     },
@@ -63,15 +62,28 @@
     /**
       Load csv file into store
 
-      @param {String} path to csv
+      @param {String|Array} path(s) to csv
+      @returns {Promise}
     */
     load: function load(path) {
-      this._load(path, function(path, callback) {
-        // TODO use actual d3 csv
-        callback(null, []);
-      });
+      var paths = _.isArray(path) ? path : [path];
 
-      return this;
+      // 1. Load from path (cache or csv)
+      // 2. Process rows
+      // 3. Catch errors
+      // 4. Finally remove
+      var loading = RSVP.all(_.map(paths, this._load, this))
+        .then(this._doneLoading.bind(this, paths))
+        .catch(this._errorLoading.bind(this, paths))
+        .finally(function() {
+          // Remove from loading
+          this.loading = _.without(this.loading, loading);
+        }.bind(this));
+
+      // Add to loading (treat this.loading as immutable array)
+      this.loading = this.loading.concat([loading]);
+
+      return loading;
     },
 
     /**
@@ -108,20 +120,23 @@
       @param {Function} callback to call with (values, event: name, store)
       @param {Object} [options]
       - existing: [Boolean=true] trigger on existing records
+      @returns {Subscription}
     */
     subscribe: function(callback, context, options) {
-      options = _.defaults(options, {
+      options = _.defaults({}, options, {
         existing: true
       });
 
-      // Create new subscription (TODO determine what to listen to)
-      var subscription = new Subscription(this, [], callback, context);
-      this._subscriptions.push(subscription);
+      // Create new subscription
+      var subscription = new Subscription(callback, context);
+      this.subscriptions.push(subscription);
 
       // If trigger on existing, mimic load event for callback
-      if (options.existing) {
-        // TODO
-        // subscription.trigger(...) 
+      if (options.existing && !this.loading.length) {
+        this.values(function(rows) {
+          if (rows.length > 0)
+            subscription.trigger(rows);
+        });
       }
 
       return subscription;
@@ -132,6 +147,7 @@
 
       @param {Object|Function} options or iterator
       @param {Object} [context] if config is iterator
+      @chainable
     */
     denormalize: function denormalize(options, context) {
       if (_.isFunction(options)) {
@@ -173,7 +189,26 @@
       }
 
       // Denormalize any existing data
-      this._rows = this._denormalizeRows(this._raw);
+      this._rows = this._processRows(this._raw);
+
+      return this;
+    },
+
+    /**
+      Register normalization iterator to be called on every incoming row (before denormalization)
+      (e.g. Convert from strings to useful data types)
+      
+      @param {Function} iterator
+      @param {Object} [context]
+      @chainable
+    */
+    normalize: function normalize(iterator, context) {
+      this._normalize = function(row, index, rows) {
+        return iterator.call(context || null, row, index, rows);
+      };
+
+      // Normalize any existing data
+      this._rows = this._processRows(this._raw);
 
       return this;
     },
@@ -188,26 +223,84 @@
       return new Query(this, options);
     },
 
-    _denormalizeRows: function(rows) {
-      return _.flatten(_.map(rows, this._denormalize, this), true);
+    /**
+      Promise that resolves when currently loading completes
+
+      @returns {Promise}
+    */
+    ready: function ready() {
+      return RSVP.all(this.loading);
     },
 
-    _load: function(path, loadFn) {
-      // Create loading helper and add to loading stack
-      var loading = _.extend({path: path}, Backbone.Events);
-      this.loading.add(loading);
+    // Process given rows
+    _processRows: function _processRows(rawRows) {
+      var normalized = _.flatten(_.map(rawRows, this._normalize, this), true);
+      var denormalized = _.flatten(_.map(normalized, this._denormalize, this), true);
 
-      loadFn(path, function(err, rows) {
-        if (err) return loading.trigger('error', err);
+      return denormalized;
+    },
+
+    // Load (with caching)
+    _load: function _load(path) {
+      // Check for cache
+      var cached = this.cache[path];
+      if (cached) {
+        if (cached.loading)
+          return cached.loading;
+        else
+          return new RSVP.Promise(function(resolve) { resolve(cached); });  
+      }
+      else {
+        // Load from csv
+        var loading = this._loadCsv(path).finally(function() {
+          // Remove loading state from cache (on success or fail)
+          delete this.cache[path];
+        }.bind(this));
+
+        // Store loading state in cache
+        this.cache[path] = {
+          loading: loading
+        };
+
+        return loading;
+      }
+    },
+
+    // Load rows from given path
+    // @returns {Promise}
+    _loadCsv: function _loadCsv(path) {
+      return new RSVP.Promise(function(resolve, reject) {
+        d3.csv(path).get(function(err, rows) {
+          if (err) return reject(err);
+          resolve(rows);
+        });
+      });
+    },
+
+    // Handle loading finished (successfully)
+    _doneLoading: function _doneLoading(paths, rows) {
+      // Process rows for each path
+      _.each(paths, function(path, index) {
+        // Cache
+        this.cache[path] = rows[index];
 
         // Add filename to rows
-        _.each(rows, function(row) {
-          row.__filename = loading.path;
+        _.each(rows[index], function(row) {
+          row[this.keys.filename] = path;
         }, this);
+      }, this);
+      
+      // Combine all rows
+      rows = _.flatten(rows, true);
 
-        // Notify listeners
-        loading.trigger('load', rows);
-      });
+      // Store raw and processed
+      this._raw = this._raw.concat(rows);
+      this.rows(this.rows().concat(this._processRows(rows)));
+    },
+
+    // Handle loading error
+    _errorLoading: function _errorLoading(paths, err) {
+      this.errors.push({paths: paths, error: err});
     }
   });
 
@@ -219,13 +312,13 @@
   */
   var Query = data.Query = function Query(store, config) {
     this.store = store;
-    this._subscriptions = [];
+    this.subscriptions = [];
 
     // Listen to store changes and update results
     // TODO
   };
 
-  _.extend(Query.prototype, Events, {
+  _.extend(Query.prototype, {
     /**
       Get resulting series of query
 
@@ -248,8 +341,8 @@
         existing: true
       });
 
-      var subscription = new Subscription(this, 'change', callback, context);
-      this._subscriptions.push(subscription);
+      var subscription = new Subscription(callback, context);
+      this.subscriptions.push(subscription);
 
       // If trigger on existing and loaded, mimic load event for callback
       if (options.existing) {
@@ -264,19 +357,15 @@
   /**
     Subscription
     Disposable subscription
-
-    @param {Object} target to attach listeners to
-    @param {Array} event names to listen to
-    @param {Function} callback to call on events
+    
+    @param {Function} callback to call
     @param {Object} [context] to use for callback
   */
-  var Subscription = data.Subscription = function Subscription(target, events, callback, context) {
-    this.target = target;
-    this.events = events;
+  var Subscription = data.Subscription = function Subscription(callback, context) {
     this.callback = callback;
     this.context = context;
 
-    this._attachListeners();
+    this._disposed = false;
   };
 
   _.extend(Subscription.prototype, {
@@ -284,116 +373,15 @@
       Stop listening to changes
     */
     dispose: function dispose() {
-      // Stop listeners
-      var target = this.target;
-      if (target && _.isFunction(target.off)) {
-        _.each(this.listeners, function(listener) {
-          target.off(listener.name, listener.callback, listener.context);
-        }, this);
-      }
-
-      delete this.listeners;
+      this._disposed = true;
     },
 
     /**
       Directly trigger subscription
     */
     trigger: function() {
-      this.callback.apply(this.context, arguments);
-    },
-
-    _attachListeners: function() {
-      if (this.listeners)
-        this.dispose();
-
-      var target = this.target;
-      if (target && _.isFunction(target.on)) {
-        this.listeners = _.map(this.events, function(name) {
-          target.on(name, this.callback, this.context);
-
-          return {
-            name: name,
-            callback: this.callback,
-            context: this.context
-          };
-        }, this);
-      }
-    }
-  });
-
-  /**
-    Evented stack with helpers for listening to multiple elements
-  */
-  var EventedStack = data.EventedStack = function EventedStack() {
-    this._elements = [];
-    this._removeOn = function() {};
-  };
-
-  _.extend(EventedStack.prototype, Events, {
-    items: function() {
-      return this._elements;
-    },
-    count: function() {
-      return this._elements.length;
-    },
-
-    /**
-      Add element to stack
-    */
-    add: function(element) {
-      this._elements.push(element);
-      this._removeOn(element);
-
-      // Attach bubbler to element
-      element.on('all', function() {
-        this.trigger.apply(this, arguments);
-      }, this);
-    },
-
-    /**
-      Remove elements when they trigger an event
-    */
-    removeOn: function(name) {
-      // Create _removeOn helper
-      this._removeOn = function(element) {
-        this.listenTo
-
-        element.once(name, function() {
-          this.remove(element);
-        }, this);
-      };
-
-      // Attach listeners to current elements
-      _.each(this._elements, this._removeOn, this);
-    },
-
-    remove: function(element) {
-      this._elements = _.without(this._elements, element);
-
-      // Remove listeners from element
-      element.off(null, null, this);
-    },
-
-    /**
-      Trigger callback when all elements that are currently in stack trigger event
-      passing response arguments array to callback
-      
-      @param {String} name of event to listen to
-      @param {Function} callback
-      @param {Object} [context]
-    */
-    all: function(name, callback, context) {
-      var count = this._elements.length;
-      var results = [];
-
-      _.each(this._elements, function(element, index) {
-        element.once(name, function() {
-          results[index] = _.toArray(arguments)
-          if (--count <= 0) {
-            callback.call(context, results);
-          }
-        }, this);
-      });
+      if (!this._disposed)
+        this.callback.apply(this.context || null, arguments);
     }
   });
 
@@ -432,4 +420,4 @@
 
   // === END FIXTURES
 
-})(d3, _, Backbone, this);
+})(d3, _, RSVP, this);
