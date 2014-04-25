@@ -55,27 +55,28 @@
       return newRow;
     },
     setup: function(cache) {
-      store.cache = cache || {};
-      store._raw = store._rows = _.flatten(_.values(store.cache), true);
+      _.each(cache, function(rows, filename) {
+        store.data(filename).raw = store.data(filename).values = rows;
+      });
     }
   };
 
   // Load fixture rows manually
   store.FIXTURE.setup({
     'chart1.csv': [
-      {year: 2000, input: 14, normalizedInput: 22, output: 1563, normalizedOutput: 2000, __filename: 'chart1.csv'},
-      {year: 2005, input: 23, normalizedInput: 35, output: 3127, normalizedOutput: 3000, __filename: 'chart1.csv'},
-      {year: 2010, input: 35, normalizedInput: 45, output: 4690, normalizedOutput: 5000, __filename: 'chart1.csv'},
-      {year: 2015, input: 58, normalizedInput: 75, output: 7817, normalizedOutput: 6000, __filename: 'chart1.csv'},
-      {year: 2020,                                 output: 0,    normalizedOutput: 8000, __filename: 'chart1.csv'}
+      {year: 2000, input: 14, normalizedInput: 22, output: 1563, normalizedOutput: 2000},
+      {year: 2005, input: 23, normalizedInput: 35, output: 3127, normalizedOutput: 3000},
+      {year: 2010, input: 35, normalizedInput: 45, output: 4690, normalizedOutput: 5000},
+      {year: 2015, input: 58, normalizedInput: 75, output: 7817, normalizedOutput: 6000},
+      {year: 2020,                                 output: 0,    normalizedOutput: 8000}
     ],
 
     'chart2.csv': [
-      {year: 2000, a: 0, b: 0, c: 0, d: 0, __filename: 'chart2.csv'},
-      {year: 2005, a: 50, b: 20, c: 10, d: 80, __filename: 'chart2.csv'},
-      {year: 2010, a: 80, b: 40, c: 30, d: 120, __filename: 'chart2.csv'},
-      {year: 2015, a: 90, b: 45, c: 35, d: 130, __filename: 'chart2.csv'},
-      {year: 2020, a: 100, b: 50, c: 40, d: 140, __filename: 'chart2.csv'}
+      {year: 2000, a: 0, b: 0, c: 0, d: 0},
+      {year: 2005, a: 50, b: 20, c: 10, d: 80},
+      {year: 2010, a: 80, b: 40, c: 30, d: 120},
+      {year: 2015, a: 90, b: 45, c: 35, d: 130},
+      {year: 2020, a: 100, b: 50, c: 40, d: 140}
     ]
   });
 
