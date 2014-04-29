@@ -14,7 +14,7 @@
     this.errors = [];
 
     // Initialize data cache
-    this._data = {};
+    this._cache = {};
 
     // Load types from static
     this.types = _.clone(Store.types);
@@ -27,7 +27,6 @@
   // Type converters for cast
   Store.types = {
     'Number': function(value) { return +value; },
-    'Integer': function(value) { return _.isUndefined(value) ? NaN : value|0; },
     'Boolean': function(value) {
       return _.isString(value) ? value.toUpperCase() === 'TRUE' : (value === 1 || value === true);
     },
@@ -41,10 +40,10 @@
 
       @param {String} [path]
     */
-    data: function(path) {
+    cache: function(path) {
       // Initialize cache for path (if needed)
-      if (path && !this._data[path]) {
-        this._data[path] = {
+      if (path && !this._cache[path]) {
+        this._cache[path] = {
           meta: {},
           raw: [],
           values: []
@@ -52,7 +51,7 @@
       }
 
       // Return path or all of data
-      return path ? this._data[path] : this._data;
+      return path ? this._cache[path] : this._cache;
     },
 
     /**
@@ -62,7 +61,7 @@
     */
     values: function() {
       return this.ready().then(function(store) {
-        return store.data();
+        return store.cache();
       });
     },
 
@@ -169,13 +168,13 @@
     // Notify subscribers with current data
     _notify: function _notify(name) {
       _.each(this.subscriptions, function(subscription) {
-        subscription.trigger(this.data(), {name: name, store: this});
+        subscription.trigger(this.cache(), {name: name, store: this});
       }, this);
     },
 
     // Process all data
     _process: function _process() {
-      _.each(this.data(), function(cache, path) {
+      _.each(this.cache(), function(cache, path) {
         cache.values = this._processRows(cache.raw, cache.meta);
       }, this);
     },
@@ -194,37 +193,51 @@
 
     // Generate map function for options
     _generateMap: function _generateMap(options) {
+      options = options || {};
       if (_.isFunction(options)) return options;
 
-      // TODO Allow more options
-      var xColumn = options.x || 'x';
+      function resolveFromRowOrMapped(row, mapped, key) {
+        var value = resolve(row, key);
+        if (_.isUndefined(value)) {
+          value = resolve(mapped, key);
+        }
 
-      // Convert y to standard form (if column or array of columns)
-      var yOptions = _.isObject(options.y) ? options.y : {
-        category: '__yColumn',
-        columns: _.isArray(options.y) ? options.y : [options.y || 'y']
-      };
+        return value;
+      }
 
-      // setup iterator by options
-      return function _denormalize(row) {
-        // Perform denomalization by y
-        return _.map(yOptions.columns, function(yColumn) {
-          // Copy columns from row that aren't used in x or y
-          var copyColumns = _.difference(_.keys(row), xColumn, yOptions.columns);
-          var normalized = _.pick(row, copyColumns);
+      return function _map(row) {
+        var mappedRows = [{}];
+        _.each(options, function(option, to) {
+          mappedRows = _.compact(_.flatten(_.map(mappedRows, function(mapped) {
+            if (_.isObject(option)) {
+              return _.map(option.columns, function(from) {
+                var value = resolveFromRowOrMapped(row, mapped, from);
+                if (!_.isUndefined(value)) {
+                  var newRow = _.extend({}, mapped);
+                  newRow[to] = value;
 
-          normalized.x = row[xColumn];
-          normalized.y = row[yColumn];
+                  if (option.categories) {
+                    _.extend(newRow, option.categories[from] || {});
+                  }
+                  else {
+                    newRow[option.category || '__yColumn'] = from;
+                  }
 
-          if (yOptions.categories) {
-            _.extend(normalized, yOptions.categories[yColumn]);
-          }
-          else if (yOptions.category) {
-            normalized[yOptions.category] = yColumn;
-          }
-
-          return normalized;
+                  return newRow;
+                }
+                else {
+                  return null;
+                }
+              });
+            }
+            else {
+              mapped[to] = resolveFromRowOrMapped(row, mapped, option);
+              return mapped;
+            }
+          }), true));
         });
+
+        return mappedRows;
       };
     },
 
@@ -245,7 +258,7 @@
 
     // Load (with caching)
     _load: function _load(path, options) {
-      var cache = this.data(path);
+      var cache = this.cache(path);
 
       if (cache.meta.loaded) {
         return new RSVP.Promise(function(resolve) { resolve(cache.raw); });
@@ -280,7 +293,7 @@
     _doneLoading: function _doneLoading(paths, options, rows) {
       // Process rows for each path
       _.each(paths, function(path, index) {
-        var cache = this.data(path);
+        var cache = this.cache(path);
 
         // Store options
         _.extend(cache.meta, options);
@@ -293,6 +306,8 @@
       }, this);
 
       this._notify('load');
+      // console.log('_done', this.cache());
+      // return this.cache();
     },
 
     // Handle loading error
@@ -343,32 +358,29 @@
   */
   var Query = data.Query = function Query(store, query) {
     this.store = store;
-    this._query = query;
     this.subscriptions = [];
 
+    this._query = query;
+    this._values = [];
+
     // Subscribe to store changes and recalculate on change
-    // TODO
-    // this._subscription = this.store.subscribe(this.recalculate, this);
+    this._subscription = this.store.subscribe(this.calculate, this);
+    this.calculate();
   };
 
   _.extend(Query.prototype, {
     /**
       Get results of query
+
+      @returns {Promise}
     */
     values: function values() {
-      // TODO
-    },
-
-    /**
-      Format results as series
-
-      @param {Array} mapping
-      @chainable
-    */
-    series: function series(mapping) {
-      // TODO
-
-      return this;
+      if (this.calculating) {
+        return this.calculating
+      }
+      else {
+        return new RSVP.Promise(function(resolve) { resolve(this._values); }.bind(this))
+      }
     },
 
     /**
@@ -382,6 +394,97 @@
       this.subscriptions.push(subscription);
 
       return subscription;
+    },
+
+    /**
+      Calculate results of query
+
+      @returns {Promise}
+    */
+    calculate: function calculate() {
+      var query = this._query;
+      var from = (_.isString(query.from) ? [query.from] : query.from) || [];
+
+      // this.calculating = this.store.load(from).then(function(data) {
+      this.calculating = this.store.values().then(function(data) {
+        // 1. from  
+        var rows = _.reduce(data, function(memo, cache, filename) {
+          if (!from.length || _.contains(from, filename)) {
+            return memo.concat(cache.values);
+          }
+          else {
+            return memo;
+          }
+        }, []);
+
+        // 2. filter
+        rows = _.filter(rows, function(row) {
+          return query.filter ? matcher(query.filter, row) : true;
+        });
+
+        // 3. group
+        var results = [];
+        if (query.groupBy) {
+          var grouped = {};
+          _.each(rows, function(row, index) {
+            var key = row[query.groupBy];
+            if (!grouped[key]) {
+              var meta = {};
+              meta[query.groupBy] = key;
+
+              grouped[key] = {
+                meta: meta,
+                values: []
+              };
+            }
+
+            grouped[key].values.push(row);
+          });
+
+          results = _.values(grouped);
+        }
+        else {
+          results.push({meta: {}, values: rows});
+        }
+
+        // 4. series
+        if (query.series) {
+          results = _.map(query.series, function(series) {
+            var result = _.find(results, function(result) {
+              return matcher(series.meta, result.meta);
+            });
+
+            series.values = (result && result.values) || [];
+            return series;
+          });
+        }
+        else {
+          _.each(results, function(result, index) {
+            result.key = 'series-' + index;
+            result.name = _.reduce(result.meta, function(memo, value, key) {
+              var description = key + '=' + value;
+              return memo.length ? memo + ', ' + description : description;
+            }, '');
+          });
+        }
+
+        // Store and return values
+        this._values = results;
+        return this._values;
+      }.bind(this));
+
+      return this.calculating;
+    },
+
+    /**
+      Notify subscribers of changes
+
+      @param {String} name of event
+    */
+    _notify: function(name) {
+      _.each(this.subscriptions, function(subscription) {
+        subscription.trigger(this._values, {name: name, store: this.store, query: this});
+      }, this);
     }
   });
 
@@ -433,7 +536,7 @@
       // otherwise compare with equals
       var isQuery = _.isObject(item) && !(item instanceof Date) && !_.isArray(item);
       if (isQuery) return matcher(item, row, key);
-      else return _.isEqual(row[key], item);
+      else return _.isEqual(resolve(row, key), item);
     }
 
     var logical = {
@@ -455,32 +558,47 @@
           return result && !value(key, item);
         }, true);
       }
-    }
+    };
     var comparison = {
       '$gt': function(value) {
-        return row[lookup] > value;
+        return resolve(row, lookup) > value;
       },
       '$gte': function(value) {
-        return row[lookup] >= value;
+        return resolve(row, lookup) >= value;
       },
       '$lt': function(value) {
-        return row[lookup] < value;
+        return resolve(row, lookup) < value;
       },
       '$lte': function(value) {
-        return row[lookup] <= value;
+        return resolve(row, lookup) <= value;
       },
       '$in': function(value) {
-        return _.indexOf(value, row[lookup]) >= 0;
+        return _.indexOf(value, resolve(row, lookup)) >= 0;
       },
       '$ne': function(value) {
-        return row[lookup] !== value;
+        return resolve(row, lookup) !== value;
       },
       '$nin': function(value) {
-        return _.indexOf(value, row[lookup]) === -1;
+        return _.indexOf(value, resolve(row, lookup)) === -1;
       }
-    }
+    };
 
     return logical['$and'](query);
   }
+
+  /**
+    Resolve data from row by key
+
+    @param {Object} row
+    @param {String} key
+  */
+  var resolve = data.resolve = function resolve(row, key) {
+    return row && row[key];
+  }
+
+  /**
+    Attach "global" store to d3
+  */
+  d3.data = new Store();
 
 })(d3, _, RSVP, this);

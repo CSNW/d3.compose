@@ -174,25 +174,23 @@ var config = {
               
               x, y, input, output, normalized, _filename = chart1.csv
           */
+          from: 'chart1.csv',
           input: {
             filter: {input: true},
-            group: {
-              normalized: {
-                true: {key: 'normalized-input', name: 'Normalized Input'},
-                false: {key: 'input', name: 'Input'}
-              }
-            }
+            groupBy: 'normalized',
+            series: [
+              {meta: {normalized: true}, key: 'normalized-input', name: 'Normalized Input'},
+              {meta: {normalized: false}, key: 'input', name: 'Input'}
+            ]
           },
           results: {
-            filter: {input: {$ne: true}}, // Use mongoDB operators for filter
-            group: {
-              normalized: {
-                true: {key: 'normalized-results', name: 'Normalized Results'},
-                false: {key: 'results', name: 'Results'}
-              }
-            }
-          },
-          needs: 'chart1.csv'
+            filter: {output: true},
+            groupBy: 'normalized',
+            series: [
+              {meta: {normalized: true}, key: 'normalized-results', name: 'Normalized Results'},
+              {meta: {normalized: false}, key: 'results', name: 'Results'}
+            ]
+          }
         }
       },
 
@@ -226,13 +224,13 @@ var config = {
               
               x, y, type (a, b, c, d), _filename = chart2.csv
           */
+          from: 'chart2.csv',
           lines: {
-            group: 'type'
+            groupBy: 'type'
           },
           labels: {
             filter: {x: 2020}
-          },
-          needs: 'chart2.csv'
+          }
         }
       },
 
@@ -263,13 +261,13 @@ var config = {
               year -> x
               a, b -> y, 'type'
               
-              x, y, type (a, b), _filename = chart3.csv
+              x, y, type (a, b)
           */
+          from: 'chart3.csv',
           bars: {
-            group: 'type',
-            reduce: 'total' // Reduction type: total, avg, or function
+            groupBy: 'type',
+            reduce: 'total',  // Reduction type: total, avg, or function
           },
-          needs: 'chart3.csv'
         }
       }
     };
@@ -277,17 +275,67 @@ var config = {
     // Add charts by configuration
     var charts = {}
     _.each(config, function(chartConfig, chartId) {
-      charts[chartId] = d3.select(chartConfig.id)
+      var chart = charts[chartId] = d3.select(chartConfig.id)
         .append('svg')
         .chart('Configurable', chartConfig.chart)
         .width(600)
         .height(400)
         .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-      var query = charts[chartId].query = data.store.query(chartConfig.data);
-      charts[chartId].subscription = query.subscribe(function(values) {
-        charts[chartId].draw(values);
+      var query = chart.query = createQuery(chartConfig.data);
+      query.results().then(function(results) {
+        chart.draw(results);
       });
+      chart.subscription = query.subscribe(function(results) {
+        console.log('updated');
+        // chart.draw(results);
+      });
+
+      function createQuery(queryOptions) {
+        var queries = {};
+        var from = queryOptions.from;
+
+        // Create queries
+        _.each(queryOptions, function(options, key) {
+          if (key != 'from') {
+            if (from && !options.from)
+              options.from = from;
+
+            queries[key] = d3.data.query(options);
+          }
+        });
+
+        var results = function results() {
+          var values = {};
+          _.each(queries, function(query, key) {
+            values[key] = query.values();
+          });
+
+          return RSVP.hash(values);
+        }
+
+        var subscribe = function subscribe(callback, context) {
+          _.each(query.queries, function(query) {
+            query.subscribe(function() {
+              results.then(function(results) {
+                callback.call(context || null, results);
+              });
+            });
+          });
+        }
+
+        return {
+          queries: queries,
+          results: results,
+          subscribe: subscribe
+        };
+      }
+
+      // TODO query
+      // var query = charts[chartId].query = d3.data.query(chartConfig.data);
+      // charts[chartId].subscription = query.subscribe(function(values) {
+      //   charts[chartId].draw(values);
+      // });
     }, this);
   </script>
 </body>

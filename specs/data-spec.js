@@ -68,7 +68,7 @@
 
       describe('cast', function() {
         beforeEach(function() {
-          store.data('a.csv').raw = [
+          store.cache('a.csv').raw = [
             {a: '10', b: '1.23', c: 'false', d: 'Hello', e: 'Jan. 1, 2014', f: '2014'},
             {a: '10', b: '1.23', c: 'false', d: 'Hello', e: 'Jan. 1, 2014', f: '2014'}
           ];
@@ -86,7 +86,7 @@
             };
           });
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows.length).toEqual(2);
           expect(rows[0].a).toEqual(10);
           expect(rows[1].b).toEqual(1);
@@ -99,7 +99,7 @@
         it('should cast by options', function() {
           store.cast({
             a: 'Number',
-            b: 'Integer',
+            b: 'Number',
             c: 'Boolean',
             d: 'String',
             e: 'Date',
@@ -108,10 +108,10 @@
             }
           });
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows.length).toEqual(2);
           expect(rows[0].a).toEqual(10);
-          expect(rows[1].b).toEqual(1);
+          expect(rows[1].b).toEqual(1.23);
           expect(rows[0].c).toEqual(false);
           expect(rows[1].d).toEqual('Hello');
           expect(rows[0].e).toEqual(new Date('Jan. 1, 2014'));
@@ -126,14 +126,14 @@
             f: 'Date.year'
           });
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows[1].f.getFullYear()).toEqual(2014);
         });
       });
 
       describe('map', function() {
         beforeEach(function() {
-          store.data('a.csv').raw = [
+          store.cache('a.csv').raw = [
             {a: 1, b: 2, c: 3, d: 4, e: 5},
             {a: 6, b: 7, c: 8, d: 9, e: 10},
             {a: 11, b: 12, c: 13, d: 14, e: 15},
@@ -144,7 +144,7 @@
         it('should map single x', function() {
           store.map({x: 'a'});
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows.length).toEqual(4);
           expect(rows[0].x).toEqual(1);
           expect(rows[0].a).toBeUndefined();
@@ -153,7 +153,7 @@
         it('should map single y', function() {
           store.map({y: 'b'});
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows.length).toEqual(4);
           expect(rows[0].y).toEqual(2);
           expect(rows[0].b).toBeUndefined();
@@ -162,7 +162,7 @@
         it('should map single x and y', function() {
           store.map({x: 'a', y: 'b'});
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows.length).toEqual(4);
           expect(rows[0].x).toEqual(1);
           expect(rows[0].y).toEqual(2);
@@ -178,7 +178,7 @@
             }
           });
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows.length).toEqual(8);
           expect(rows[0].y).toEqual(2);
           expect(rows[0].type).toEqual('b');
@@ -199,7 +199,7 @@
             }
           });
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows.length).toEqual(8);
           expect(rows[0].y).toEqual(2);
           expect(rows[1].y).toEqual(3);
@@ -221,7 +221,7 @@
             }
           });
 
-          var rows = store.data('a.csv').values;
+          var rows = store.cache('a.csv').values;
           expect(rows.length).toEqual(12);
           expect(rows[0].y).toEqual(2);
           expect(rows[1].y).toEqual(3);
@@ -286,7 +286,7 @@
 
           store.load('a.csv');
           store.load('b.csv', {
-            cast: {a: 'Integer', b: 'Integer'},
+            cast: {a: 'String', b: 'String'},
             map: {x: 'b', y: 'a'}
           });
 
@@ -296,8 +296,8 @@
 
             expect(data['a.csv'].values[0].x).toEqual(1.23);
             expect(data['a.csv'].values[0].y).toEqual(4.56);
-            expect(data['b.csv'].values[0].x).toEqual(4);
-            expect(data['b.csv'].values[0].y).toEqual(1);
+            expect(data['b.csv'].values[0].x).toEqual('4.56');
+            expect(data['b.csv'].values[0].y).toEqual('1.23');
             done();
           });
         });
@@ -305,13 +305,13 @@
 
       describe('caching', function() {
         it('should cache loaded values', function(done) {
-          store.data()['a.csv'] = {meta: {loaded: true}, raw: [], values: []};
+          store.cache()['a.csv'] = {meta: {loaded: true}, raw: [], values: []};
 
           store.load(['a.csv', 'b.csv']).then(function() {
             expect(_loadCsv.calls.count()).toEqual(1);
 
-            expect(store.data()['b.csv']).not.toBeUndefined();
-            expect(store.data()['b.csv'].raw.length).toEqual(1);
+            expect(store.cache()['b.csv']).not.toBeUndefined();
+            expect(store.cache()['b.csv'].raw.length).toEqual(1);
             done();
           });
         });
