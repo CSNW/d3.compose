@@ -258,7 +258,7 @@
           expect(rows[0].c).toEqual(3);
           expect(rows[1].d).toEqual(9);
           expect(rows[2].e).toEqual(15);
-        })
+        });
       });
 
       describe('values', function() {
@@ -712,6 +712,43 @@
           expect({$nor: {a: -10, b: 10}}).matches();
           expect({$nor: {a: 10, b: -10}}).not.matches();
         });
+      });
+    });
+
+    describe('resolve', function() {
+      var fixture, resolve;
+      beforeEach(function() {
+        fixture = {
+          a: 1,
+          'key.with.periods': 2,
+          b: {
+            c: 3,
+            d: {
+              e: 4,
+              f: {
+                g: 5
+              }
+            }
+          }
+        };
+        resolve = function(key) {
+          return data.resolve(fixture, key);
+        };
+      });
+
+      it('should resolve simple key', function() {
+        expect(resolve('a')).toEqual(1);
+        expect(resolve('key.with.periods')).toEqual(2);
+        expect(resolve('unknown')).toBeUndefined();
+      });
+
+      it('should resolve nested key', function() {
+        expect(resolve('b.c')).toEqual(3);
+        expect(resolve('b.d.e')).toEqual(4);
+        expect(resolve('b.d.f.g')).toEqual(5);
+        expect(resolve('b.unknown')).toBeUndefined();
+        expect(resolve('b.d.unknown')).toBeUndefined();
+        expect(resolve('b.d.f.unknown')).toBeUndefined();
       });
     });
   });

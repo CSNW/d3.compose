@@ -828,7 +828,13 @@
     @param {String} key
   */
   var resolve = data.resolve = function resolve(row, key) {
-    return row && row[key];
+    if (!row) return;
+    if (row[key]) return row[key];
+
+    var parts = key.split('.');
+    return _.reduce(parts, function(memo, part) {
+      return memo && memo[part];
+    }, row);
   };
 
   /**
