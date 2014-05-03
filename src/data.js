@@ -20,8 +20,8 @@
     this.types = _.clone(Store.types);
 
     // Set default cast and map functions
-    this._cast = function(row) { return row; };
-    this._map = function(row) { return row; };
+    this._cast = this._generateCastByFilename({default: function(row) { return row; }});
+    this._map = this._generateMapByFilename({default: function(row) { return row; }});
   };
 
   // Type converters for cast
@@ -44,7 +44,7 @@
       // Initialize cache for path (if needed)
       if (path && !this._cache[path]) {
         this._cache[path] = {
-          meta: {},
+          meta: {filename: path},
           raw: [],
           values: []
         };
@@ -114,6 +114,10 @@
       var subscription = new Subscription(callback, context);
       this.subscriptions.push(subscription);
 
+      if (!this.loading.length) {
+        subscription.trigger(this.cache(), {name: 'existing', store: this});
+      }
+
       return subscription;
     },
 
@@ -125,20 +129,64 @@
       @chainable
     */
     cast: function cast(options) {
-      this._cast = this._generateCast(options);
+      this._cast = this._generateCastByFilename({default: options});
       this._process();
 
       return this;
     },
 
     /**
-      Register denormalization iterator/option to be called with every incoming row
+      Register cast options/iterator to be called on every incoming row, by filename
 
       @param {Object|Function} options or iterator
+      - As object: {filenameA: {options by key or iterator}, filenameB: ..., default: ...}
+      - As iterator: function(filename, row) {return cast row}
+    */
+    castByFilename: function castByFilename(options) {
+      this._cast = this._generateCastByFilename(options);
+      this._process();
+
+      return this;
+    },
+
+    /**
+      Register map option/iterator to be called with every incoming row
+
+      @param {Object|Function} options or iterator
+      - Example
+        {
+          x: 'year' // (row.year -> row.x)
+          y: {
+            columns: ['a', 'b', 'c'],
+            category: 'type' // row.a -> row.y, row.type = 'a'
+          },
+          z: {
+            columns: ['d', 'e', 'f'],
+            categories: {
+              d: {isD: true, isE: false, isF: false},
+              e: {isD: false, isE: true, isF: false},
+              f: {isD: false, isE: false, isF: true} // row.d -> row.z, isD: true, isE: false, isF: false
+            }
+          }
+        }
       @chainable
     */
     map: function map(options) {
-      this._map = this._generateMap(options);
+      this._map = this._generateMapByFilename({default: options});
+      this._process();
+
+      return this;
+    },
+
+    /**
+      Register map options/iterator to be called with every incoming row by filename
+
+      @param {Object|Function} options or iterator
+      - As object (filanameA: {options or iterator}, filenameB: ..., default: ...},
+      - As iterator: function(filename, row) {return mapped row}
+    */
+    mapByFilename: function mapByFilename(options) {
+      this._map = this._generateMapByFilename(options);
       this._process();
 
       return this;
@@ -181,8 +229,8 @@
 
     // Process given rows
     _processRows: function _processRows(rows, options) {
-      var castFn = (options && options._cast) || this._cast;
-      var mapFn = (options && options._map) || this._map;
+      var castFn = (options && options._cast) || this._cast.bind(this, options.filename);
+      var mapFn = (options && options._map) || this._map.bind(this, options.filename);
 
       // Cast and map rows
       var cast = _.flatten(_.map(rows, castFn, this), true);
@@ -207,9 +255,14 @@
 
       return function _map(row) {
         var mappedRows = [{}];
+        var keys = [];
         _.each(options, function(option, to) {
           mappedRows = _.compact(_.flatten(_.map(mappedRows, function(mapped) {
             if (_.isObject(option)) {
+              // Add columns to keys
+              keys = keys.concat(option.columns);
+
+              // Split columns into rows
               return _.map(option.columns, function(from) {
                 var value = resolveFromRowOrMapped(row, mapped, from);
                 if (!_.isUndefined(value)) {
@@ -231,14 +284,44 @@
               });
             }
             else {
+              keys.push(option);
               mapped[to] = resolveFromRowOrMapped(row, mapped, option);
               return mapped;
             }
           }), true));
         });
 
+        // Copy non-mapped keys (except for "blank" keys)
+        var copy = _.pick(row, _.difference(_.keys(row), keys, ['']));
+        if (copy) {
+          _.each(mappedRows, function(mapped) {
+            _.extend(mapped, copy);
+          });
+        }
+
         return mappedRows;
       };
+    },
+
+    _generateMapByFilename: function _generateMapByFilename(options) {
+      if (_.isFunction(options)) {
+        return options;
+      }
+      else {
+        options = _.defaults(options || {}, {default: {}});
+        _.each(options, function(option, key) {
+          options[key] = this._generateMap(option);
+        }, this);
+
+        return function _mapByFilename(filename, row) {
+          if (options[filename]) {
+            return options[filename](row);
+          }
+          else {
+            return options['default'](row);
+          }
+        };
+      }
     },
 
     _generateCast: function _generateCast(options) {
@@ -253,6 +336,27 @@
         });
 
         return row;
+      };
+    },
+
+    _generateCastByFilename: function _generateCastByFilename(options) {
+      if (_.isFunction(options)) {
+        return options;
+      }
+      else {
+        options = _.defaults(options || {}, {default: {}});
+        _.each(options, function(option, key) {
+          options[key] = this._generateCast(option);
+        }, this);
+
+        return function _castByFilename(filename, row) {
+          if (options[filename]) {
+            return options[filename](row);
+          }
+          else {
+            return options['default'](row);
+          }
+        };
       }
     },
 
@@ -302,12 +406,11 @@
         cache.raw = rows[index];
 
         // Store processed rows
-        cache.values = this._processRows(rows[index], cache.meta)
+        cache.values = this._processRows(rows[index], cache.meta);
       }, this);
 
       this._notify('load');
-      // console.log('_done', this.cache());
-      // return this.cache();
+      return this.cache();
     },
 
     // Handle loading error
@@ -364,8 +467,13 @@
     this._values = [];
 
     // Subscribe to store changes and recalculate on change
-    this._subscription = this.store.subscribe(this.calculate, this);
-    this.calculate();
+    this._subscription = this.store.subscribe(function() {
+      if (this.calculating) return;
+
+      this.calculate().then(function() {
+        this._notify('calculated');  
+      }.bind(this));
+    }, this);
   };
 
   _.extend(Query.prototype, {
@@ -376,10 +484,10 @@
     */
     values: function values() {
       if (this.calculating) {
-        return this.calculating
+        return this.calculating;
       }
       else {
-        return new RSVP.Promise(function(resolve) { resolve(this._values); }.bind(this))
+        return new RSVP.Promise(function(resolve) { resolve(this._values); }.bind(this));
       }
     },
 
@@ -393,11 +501,24 @@
       var subscription = new Subscription(callback, context);
       this.subscriptions.push(subscription);
 
+      if (!this.calculating) {
+        subscription.trigger(this._values, {name: name, store: this.store, query: this});
+      }
+
       return subscription;
     },
 
     /**
       Calculate results of query
+
+      Steps:
+      1. from
+      2. preprocess (rows)
+      3. filter
+      4. groupBy
+      5. reduce
+      6. postprocess (meta, values)
+      7. series
 
       @returns {Promise}
     */
@@ -405,9 +526,8 @@
       var query = this._query;
       var from = (_.isString(query.from) ? [query.from] : query.from) || [];
 
-      // this.calculating = this.store.load(from).then(function(data) {
-      this.calculating = this.store.values().then(function(data) {
-        // 1. from  
+      this.calculating = this.store.load(from).then(function(data) {
+        // 1. from
         var rows = _.reduce(data, function(memo, cache, filename) {
           if (!from.length || _.contains(from, filename)) {
             return memo.concat(cache.values);
@@ -417,57 +537,42 @@
           }
         }, []);
 
-        // 2. filter
-        rows = _.filter(rows, function(row) {
-          return query.filter ? matcher(query.filter, row) : true;
-        });
-
-        // 3. group
-        var results = [];
-        if (query.groupBy) {
-          var grouped = {};
-          _.each(rows, function(row, index) {
-            var key = row[query.groupBy];
-            if (!grouped[key]) {
-              var meta = {};
-              meta[query.groupBy] = key;
-
-              grouped[key] = {
-                meta: meta,
-                values: []
-              };
-            }
-
-            grouped[key].values.push(row);
-          });
-
-          results = _.values(grouped);
-        }
-        else {
-          results.push({meta: {}, values: rows});
+        // 2. preprocess
+        if (_.isFunction(query.preprocess)) {
+          rows = query.preprocess(rows);
         }
 
-        // 4. series
-        if (query.series) {
-          results = _.map(query.series, function(series) {
-            var result = _.find(results, function(result) {
-              return matcher(series.meta, result.meta);
+        // 3. filter
+        if (query.filter) {
+          if (_.isFunction(query.filter)) {
+            rows = _.filter(rows, query.filter);
+          }
+          else {
+            rows = _.filter(rows, function(row) {
+              return matcher(query.filter, row);
             });
-
-            series.values = (result && result.values) || [];
-            return series;
-          });
-        }
-        else {
-          _.each(results, function(result, index) {
-            result.key = 'series-' + index;
-            result.name = _.reduce(result.meta, function(memo, value, key) {
-              var description = key + '=' + value;
-              return memo.length ? memo + ', ' + description : description;
-            }, '');
-          });
+          }
         }
 
+        // 4. groupBy
+        var results = this._groupBy(rows, query.groupBy);
+
+        // 5. reduce
+        results = this._reduce(results, query.reduce);
+
+        // 6. postprocess
+        if (_.isFunction(query.postprocess)) {
+          _.each(results, function(result) {
+            result.values = query.postprocess(result.values, result.meta);
+          });
+        }
+
+        // 7. series
+        results = this._series(results, query.series);
+
+        // Remove calculating
+        delete this.calculating;
+        
         // Store and return values
         this._values = results;
         return this._values;
@@ -485,6 +590,136 @@
       _.each(this.subscriptions, function(subscription) {
         subscription.trigger(this._values, {name: name, store: this.store, query: this});
       }, this);
+    },
+
+    /**
+      Internal implmentation of groupBy
+      
+      @param {Array} rows
+      @param {String|Array|Object} key or keys array or key function object to group by
+      - 'key' -> meta: group: {key: 'value'}
+      - ['keyA', 'keyB'] -> meta: {keyA: 'value', keyB: 'value'},
+      - {keyA: function(row) {...}, keyB: function(row) {...}} -> meta: {keyA: 'value', keyB: 'value'}
+      @return {Array}
+    */
+    _groupBy: function(rows, groupBy) {
+      if (!groupBy) {
+        return [{meta: {}, values: rows}];
+      }
+      else {
+        if (_.isString(groupBy)) {
+          groupBy = [groupBy];
+        }
+        if (_.isArray(groupBy)) {
+          groupBy = _.object(groupBy, _.map(groupBy, function(key) {
+            return function(row) {
+              return row[key];
+            };
+          }));
+        }
+
+        var grouped = [];
+        _.each(rows, function(row, index, rows) {
+          // Determine meta for row
+          var meta = {};
+          _.each(groupBy, function(group, key) {
+            meta[key] = group(row, index, rows);
+          });
+
+          // Find group by meta (create if not found)
+          var group = _.find(grouped, function(group) {
+            return _.isEqual(group.meta, meta);
+          });
+          if (!group) {
+            group = {meta: meta, values: []};
+            grouped.push(group);
+          }
+
+          // Add row to group
+          group.values.push(row);
+        });
+
+        return grouped;
+      }
+    },
+
+    /**
+      Internal implementation of reduce
+
+      @param {Array} results
+      @param {Object} reduce
+    */
+    _reduce: function(results, reduce) {
+      if (reduce) {
+        var approaches = {
+          avg: function(values, column) {
+            return approaches.sum(values, column) / values.length;
+          },
+          sum: function(values, column) {
+            return _.reduce(values, function(memo, value) {
+              return 0 + memo + value[column];
+            }, 0);
+          }
+        };
+
+        _.each(results, function(result) {
+          var reduced = {};
+
+          if (_.isFunction(reduce.iterator)) {
+            reduced = _.reduce(result.values, reduce.iterator, reduce.memo || {});
+            result.values = [reduced];
+          }
+          else if (reduce.byColumn) {
+            _.each(reduce.byColumn, function(approach, column) {
+              reduced[column] = approaches[approach](result.values, column);
+            });
+
+            result.values = [reduced];
+          }
+          else if (reduce.columns && reduce.approach) {
+            _.each(reduce.columns, function(column) {
+              reduced[column] = approaches[reduce.approach](result.values, column);
+            });
+
+            result.values = [reduced];
+          }
+        });
+      }
+
+      return results;
+    },
+
+    /**
+      Internal implementation of series
+
+      @param {Array} results
+      @param {Array} series definitions (by meta)
+      @return {Array}
+    */
+    _series: function(results, series) {
+      if (!series) {
+        // Create series defaults
+        _.each(results, function(result, index) {
+          result.key = 'series-' + index;
+          result.name = _.reduce(result.meta, function(memo, value, key) {
+            var description = key + '=' + value;
+            return memo.length ? memo + ', ' + description : description;
+          }, '');
+        });
+      }
+      else {
+        results = _.map(series, function(series) {
+          // Find matching result and load values for series
+          var result = _.find(results, function(result) {
+            return _.isEqual(series.meta, result.meta);
+          });
+
+          series.values = (result && result.values) || [];
+          return series;
+        });
+      }
+
+      return results;
     }
   });
 
@@ -584,7 +819,7 @@
     };
 
     return logical['$and'](query);
-  }
+  };
 
   /**
     Resolve data from row by key
@@ -594,7 +829,7 @@
   */
   var resolve = data.resolve = function resolve(row, key) {
     return row && row[key];
-  }
+  };
 
   /**
     Attach "global" store to d3

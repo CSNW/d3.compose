@@ -7,20 +7,32 @@
   // Setup FIXTURE
   data.FIXTURE = {
     meta: {
-      year: {range: [2000, 2050], increment: 5},
-      x: {range: [0, 100], round: true, increment: 5},
-      a: {range: [0, 100], round: true, count: 2},
-      b: {range: [1000, 10000], round: true, count: 2},
-      c: {range: [0, 1000], round: true, count: 4},
-      d: {range: [0, 1], round: false},
-      gender: {choices: ['male', 'female']}
+      'chart1.csv': {
+        year: {range: [2000, 2050], increment: 5},
+        input: {range: [0, 100], round: true},
+        normalizedInput: {range: [0, 100], round: true},
+        output: {range: [0, 1000], round: true},
+        normalizedOutput: {range: [0, 1000], round: true}
+      },
+      'chart2.csv': {
+        year: {range: [2000, 2050], increment: 5},
+        a: {range: [0, 200], round: true},
+        b: {range: [0, 200], round: true},
+        c: {range: [0, 200], round: true},
+        d: {range: [0, 200], round: true}
+      },
+      'chart3.csv': {
+        x: {range: [0, 10], increment: 1},
+        a: {range: [10000, 20000], round: true},
+        b: {range: [10000, 20000], round: true},
+      }
     },
     createRow: function(filename) {
       var newRow = {};
-      var rows = data.cache(filename).values;
+      var rows = data.cache(filename).raw;
       var previousRow = rows[rows.length - 1];
 
-      _.each(this.meta, function(options, key) {
+      _.each(this.meta[filename], function(options, key) {
         var choices = options.choices || [];
         var min = options.range ? options.range[0] : 0;
         var max = options.range ? options.range[1] : 1;
@@ -51,6 +63,19 @@
       });
 
       return newRow;
+    },
+    addRows: function(count) {
+      _.each(this.meta, function(meta, filename) {
+        var cache = data.cache(filename);
+        _.times(count || 1, function() {
+          var row = this.createRow(filename);  
+          cache.raw.push(row);
+        }, this);
+      }, this);
+
+      // Call underlying store helpers to simulate load
+      data._process();
+      data._notify('load');
     },
     setup: function(cache) {
       _.each(cache, function(options, filename) {

@@ -47,4 +47,8 @@ module.exports = function(grunt) {
     'jshint:specs', 
     'jasmine:src'
   ]);
+
+  this.registerTask('example', 'Run example (at http://localhost:4001)', [
+    'connect:example'
+  ]);
 };

@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.chart.csnw.configurable Example</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="css/default.css">
+
+  <link rel="stylesheet" type="text/css" href="../src/css/base.css">
+  <style>
+    .input .chart-line, .input2 .chart-line {
+      stroke-dasharray: 4,4;
+    }
+
+    .example {
+      clear: both;
+    }
+    .example-chart {
+      float: left;
+      margin-right: 20px;
+    }
+    .example-code {
+      float: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>d3.chart.csnw.configurable Detailed</h1>
+    <div id="chart"></div>
+  </div>
+
+  <script src="../bower_components/d3/d3.js"></script>
+  <script src="../bower_components/d3.chart/d3.chart.js"></script>
+  <script src="../bower_components/underscore/underscore.js"></script>
+
+  <script src="../src/helpers.js"></script>
+  <script src="../src/extensions.js"></script>
+  <script src="../src/base.js"></script>
+  <script src="../src/charts.js"></script>
+  <script src="../src/components.js"></script>
+  <script src="../src/configurable.js"></script>
+
+  <script src="../bower_components/rsvp/rsvp.js"></script>
+  <script src="../src/data.js"></script>
+
+  <script src="data/config.js"></script>
+  <script type="text/javascript">
+    var chart = d3.select('#chart')
+      .append('svg')
+      .chart('Configurable', {
+          charts: [],
+          title: 'Detailed chart'
+        })
+      .width(600)
+      .height(400)
+      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+
+    // TODO Load and run query
+  </script>
+</body>
+</html>

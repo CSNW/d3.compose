@@ -35,50 +35,6 @@
     <section class="example clearfix">
       <h2>Line-Bar</h2>
       <div class="example-chart" id="chart-1"></div>
-      <!-- <div class="example-code">
-<pre><code>
-var config = {
-  type: 'Values',
-  charts: [
-    {
-      type: 'Bars', 
-      dataKey: 'results', 
-      displayAdjacent: true,
-      labels: {
-        offset: 10,
-        position: 'top|bottom',
-        style: {
-          'font-size': '14px'
-        }
-      }
-    },
-    {
-      type: 'Line',
-      dataKey: 'input',
-      labels: {
-        position: 'top'
-      }
-    }
-  ],
-  axes: {
-    x: {title: 'X Title'},
-    y: {
-      scale: {domain: [0, 20000]}, 
-      title: 'Y1 Title'
-    },
-    secondaryY: {
-      dataKey: 'input', 
-      scale: {domain: [0, 70]}, 
-      title: 'Y2 Title'
-    }
-  },
-  legend: {
-    type: 'Inset',
-    position: {x: 10, y: 0}
-  },
-  title: 'Chart Title'
-};</code></pre>
-      </div> -->
     </section>
     
     <section class="example clearfix">
@@ -283,12 +239,9 @@ var config = {
         .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
       var query = chart.query = createQuery(chartConfig.data);
-      query.results().then(function(results) {
-        chart.draw(results);
-      });
       chart.subscription = query.subscribe(function(results) {
-        console.log('updated');
-        // chart.draw(results);
+        console.log('draw', results);
+        chart.draw(results);
       });
 
       function createQuery(queryOptions) {
@@ -317,7 +270,7 @@ var config = {
         var subscribe = function subscribe(callback, context) {
           _.each(query.queries, function(query) {
             query.subscribe(function() {
-              results.then(function(results) {
+              results().then(function(results) {
                 callback.call(context || null, results);
               });
             });

@@ -54,18 +54,26 @@
   */
 
   describe('data', function() {
-    describe('Store', function() {
-      var store, _loadCsv;
-      beforeEach(function() {
-        store = new data.Store();
+    var store, _loadCsv;
+    beforeEach(function() {
+      store = new data.Store();
 
-        _loadCsv = spyOn(store, '_loadCsv').and.callFake(function(path) {
-          return new RSVP.Promise(function(resolve, reject) {
-            resolve([{file: path, a: 1.23, b: 4.56}]);
-          });
+      _loadCsv = spyOn(store, '_loadCsv').and.callFake(function(path) {
+        return new RSVP.Promise(function(resolve, reject) {
+          resolve([{file: path, a: 1.23, b: 4.56}]);
         });
       });
+    });
 
+    function addRows(filename, rows) {
+      store.cache()[filename] = {
+        meta: {loaded: true},
+        raw: rows,
+        values: rows
+      };
+    }
+
+    describe('Store', function() {
       describe('cast', function() {
         beforeEach(function() {
           store.cache('a.csv').raw = [
@@ -236,6 +244,21 @@
           expect(rows[0].c).toBeUndefined();
           expect(rows[0].d).toBeUndefined();
         });
+
+        it('should pass through any columns not listed in map', function() {
+          store.map({
+            x: 'a',
+            y: 'b'
+          });
+
+          var rows = store.cache('a.csv').values;
+          expect(rows.length).toEqual(4);
+          expect(rows[0].a).toBeUndefined();
+          expect(rows[0].b).toBeUndefined();
+          expect(rows[0].c).toEqual(3);
+          expect(rows[1].d).toEqual(9);
+          expect(rows[2].e).toEqual(15);
+        })
       });
 
       describe('values', function() {
@@ -268,13 +291,13 @@
       });
 
       describe('subscribe', function() {
-        it('should notify subscribers on each load', function(done) {
+        it('should notify subscribers initially and on each load', function(done) {
           var spy = jasmine.createSpy();
 
           store.subscribe(spy);
 
           RSVP.all([store.load('a.csv'), store.load('b.csv'), store.load('c.csv')]).then(function() {
-            expect(spy.calls.count()).toEqual(3);
+            expect(spy.calls.count()).toEqual(4);
             done();
           });
         });
@@ -305,7 +328,7 @@
 
       describe('caching', function() {
         it('should cache loaded values', function(done) {
-          store.cache()['a.csv'] = {meta: {loaded: true}, raw: [], values: []};
+          addRows('a.csv', []);
 
           store.load(['a.csv', 'b.csv']).then(function() {
             expect(_loadCsv.calls.count()).toEqual(1);
@@ -330,7 +353,268 @@
     });
 
     describe('Query', function() {
-      
+      beforeEach(function() {
+        addRows('a.csv', [
+          {x: -5, y: -50, type: 'negative', file: 'a'},
+          {x: -4, y: -40, type: 'negative', file: 'a'},
+          {x: -3, y: -30, type: 'negative', file: 'a'},
+          {x: -2, y: -20, type: 'negative', file: 'a'},
+          {x: -1, y: -10, type: 'negative', file: 'a'},
+          {x: 0, y: 0, type: 'zero', file: 'a'},
+          {x: 1, y: 10, type: 'positive', file: 'a'},
+          {x: 2, y: 20, type: 'positive', file: 'a'},
+          {x: 3, y: 30, type: 'positive', file: 'a'},
+          {x: 4, y: 40, type: 'positive', file: 'a'},
+          {x: 5, y: 50, type: 'positive', file: 'a'},
+        ]);
+        addRows('b.csv', [
+          {x: -10, y: -100, type: 'negative', file: 'b'}, 
+          {x: 10, y: 100, type: 'positive', file: 'b'}
+        ]);
+      });
+
+      function query(options) {
+        return new data.Query(store, options);
+      }
+
+      describe('from', function() {
+        it('should download files', function(done) {
+          spyOn(store, 'load').and.callThrough();
+          query({from: ['a.csv', 'b.csv']}).values().then(function(results) {
+            expect(store.load).toHaveBeenCalledWith(['a.csv', 'b.csv']);
+            done();
+          });
+        });
+
+        it('should filter store data by from', function(done) {
+          query({from: 'b.csv'}).values().then(function(results) {
+            expect(results.length).toEqual(1);
+            expect(results[0].values.length).toEqual(2);
+            done();
+          });
+        });
+      });
+
+      describe('preprocess', function() {
+        it('should call with all rows and use returned rows', function(done) {
+          query({
+            from: 'b.csv',
+            preprocess: function(rows) {
+              rows.unshift({x: -20, y: -200, type: 'negative'});
+              rows[1].x = -10.1;
+              rows[2].y = 101;
+              rows.push({x: 20, y: 200, type: 'positive'});
+
+              return rows;
+            }
+          }).values().then(function(results) {
+            expect(results[0].values.length).toEqual(4);
+            expect(results[0].values[0].y).toEqual(-200);
+            expect(results[0].values[1].x).toEqual(-10.1);
+            expect(results[0].values[2].y).toEqual(101);
+            done();
+          });
+        });
+      });
+
+      describe('filter', function() {
+        it('should filter by matcher', function(done) {
+          query({
+            from: 'a.csv',
+            filter: {x: {$lt: 0}}
+          }).values().then(function(results) {
+            expect(results[0].values.length).toEqual(5);
+            done();
+          });
+        });
+
+        it('should filter by function or matcher', function(done) {
+          query({
+            from: 'a.csv',
+            filter: function(row) {
+              return row.type == 'positive';
+            }
+          }).values().then(function(results) {
+            expect(results[0].values.length).toEqual(5);
+            done();
+          });
+        });
+      });
+
+      describe('groupBy', function() {
+        it('should group by key', function(done) {
+          query({
+            from: 'a.csv',
+            groupBy: 'type'
+          }).values().then(function(results) {
+            expect(results.length).toEqual(3);
+            expect(results[0].values.length).toEqual(5);
+            expect(results[1].values.length).toEqual(1);
+            expect(results[2].values.length).toEqual(5);
+            done();
+          });
+        });
+
+        it('should group by keys', function(done) {
+          query({
+            from: ['a.csv', 'b.csv'],
+            groupBy: ['file', 'type']
+          }).values().then(function(results) {
+            expect(results.length).toEqual(5);
+
+            // a, negative
+            // a, zero
+            // a, positive
+            // b, negative
+            // b, positive
+            expect(results[0].values.length).toEqual(5);
+            expect(results[1].values.length).toEqual(1);
+            expect(results[2].values.length).toEqual(5);
+            expect(results[3].values.length).toEqual(1);
+            expect(results[4].values.length).toEqual(1);
+            done();
+          });
+        });
+
+        it('should group by function', function(done) {
+          query({
+            from: 'a.csv',
+            groupBy: {
+              type: function(row) {
+                return row.type;
+              }
+            }
+          }).values().then(function(results) {
+            expect(results.length).toEqual(3);
+            expect(results[0].values.length).toEqual(5);
+            expect(results[1].values.length).toEqual(1);
+            expect(results[2].values.length).toEqual(5);
+            done();
+          });
+        });
+
+        it('should add group meta to grouped values', function(done) {
+          query({
+            from: ['a.csv', 'b.csv'],
+            groupBy: ['file', 'type']
+          }).values().then(function(results) {
+            expect(results.length).toEqual(5);
+
+            // a, negative
+            // a, zero
+            // a, positive
+            // b, negative
+            // b, positive
+            expect(results[0].meta).toEqual({file: 'a', type: 'negative'});
+            expect(results[1].meta).toEqual({file: 'a', type: 'zero'});
+            expect(results[2].meta).toEqual({file: 'a', type: 'positive'});
+            expect(results[3].meta).toEqual({file: 'b', type: 'negative'});
+            expect(results[4].meta).toEqual({file: 'b', type: 'positive'});
+
+            done();
+          });
+        });
+      });
+
+      describe('reduce', function() {
+        it('should perform reduce iterator', function(done) {
+          query({
+            from: ['a.csv'],
+            filter: {y: {$gte: 0}},
+            reduce: {
+              iterator: function(memo, row) {
+                memo.y += row.y;
+                if (!_.contains(memo.types, row.type)) {
+                  memo.types.push(row.type);
+                }
+
+                return memo;
+              },
+              memo: {y: 0, types: []}
+            }
+          }).values().then(function(results) {
+            expect(results[0].values[0]).toEqual({y: 150, types: ['zero', 'positive']});
+
+            done();
+          });
+        });
+
+        it('should reduce with "sum" approach', function(done) {
+          query({
+            from: ['a.csv'],
+            filter: {y: {$gt: 0}},
+            reduce: {
+              columns: ['y'],
+              approach: 'sum'
+            }
+          }).values().then(function(results) {
+            expect(results[0].values[0]).toEqual({y: 150});
+
+            done();
+          });
+        });
+
+        it('should reduce with "avg" approach', function(done) {
+          query({
+            from: 'a.csv',
+            filter: {y: {$gt: 0}},
+            reduce: {
+              columns: ['y'],
+              approach: 'avg'
+            }
+          }).values().then(function(results) {
+            expect(results[0].values[0]).toEqual({y: 30});
+
+            done();
+          });
+        });
+
+        it('should reduce byColumn with approach', function(done) {
+          query({
+            from: 'a.csv',
+            filter: {y: {$gt: 0}},
+            reduce: {
+              byColumn: {
+                x: 'sum',
+                y: 'avg'
+              }
+            }
+          }).values().then(function(results) {
+            expect(results[0].values[0]).toEqual({x: 15, y: 30});
+
+            done();
+          });
+        });
+      });
+
+      describe('postprocess', function() {
+        it('should postprocess by given meta and values', function() {
+          query({
+            from: ['a.csv', 'b.csv'],
+            groupBy: ['file', 'type'],
+            postprocess: function(values, meta) {
+              _.each(values, function(value) {
+                value.fileAndType = meta.file + '+' + meta.type;
+              });
+            }
+          }).values().then(function(results) {
+            expect(results.length).toEqual(5);
+
+            // a, negative
+            // a, zero
+            // a, positive
+            // b, negative
+            // b, positive
+            expect(results[0].values[0].fileAndType).toEqual('a+negative');
+            expect(results[1].values[0].fileAndType).toEqual('a+zero');
+            expect(results[2].values[0].fileAndType).toEqual('a+positive');
+            expect(results[3].values[0].fileAndType).toEqual('b+negative');
+            expect(results[4].values[0].fileAndType).toEqual('b+zero');
+
+            done();
+          });
+        });
+      });
     });
 
     describe('matcher', function() {
@@ -349,10 +633,10 @@
                   message: 'Expected ' + JSON.stringify(actual) + ' to match ' + JSON.stringify(expected || row)
                 };
               }
-            }
+            };
           }
         });
-      })
+      });
 
       describe('keys', function() {
         it('simple key comparison', function() {
