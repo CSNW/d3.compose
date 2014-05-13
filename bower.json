@@ -1,19 +1,18 @@
 {
-  "name": "d3.chart.csnw.line-bar",
-  "main": "d3.chart.csnw.line-bar.js",
+  "name": "d3.chart.csnw.configurable",
+  "main": "dist/d3.chart.csnw.configurable.js",
   "version": "0.5.0",
-  "homepage": "https://github.com/CSNW/d3.chart.csnw.line-bar",
+  "homepage": "https://github.com/CSNW/d3.chart.csnw.configurable",
   "authors": [
     "CSNW",
     "Tim Hall <tim.hall.engr@gmail.com>"
   ],
-  "description": "d3-chart line-bar",
+  "description": "d3-chart configurable",
   "keywords": [
     "d3-chart",
     "d3",
     "chart",
-    "line",
-    "bar"
+    "configurable"
   ],
   "private": true,
   "dependencies": {

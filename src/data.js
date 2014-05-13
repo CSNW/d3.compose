@@ -6,7 +6,7 @@
 
   /**
     Store
-    Generic data store with collection of rows
+    Generic data store with async load, cast, map, and query
   */
   var Store = data.Store = function Store() {
     this.subscriptions = [];
@@ -39,6 +39,7 @@
       Load current data in store (sync)
 
       @param {String} [path]
+      @return {Object}
     */
     cache: function(path) {
       // Initialize cache for path (if needed)
@@ -57,7 +58,7 @@
     /**
       Load values in store (once currently loading is complete)
       
-      @returns {Promise}
+      @return {Promise}
     */
     values: function() {
       return this.ready().then(function(store) {
@@ -66,10 +67,11 @@
     },
 
     /**
-      Load csv file into store
+      Load file(s) into store with options
 
       @param {String|Array} path(s) to csv
-      @returns {Promise}
+      @param {Object} [options]
+      @return {Promise}
     */
     load: function load(path, options) {
       var paths = _.isArray(path) ? path : [path];
@@ -107,7 +109,7 @@
 
       @param {Function} callback to call with (data, event: name, store)
       @param {Object} [context]
-      @returns {Subscription}
+      @return {Subscription}
     */
     subscribe: function(callback, context) {
       // Create new subscription
@@ -141,6 +143,7 @@
       @param {Object|Function} options or iterator
       - As object: {filenameA: {options by key or iterator}, filenameB: ..., default: ...}
       - As iterator: function(filename, row) {return cast row}
+      @chainable
     */
     castByFilename: function castByFilename(options) {
       this._cast = this._generateCastByFilename(options);
@@ -161,11 +164,10 @@
             category: 'type' // row.a -> row.y, row.type = 'a'
           },
           z: {
-            columns: ['d', 'e', 'f'],
+            columns: ['d', 'e'],
             categories: {
-              d: {isD: true, isE: false, isF: false},
-              e: {isD: false, isE: true, isF: false},
-              f: {isD: false, isE: false, isF: true} // row.d -> row.z, isD: true, isE: false, isF: false
+              d: {isD: true, isE: false},
+              e: {isD: false, isE: true} // row.d -> row.z, isD: true, isE: false
             }
           }
         }
@@ -184,6 +186,7 @@
       @param {Object|Function} options or iterator
       - As object (filanameA: {options or iterator}, filenameB: ..., default: ...},
       - As iterator: function(filename, row) {return mapped row}
+      @chainable
     */
     mapByFilename: function mapByFilename(options) {
       this._map = this._generateMapByFilename(options);
@@ -196,7 +199,7 @@
       Create new query of data store
 
       @param {Object} config to pass to query
-      @returns {Query}
+      @return {Query}
     */
     query: function query(options) {
       return new Query(this, options);
@@ -205,7 +208,7 @@
     /**
       Promise that resolves when currently loading completes
 
-      @returns {Promise}
+      @return {Promise}
     */
     ready: function ready() {
       return RSVP.all(this.loading).then(function() { 
@@ -383,7 +386,7 @@
       }
     },
 
-    // Load rows from given path
+    // Load csv from given path
     _loadCsv: function _loadCsv(path) {
       return new RSVP.Promise(function(resolve, reject) {
         d3.csv(path).get(function(err, rows) {
@@ -428,7 +431,7 @@
     x, y, type, a, b, c
 
     Output:
-    (Flattened array of arrays with metadata)
+    (Flattened array of objects with metadata and values)
     [
       {meta..., values: [...]},
       {meta..., values: [...]},
@@ -438,26 +441,32 @@
 
     Example:
     var query = {
-      // select: x, y is implied
-      from: 'chart-1.csv',
+      from: ['chart-1.csv', 'chart-2.csv'],
       filter: {
         // by key
         // ---
-        a: true, // compare directly: ===
-        b: {gt: 10, lt: 100} // compare by operator: gt, lt, gte, lte, eq, neq, and, or, not
-        // implied -> {and: {gt: 10, lt: 100}}
-        c: {or: {gt: 10, gte: 10, lt: 100, lte: 100, eq: 10, neq: -1}, not: {or: {and: {gt: 10, lt: 100}}}}
+        // compare directly: a === true
+        a: true, 
 
-        // by operator (keys are only allowed inside operators)
+        // comparison: $gt, $gte, $lt, $lte, $ne, $in, $nin
+        // b > 10 AND b < 100
+        b: {$gt: 10, $lt: 100} 
+        
+        // compare with logical
+        // c > 10 OR c < 100
+        c: {$or: {$gt: 10, $lt: 100}}
+
+        // by logical
         // ---
-        or: {
-          a: {gt: 100},
-          b: {lt: 100}
-        }
+        $and: {a: 10, b: 20}, 
+        $or: {c: 30, d: 40}, 
+        $not: {e: false}, 
+        $nor: {f: -10, g: {$in: ['a', 'b', 'c']}}}
       }
     }
 
     @param {Store} store instance to query
+    @param {Object} [query] to run
   */
   var Query = data.Query = function Query(store, query) {
     this.store = store;
@@ -480,7 +489,7 @@
     /**
       Get results of query
 
-      @returns {Promise}
+      @return {Promise}
     */
     values: function values() {
       if (this.calculating) {
@@ -496,6 +505,7 @@
 
       @param {Function} callback to call with (values, event: name, query, store)
       @param {Object} [context]
+      @return {Subscription}
     */
     subscribe: function subscribe(callback, context) {
       var subscription = new Subscription(callback, context);
@@ -520,7 +530,7 @@
       6. postprocess (meta, values)
       7. series
 
-      @returns {Promise}
+      @return {Promise}
     */
     calculate: function calculate() {
       var query = this._query;
@@ -648,6 +658,7 @@
 
       @param {Array} results
       @param {Object} reduce
+      @return {Array}
     */
     _reduce: function(results, reduce) {
       if (reduce) {
@@ -711,7 +722,7 @@
         results = _.map(series, function(series) {
           // Find matching result and load values for series
           var result = _.find(results, function(result) {
-            return _.isEqual(series.meta, result.meta);
+            return matcher(result.meta, series.meta);
           });
 
           series.values = (result && result.values) || [];

@@ -464,10 +464,6 @@
         expect(helpers.resolveChart).toThrow();
       });
     });
-
-    describe('mixin', function() {
-      
-    });
   });
 
 })(d3, _, d3.chart.helpers);
