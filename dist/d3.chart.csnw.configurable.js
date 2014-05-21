@@ -632,7 +632,7 @@
       return d.y;
     }),
     keyValue: di(function(chart, d, i) {
-      return d.key;
+      return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i);
     }),
 
     setScales: function() {

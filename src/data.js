@@ -519,6 +519,25 @@
     },
 
     /**
+      Update query parameters
+
+      @param {Object} query
+    */
+    update: function update(query) {
+      this._query = query;
+
+      if (this.calculating) {
+        console.log(':/ need to intercept calculating...');
+      }
+      else {
+        console.log('update -> calculate');
+        this.calculate().then(function() {
+          this._notify('calculated');  
+        }.bind(this));
+      }
+    },
+
+    /**
       Calculate results of query
 
       Steps:
@@ -719,18 +738,28 @@
         });
       }
       else {
-        results = _.map(series, function(series) {
-          // Find matching result and load values for series
-          var result = _.find(results, function(result) {
-            return matcher(result.meta, series.meta);
+        if (_.isObject(series)) {
+          _.each(series, function(series_values, key) {
+            series[key] = _.map(series_values, createSeries);
           });
-
-          series.values = (result && result.values) || [];
-          return series;
-        });
+          results = series;
+        }
+        else {
+          results = _.map(series, createSeries);
+        }
       }
 
       return results;
+
+      function createSeries(series) {
+        // Find matching result and load values for series
+        var result = _.find(results, function(result) {
+          return matcher(result.meta, series.meta);
+        });
+
+        series.values = (result && result.values) || [];
+        return series;
+      }
     }
   });
 
