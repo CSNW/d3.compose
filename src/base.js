@@ -249,7 +249,8 @@
 
     // Update margins from components layout
     _updateChartMargins: function(layout) {
-      var margins = this.chartMargins();
+      // Copy margins to prevent updating user-defined margins
+      var margins = _.extend({}, this.chartMargins());
       _.each(layout, function(parts, key) {
         _.each(parts, function(part) {
           margins[key] += part.offset || 0;
