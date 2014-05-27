@@ -1,4 +1,4 @@
-/*! d3.chart.csnw.configurable - v0.5.0
+/*! d3.chart.csnw.configurable - v0.5.1
  * https://github.com/CSNW/d3.chart.csnw.configurable
  * License: MIT
  */
@@ -1053,7 +1053,8 @@
 
     // Update margins from components layout
     _updateChartMargins: function(layout) {
-      var margins = this.chartMargins();
+      // Copy margins to prevent updating user-defined margins
+      var margins = _.extend({}, this.chartMargins());
       _.each(layout, function(parts, key) {
         _.each(parts, function(part) {
           margins[key] += part.offset || 0;
