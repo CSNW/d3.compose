@@ -59,9 +59,6 @@
   <script src="../src/components.js"></script>
   <script src="../src/configurable.js"></script>
 
-  <script src="../bower_components/rsvp/rsvp.js"></script>
-  <script src="../src/data.js"></script>
-
   <script src="js/data.js"></script>
   <script src="js/highlight.pack.js"></script>
   <script type="text/javascript">
@@ -71,7 +68,7 @@
       /**
         Chart 1: Line-Bar
       */
-      chart1: {
+      'chart-1': {
         id: '#chart-1',
         chart: {
           type: 'Values',
@@ -115,45 +112,13 @@
             position: {x: 10, y: 0}
           },
           title: 'Chart Title'
-        },
-        data: {
-          /*
-            Raw: year, input, normalizedInput, output, normalizedOutput
-            Denormalize (at store level):
-              year -> transform('Year ' + (year - 2000)) -> x
-              input, normalizedInput, output, normalizedOutput -> y, {
-                input: {input: true, output: false, normalized: false},
-                normalizedInput: {input: true, output: false, normalized: true},
-                output: {input: false, output: true, normalized: false},
-                normalizedOutput: {input: false, output: true, normalized: true},
-              }
-              
-              x, y, input, output, normalized, _filename = chart1.csv
-          */
-          from: 'chart1.csv',
-          input: {
-            filter: {input: true},
-            groupBy: 'normalized',
-            series: [
-              {meta: {normalized: true}, key: 'normalized-input', name: 'Normalized Input'},
-              {meta: {normalized: false}, key: 'input', name: 'Input'}
-            ]
-          },
-          results: {
-            filter: {output: true},
-            groupBy: 'normalized',
-            series: [
-              {meta: {normalized: true}, key: 'normalized-results', name: 'Normalized Results'},
-              {meta: {normalized: false}, key: 'results', name: 'Results'}
-            ]
-          }
         }
       },
 
       /**
         Chart 2: Lines
       */
-      chart2: {
+      'chart-2': {
         id: '#chart-2',
         chart: {
           type: 'XY',
@@ -170,30 +135,13 @@
             dataKey: 'lines'
           },
           title: 'Results by Year'
-        },
-        data: {
-          /*
-            Raw: year, a, b, c, d
-            Denormalize (at store level):
-              year -> x
-              a, b, c, d -> y, 'type'
-              
-              x, y, type (a, b, c, d), _filename = chart2.csv
-          */
-          from: 'chart2.csv',
-          lines: {
-            groupBy: 'type'
-          },
-          labels: {
-            filter: {x: 2020}
-          }
         }
       },
 
       /**
         Chart 3: Bars
       */
-      chart3: {
+      'chart-3': {
         id: '#chart-3',
         chart: {
           type: 'Values',
@@ -209,86 +157,21 @@
             y: {title: 'Results', scale: {domain: [0, 35000]}}
           },
           title: 'Results'
-        },
-        data: {
-          /*
-            Raw: year, a, b
-            Denormalize (at store level):
-              year -> x
-              a, b -> y, 'type'
-              
-              x, y, type (a, b)
-          */
-          from: 'chart3.csv',
-          bars: {
-            groupBy: 'type',
-            reduce: 'total',  // Reduction type: total, avg, or function
-          },
         }
       }
     };
     
     // Add charts by configuration
     var charts = {}
-    _.each(config, function(chartConfig, chartId) {
-      var chart = charts[chartId] = d3.select(chartConfig.id)
+    _.each(config, function(options, id) {
+      var chart = charts[id] = d3.select(options.id)
         .append('svg')
-        .chart('Configurable', chartConfig.chart)
+        .chart('Configurable', options.chart)
         .width(600)
         .height(400)
         .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-      var query = chart.query = createQuery(chartConfig.data);
-      chart.subscription = query.subscribe(function(results) {
-        console.log('draw', results);
-        chart.draw(results);
-      });
-
-      function createQuery(queryOptions) {
-        var queries = {};
-        var from = queryOptions.from;
-
-        // Create queries
-        _.each(queryOptions, function(options, key) {
-          if (key != 'from') {
-            if (from && !options.from)
-              options.from = from;
-
-            queries[key] = d3.data.query(options);
-          }
-        });
-
-        var results = function results() {
-          var values = {};
-          _.each(queries, function(query, key) {
-            values[key] = query.values();
-          });
-
-          return RSVP.hash(values);
-        }
-
-        var subscribe = function subscribe(callback, context) {
-          _.each(query.queries, function(query) {
-            query.subscribe(function() {
-              results().then(function(results) {
-                callback.call(context || null, results);
-              });
-            });
-          });
-        }
-
-        return {
-          queries: queries,
-          results: results,
-          subscribe: subscribe
-        };
-      }
-
-      // TODO query
-      // var query = charts[chartId].query = d3.data.query(chartConfig.data);
-      // charts[chartId].subscription = query.subscribe(function(values) {
-      //   charts[chartId].draw(values);
-      // });
+      chart.draw(data[id]);
     }, this);
   </script>
 </body>

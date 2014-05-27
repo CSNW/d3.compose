@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.chart.csnw.configurable Example</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="css/default.css">
+
+  <link rel="stylesheet" type="text/css" href="../src/css/base.css">
+  <style>
+    .spec-run {
+      margin-left: 4px;
+    }
+    .spec-chart {
+      margin-top: 10px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    var specs = {};
+    function spec(id, options) {
+      specs[id] = options;
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>d3.chart.csnw.configurable Specs</h1>
+
+    <section class="example spec clearfix">
+      <span>Should re-layout correctly on redraw</span>
+      <button class="spec-run" data-spec-id="spec-1">Run</button>
+      <button class="spec-reset" data-spec-id="spec-1">Reset</button>
+
+      <div class="spec-chart" id="spec-1"></div>
+      <script type="text/javascript">
+        spec('spec-1', {
+          chart: {
+            type: 'XY',
+            charts: [
+              {type: 'Line', dataKey: 'lines', showLabels: false}
+            ],
+            axes: {
+              x: {title: 'X Axis'},
+              y: {title: 'Y Axis'}
+            },
+            title: 'Chart Title'
+          },
+          run: function(id, options, chart) {
+            chart.redraw();
+          }
+        });
+      </script>
+    </section>
+  </div>
+
+  <script src="../bower_components/d3/d3.js"></script>
+  <script src="../bower_components/d3.chart/d3.chart.js"></script>
+  <script src="../bower_components/underscore/underscore.js"></script>
+
+  <script src="../src/helpers.js"></script>
+  <script src="../src/extensions.js"></script>
+  <script src="../src/base.js"></script>
+  <script src="../src/charts.js"></script>
+  <script src="../src/components.js"></script>
+  <script src="../src/configurable.js"></script>
+
+  <script src="../bower_components/jquery/dist/jquery.js"></script>
+  <script src="js/data.js"></script>
+  <script type="text/javascript">
+    // Startup examples
+    var charts = {};
+    _.each(specs, function(options, id) {
+      var chart;
+      function create() {
+        chart = d3.select('#' + id)
+          .append('svg')
+          .chart('Configurable', options.chart)
+          .width(600)
+          .height(400)
+          .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+
+        chart.draw(data[id]);
+        charts[id] = chart;
+      }
+
+      create(); 
+
+      if (_.isFunction(options.run) || _.isFunction(options.reset)) {
+        var $run = $('.spec-run[data-spec-id="' + id + '"');
+        var $reset = $('.spec-reset[data-spec-id="' + id + '"');
+
+        $reset.prop('disabled', true);
+        if (_.isFunction(options.run)) {
+          $run.on('click', function() {
+            if ($run.attr('disabled'))
+              return;
+
+            options.run(id, options, chart);
+            $run.attr('disabled', true);
+            $reset.attr('disabled', false);
+          });
+        }
+
+        $reset.on('click', function() {
+          if ($reset.attr('disabled'))
+            return;
+          
+          $('#' + id).empty();
+          create();
+          $run.attr('disabled', false);
+          $reset.attr('disabled', true);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
