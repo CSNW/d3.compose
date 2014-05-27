@@ -1,10 +1,10 @@
 module.exports = {
   jshint: {
-    files: ['src/**/*.js'],
+    files: ['d3.data.js'],
     tasks: ['jshint:src']
   },
   test: {
-    files: ['src/**/*.js', 'specs/**/*.js'],
+    files: ['d3.data.js', 'specs/**/*.js'],
     tasks: ['test']
   }
 };

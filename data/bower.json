@@ -1,0 +1,38 @@
+{
+  "name": "d3.data",
+  "main": "d3.data.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/CSNW/d3.chart.csnw.configurable",
+  "authors": [
+    "CSNW",
+    "Tim Hall <tim.hall.engr@gmail.com>"
+  ],
+  "description": "d3.data",
+  "keywords": [
+    "d3.data",
+    "d3",
+    "data"
+  ],
+  "private": true,
+  "dependencies": {
+    "rsvp": "~3.0.6",
+    "underscore": "~1.6.0",
+    "d3": "~3.4.8"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "jquery": "~2.1.0",
+    "jasmine-jquery": "~2.0.3"
+  },
+  "ignore": [
+    "src",
+    "specs",
+    "example",
+    "tasks",
+    "package.json",
+    "Gruntfile.js",
+    ".gitattributes",
+    ".gitignore",
+    ".jshintrc"
+  ]
+}

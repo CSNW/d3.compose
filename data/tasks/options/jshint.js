@@ -3,8 +3,7 @@ module.exports = {
     'jshintrc': '.jshintrc'
   },
 
-  src: ['src/**/*.js'],
+  src: ['d3.data.js'],
   specs: ['specs/*.spec.js'],
-  build: ['dist/<%= pkg.name %>.js'],
-  grunt: ['Gruntfile.js']
+  build: ['d3.data.min.js']
 };

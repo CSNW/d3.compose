@@ -1,0 +1,9 @@
+{
+  "browser": true,
+  "node": true,
+  "devel": true,
+  "debug": true,
+  "validthis": true,
+  "sub": true,
+  "esnext": true
+}
