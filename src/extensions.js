@@ -219,8 +219,9 @@
       return data;
     },
 
+    // determine centered-x based on series display type (adjacent or layered)
     x: di(function(chart, d, i) {
-      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
+      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
     }),
 
     defaultXScale: function() {
@@ -244,7 +245,7 @@
     // AdjacentX/Width is used in cases where series are presented next to each other at each value
     adjacentX: di(function(chart, d, i) {
       var adjacentWidth = chart.adjacentWidth.call(this, d, i);
-      var left = chart.x.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
+      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
       
       return left + adjacentWidth * chart.seriesIndex.call(this, d, i);
     }),
@@ -254,16 +255,13 @@
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
     layeredX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i);
+      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
     }),
     layeredWidth: di(function(chart, d, i) {
       return chart._xScale().rangeBand();
     }),
 
-    // itemX/Width determine centered-x and width based on series display type (adjacent or layered)
-    itemX: di(function(chart, d, i) {
-      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
-    }),
+    // determine item width based on series display type (adjacent or layered)
     itemWidth: di(function(chart, d, i) {
       return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
     }),

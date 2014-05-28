@@ -12,11 +12,18 @@
 
   <link rel="stylesheet" type="text/css" href="../src/css/base.css">
   <style>
+    .spec {
+      margin-bottom: 16px;
+    }
     .spec-run {
       margin-left: 4px;
     }
     .spec-chart {
       margin-top: 10px;
+    }
+
+    .resizable {
+      /* Resizes automatically with container */  
     }
   </style>
 
@@ -52,7 +59,107 @@
           },
           run: function(id, options, chart) {
             chart.redraw();
-            $('.chart-title-main').text('Chart Title (Redrawn)');
+            $('#spec-1 .chart-title-main').text('Chart Title (Redrawn)');
+          }
+        });
+      </script>
+    </section>
+
+    <section class="example spec clearfix">
+      <span>Should layout bars adjacent and lines stacked (by default)</span>
+
+      <div class="spec-chart" id="spec-2"></div>
+      <script type="text/javascript">
+        spec('spec-2', {
+          chart: {
+            type: 'Values',
+            charts: [
+              {type: 'Bars', dataKey: 'values', showLabels: false},
+              {type: 'Line', dataKey: 'values', showLabels: false}
+            ]
+          }
+        });
+      </script>
+    </section>
+
+    <section class="example spec clearfix">
+      <span>Should display axis above charts and below labels</span>
+
+      <div class="spec-chart" id="spec-3"></div>
+      <script type="text/javascript">
+        spec('spec-3', {
+          chart: {
+            type: 'XY',
+            charts: [
+              {type: 'Line', dataKey: 'values', style: {'stroke-width': '5px'}, labels: {style: {'font-weight': 'bold', 'font-size': '16px'}}},
+            ],
+            axes: {
+              x: {position: 'y0'},
+              y: {position: 'x0', scale: {domain: [-5, 5]}}
+            }
+          }
+        });
+      </script>
+    </section>
+
+    <section class="example spec clearfix">
+      <span>Lines should be smooth by default, but can be turned off</span>
+      <button class="spec-run" data-spec-id="spec-4">Run</button>
+      <button class="spec-reset" data-spec-id="spec-4">Reset</button>
+
+      <div class="spec-chart" id="spec-4"></div>
+      <script type="text/javascript">
+        spec('spec-4', {
+          chart: {
+            type: 'XY',
+            charts: [
+              {type: 'Line', dataKey: 'values', showLabels: false}
+            ],
+            axes: {
+              y: {scale: {domain: [20, 60]}}
+            },
+            title: 'Smooth'
+          },
+          run: function(id, options, chart) {
+            // Set to not smooth...
+            $('#spec-4 .chart-title-main').text('Not Smooth (...)');
+          }
+        });
+      </script>
+    </section>
+
+    <section class="example spec clearfix">
+      <span>Should resize automatically (resize window to test)</span>
+
+      <div class="spec-chart" id="spec-5"></div>
+      <script type="text/javascript">
+        spec('spec-5', {
+          resizable: true,
+          chart: {
+            type: 'Values',
+            charts: [
+              {type: 'Bars', dataKey: 'values', showLabels: false},
+              {type: 'Line', dataKey: 'values', showLabels: false}
+            ]
+          }
+        });
+      </script>
+    </section>
+
+    <section class="example spec clearfix">
+      <span>Should have good default margins</span>
+
+      <div class="spec-chart" id="spec-6"></div>
+      <script type="text/javascript">
+        spec('spec-6', {
+          resizable: true,
+          margins: false,
+          chart: {
+            type: 'Values',
+            charts: [
+              {type: 'Bars', dataKey: 'values', showLabels: false},
+              {type: 'Line', dataKey: 'values', showLabels: false}
+            ]
           }
         });
       </script>
@@ -76,14 +183,21 @@
     // Startup examples
     var charts = {};
     _.each(specs, function(options, id) {
+      options = _.defaults(options, {resizable: false, margins: true});
+
       var chart;
       function create() {
         chart = d3.select('#' + id)
           .append('svg')
-          .chart('Configurable', options.chart)
-          .width(600)
-          .height(400)
-          .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+          .chart('Configurable', options.chart);
+
+        if (!options.resizable)
+          chart.width(600).height(400);
+        else
+          $('#' + id).addClass('resizable');
+
+        if (options.margins)
+          chart.chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
         chart.draw(data[id]);
         charts[id] = chart;

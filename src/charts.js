@@ -136,7 +136,7 @@
   */
   d3.chart('Labels').extend('LabelValues', mixin(extensions.Values, {
     labelX: di(function(chart, d, i) {
-      return chart.itemX.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
+      return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
     })
   }));
 
@@ -153,7 +153,7 @@
       this.once('transform', function() {
         if (this.showLabels()) {
           var labelOptions = _.defaults({}, this.options.labels, {
-            displayAdjacent: this.displayAdjacent()
+            displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
           });
 
           var Labels = helpers.resolveChart(this.isValues ? 'LabelValues' : 'Labels', 'Chart', this.isValues);
@@ -227,7 +227,7 @@
       return Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
     }),
     barX: di(function(chart, d, i) {
-      return chart.itemX.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
+      return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
     }),
     barY: di(function(chart, d, i) {
       var y = chart.y.call(this, d, i);
@@ -274,25 +274,25 @@
             this
               .attr('d', function(d, i) {
                 return lines[chart.seriesIndex.call(this, d, i)](chart.seriesValues.call(this, d, i));
-              })
-              .attr('style', chart.lineStyle);
+              });
+              // .attr('style', chart.itemStyle);
           }
         }
       });
     },
     lines: property('lines', {defaultValue: []}),
-    lineStyle: di(function(chart, d, i) {
-      return helpers.style({
-        stroke: chart.lineStroke.call(this, d, i),
-        'stroke-dasharray': chart.lineStrokeDashArray.call(this, d, i)
-      });
-    }),
-    lineStroke: di(function(chart, d, i) {
-      return helpers.getValue(['stroke', 'color'], d, chart.options);
-    }),
-    lineStrokeDashArray: di(function(chart, d, i) {
-      return helpers.getValue(['stroke-dasharray'], d, chart.options);
-    }),
+    // lineStyle: di(function(chart, d, i) {
+    //   return helpers.style({
+    //     stroke: chart.lineStroke.call(this, d, i),
+    //     'stroke-dasharray': chart.lineStrokeDashArray.call(this, d, i)
+    //   });
+    // }),
+    // lineStroke: di(function(chart, d, i) {
+    //   return helpers.getValue(['stroke', 'color'], d, chart.options);
+    // }),
+    // lineStrokeDashArray: di(function(chart, d, i) {
+    //   return helpers.getValue(['stroke-dasharray'], d, chart.options);
+    // }),
     createLine: function(series) {
       var line = d3.svg.line()
         .x(this.x)

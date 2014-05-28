@@ -755,7 +755,7 @@
       function createSeries(series) {
         // Find matching result and load values for series
         var result = _.find(results, function(result) {
-          return matcher(result.meta, series.meta);
+          return matcher(series.meta, result.meta);
         });
 
         series.values = (result && result.values) || [];
