@@ -27,10 +27,21 @@
     }
   </style>
 
+  <!-- Add jquery here for spec helper -->
+  <script src="../bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript">
-    var specs = {};
-    function spec(id, options) {
-      specs[id] = options;
+    var specs = [];
+    function spec(options) {
+      // Grab elements from parent of currently executing script
+      var $container = $('script').last().parent();
+      options.elements = {
+        container: $container[0],
+        chart: $container.find('[data-chart]')[0],
+        run: $container.find('[data-run]')[0],
+        reset: $container.find('[data-reset]')[0]
+      };
+
+      specs.push(options);
     }
   </script>
 </head>
@@ -38,18 +49,18 @@
   <div class="container">
     <h1>d3.chart.csnw.configurable Specs</h1>
 
-    <section class="example spec clearfix">
+    <section class="spec">
       <span>Should re-layout correctly on redraw</span>
-      <button class="spec-run" data-spec-id="spec-1">Run</button>
-      <button class="spec-reset" data-spec-id="spec-1">Reset</button>
+      <button class="spec-btn" data-run>Run</button>
+      <button class="spec-btn" data-reset>Reset</button>
 
-      <div class="spec-chart" id="spec-1"></div>
+      <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
-        spec('spec-1', {
+        spec({
           chart: {
             type: 'XY',
             charts: [
-              {type: 'Line', dataKey: 'lines', showLabels: false}
+              {type: 'Line', dataKey: 'values', showLabels: false}
             ],
             axes: {
               x: {title: 'X Axis'},
@@ -57,37 +68,39 @@
             },
             title: 'Chart Title'
           },
-          run: function(id, options, chart) {
+          data: 'spec-abc',
+          run: function(options, chart) {
             chart.redraw();
-            $('#spec-1 .chart-title-main').text('Chart Title (Redrawn)');
+            $(options.elements.chart).find('.chart-title-main').text('Chart Title (Redrawn)');
           }
         });
       </script>
     </section>
 
-    <section class="example spec clearfix">
+    <section class="spec">
       <span>Should layout bars adjacent and lines stacked (by default)</span>
 
-      <div class="spec-chart" id="spec-2"></div>
+      <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
-        spec('spec-2', {
+        spec({
           chart: {
             type: 'Values',
             charts: [
               {type: 'Bars', dataKey: 'values', showLabels: false},
               {type: 'Line', dataKey: 'values', showLabels: false}
             ]
-          }
+          },
+          data: 'spec-abc'
         });
       </script>
     </section>
 
-    <section class="example spec clearfix">
+    <section class="spec">
       <span>Should display axis above charts and below labels</span>
 
-      <div class="spec-chart" id="spec-3"></div>
+      <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
-        spec('spec-3', {
+        spec({
           chart: {
             type: 'XY',
             charts: [
@@ -97,19 +110,20 @@
               x: {position: 'y0'},
               y: {position: 'x0', scale: {domain: [-5, 5]}}
             }
-          }
+          },
+          data: 'spec-overlap'
         });
       </script>
     </section>
 
-    <section class="example spec clearfix">
+    <section class="spec">
       <span>Lines should be smooth by default, but can be turned off</span>
-      <button class="spec-run" data-spec-id="spec-4">Run</button>
-      <button class="spec-reset" data-spec-id="spec-4">Reset</button>
+      <button class="spec-btn" data-run>Run</button>
+      <button class="spec-btn" data-reset>Reset</button>
 
-      <div class="spec-chart" id="spec-4"></div>
+      <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
-        spec('spec-4', {
+        spec({
           chart: {
             type: 'XY',
             charts: [
@@ -120,20 +134,41 @@
             },
             title: 'Smooth'
           },
-          run: function(id, options, chart) {
+          data: 'spec-smooth',
+          run: function(options, chart) {
             // Set to not smooth...
-            $('#spec-4 .chart-title-main').text('Not Smooth (...)');
+            $(options.elements.chart).find('.chart-title-main').text('Not Smooth (...)');
           }
         });
       </script>
     </section>
 
-    <section class="example spec clearfix">
+    <section class="spec">
+      <span>d3 Axis extensions should be used by Axis</span>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: {
+            type: 'XY',
+            charts: [
+              {type: 'Line', dataKey: 'values', showLabels: false}
+            ],
+            axes: {
+              x: {ticks: 5}
+            }
+          },
+          data: 'spec-abc'
+        })
+      </script>
+    </section>
+
+    <section class="spec">
       <span>Should resize automatically (resize window to test)</span>
 
-      <div class="spec-chart" id="spec-5"></div>
+      <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
-        spec('spec-5', {
+        spec({
           resizable: true,
           chart: {
             type: 'Values',
@@ -141,17 +176,18 @@
               {type: 'Bars', dataKey: 'values', showLabels: false},
               {type: 'Line', dataKey: 'values', showLabels: false}
             ]
-          }
+          },
+          data: 'spec-abc'
         });
       </script>
     </section>
 
-    <section class="example spec clearfix">
+    <section class="spec">
       <span>Should have good default margins</span>
 
-      <div class="spec-chart" id="spec-6"></div>
+      <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
-        spec('spec-6', {
+        spec({
           resizable: true,
           margins: false,
           chart: {
@@ -160,7 +196,8 @@
               {type: 'Bars', dataKey: 'values', showLabels: false},
               {type: 'Line', dataKey: 'values', showLabels: false}
             ]
-          }
+          },
+          data: 'spec-abc'
         });
       </script>
     </section>
@@ -177,37 +214,36 @@
   <script src="../src/components.js"></script>
   <script src="../src/configurable.js"></script>
 
-  <script src="../bower_components/jquery/dist/jquery.js"></script>
   <script src="js/data.js"></script>
   <script type="text/javascript">
     // Startup examples
-    var charts = {};
-    _.each(specs, function(options, id) {
+    var charts = [];
+    _.each(specs, function(options) {
       options = _.defaults(options, {resizable: false, margins: true});
 
       var chart;
       function create() {
-        chart = d3.select('#' + id)
+        chart = d3.select(options.elements.chart)
           .append('svg')
           .chart('Configurable', options.chart);
 
         if (!options.resizable)
           chart.width(600).height(400);
         else
-          $('#' + id).addClass('resizable');
+          $(options.elements.chart).addClass('resizable');
 
         if (options.margins)
           chart.chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
-        chart.draw(data[id]);
-        charts[id] = chart;
+        chart.draw(data[options.data]);
+        charts.push(chart);
       }
 
       create(); 
 
       if (_.isFunction(options.run) || _.isFunction(options.reset)) {
-        var $run = $('.spec-run[data-spec-id="' + id + '"');
-        var $reset = $('.spec-reset[data-spec-id="' + id + '"');
+        var $run = $(options.elements.run);
+        var $reset = $(options.elements.reset);
 
         $reset.prop('disabled', true);
         if (_.isFunction(options.run)) {
@@ -215,7 +251,7 @@
             if ($run.attr('disabled'))
               return;
 
-            options.run(id, options, chart);
+            options.run(options, chart);
             $run.attr('disabled', true);
             $reset.attr('disabled', false);
           });
@@ -225,7 +261,7 @@
           if ($reset.attr('disabled'))
             return;
           
-          $('#' + id).empty();
+          $(options.elements.chart).empty();
           create();
           $run.attr('disabled', false);
           $reset.attr('disabled', true);

@@ -84,8 +84,8 @@
     },
 
     // Specs
-    'spec-1': {
-      lines: [
+    'spec-abc': {
+      values: [
         {
           key: 'a',
           name: 'A',
@@ -125,48 +125,7 @@
       ]
     },
 
-    'spec-2': {
-      values: [
-        {
-          key: 'a',
-          name: 'A',
-          values: [
-            {x: 'a', y: 0},
-            {x: 'b', y: 20},
-            {x: 'c', y: 40},
-            {x: 'd', y: 60},
-            {x: 'e', y: 80},
-            {x: 'f', y: 100}
-          ]
-        },
-        {
-          key: 'b',
-          name: 'B',
-          values: [
-            {x: 'a', y: 100},
-            {x: 'b', y: 80},
-            {x: 'c', y: 60},
-            {x: 'd', y: 40},
-            {x: 'e', y: 20},
-            {x: 'f', y: 0}
-          ]
-        },
-        {
-          key: 'c',
-          name: 'C',
-          values: [
-            {x: 'a', y: 30},
-            {x: 'b', y: 45},
-            {x: 'c', y: 50},
-            {x: 'd', y: 50},
-            {x: 'e', y: 45},
-            {x: 'f', y: 30}
-          ]
-        }
-      ]
-    },
-
-    'spec-3': {
+    'spec-overlap': {
       values: [
         {
           key: 'values',
@@ -180,7 +139,7 @@
       ]
     },
 
-    'spec-4': {
+    'spec-smooth': {
       values: [
         {
           key: 'values',
@@ -195,89 +154,7 @@
           ]
         }
       ]
-    },
-
-    'spec-5': {
-      values: [
-        {
-          key: 'a',
-          name: 'A',
-          values: [
-            {x: 'a', y: 0},
-            {x: 'b', y: 20},
-            {x: 'c', y: 40},
-            {x: 'd', y: 60},
-            {x: 'e', y: 80},
-            {x: 'f', y: 100}
-          ]
-        },
-        {
-          key: 'b',
-          name: 'B',
-          values: [
-            {x: 'a', y: 100},
-            {x: 'b', y: 80},
-            {x: 'c', y: 60},
-            {x: 'd', y: 40},
-            {x: 'e', y: 20},
-            {x: 'f', y: 0}
-          ]
-        },
-        {
-          key: 'c',
-          name: 'C',
-          values: [
-            {x: 'a', y: 30},
-            {x: 'b', y: 45},
-            {x: 'c', y: 50},
-            {x: 'd', y: 50},
-            {x: 'e', y: 45},
-            {x: 'f', y: 30}
-          ]
-        }
-      ]
-    },
-
-    'spec-6': {
-      values: [
-        {
-          key: 'a',
-          name: 'A',
-          values: [
-            {x: 'a', y: 0},
-            {x: 'b', y: 20},
-            {x: 'c', y: 40},
-            {x: 'd', y: 60},
-            {x: 'e', y: 80},
-            {x: 'f', y: 100}
-          ]
-        },
-        {
-          key: 'b',
-          name: 'B',
-          values: [
-            {x: 'a', y: 100},
-            {x: 'b', y: 80},
-            {x: 'c', y: 60},
-            {x: 'd', y: 40},
-            {x: 'e', y: 20},
-            {x: 'f', y: 0}
-          ]
-        },
-        {
-          key: 'c',
-          name: 'C',
-          values: [
-            {x: 'a', y: 30},
-            {x: 'b', y: 45},
-            {x: 'c', y: 50},
-            {x: 'd', y: 50},
-            {x: 'e', y: 45},
-            {x: 'f', y: 30}
-          ]
-        }
-      ]
-    },
+    }
   };
 
 })(this, _);

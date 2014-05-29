@@ -388,7 +388,6 @@
 
     // Load csv from given path
     _loadCsv: function _loadCsv(path) {
-      console.log('_loadCsv', path);
       return new RSVP.Promise(function(resolve, reject) {
         d3.csv(path).get(function(err, rows) {
           if (err) return reject(err);
@@ -531,7 +530,6 @@
         console.log(':/ need to intercept calculating...');
       }
       else {
-        console.log('update -> calculate');
         this.calculate().then(function() {
           this._notify('calculated');  
         }.bind(this));

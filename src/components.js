@@ -123,6 +123,18 @@
 
     Properties:
     - {String} [position = bottom] top, right, bottom, left, x0, y0
+    - {x, y} [translation] of axis relative to chart bounds
+    - {String} [orient = bottom] top, right, bottom, left
+    - {String} [orientation = horizontal] horizontal, vertical
+
+    Available d3 Axis Extensions:
+    - ticks
+    - tickValues
+    - tickSize
+    - innerTickSize
+    - outerTickSize
+    - tickPadding
+    - tickFormat
   */
   d3.chart('Component').extend('Axis', mixin(extensions.Series, extensions.XY, {
     initialize: function() {
@@ -184,7 +196,10 @@
           y0: {x: 0, y: this.y0()}
         };
         
-        return helpers.translate(translationByPosition[this.position()]);
+        return translationByPosition[this.position()];
+      },
+      get: function(value) {
+        return helpers.translate(value);
       }
     }),
 
@@ -261,12 +276,13 @@
       this.axis.scale(scale);
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
+      var arrayExtensions = ['tickValues'];
       _.each(extensions, function(key) {
         var value = this[key] && this[key]();
         if (!_.isUndefined(value)) {
           // If value is array, treat as arguments array
           // otherwise, pass in directly
-          if (_.isArray(value))
+          if (_.isArray(value) && !_.contains(arrayExtensions, key))
             this.axis[key].apply(this.axis, value);
           else
             this.axis[key](value);

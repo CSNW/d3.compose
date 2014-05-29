@@ -745,8 +745,9 @@
       return data;
     },
 
+    // determine centered-x based on series display type (adjacent or layered)
     x: di(function(chart, d, i) {
-      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
+      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
     }),
 
     defaultXScale: function() {
@@ -770,7 +771,7 @@
     // AdjacentX/Width is used in cases where series are presented next to each other at each value
     adjacentX: di(function(chart, d, i) {
       var adjacentWidth = chart.adjacentWidth.call(this, d, i);
-      var left = chart.x.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
+      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
       
       return left + adjacentWidth * chart.seriesIndex.call(this, d, i);
     }),
@@ -780,16 +781,13 @@
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
     layeredX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i);
+      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
     }),
     layeredWidth: di(function(chart, d, i) {
       return chart._xScale().rangeBand();
     }),
 
-    // itemX/Width determine centered-x and width based on series display type (adjacent or layered)
-    itemX: di(function(chart, d, i) {
-      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
-    }),
+    // determine item width based on series display type (adjacent or layered)
     itemWidth: di(function(chart, d, i) {
       return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
     }),
@@ -1240,7 +1238,7 @@
   */
   d3.chart('Labels').extend('LabelValues', mixin(extensions.Values, {
     labelX: di(function(chart, d, i) {
-      return chart.itemX.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
+      return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
     })
   }));
 
@@ -1257,7 +1255,7 @@
       this.once('transform', function() {
         if (this.showLabels()) {
           var labelOptions = _.defaults({}, this.options.labels, {
-            displayAdjacent: this.displayAdjacent()
+            displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
           });
 
           var Labels = helpers.resolveChart(this.isValues ? 'LabelValues' : 'Labels', 'Chart', this.isValues);
@@ -1331,7 +1329,7 @@
       return Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
     }),
     barX: di(function(chart, d, i) {
-      return chart.itemX.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
+      return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
     }),
     barY: di(function(chart, d, i) {
       var y = chart.y.call(this, d, i);
@@ -1378,25 +1376,25 @@
             this
               .attr('d', function(d, i) {
                 return lines[chart.seriesIndex.call(this, d, i)](chart.seriesValues.call(this, d, i));
-              })
-              .attr('style', chart.lineStyle);
+              });
+              // .attr('style', chart.itemStyle);
           }
         }
       });
     },
     lines: property('lines', {defaultValue: []}),
-    lineStyle: di(function(chart, d, i) {
-      return helpers.style({
-        stroke: chart.lineStroke.call(this, d, i),
-        'stroke-dasharray': chart.lineStrokeDashArray.call(this, d, i)
-      });
-    }),
-    lineStroke: di(function(chart, d, i) {
-      return helpers.getValue(['stroke', 'color'], d, chart.options);
-    }),
-    lineStrokeDashArray: di(function(chart, d, i) {
-      return helpers.getValue(['stroke-dasharray'], d, chart.options);
-    }),
+    // lineStyle: di(function(chart, d, i) {
+    //   return helpers.style({
+    //     stroke: chart.lineStroke.call(this, d, i),
+    //     'stroke-dasharray': chart.lineStrokeDashArray.call(this, d, i)
+    //   });
+    // }),
+    // lineStroke: di(function(chart, d, i) {
+    //   return helpers.getValue(['stroke', 'color'], d, chart.options);
+    // }),
+    // lineStrokeDashArray: di(function(chart, d, i) {
+    //   return helpers.getValue(['stroke-dasharray'], d, chart.options);
+    // }),
     createLine: function(series) {
       var line = d3.svg.line()
         .x(this.x)
@@ -1549,6 +1547,18 @@
 
     Properties:
     - {String} [position = bottom] top, right, bottom, left, x0, y0
+    - {x, y} [translation] of axis relative to chart bounds
+    - {String} [orient = bottom] top, right, bottom, left
+    - {String} [orientation = horizontal] horizontal, vertical
+
+    Available d3 Axis Extensions:
+    - ticks
+    - tickValues
+    - tickSize
+    - innerTickSize
+    - outerTickSize
+    - tickPadding
+    - tickFormat
   */
   d3.chart('Component').extend('Axis', mixin(extensions.Series, extensions.XY, {
     initialize: function() {
@@ -1610,7 +1620,10 @@
           y0: {x: 0, y: this.y0()}
         };
         
-        return helpers.translate(translationByPosition[this.position()]);
+        return translationByPosition[this.position()];
+      },
+      get: function(value) {
+        return helpers.translate(value);
       }
     }),
 
@@ -1687,12 +1700,13 @@
       this.axis.scale(scale);
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
+      var arrayExtensions = ['tickValues'];
       _.each(extensions, function(key) {
         var value = this[key] && this[key]();
         if (!_.isUndefined(value)) {
           // If value is array, treat as arguments array
           // otherwise, pass in directly
-          if (_.isArray(value))
+          if (_.isArray(value) && !_.contains(arrayExtensions, key))
             this.axis[key].apply(this.axis, value);
           else
             this.axis[key](value);

@@ -164,14 +164,14 @@
         expect(chart.adjacentX(processed[1].values[2])).toEqual(275);
       });
 
-      it('should update itemX and itemWidth with displayAdjacent', function() {
+      it('should update x and itemWidth with displayAdjacent', function() {
         chart.displayAdjacent(false);
-        expect(chart.itemX(processed[0].values[2])).toEqual(250);
-        expect(chart.itemX(processed[1].values[2])).toEqual(250);
+        expect(chart.x(processed[0].values[2])).toEqual(250);
+        expect(chart.x(processed[1].values[2])).toEqual(250);
 
         chart.displayAdjacent(true);
-        expect(chart.itemX(processed[0].values[2])).toEqual(225);
-        expect(chart.itemX(processed[1].values[2])).toEqual(275);
+        expect(chart.x(processed[0].values[2])).toEqual(225);
+        expect(chart.x(processed[1].values[2])).toEqual(275);
       });
     });
   });
