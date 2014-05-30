@@ -588,13 +588,80 @@
       });
 
       describe('postprocess', function() {
-        it('should postprocess by given meta and values', function() {
+        it('should postprocess by given meta and values', function(done) {
           query({
             from: ['a.csv', 'b.csv'],
             groupBy: ['file', 'type'],
             postprocess: function(values, meta) {
               _.each(values, function(value) {
                 value.fileAndType = meta.file + '+' + meta.type;
+              });
+              return values;
+            }
+          }).values().then(function(results) {
+            expect(results.length).toEqual(5);
+
+            // a, negative
+            // a, zero
+            // a, positive
+            // b, negative
+            // b, positive
+            expect(results[0].values[0].fileAndType).toEqual('a+negative');
+            expect(results[1].values[0].fileAndType).toEqual('a+zero');
+            expect(results[2].values[0].fileAndType).toEqual('a+positive');
+            expect(results[3].values[0].fileAndType).toEqual('b+negative');
+            expect(results[4].values[0].fileAndType).toEqual('b+positive');
+
+            done();
+          }).catch(function(err) {
+            expect(err).toBeUndefined();
+            done();
+          });
+        });
+
+        it('should allow implicit return of values', function(done) {
+          query({
+            from: ['a.csv', 'b.csv'],
+            groupBy: ['file', 'type'],
+            postprocess: function(values, meta) {
+              _.each(values, function(value) {
+                value.fileAndType = meta.file + '+' + meta.type;
+              });
+
+              // Values are changed directly without return -> implicit
+              // return values;
+            }
+          }).values().then(function(results) {
+            expect(results.length).toEqual(5);
+
+            // a, negative
+            // a, zero
+            // a, positive
+            // b, negative
+            // b, positive
+            expect(results[0].values[0].fileAndType).toEqual('a+negative');
+            expect(results[1].values[0].fileAndType).toEqual('a+zero');
+            expect(results[2].values[0].fileAndType).toEqual('a+positive');
+            expect(results[3].values[0].fileAndType).toEqual('b+negative');
+            expect(results[4].values[0].fileAndType).toEqual('b+positive');
+
+            done();
+          }).catch(function(err) {
+            expect(err).toBeUndefined();
+            done();
+          });
+        });
+
+        it('should handle promises returned from postprocess', function(done) {
+          query({
+            from: ['a.csv', 'b.csv'],
+            groupBy: ['file', 'type'],
+            postprocess: function(values, meta) {
+              return new RSVP.Promise(function(resolve, reject) {
+                _.each(values, function(value) {
+                  value.fileAndType = meta.file + '+' + meta.type;
+                });
+                resolve(values);
               });
             }
           }).values().then(function(results) {
@@ -609,8 +676,11 @@
             expect(results[1].values[0].fileAndType).toEqual('a+zero');
             expect(results[2].values[0].fileAndType).toEqual('a+positive');
             expect(results[3].values[0].fileAndType).toEqual('b+negative');
-            expect(results[4].values[0].fileAndType).toEqual('b+zero');
+            expect(results[4].values[0].fileAndType).toEqual('b+positive');
 
+            done();
+          }).catch(function(err) {
+            expect(err).toBeUndefined();
             done();
           });
         });

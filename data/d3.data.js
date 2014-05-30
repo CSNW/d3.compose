@@ -590,20 +590,43 @@
 
         // 6. postprocess
         if (_.isFunction(query.postprocess)) {
-          _.each(results, function(result) {
-            result.values = query.postprocess(result.values, result.meta);
+          var processed = _.map(results, function(result) {
+            return query.postprocess(result.values, result.meta);
           });
+
+          if (processed[0] instanceof RSVP.Promise) {
+            // postprocess returned promises, wait for them to complete
+            return RSVP.all(processed).then(afterPostProcessing.bind(this));
+          }
+          else if (_.isUndefined(processed[0])) {
+            // Assume, return not called from processed and values were changed directly
+            return afterPostProcessing.call(this);
+          }
+          else {
+            return afterPostProcessing.call(this, processed);
+          }
+        }
+        else {
+          return afterPostProcessing.call(this);
         }
 
-        // 7. series
-        results = this._series(results, query.series);
+        function afterPostProcessing(processed) {
+          if (!_.isUndefined(processed)) {
+            _.each(processed, function(values, index) {
+              results[index].values = values;
+            });
+          }
 
-        // Remove calculating
-        delete this.calculating;
-        
-        // Store and return values
-        this._values = results;
-        return this._values;
+          // 7. series
+          results = this._series(results, query.series);
+
+          // Remove calculating
+          delete this.calculating;
+
+          // Store and return values
+          this._values = results;
+          return this._values;
+        }
       }.bind(this));
 
       return this.calculating;
