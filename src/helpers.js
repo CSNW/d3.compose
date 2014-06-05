@@ -6,52 +6,86 @@
     @example
     ```javascript
     var obj = {};
+
+    // Create property that's stored internally as 'simple'
     obj.simple = property('simple');
+
+    // set
+    obj.simple('Howdy');
+
+    // get
+    console.log(obj.simple()); // -> 'Howdy'
     
-    // Default value
-    obj.hasDefault = property('hasDefault', {
+    // Advanced
+    // --------
+    // Default values:
+    obj.advanced = property('advanced', {
       defaultValue: 'Howdy!'
     });
+  
+    console.log(obj.advanced()); // -> 'Howdy!'
+    obj.advanced('Goodbye');
+    console.log(obj.advanced()); // -> 'Goodbye'
 
-    obj.hasDefault() == 'Howdy!';
-    obj.hasDefault('Hello');
-    obj.hasDefault() == 'Hello';
-    obj.hasDefault(undefined);
-    obj.hasDefault() == 'Howdy!';
+    // Set to undefined to reset to default value
+    obj.advanced(undefined);
+    console.log(obj.advanced()); // -> 'Howdy!'
 
-    // Custom getter
-    obj.getter = property('getter', {
+    // Custom getter:
+    obj.advanced = property('advanced', {
       get: function(value) {
+        // Value is the underlying set value
         return value + '!';
       }
     });
 
-    obj.getter('Howdy');
-    obj.getter() == 'Howdy!';
+    obj.advanced('Howdy');
+    console.log(obj.advanced()); // -> 'Howdy!'
 
-    // Custom setter, that can override set value and do something after overriding
-    obj.setter = property('setter', {
+    // Custom setter:
+    obj.advanced = property('advanced', {
       set: function(value, previous) {
         if (value == 'Hate') {
+          // To override value, return obj with override specified
           return {
             override: 'Love',
+
+            // To do something after override, use after callback
             after: function() {
-              this.setter() == 'Love';
+              console.log('After: ' + this.advanced()); // -> 'After: Love'
             }
           };
         }
       }
+
+      obj.advanced('Hate'); // -> 'After: Love'
+      console.log(obj.advanced()); // -> 'Love'
     });
+
+    // Extensions:
+    obj.advanced = property('advanced', {type: 'Object'})
+    obj.advanced({a: 1, b: 2});
+    obj.advanced.extend({b: 'two', c: 'three'});
+    console.log(obj.advanced()); // -> {a: 1, b: 'two', c: 'three'}
     ```
 
     @param {String} name of stored property
     @param {Object} options
-    - defaultValue: {...} default value for property (when set value is undefined)
+    - defaultValue: default value for property (when set value is undefined)
     - get: function(value) {return ...} getter, where value is the stored value, return desired value
     - set: function(value, previous) {return {override, after}} 
-           setter, return override to set stored value and after() to run after set
-    - type: 'function' if get/set value is function, otherwise get/set is evaluated if they're a function
-    - context: 'Object' context to evaluate get/set/after functions
+      - return override to set stored value and after() to run after set
+    - type: {String} ['Function']
+      - 'Object' gets object extensions: extend({...})
+      - 'Array' gets array extensions: push(...)
+      - 'Function' don't evaluate in get/set
+    - context: {Object} [this] context to evaluate get/set/after functions
+    - propKey: {String} ['__properties'] underlying key on object to store properties on
+
+    @return {Function}
+    - (): get
+    - (value): set
+    - (value, setOptions): set with options (silent: [false] for change notifications)
   */ 
   function property(name, options) {
     options = options || {};
@@ -65,26 +99,29 @@
       context[propKey][name] = value;
     }
 
-    var getSet = function(value) {
+    var getSet = function(value, setOptions) {
       var underlying = get(this);
       var context = !_.isUndefined(getSet.context) ? getSet.context : this;
+      setOptions = setOptions || {};
 
       if (!arguments.length) {
         value = !_.isUndefined(underlying) ? underlying : getSet.defaultValue;
 
-        if (value && typeof value == 'function' && options.type != 'function')
+        if (value && _.isFunction(value) && options.type != 'Function')
           value = value.call(this);
 
-        if (typeof options.get == 'function')
+        if (_.isFunction(options.get))
           return options.get.call(context, value);
         else
           return value;
       }
 
       var previous = underlying;
-      if (typeof options.validate == 'function' && !options.validate(value)) {
-        if (_.isFunction(this.trigger))
+      if (_.isFunction(options.validate) && !options.validate(value)) {
+        if (_.isFunction(this.trigger)) {
           this.trigger('invalid:' + name, value);
+          this.trigger('invalid', name, value);
+        }
 
         // Assumption: Previous value already had set called, so don't call set for previous value
         //             Default value has not had set called, so call set for default value
@@ -99,7 +136,7 @@
 
       set(this, value);
       
-      if (typeof options.set == 'function') {
+      if (_.isFunction(options.set)) {
         var response = options.set.call(context, value, previous);
         if (response && response.override)
           set(this, response.override);
@@ -107,20 +144,94 @@
           response.after.call(context, get(this));
       }
 
-      if (!_.isEqual(get(this), previous) && _.isFunction(this.trigger))
+      if (!_.isEqual(get(this), previous) && _.isFunction(this.trigger) && !setOptions.silent) {
         this.trigger('change:' + name, get(this));
+        this.trigger('change', name, get(this));
+      }
 
       return this;
     };
 
     // For checking if function is a property
-    getSet._isProperty = true;
+    getSet.isProperty = true;
     getSet.setFromOptions = valueOrDefault(options.setFromOptions, true);
     getSet.defaultValue = options.defaultValue;
     getSet.context = options.context;
 
     return getSet;
   }
+
+  /**
+    Property extensions
+    Helpers for doing "native" operations on properties
+
+    @example
+    ```js
+    var instance = {};
+    instance.options = property('optionsProperty', {});
+    instance.options({a: 1, b: 2});
+
+    property.extend(instance, 'options', {b: 'two', c: 'three'});
+    console.log(instance.options()); // -> {a: 1, b: 'two', c: 'three'}
+    ```
+
+    Object:
+    - Extend
+
+    Array:
+    - Push
+  */
+  // Object extensions: extend
+  _.each([
+    'extend'
+  ], function(options) {
+    var name = _.isObject(options) ? options.name : options;
+    var set = (options && options.set) || 'cloned';
+    var method = _[name];
+
+    property[name] = function(parent, key) {
+      if (!parent[key] || !method) return;
+
+      var args = _.toArray(arguments).slice(2);
+      var cloned = _.clone(parent[key]());
+      args.unshift(cloned);
+      var result = method.apply(_, args);
+
+      // Set either result or cloned back to property
+      parent[key](set == 'result' ? result : cloned);
+
+      return result;
+    };
+  });
+
+  // Array extensions: push, concat
+  _.each([
+    'push',
+    'pop',
+    {name: 'concat', set: 'result'},
+    'splice',
+    'shift',
+    'unshift',
+    'reverse',
+    'sort'
+  ], function(options) {
+    var name = _.isObject(options) ? options.name : options;
+    var set = (options && options.set) || 'cloned';
+    var method = Array.prototype[name];
+
+    property[name] = function(parent, key) {
+      if (!parent[key] || !method) return;
+
+      var args = _.toArray(arguments).slice(2);
+      var cloned = _.toArray(parent[key]());
+      var result = method.apply(cloned, args);
+
+      // Set either result or cloned back to property
+      parent[key](set == 'result' ? result : cloned);
+
+      return result;
+    };
+  });
 
   /**
     If value isn't undefined, return value, otherwise use defaultValue

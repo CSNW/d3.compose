@@ -42,21 +42,65 @@
   */
   d3.chart('Container').extend('Configurable', {
     initialize: function() {
-      this.type = this.options.type || 'XY';
-      this.setupAxes(this.options.axes);
-      this.setupCharts(this.options.charts);
+      this.type = this.options().type || 'XY';
+      this.setupAxes(this.options().axes);
+      this.setupCharts(this.options().charts);
 
       // TODO Look into placing axes layers below charts
 
-      this.setupLegend(this.options.legend);
-      this.setupTitle(this.options.title);
+      this.setupLegend(this.options().legend);
+      this.setupTitle(this.options().title);
     },
+
+    // options: property('options', {
+    //   defaultValue: {},
+    //   set: function(values) {
+    //     // Set any properties from options
+    //     _.each(values, function(value, key) {
+    //       // Only update subcomponents if Container has been initialized
+    //       if (this.status.containerInitialized && _.contains(['axes', 'charts', 'legend', 'title'], key)) {
+    //         if (key == 'axes') {
+    //           _.each(value, function(axisOptions, axisKey) {
+    //             console.log('set axis options', axisKey, axisOptions);
+    //           }, this);
+    //         }
+    //         else if (key == 'charts') {
+    //           _.each(value, function(chartOptions, chartIndex) {
+    //             console.log('set chart options', chartIndex, chartOptions);
+    //           }, this);
+    //         }
+    //         else if (key == 'legend') {
+    //           var legend = this.componentsById['legend'];
+    //           if (legend) {
+    //             legend.options(value);
+    //           }
+    //         }
+    //         else if (key == 'title') {
+    //           var title = this.componentsById['title'];
+    //           if (title) {
+    //             if (_.isString(value)) {
+    //               title.title(value);
+    //             }
+    //             else {
+    //               title.options(value);
+    //             }
+    //           }
+    //         }
+    //       }
+    //       else {
+    //         // Not for any subcomponent, set option directly
+    //         if (this[key] && this[key].isProperty && this[key].setFromOptions)
+    //           this[key](value);  
+    //       }
+    //     }, this);
+    //   }
+    // }),
 
     setupAxes: function(options) {
       options = options || {};
       this.axes = {};
 
-      var axisKeys = _.uniq(['x', 'y'].concat(_.keys(this.options.axes)));
+      var axisKeys = _.uniq(['x', 'y'].concat(_.keys(options)));
       _.each(axisKeys, function(axisKey) {
         positionByKey = {
           x: 'bottom',
@@ -102,7 +146,7 @@
         var axis = this.axes[axisKey];
 
         // Don't need to filter keys if dataKey already set
-        if (axis.options.dataKey)
+        if (axis.options().dataKey)
           return;  
 
         var filterKeys = [];
@@ -110,12 +154,12 @@
           if ((axisKey == 'x' && !filterAxis.isXAxis()) || (axisKey == 'y' && !filterAxis.isYAxis()))
             return;
 
-          var dataKey = filterAxis.options.dataKey;
+          var dataKey = filterAxis.options().dataKey;
           if (dataKey)
             filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
         }, this);
 
-        axis.options.filterKeys = filterKeys;
+        axis.options(_.extend(axis.options(), {filterKeys: filterKeys}));
       }, this);
     },
 
@@ -155,7 +199,7 @@
         // Load only charts matching dataKey(s)
         var dataKeys = _.isArray(options.dataKey) ? options.dataKey : [options.dataKey];
         options.charts = _.filter(this.charts, function(chart) {
-          return _.contains(dataKeys, chart.options.dataKey);
+          return _.contains(dataKeys, chart.options().dataKey);
         });
       }
       else {
@@ -195,8 +239,8 @@
     },
 
     extractData: function(item, data) {
-      var dataKey = item.options.dataKey;
-      var filterKeys = item.options.filterKeys;
+      var dataKey = item.options().dataKey;
+      var filterKeys = item.options().filterKeys;
 
       // Legends need all data (filter by charts)
       if (item && item.isLegend)
@@ -230,7 +274,7 @@
         if ((type == 'x' && !axis.isXAxis()) || (type == 'y' && !axis.isYAxis()))
           return false;
 
-        var axisDataKey = axis.options.dataKey;
+        var axisDataKey = axis.options().dataKey;
         return _.isArray(axisDataKey) ? _.contains(axisDataKey, dataKey) : axisDataKey == dataKey;
       });
 

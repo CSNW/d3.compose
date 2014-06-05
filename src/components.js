@@ -36,12 +36,12 @@
         return helpers.dimensions(this.base).height;
       }
     }),
-    skipLayout: false,
 
     /**
       Height/width/position to use in layout calculations
       (Override for more specific sizing in layout calculations)
     */
+    skipLayout: false,
     layoutWidth: function() {
       return this.width();
     },
@@ -90,14 +90,19 @@
               .attr('style', chart.style())
               .attr('alignment-baseline', 'middle')
               .attr('text-anchor', 'middle')
-              .attr('class', chart.options['class'])
+              .attr('class', chart.options()['class'])
               .text(chart.title());
           }
         }
       });
     },
 
-    title: property('title'),
+    title: property('title', {
+      set: function() {
+        // TODO This is too manual and doesn't allow data-bound values, refactor
+        this.draw();
+      }
+    }),
     rotation: property('rotation', {
       defaultValue: function() {
         var rotateByPosition = {
@@ -139,15 +144,15 @@
   d3.chart('Component').extend('Axis', mixin(extensions.Series, extensions.XY, {
     initialize: function() {
       // Transfer generic scale options to specific scale for axis
-      if (this.options.scale) {
+      if (this.options().scale) {
         var scale = this.isXAxis() ? 'xScale' : 'yScale';
-        this[scale](helpers.createScaleFromOptions(this.options.scale));
+        this[scale](helpers.createScaleFromOptions(this.options().scale));
       }
 
       this.axis = d3.svg.axis();
       this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
 
-      if (this.options.display) {
+      if (this.options().display) {
         this.layer('Axis', this.axisLayer, {
           dataBind: function(data) {
             // Force addition of just one axis with dummy data array
@@ -234,13 +239,13 @@
       }
     }),
 
-    ticks: property('ticks', {type: 'function'}),
-    tickValues: property('tickValues', {type: 'function'}),
-    tickSize: property('tickSize', {type: 'function'}),
-    innerTickSize: property('innerTickSize', {type: 'function'}),
-    outerTickSize: property('outerTickSize', {type: 'function'}),
-    tickPadding: property('tickPadding', {type: 'function'}),
-    tickFormat: property('tickFormat', {type: 'function'}),
+    ticks: property('ticks', {type: 'Function'}),
+    tickValues: property('tickValues', {type: 'Function'}),
+    tickSize: property('tickSize', {type: 'Function'}),
+    innerTickSize: property('innerTickSize', {type: 'Function'}),
+    outerTickSize: property('outerTickSize', {type: 'Function'}),
+    tickPadding: property('tickPadding', {type: 'Function'}),
+    tickFormat: property('tickFormat', {type: 'Function'}),
 
     layoutHeight: function() {
       return this._labelOverhang().height;
@@ -363,7 +368,7 @@
 
     transform: function(allData) {
       var extractData = d3.chart('Configurable').prototype.extractData;
-      var data = _.reduce(this.options.charts, function(data, chart) {
+      var data = _.reduce(this.options().charts, function(data, chart) {
         var chartData = _.map(extractData(chart, allData), function(series, index) {
           return {
             chart: chart,
@@ -392,15 +397,15 @@
     }),
     dataClass: di(function(chart, d, i) {
       var classes = [chart.dataSeriesClass.call(this, d, i)];
-      if (d.chart.options['class'])
-        classes.push(d.chart.options['class']);
+      if (d.chart.options()['class'])
+        classes.push(d.chart.options()['class']);
       if (d.series['class'])
         classes.push(d.series['class']);
 
       return classes.join(' ') || null;
     }),
     dataStyle: di(function(chart, d, i) {
-      var styles = _.defaults({}, d.series.style, d.chart.options.style);
+      var styles = _.defaults({}, d.series.style, d.chart.options().style);
       
       return helpers.style(styles) || null;
     }),

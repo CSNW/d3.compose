@@ -11,16 +11,16 @@
   */
   d3.chart('Base', {
     initialize: function(options) {
-      this.options = options || {};
-
-      // Call any setters that match options
-      _.each(this.options, function(value, key) {
-        if (this[key] && this[key]._isProperty && this[key].setFromOptions)
-          this[key](value);
-      }, this);
+      this.status = {};
+      this.options(options || {});
 
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
+    },
+
+    draw: function() {
+      d3.chart().prototype.draw.apply(this, arguments);
+      this.status.drawn = true;
     },
 
     data: property('data', {
@@ -36,6 +36,16 @@
         return helpers.style(value) || null;
       }
     }),
+    options: property('options', {
+      defaultValue: {},
+      set: function(values) {
+        // Set any properties from options
+        _.each(values, function(value, key) {
+          if (this[key] && this[key].isProperty && this[key].setFromOptions)
+            this[key](value);
+        }, this);
+      }
+    }),
 
     width: function width() {
       return helpers.dimensions(this.base).width;
@@ -45,10 +55,12 @@
     },
 
     transform: function(data) {
+      data = data || [];
+
       // Base is last transform to be called,
       // so stored data has been fully transformed
-      this.data(data || []);
-      return data || [];
+      this.data(data);
+      return data;
     }
   });
 
@@ -83,6 +95,7 @@
       this.on('change:dimensions', function() {
         this.redraw();
       });
+      this.status.containerInitialized = true;
     },
 
     draw: function(data) {
@@ -103,7 +116,7 @@
 
     redraw: function() {
       // Using previously saved rawData, redraw chart      
-      if (this.rawData())
+      if (this.drawn || this.rawData())
         this.draw(this.rawData());
     },
 

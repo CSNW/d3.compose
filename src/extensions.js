@@ -34,7 +34,7 @@
       // Get style for data item in the following progression
       // data.style -> series.style -> chart.style
       var series = chart.dataSeries.call(this, d, i) || {};
-      var styles = _.defaults({}, d.style, series.style, chart.options.style);
+      var styles = _.defaults({}, d.style, series.style, chart.options().style);
       
       return helpers.style(styles) || null;
     }),
@@ -80,10 +80,10 @@
     initialize: function() {
       this.on('change:data', this.setScales);
 
-      if (this.options.xScale)
-        this.xScale(helpers.createScaleFromOptions(this.options.xScale));
-      if (this.options.yScale)
-        this.yScale(helpers.createScaleFromOptions(this.options.yScale));
+      if (this.options().xScale)
+        this.xScale(helpers.createScaleFromOptions(this.options().xScale));
+      if (this.options().yScale)
+        this.yScale(helpers.createScaleFromOptions(this.options().yScale));
     },
 
     x: di(function(chart, d, i) {
@@ -148,17 +148,23 @@
     },
 
     // _xScale and _yScale used to differentiate between user- and internally-set values
-    _xScale: property('_xScale', {type: 'function'}),
-    _yScale: property('_yScale', {type: 'function'}),
-    xScale: property('xScale', {type: 'function', setFromOptions: false}),
-    yScale: property('yScale', {type: 'function', setFromOptions: false}),
+    _xScale: property('_xScale', {type: 'Function'}),
+    _yScale: property('_yScale', {type: 'Function'}),
+    xScale: property('xScale', {type: 'Function', setFromOptions: false}),
+    yScale: property('yScale', {type: 'Function', setFromOptions: false}),
 
     xMin: property('xMin', {
       get: function(value) {
         // Calculate minimum from series data
         var min = _.reduce(this.data(), function(memo, series, index) {
-          var min = d3.extent(this.seriesValues(series, index), this.xValue)[0];
-          return min < memo ? min : memo;
+          var seriesValues = this.seriesValues(series, index);
+          if (_.isArray(seriesValues)) {
+            var seriesMin = d3.extent(seriesValues, this.xValue)[0];
+            return seriesMin < memo ? seriesMin : memo;  
+          }
+          else {
+            return memo;
+          }          
         }, Infinity, this);
 
         return valueOrDefault(value, (min < 0 ? min : 0));
@@ -168,8 +174,14 @@
       get: function(value) {
         // Calculate maximum from series data
         var max = _.reduce(this.data(), function(memo, series, index) {
-          var max = d3.extent(this.seriesValues(series, index), this.xValue)[1];
-          return max > memo ? max : memo;
+          var seriesValues = this.seriesValues(series, index);
+          if (_.isArray(seriesValues)) {
+            var seriesMax = d3.extent(seriesValues, this.xValue)[1];
+            return seriesMax > memo ? seriesMax : memo;
+          }
+          else {
+            return memo;
+          }
         }, -Infinity, this);
 
         return valueOrDefault(value, max);
@@ -179,8 +191,14 @@
       get: function(value) {
         // Calculate minimum from series data
         var min = _.reduce(this.data(), function(memo, series, index) {
-          var min = d3.extent(this.seriesValues(series, index), this.yValue)[0];
-          return min < memo ? min : memo;
+          var seriesValues = this.seriesValues(series, index);
+          if (_.isArray(seriesValues)) {
+            var seriesMin = d3.extent(seriesValues, this.yValue)[0];
+            return seriesMin < memo ? seriesMin : memo;
+          }
+          else {
+            return memo;
+          }
         }, Infinity, this);
         
         // Default behavior: if min is less than zero, use min, otherwise use 0
@@ -191,8 +209,14 @@
       get: function(value) {
         // Calculate maximum from series data
         var max = _.reduce(this.data(), function(memo, series, index) {
-          var max = d3.extent(this.seriesValues(series, index), this.yValue)[1];
-          return max > memo ? max : memo;
+          var seriesValues = this.seriesValues(series, index);
+          if (_.isArray(seriesValues)) {
+            var seriesMax = d3.extent(seriesValues, this.yValue)[1];
+            return seriesMax > memo ? seriesMax : memo;
+          }
+          else {
+            return memo;
+          }
         }, -Infinity, this);
 
         return valueOrDefault(value, max);

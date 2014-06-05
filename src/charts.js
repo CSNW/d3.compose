@@ -50,7 +50,7 @@
     position: property('position', {defaultValue: 'top'}),
     offset: property('offset', {defaultValue: 14}),
     format: property('format', {
-      type: 'function',
+      type: 'Function',
       set: function(value) {
         if (_.isString(value)) {
           return {override: d3.format(value)};
@@ -124,7 +124,7 @@
       var series = chart.dataSeries.call(this, d, i) || {};
       series = series.labels || {};
 
-      var styles = _.defaults({}, data.style, series.style, chart.options.style);
+      var styles = _.defaults({}, data.style, series.style, chart.options().style);
       
       return helpers.style(styles) || null;
     }),
@@ -152,7 +152,7 @@
       // Need to place labels layer closer to parent chart
       this.once('transform', function() {
         if (this.showLabels()) {
-          var labelOptions = _.defaults({}, this.options.labels, {
+          var labelOptions = _.defaults({}, this.options().labels, {
             displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
           });
 
@@ -298,7 +298,7 @@
         .x(this.x)
         .y(this.y);
 
-      var interpolate = series.interpolate || this.options.interpolate;
+      var interpolate = series.interpolate || this.options().interpolate;
       if (interpolate)
         line.interpolate(interpolate);
 

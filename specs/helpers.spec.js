@@ -46,7 +46,7 @@
         instance.message(function() { return 'Howdy!'; });
         expect(instance.message()).toEqual('Howdy!');
 
-        instance.message = property('message', {type: 'function'});
+        instance.message = property('message', {type: 'Function'});
         instance.message(function() { return 'Howdy!'; });
         expect(typeof instance.message()).toEqual('function');
         expect(instance.message()()).toEqual('Howdy!');
@@ -66,7 +66,7 @@
 
       it('should expose isProperty and setFromOptions on property', function() {
         instance.message = property('message', {setFromOptions: false});
-        expect(instance.message._isProperty).toEqual(true);
+        expect(instance.message.isProperty).toEqual(true);
         expect(instance.message.setFromOptions).toEqual(false);
       });
 
@@ -191,19 +191,41 @@
           instance.trigger = jasmine.createSpy();
 
           instance.message('Hello');
-          expect(instance.trigger.calls.count()).toEqual(1);
+          expect(instance.trigger.calls.count()).toEqual(2);
           expect(instance.trigger.calls.argsFor(0)).toEqual(['change:message', 'Hello']);
+          expect(instance.trigger.calls.argsFor(1)).toEqual(['change', 'message', 'Hello']);
 
           instance.message('Howdy');
-          expect(instance.trigger.calls.count()).toEqual(2);
-          expect(instance.trigger.calls.argsFor(1)).toEqual(['change:message', 'Howdy']);
+          expect(instance.trigger.calls.count()).toEqual(4);
+          expect(instance.trigger.calls.argsFor(2)).toEqual(['change:message', 'Howdy']);
+          expect(instance.trigger.calls.argsFor(3)).toEqual(['change', 'message', 'Howdy']);
 
           instance.message('Howdy');
-          expect(instance.trigger.calls.count()).toEqual(2);
+          expect(instance.trigger.calls.count()).toEqual(4);
 
           instance.message({key: 'value', complex: [1,2,3]});
           instance.message({key: 'value', complex: [1,2,3]});
-          expect(instance.trigger.calls.count()).toEqual(3);
+          expect(instance.trigger.calls.count()).toEqual(6);
+        });
+
+        it('should not trigger change if silent', function() {
+          instance.message = property('message', {
+            defaultValue: 'Hello'
+          });
+          instance.trigger = jasmine.createSpy();
+
+          instance.message('Hello', {silent: true});
+          expect(instance.trigger.calls.count()).toEqual(0);
+
+          instance.message('Howdy', {silent: true});
+          expect(instance.trigger.calls.count()).toEqual(0);
+
+          instance.message('Howdy', {silent: true});
+          expect(instance.trigger.calls.count()).toEqual(0);
+
+          instance.message({key: 'value', complex: [1,2,3]}, {silent: true});
+          instance.message({key: 'value', complex: [1,2,3]}, {silent: true});
+          expect(instance.trigger.calls.count()).toEqual(0);
         });
 
         describe('validate', function() {
@@ -241,6 +263,79 @@
             expect(instance.trigger).toHaveBeenCalled();
             expect(instance.trigger).toHaveBeenCalledWith('invalid:message', 'INVALID');
           });
+        });
+      });
+
+      describe('extensions', function() {
+        beforeEach(function() {
+          instance.obj = property('obj');
+          instance.arr = property('arr');
+
+          instance.obj({a: 1, b: 2});
+          instance.arr([1, 2, 3]);
+
+          instance.trigger = jasmine.createSpy();
+        });
+
+        it('should extend', function() {
+          property.extend(instance, 'obj', {b: 'two', c: 'three'});
+          expect(instance.obj()).toEqual({a: 1, b: 'two', c: 'three'});
+          expect(instance.trigger).toHaveBeenCalled();
+        });
+
+        it('should push', function() {
+          property.push(instance, 'arr', 4);
+          var result = property.push(instance, 'arr', 5);
+          expect(instance.arr()).toEqual([1, 2, 3, 4, 5]);
+          expect(result).toEqual(5);
+          expect(instance.trigger.calls.count()).toEqual(4);
+        });
+
+        it('should concat', function() {
+          property.concat(instance, 'arr', [4, 5]);
+          expect(instance.arr()).toEqual([1, 2, 3, 4, 5]);
+          expect(instance.trigger).toHaveBeenCalled();
+        });
+
+        it('should splice', function() {
+          var result = property.splice(instance, 'arr', 1, 1, 4);
+          expect(instance.arr()).toEqual([1, 4, 3]);
+          expect(result).toEqual([2]);
+          expect(instance.trigger).toHaveBeenCalled();
+        });
+
+        it('should pop', function() {
+          var result = property.pop(instance, 'arr');
+          expect(instance.arr()).toEqual([1, 2]);
+          expect(result).toEqual(3);
+          expect(instance.trigger).toHaveBeenCalled();
+        });
+
+        it('should shift', function() {
+          var result = property.shift(instance, 'arr');
+          expect(instance.arr()).toEqual([2, 3]);
+          expect(result).toEqual(1);
+          expect(instance.trigger).toHaveBeenCalled();
+        });
+
+        it('should unshift', function() {
+          var result = property.unshift(instance, 'arr', 0);
+          expect(instance.arr()).toEqual([0, 1, 2, 3]);
+          expect(result).toEqual(4);
+          expect(instance.trigger).toHaveBeenCalled();
+        });
+
+        it('should reverse', function() {
+          property.reverse(instance, 'arr');
+          expect(instance.arr()).toEqual([3, 2, 1]);
+          expect(instance.trigger).toHaveBeenCalled();
+        });
+
+        it('should sort', function() {
+          instance.arr(['b', 'd', 'c', 'a']);
+          property.sort(instance, 'arr');
+          expect(instance.arr()).toEqual(['a', 'b', 'c', 'd']);
+          expect(instance.trigger.calls.count()).toEqual(4);
         });
       });
     });

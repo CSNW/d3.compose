@@ -29,11 +29,13 @@
 
       Chart = d3.chart('Test', {
         initialize: function() {
-          this.options = {};
           helpers.bindAllDi(this);
         },
         data: function() {
           return data || [];
+        },
+        options: function() {
+          return {};
         },
         height: function() {
           return height;
@@ -81,7 +83,7 @@
         var d = processed[1].values[2];
         var i = 2;
 
-        chart.options.style = {fill: 'red', stroke: 'blue'};
+        chart.options = function() { return {style: {fill: 'red', stroke: 'blue'}};};
         expect(chart.itemStyle.call(context, d, i)).toEqual('fill: red; stroke: blue;');
 
         data[1].style = {fill: 'yellow', 'stroke-width': '1.5px'};
