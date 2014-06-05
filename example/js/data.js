@@ -154,6 +154,24 @@
           ]
         }
       ]
+    },
+
+    'spec-data-bound': {
+      values: [
+        {
+          key: 'values',
+          name: 'Values',
+          values: [
+            {x: 0, y: 30},
+            {x: 20, y: 45},
+            {x: 40, y: 50},
+            {x: 60, y: 50},
+            {x: 80, y: 45},
+            {x: 100, y: 30}
+          ]
+        }
+      ],
+      title: 'Before (from data)'
     }
   };
 
