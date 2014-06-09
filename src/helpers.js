@@ -138,9 +138,9 @@
       
       if (_.isFunction(options.set)) {
         var response = options.set.call(context, value, previous);
-        if (response && response.override)
+        if (response && _.has(response, 'override'))
           set(this, response.override);
-        if (response && response.after)
+        if (response && _.isFunction(response.after))
           response.after.call(context, get(this));
       }
 

@@ -20,6 +20,11 @@
     - setLayout: Override if layout needs to be customized
   */
   d3.chart('Base').extend('Component', {
+    initialize: function(options) {
+      this.options(options || {});
+      this.redrawFor('options');
+    },
+
     position: property('position', {
       defaultValue: 'top',
       validate: function(value) {
@@ -73,6 +78,8 @@
   */
   d3.chart('Component').extend('Title', {
     initialize: function() {
+      this.redrawFor('title', 'rotation');
+
       this.layer('Title', this.base.append('g').classed('chart-title', true), {
         dataBind: function(data) {
           // TODO Look into databound titles
@@ -98,9 +105,8 @@
     },
 
     title: property('title', {
-      set: function() {
-        // TODO This is too manual and doesn't allow data-bound values, refactor
-        this.draw();
+      get: function() {
+        return this.options().title;
       }
     }),
     rotation: property('rotation', {
@@ -328,41 +334,46 @@
       this.legend = this.base.append('g')
         .classed('chart-legend', true);
 
-      this.layer('Legend', this.legend, {
-        dataBind: function(data) {
-          var chart = this.chart();
-          return this.selectAll('g')
-            .data(data, chart.dataKey.bind(chart));
-        },
-        insert: function() {
-          var chart = this.chart();
-          var groups = this.append('g')
-            .attr('class', chart.dataGroupClass);
-
-          groups.append('g')
-            .attr('width', 20)
-            .attr('height', 20)
-            .attr('class', 'chart-legend-swatch');
-          groups.append('text')
-            .attr('class', 'chart-legend-label chart-label')
-            .attr('transform', helpers.translate(25, 0));
-          
-          return groups;
-        },
-        events: {
-          merge: function() {
+      if (this.options().display) {
+        this.layer('Legend', this.legend, {
+          dataBind: function(data) {
             var chart = this.chart();
+            return this.selectAll('g')
+              .data(data, chart.dataKey.bind(chart));
+          },
+          insert: function() {
+            var chart = this.chart();
+            var groups = this.append('g')
+              .attr('class', chart.dataGroupClass);
 
-            this.select('g').each(chart.createSwatch);
-            this.select('text')
-              .text(chart.dataValue.bind(chart))
-              .attr('alignment-baseline', 'before-edge');
+            groups.append('g')
+              .attr('width', 20)
+              .attr('height', 20)
+              .attr('class', 'chart-legend-swatch');
+            groups.append('text')
+              .attr('class', 'chart-legend-label chart-label')
+              .attr('transform', helpers.translate(25, 0));
+            
+            return groups;
+          },
+          events: {
+            merge: function() {
+              var chart = this.chart();
 
-            // Position groups after positioning everything inside
-            this.call(helpers.stack.bind(this, {origin: 'top', padding: 5}));
+              this.select('g').each(chart.createSwatch);
+              this.select('text')
+                .text(chart.dataValue.bind(chart))
+                .attr('alignment-baseline', 'before-edge');
+
+              // Position groups after positioning everything inside
+              this.call(helpers.stack.bind(this, {origin: 'top', padding: 5}));
+            }
           }
-        }
-      });
+        });
+      }
+      else {
+        this.skipLayout = true;
+      }
     },
     isLegend: true,
 

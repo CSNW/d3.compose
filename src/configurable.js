@@ -42,192 +42,247 @@
   */
   d3.chart('Container').extend('Configurable', {
     initialize: function() {
-      this.type = this.options().type || 'XY';
-      this.setupAxes(this.options().axes);
-      this.setupCharts(this.options().charts);
-
-      // TODO Look into placing axes layers below charts
-
-      this.setupLegend(this.options().legend);
-      this.setupTitle(this.options().title);
+      this.redrawFor('title', 'charts', 'axes', 'legend');
     },
 
-    // options: property('options', {
-    //   defaultValue: {},
-    //   set: function(values) {
-    //     // Set any properties from options
-    //     _.each(values, function(value, key) {
-    //       // Only update subcomponents if Container has been initialized
-    //       if (this.status.containerInitialized && _.contains(['axes', 'charts', 'legend', 'title'], key)) {
-    //         if (key == 'axes') {
-    //           _.each(value, function(axisOptions, axisKey) {
-    //             console.log('set axis options', axisKey, axisOptions);
-    //           }, this);
-    //         }
-    //         else if (key == 'charts') {
-    //           _.each(value, function(chartOptions, chartIndex) {
-    //             console.log('set chart options', chartIndex, chartOptions);
-    //           }, this);
-    //         }
-    //         else if (key == 'legend') {
-    //           var legend = this.componentsById['legend'];
-    //           if (legend) {
-    //             legend.options(value);
-    //           }
-    //         }
-    //         else if (key == 'title') {
-    //           var title = this.componentsById['title'];
-    //           if (title) {
-    //             if (_.isString(value)) {
-    //               title.title(value);
-    //             }
-    //             else {
-    //               title.options(value);
-    //             }
-    //           }
-    //         }
-    //       }
-    //       else {
-    //         // Not for any subcomponent, set option directly
-    //         if (this[key] && this[key].isProperty && this[key].setFromOptions)
-    //           this[key](value);  
-    //       }
-    //     }, this);
-    //   }
-    // }),
+    options: property('options', {
+      defaultValue: {},
+      set: function(options) {
+        this.type(options.type, {silent: true});
+        
+        this.axes(options.axes, {silent: true});
+        this.charts(options.charts, {silent: true});
+        this.legend(options.legend, {silent: true});
+        this.title(options.title, {silent: true});
 
-    setupAxes: function(options) {
-      options = options || {};
-      this.axes = {};
-
-      var axisKeys = _.uniq(['x', 'y'].concat(_.keys(options)));
-      _.each(axisKeys, function(axisKey) {
-        positionByKey = {
-          x: 'bottom',
-          y: 'left',
-          secondaryX: 'top',
-          secondaryY: 'right'
+        // To avoid changing underlying and then redraw failing due to no "change"
+        // store cloned options
+        return {
+          override: _.clone(options)
         };
-        var defaultOptions = {
-          display: true,
-          position: positionByKey[axisKey]
-        };
+      }
+    }),
 
-        var axisOptions;
-        if (options[axisKey] === false)
-          axisOptions = _.defaults({display: false}, defaultOptions, d3.chart('Configurable').defaultAxisOptions);
-        else
-          axisOptions = _.defaults({}, options[axisKey], defaultOptions, d3.chart('Configurable').defaultAxisOptions);
+    type: property('type', {
+      defaultValue: 'XY'
+    }),
 
-        if (axisKey != 'x' && axisKey != 'y' && !axisOptions.dataKey)
-          throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');
+    title: property('title', {
+      set: function(options) {
+        // Get title (if exists)
+        var title = this.componentsById.title;
 
-        var Axis = helpers.resolveChart(axisOptions.type, 'Axis', this.type);
-        var axis = new Axis(this.chartBase(), axisOptions);
-        var id = 'axis_' + axisKey;
+        if (!options || _.isEmpty(options)) {
+          // Remove title if no options are given
+          if (title) {
+            console.log('REMOVE TITLE...');
+          }
 
-        this.attachComponent(id, axis);
-        this.axes[axisKey] = axis;
-
-        if (axisOptions.title) {
-          var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
-          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
-          
-          var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type);
-          var title = new Title(this.componentBase(), titleOptions);
-          id = id + '_title';
-
-          this.attachComponent(id, title);
+          return {
+            override: undefined
+          };
         }
-      }, this);
+        else if (_.isString(options)) {
+          // Title may be set directly
+          options = {title: options};
+        }
 
-      // Setup filter keys for x and y axes
-      _.each(['x', 'y'], function(axisKey) {
-        var axis = this.axes[axisKey];
+        // Load defaults
+        options = _.defaults({}, options, d3.chart('Configurable').defaults.title);
+        
+        if (!title) {
+          // Create title
+          var Title = helpers.resolveChart(options.type, 'Title', this.type());
+          title = new Title(this.componentBase(), options);
 
-        // Don't need to filter keys if dataKey already set
-        if (axis.options().dataKey)
-          return;  
+          this.attachComponent('title', title);
+        }
+        else {
+          // Update options
+          title.options(options, {silent: true});
+        }
 
-        var filterKeys = [];
-        _.each(this.axes, function(filterAxis, filterKey) {
-          if ((axisKey == 'x' && !filterAxis.isXAxis()) || (axisKey == 'y' && !filterAxis.isYAxis()))
-            return;
+        return {
+          override: title
+        };
+      }
+    }),
 
-          var dataKey = filterAxis.options().dataKey;
-          if (dataKey)
-            filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
+    charts: property('charts', {
+      set: function(options) {
+        var removeIds = _.difference(_.pluck(this.chartsById, 'id'), _.keys(options));
+                
+        _.each(removeIds, function(removeId) {
+          console.log('REMOVE CHART ' + removeId);
+        });
+
+        _.each(options, function(chartOptions, chartId) {
+          var chart = this.chartsById[chartId];
+          chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaults.charts);
+
+          if (!chart) {
+            // Create chart
+            var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type());
+            chart = new Chart(this.chartBase(), chartOptions);
+
+            // Load matching axis scales (if necessary)
+            var scale;
+            if (!chartOptions.xScale) {
+              scale = this.getMatchingAxisScale(chartOptions.dataKey, 'x');
+              if (scale)
+                chart.xScale = scale;
+            }
+            if (!chartOptions.yScale) {
+              scale = this.getMatchingAxisScale(chartOptions.dataKey, 'y');
+              if (scale)
+                chart.yScale = scale;
+            }
+
+            this.attachChart(chartId, chart);
+          }
+          else {
+            // Update chart
+            chart.options(chartOptions, {silent: true});
+          }
+
+          return chart;
         }, this);
 
-        axis.options(_.extend(axis.options(), {filterKeys: filterKeys}));
-      }, this);
-    },
+        return {
+          override: this.chartsById
+        };
+      },
+      defaultValue: {}
+    }),
 
-    setupCharts: function(charts) {
-      charts = charts || [];
+    axes: property('axes', {
+      set: function(options, axes) {
+        axes = axes || {};
+        var axisIds = _.uniq(['x', 'y'].concat(_.keys(options)));
+        var removeIds = _.difference(_.keys(axes), axisIds);
 
-      _.each(charts, function(chartOptions, i) {
-        chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaultChartOptions);
-
-        var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type);
-        var chart = new Chart(this.chartBase(), chartOptions);
-        var id = 'chart_' + i;
-
-        // Load matching axis scales (if necessary)
-        var scale;
-        if (!chartOptions.xScale) {
-          scale = this.getMatchingAxisScale(chartOptions.dataKey, 'x');
-          if (scale)
-            chart.xScale = scale;
-        }
-        if (!chartOptions.yScale) {
-          scale = this.getMatchingAxisScale(chartOptions.dataKey, 'y');
-          if (scale)
-            chart.yScale = scale;
-        }
-
-        this.attachChart(id, chart);
-      }, this);
-    },
-
-    setupLegend: function(options) {
-      options = options === false ? {display: false}: (options || {});
-      options = _.defaults({}, options, d3.chart('Configurable').defaultLegendOptions);
-
-      // Load chart information
-      if (options.dataKey) {
-        // Load only charts matching dataKey(s)
-        var dataKeys = _.isArray(options.dataKey) ? options.dataKey : [options.dataKey];
-        options.charts = _.filter(this.charts, function(chart) {
-          return _.contains(dataKeys, chart.options().dataKey);
+        _.each(removeIds, function(removeId) {
+          console.log('REMOVE AXIS ' + removeId);
+          // TODO Be sure to remove axis title's too
         });
+
+        _.each(axisIds, function(axisId) {
+          var axis = axes[axisId];
+          var positionById = {
+            x: 'bottom',
+            y: 'left',
+            secondaryX: 'top',
+            secondaryY: 'right'
+          };
+          var axisOptions = {
+            position: positionById[axisId]
+          };
+
+          if (options[axisId] === false)
+            axisOptions = _.defaults({display: false}, axisOptions, d3.chart('Configurable').defaults.axes);
+          else
+            axisOptions = _.defaults({}, options[axisId], axisOptions, d3.chart('Configurable').defaults.axes);
+
+          if (axisId != 'x' && axisId != 'y' && !axisOptions.dataKey)
+            throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');
+
+          if (!axis) {
+            // Create axis
+            var Axis = helpers.resolveChart(axisOptions.type, 'Axis', this.type());
+            axis = new Axis(this.chartBase(), axisOptions);
+
+            this.attachComponent('axis.' + axisId, axis);
+            axes[axisId] = axis;
+          }
+          else {
+            axis.options(axisOptions, {silent: true});
+          }
+
+          // Create axis title
+          if (axisOptions.title) {
+            var id = 'axis_title.' + axisId;
+            var title = this.componentsById[id];
+            var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
+            titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
+
+            if (!title) {
+              var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type());  
+              title = new Title(this.componentBase(), titleOptions);
+
+              this.attachComponent(id, title);
+            }
+            else {
+              title.options(titleOptions, {silent: true});
+            }
+          }
+        }, this);
+
+        // Setup filter keys for x and y axes
+        _.each(['x', 'y'], function(axisId) {
+          var axis = axes[axisId];
+
+          // Don't need to filter keys if dataKey already set
+          if (axis.options().dataKey)
+            return;  
+
+          var filterKeys = [];
+          _.each(axes, function(filterAxis, filterKey) {
+            if ((axisId == 'x' && !filterAxis.isXAxis()) || (axisId == 'y' && !filterAxis.isYAxis()))
+              return;
+
+            var dataKey = filterAxis.options().dataKey;
+            if (dataKey)
+              filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
+          }, this);
+
+          // Set filterKeys "internally" to avoid change firing
+          axis.options().filterKeys = filterKeys;
+        }, this);
+
+        return {
+          override: axes
+        };    
+      },
+      defaultValue: {}
+    }),
+
+    legend: property('legend', {
+      set: function(options, legend) {
+        options = options === false ? {display: false} : (options || {});
+        options = _.defaults({}, options, d3.chart('Configurable').defaults.legend);
+
+        // Load chart information
+        if (options.dataKey) {
+          // Load only charts matching dataKey(s)
+          var dataKeys = _.isArray(options.dataKey) ? options.dataKey : [options.dataKey];
+          options.charts = _.filter(this.charts(), function(chart) {
+            return _.contains(dataKeys, chart.options().dataKey);
+          });
+        }
+
+        // If switching from outside to inset, need to change legend base layer, so remove
+        if (legend && legend.options().type != options.type) {
+          // TODO Possible alternates for changing base of legend
+          console.log('REMOVE LEGEND');
+          legend = undefined;
+        }
+
+        if (!legend) {
+          var Legend = helpers.resolveChart(options.type, 'Legend', this.type());
+          var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartBase() : this.componentBase();
+          legend = new Legend(base, options);
+
+          this.attachComponent('legend', legend);
+        }
+        else {
+          legend.options(options);
+        }
+
+        return {
+          override: legend
+        };
       }
-      else {
-        options.charts = this.charts;  
-      }
-
-      var Legend = helpers.resolveChart(options.type, 'Legend', this.type);
-      var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartBase() : this.componentBase();
-      var legend = new Legend(base, options);
-
-      this.attachComponent('legend', legend);
-    },
-
-    setupTitle: function(options) {
-      if (!options)
-        return;
-
-      // Title may be set directly
-      if (_.isString(options))
-        options = {title: options};
-
-      options = _.defaults({}, options, d3.chart('Configurable').defaultTitleOptions);
-
-      var Title = helpers.resolveChart(options.type, 'Title', this.type);
-      var title = new Title(this.componentBase(), options);
-
-      this.attachComponent('title', title);
-    },
+    }),
 
     demux: function(name, data) {
       var item = this.chartsById[name] || this.componentsById[name];
@@ -270,7 +325,7 @@
     },
 
     getMatchingAxisScale: function(dataKey, type) {
-      var match = _.find(this.axes, function(axis) {
+      var match = _.find(this.axes(), function(axis) {
         if ((type == 'x' && !axis.isXAxis()) || (type == 'y' && !axis.isYAxis()))
           return false;
 
@@ -279,7 +334,7 @@
       });
 
       var scaleKey = type == 'x' ? '_xScale' : '_yScale';
-      var axis = match || this.axes[type];
+      var axis = match || this.axes()[type];
 
       return property(type + 'Scale', {
         get: function () {
@@ -288,18 +343,20 @@
       });
     }
   }, {
-    defaultChartOptions: {
-      type: 'Line'
-    },
-    defaultAxisOptions: {
-      display: true
-    },
-    defaultLegendOptions: {
-      position: 'right'
-    },
-    defaultTitleOptions: {
-      position: 'top',
-      'class': 'chart-title-main'
+    defaults: {
+      charts: {
+        type: 'Line'
+      },
+      axes: {
+        display: true
+      },
+      legend: {
+        position: 'right'
+      },
+      title: {
+        position: 'top',
+        'class': 'chart-title-main'
+      }
     }
   });
 

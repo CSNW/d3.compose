@@ -10,25 +10,16 @@
     - {Object} style Overall style of chart/component
   */
   d3.chart('Base', {
-    initialize: function(options) {
-      this.status = {};
-      this.options(options || {});
-
+    initialize: function() {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
     },
 
-    draw: function() {
-      d3.chart().prototype.draw.apply(this, arguments);
-      this.status.drawn = true;
-    },
-
     data: property('data', {
       set: function(data) {
-        // This trigger is relied on by other components
-        // and must be called even when the data doesn't necessarily change
-        // TODO Look into why it needs to called every time (even on no change)
-        this.trigger('change:data', data);
+        // BUG This is triggered automatically, but it needs to be re-triggered
+        // Has something to do with how scales are sent to components (e.g. axes)
+        this.trigger('change:data', 'BUG');
       }
     }),
     style: property('style', {
@@ -42,7 +33,7 @@
         // Set any properties from options
         _.each(values, function(value, key) {
           if (this[key] && this[key].isProperty && this[key].setFromOptions)
-            this[key](value);
+            this[key](value, {silent: true});
         }, this);
       }
     }),
@@ -52,6 +43,35 @@
     },
     height: function height() {
       return helpers.dimensions(this.base).height;
+    },
+
+    /**
+      Trigger redraw on property changes
+
+      @example
+      ```js
+      this.redrawFor('title', 'style')
+      // -> on change:title, redraw()
+      ```
+
+      @param {String...} properties
+    */
+    redrawFor: function(property) {
+      var properties = _.toArray(arguments);
+      var events = _.map(properties, function(property) {
+        return 'change:' + property;
+      });
+
+      // d3.chart doesn't handle events with spaces, register individual handlers
+      _.each(events, function(event) {
+        this.on(event, function() {
+          console.log('REDRAW', arguments);
+          if (_.isFunction(this.redraw))
+            this.redraw();
+          else if (this.container && _.isFunction(this.container.redraw))
+            this.container.redraw();
+        });
+      }, this);
     },
 
     transform: function(data) {
@@ -67,7 +87,12 @@
   /**
     Chart: Foundation for building charts with series data
   */
-  d3.chart('Base').extend('Chart', extensions.Series);
+  d3.chart('Base').extend('Chart', helpers.mixin(extensions.Series, {
+    initialize: function(options) {
+      this.options(options || {});
+      this.redrawFor('options');
+    }
+  }));
 
   /**
     Container
@@ -75,10 +100,8 @@
     Foundation for chart and component placement
   */
   d3.chart('Base').extend('Container', {
-    initialize: function() {
-      this.charts = [];
+    initialize: function(options) {
       this.chartsById = {};
-      this.components = [];
       this.componentsById = {};
 
       // Overriding transform in init jumps it to the top of the transform cascade
@@ -95,7 +118,9 @@
       this.on('change:dimensions', function() {
         this.redraw();
       });
-      this.status.containerInitialized = true;
+
+      this.options(options || {});
+      this.redrawFor('options');
     },
 
     draw: function(data) {
@@ -123,14 +148,12 @@
     attachChart: function(id, chart) {
       chart.id = id;
       this.attach(id, chart);
-      this.charts.push(chart);
       this.chartsById[id] = chart;
     },
 
     attachComponent: function(id, component) {
       component.id = id;
       this.attach(id, component);
-      this.components.push(component);
       this.componentsById[id] = component;
 
       component.on('change:position', function() {
@@ -210,7 +233,6 @@
 
     _positionChartBase: function() {
       var margins = this._chartMargins();
-
       this.chartBase()
         .attr('transform', helpers.transform.translate(margins.left, margins.top))
         .attr('width', this.chartWidth())
@@ -269,6 +291,7 @@
           margins[key] += part.offset || 0;
         });
       });
+      
       this._chartMargins(margins);
 
       return margins;
@@ -277,7 +300,7 @@
     // Extract layout from components
     _extractLayout: function() {
       var layout = {top: [], right: [], bottom: [], left: []};
-      _.each(this.components, function(component) {
+      _.each(this.componentsById, function(component) {
         if (component.skipLayout)
           return;
 

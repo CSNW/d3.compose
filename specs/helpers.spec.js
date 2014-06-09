@@ -135,6 +135,20 @@
           expect(instance.message()).toEqual('Love');
         });
 
+        it('should use undefined value in override on set', function() {
+          instance.message = property('message', {
+            set: function(value) {
+              if (value == 'Unknown')
+                return {override: undefined};
+            }
+          });
+
+          instance.message('Initial');
+          expect(instance.message()).toEqual('Initial');
+          instance.message('Unknown');
+          expect(instance.message()).toBeUndefined();
+        });
+
         it('should call after() override', function() {
           var before, after;
           function getValue() {

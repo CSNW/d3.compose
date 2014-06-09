@@ -22,8 +22,6 @@
         charts[0] = new Chart(container.chartBase());
         container.attachChart('chart1', charts[0]);
 
-        expect(container.charts.length).toEqual(1);
-        expect(container.charts[0]).toBe(charts[0]);
         expect(container.chartsById['chart1']).toBe(charts[0]);
         expect(container._attached['chart1']).toBe(charts[0]);
       });
@@ -31,9 +29,7 @@
       it('should attach component', function() {
         components[0] = new Component(container.componentBase());
         container.attachComponent('component1', components[0]);
-
-        expect(container.components.length).toEqual(1);
-        expect(container.components[0]).toBe(components[0]);
+        
         expect(container.componentsById['component1']).toBe(components[0]);
         expect(container._attached['component1']).toBe(components[0]);
       });
