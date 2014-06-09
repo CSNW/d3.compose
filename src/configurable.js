@@ -157,6 +157,7 @@
 
     axes: property('axes', {
       set: function(options, axes) {
+        options = options || {};
         axes = axes || {};
         var axisIds = _.uniq(['x', 'y'].concat(_.keys(options)));
         var removeIds = _.difference(_.keys(axes), axisIds);

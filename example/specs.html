@@ -70,12 +70,9 @@
           },
           data: 'spec-abc',
           run: function(options, chart) {
-            options.chart.title = 'Chart Title (Redrawn)';
-            chart.options(options.chart);
-            chart.redraw();
-          },
-          reset: function(options) {
-            options.chart.title = 'Chart Title';
+            d3.chart.helpers.property.extend(chart, 'options', {
+              title: 'Chart Title (Redrawn)'
+            });
           }
         });
       </script>
@@ -141,7 +138,7 @@
           data: 'spec-smooth',
           run: function(options, chart) {
             // TODO Set to not smooth...
-
+            
             options.chart.title = 'Not Smooth';
             chart.options(options.chart);
           },
@@ -192,11 +189,12 @@
           },
           data: 'spec-abc',
           run: function(options, chart) {
-            options.chart.title = 'After';
-            chart.options(options.chart);
-          },
-          reset: function(options, chart) {
-            options.chart.title = 'Before';
+            d3.chart.helpers.property.extend(chart, 'options', {
+              title: 'After',
+              axes: {
+                x: {ticks: 10}
+              }
+            });
           }
         });
       </script>
