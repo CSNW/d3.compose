@@ -71,6 +71,7 @@
       set: function(options) {
         // Get title (if exists)
         var title = this.componentsById.title;
+        var changed = false;
 
         if (!options || _.isEmpty(options)) {
           // Remove title if no options are given
@@ -96,28 +97,42 @@
           title = new Title(this.componentBase(), options);
 
           this.attachComponent('title', title);
+          changed = true;
         }
         else {
+          // Check for changed from options
+          if (!_.isEqual(title.options(), options))
+            changed = true;
+
           // Update options
           title.options(options, {silent: true});
         }
 
         return {
-          override: title
+          override: title,
+
+          // While the title may not have changed,
+          // updating existing object causes change determination to always be false,
+          // so set explicitly
+          changed: changed
         };
       }
     }),
 
     charts: property('charts', {
-      set: function(options) {
-        var removeIds = _.difference(_.pluck(this.chartsById, 'id'), _.keys(options));
+      set: function(options, charts) {
+        charts = charts || {};
+        var removeIds = _.difference(_.pluck(charts, 'id'), _.keys(options));
+        var changed = removeIds.length > 0;
                 
         _.each(removeIds, function(removeId) {
           console.log('REMOVE CHART ' + removeId);
+
+          delete charts[removeId];
         });
 
         _.each(options, function(chartOptions, chartId) {
-          var chart = this.chartsById[chartId];
+          var chart = charts[chartId];
           chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaults.charts);
 
           if (!chart) {
@@ -139,17 +154,22 @@
             }
 
             this.attachChart(chartId, chart);
+            charts[chartId] = chart;
+            changed = true;
           }
           else {
+            // Check for changes in options
+            if (_.isEqual(chart.options(), chartOptions))
+              changed = true;
+
             // Update chart
             chart.options(chartOptions, {silent: true});
           }
-
-          return chart;
         }, this);
 
         return {
-          override: this.chartsById
+          override: charts,
+          changed: changed
         };
       },
       defaultValue: {}
@@ -161,10 +181,13 @@
         axes = axes || {};
         var axisIds = _.uniq(['x', 'y'].concat(_.keys(options)));
         var removeIds = _.difference(_.keys(axes), axisIds);
+        var changed = removeIds.length > 0;
 
         _.each(removeIds, function(removeId) {
           console.log('REMOVE AXIS ' + removeId);
           // TODO Be sure to remove axis title's too
+
+          delete axes[removeId];
         });
 
         _.each(axisIds, function(axisId) {
@@ -194,8 +217,13 @@
 
             this.attachComponent('axis.' + axisId, axis);
             axes[axisId] = axis;
+            changed = true;
           }
           else {
+            // Check for changed from options
+            if (!_.isEqual(axis.options(), axisOptions))
+              changed = true;
+
             axis.options(axisOptions, {silent: true});
           }
 
@@ -236,12 +264,16 @@
               filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
           }, this);
 
+          if (!_.isEqual(axis.options().filterKeys, filterKeys))
+            changed = true;
+
           // Set filterKeys "internally" to avoid change firing
           axis.options().filterKeys = filterKeys;
         }, this);
 
         return {
-          override: axes
+          override: axes,
+          changed: changed
         };    
       },
       defaultValue: {}
@@ -251,6 +283,7 @@
       set: function(options, legend) {
         options = options === false ? {display: false} : (options || {});
         options = _.defaults({}, options, d3.chart('Configurable').defaults.legend);
+        var changed = false;
 
         // Load chart information
         if (options.dataKey) {
@@ -274,13 +307,18 @@
           legend = new Legend(base, options);
 
           this.attachComponent('legend', legend);
+          changed = true;
         }
         else {
+          if (!_.isEqual(legend.options(), options))
+            changed = true;
+
           legend.options(options);
         }
 
         return {
-          override: legend
+          override: legend,
+          changed: changed
         };
       }
     }),

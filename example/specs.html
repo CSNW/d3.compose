@@ -59,9 +59,9 @@
         spec({
           chart: {
             type: 'XY',
-            charts: [
-              {type: 'Line', dataKey: 'values', showLabels: false}
-            ],
+            charts: {
+              line: {type: 'Line', dataKey: 'values', showLabels: false}
+            },
             axes: {
               x: {title: 'X Axis'},
               y: {title: 'Y Axis'}
@@ -70,9 +70,7 @@
           },
           data: 'spec-abc',
           run: function(options, chart) {
-            d3.chart.helpers.property.extend(chart, 'options', {
-              title: 'Chart Title (Redrawn)'
-            });
+            chart.title({title: 'New chart title'});
           }
         });
       </script>
@@ -86,10 +84,10 @@
         spec({
           chart: {
             type: 'Values',
-            charts: [
-              {type: 'Bars', dataKey: 'values', showLabels: false},
-              {type: 'Line', dataKey: 'values', showLabels: false}
-            ]
+            charts: {
+              bars: {type: 'Bars', dataKey: 'values', showLabels: false},
+              line: {type: 'Line', dataKey: 'values', showLabels: false}
+            }
           },
           data: 'spec-abc'
         });
@@ -104,9 +102,9 @@
         spec({
           chart: {
             type: 'XY',
-            charts: [
-              {type: 'Line', dataKey: 'values', style: {'stroke-width': '5px'}, labels: {style: {'font-weight': 'bold', 'font-size': '16px'}}},
-            ],
+            charts: {
+              line: {type: 'Line', dataKey: 'values', style: {'stroke-width': '5px'}, labels: {style: {'font-weight': 'bold', 'font-size': '16px'}}},
+            },
             axes: {
               x: {position: 'y0'},
               y: {position: 'x0', scale: {domain: [-5, 5]}}
@@ -127,9 +125,9 @@
         spec({
           chart: {
             type: 'XY',
-            charts: [
-              {type: 'Line', dataKey: 'values', showLabels: false}
-            ],
+            charts: {
+              line: {type: 'Line', dataKey: 'values', showLabels: false}
+            },
             axes: {
               y: {scale: {domain: [20, 60]}}
             },
@@ -138,12 +136,11 @@
           data: 'spec-smooth',
           run: function(options, chart) {
             // TODO Set to not smooth...
-            
-            options.chart.title = 'Not Smooth';
-            chart.options(options.chart);
+
+            chart.title('Not Smooth');
           },
           reset: function(options) {
-            options.chart.title = 'Smooth';
+            
           }
         });
       </script>
@@ -157,9 +154,9 @@
         spec({
           chart: {
             type: 'XY',
-            charts: [
-              {type: 'Line', dataKey: 'values', showLabels: false}
-            ],
+            charts: {
+              line: {type: 'Line', dataKey: 'values', showLabels: false}
+            },
             axes: {
               x: {ticks: 5}
             }
@@ -179,9 +176,9 @@
         spec({
           chart: {
             type: 'XY',
-            charts: [
-              {type: 'Line', dataKey: 'values', showLabels: false}
-            ],
+            charts: {
+              line: {type: 'Line', dataKey: 'values', showLabels: false}
+            },
             axes: {
               x: {ticks: 5},
             },
@@ -210,9 +207,9 @@
         spec({
           chart: {
             type: 'XY',
-            charts: [
-              {type: 'Line', dataKey: 'values', showLabels: false}
-            ],
+            charts: {
+              line: {type: 'Line', dataKey: 'values', showLabels: false}
+            },
             axes: {
               x: {ticks: 5},
             },
@@ -239,10 +236,10 @@
           resizable: true,
           chart: {
             type: 'Values',
-            charts: [
-              {type: 'Bars', dataKey: 'values', showLabels: false},
-              {type: 'Line', dataKey: 'values', showLabels: false}
-            ]
+            charts: {
+              bars: {type: 'Bars', dataKey: 'values', showLabels: false},
+              line: {type: 'Line', dataKey: 'values', showLabels: false}
+            }
           },
           data: 'spec-abc'
         });
@@ -259,10 +256,10 @@
           margins: false,
           chart: {
             type: 'Values',
-            charts: [
-              {type: 'Bars', dataKey: 'values', showLabels: false},
-              {type: 'Line', dataKey: 'values', showLabels: false}
-            ]
+            charts: {
+              bars: {type: 'Bars', dataKey: 'values', showLabels: false},
+              line: {type: 'Line', dataKey: 'values', showLabels: false}
+            }
           },
           data: 'spec-abc'
         });

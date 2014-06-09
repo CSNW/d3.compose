@@ -242,6 +242,23 @@
           expect(instance.trigger.calls.count()).toEqual(0);
         });
 
+        it('should use changed from set response', function() {
+          instance.message = property('message', {
+            set: function() {
+              return {
+                changed: true
+              };
+            }
+          });
+          instance.trigger = jasmine.createSpy();
+
+          instance.message('Matches', {silent: true});
+          expect(instance.trigger.calls.count()).toEqual(0);
+
+          instance.message('Matches');
+          expect(instance.trigger.calls.count()).toEqual(2);
+        });
+
         describe('validate', function() {
           var spy;
           beforeEach(function() {

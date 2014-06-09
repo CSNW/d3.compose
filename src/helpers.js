@@ -117,6 +117,7 @@
       }
 
       var previous = underlying;
+      var changed;
       if (_.isFunction(options.validate) && !options.validate(value)) {
         if (_.isFunction(this.trigger)) {
           this.trigger('invalid:' + name, value);
@@ -140,11 +141,20 @@
         var response = options.set.call(context, value, previous);
         if (response && _.has(response, 'override'))
           set(this, response.override);
+        
         if (response && _.isFunction(response.after))
           response.after.call(context, get(this));
+
+        if (response && _.has(response, 'changed'))
+          changed = response.changed;
+        else
+          changed = !_.isEqual(get(this), previous);
+      }
+      else {
+        changed = !_.isEqual(get(this), previous);
       }
 
-      if (!_.isEqual(get(this), previous) && _.isFunction(this.trigger) && !setOptions.silent) {
+      if (changed && _.isFunction(this.trigger) && !setOptions.silent) {
         this.trigger('change:' + name, get(this));
         this.trigger('change', name, get(this));
       }
