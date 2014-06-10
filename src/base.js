@@ -113,7 +113,6 @@
       };
 
       this.base.classed('chart', true);
-      this.chartBase(this.base.append('g').classed('chart-base', true));
 
       this.on('change:dimensions', function() {
         this.redraw();
@@ -133,7 +132,7 @@
       this._preDraw(data);
 
       // Layout now that components' dimensions are known
-      this.updateLayout();
+      this.layout();
 
       // Full draw now that everything has been laid out
       d3.chart().prototype.draw.call(this, data);
@@ -141,18 +140,55 @@
 
     redraw: function() {
       // Using previously saved rawData, redraw chart      
-      if (this.drawn || this.rawData())
+      if (this.rawData())
         this.draw(this.rawData());
+    },
+
+    chartLayer: function(options) {
+      options = _.defaults({}, options, {
+        zIndex: helpers.zIndex.chart
+      });
+
+      return this.base.append('g')
+        .attr('class', 'chart-layer')
+        .attr('data-zIndex', options.zIndex);
+    },
+
+    componentLayer: function(options) {
+      options = _.defaults({}, options, {
+        zIndex: helpers.zIndex.component
+      });
+
+      return this.base.append('g')
+        .attr('class', 'chart-component-layer')
+        .attr('data-zIndex', options.zIndex);
     },
 
     attachChart: function(id, chart) {
       chart.id = id;
+      chart.base.attr('data-id', id);
+      chart.container = this;
+
       this.attach(id, chart);
       this.chartsById[id] = chart;
     },
 
+    detachChart: function(id) {
+      var chart = this.chartsById[id];
+      if (!chart) return;
+
+      // Remove chart base layer and all children
+      chart.base.remove();
+
+      delete this._attached[id];
+      delete this.chartsById[id];
+    },
+
     attachComponent: function(id, component) {
       component.id = id;
+      component.base.attr('data-id', id);
+      component.container = this;
+
       this.attach(id, component);
       this.componentsById[id] = component;
 
@@ -161,20 +197,25 @@
       });
     },
 
-    componentBase: function() {
-      // Return new group so that "this.base" can be translated within component
-      return this.base.append('g').attr('class', 'chart-component');
+    detachComponent: function(id) {
+      var component = this.componentsById[id];
+      if (!component) return;
+
+      // Remove component base layer and all children
+      component.base.remove();
+
+      component.off('change:position');
+      delete this._attached[id];
+      delete this.componentsById[id];
     },
 
-    updateLayout: function() {
+    layout: function() {
       var layout = this._extractLayout();
       this._updateChartMargins(layout);
-      this._positionChartBase();
-      this._positionComponents(layout);
+      this._positionLayers(layout);
     },
 
     rawData: property('rawData'),
-    chartBase: property('chartBase'),
 
     // Chart margins from Container edges ({top, right, bottom, left})
     chartMargins: property('chartMargins', {
@@ -224,16 +265,23 @@
     }),
 
     _preDraw: function(data) {
-      this._positionChartBase();
+      this._positionChartLayers();
       _.each(this.componentsById, function(component, id) {
         if (!component.skipLayout)
           component.draw(this.demux ? this.demux(id, data) : data);
       }, this);
     },
 
-    _positionChartBase: function() {
+    _positionLayers: function(layout) {
+      this._positionChartLayers();
+      this._positionComponents(layout);
+      this._positionByZIndex();      
+    },
+
+    _positionChartLayers: function() {
       var margins = this._chartMargins();
-      this.chartBase()
+
+      this.base.selectAll('.chart-layer')
         .attr('transform', helpers.transform.translate(margins.left, margins.top))
         .attr('width', this.chartWidth())
         .attr('height', this.chartHeight());
@@ -280,6 +328,21 @@
         if (component && _.isFunction(component.setLayout))
           component.setLayout(x, y, options);
       }
+    },
+
+    _positionByZIndex: function() {
+      // Get layers
+      var elements = this.base.selectAll('.chart-layer, .chart-component-layer')[0];
+
+      // Sort by z-index
+      elements = _.sortBy(elements, function(element) {
+        return +d3.select(element).attr('data-zIndex') || 0;
+      });
+
+      // Move layers to z-index order
+      _.each(elements, function(element) {
+        element.parentNode.appendChild(element);
+      }, this);
     },
 
     // Update margins from components layout

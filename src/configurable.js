@@ -75,9 +75,8 @@
 
         if (!options || _.isEmpty(options)) {
           // Remove title if no options are given
-          if (title) {
-            console.log('REMOVE TITLE...');
-          }
+          if (title)
+            this.detachComponent('title');
 
           return {
             override: undefined
@@ -94,7 +93,7 @@
         if (!title) {
           // Create title
           var Title = helpers.resolveChart(options.type, 'Title', this.type());
-          title = new Title(this.componentBase(), options);
+          title = new Title(this.componentLayer({zIndex: helpers.zIndex.title}), options);
 
           this.attachComponent('title', title);
           changed = true;
@@ -126,8 +125,7 @@
         var changed = removeIds.length > 0;
                 
         _.each(removeIds, function(removeId) {
-          console.log('REMOVE CHART ' + removeId);
-
+          this.detachChart(removeId);
           delete charts[removeId];
         });
 
@@ -138,7 +136,7 @@
           if (!chart) {
             // Create chart
             var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type());
-            chart = new Chart(this.chartBase(), chartOptions);
+            chart = new Chart(this.chartLayer(), chartOptions);
 
             // Load matching axis scales (if necessary)
             var scale;
@@ -184,9 +182,8 @@
         var changed = removeIds.length > 0;
 
         _.each(removeIds, function(removeId) {
-          console.log('REMOVE AXIS ' + removeId);
-          // TODO Be sure to remove axis title's too
-
+          this.detachComponent('axis.' + removeId);
+          this.detachComponent('axis_title.' + removeId);
           delete axes[removeId];
         });
 
@@ -213,7 +210,7 @@
           if (!axis) {
             // Create axis
             var Axis = helpers.resolveChart(axisOptions.type, 'Axis', this.type());
-            axis = new Axis(this.chartBase(), axisOptions);
+            axis = new Axis(this.chartLayer({zIndex: helpers.zIndex.axis}), axisOptions);
 
             this.attachComponent('axis.' + axisId, axis);
             axes[axisId] = axis;
@@ -236,7 +233,7 @@
 
             if (!title) {
               var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type());  
-              title = new Title(this.componentBase(), titleOptions);
+              title = new Title(this.componentLayer({zIndex: helpers.zIndex.title}), titleOptions);
 
               this.attachComponent(id, title);
             }
@@ -297,13 +294,13 @@
         // If switching from outside to inset, need to change legend base layer, so remove
         if (legend && legend.options().type != options.type) {
           // TODO Possible alternates for changing base of legend
-          console.log('REMOVE LEGEND');
+          this.detachComponent('legend');
           legend = undefined;
         }
 
         if (!legend) {
           var Legend = helpers.resolveChart(options.type, 'Legend', this.type());
-          var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartBase() : this.componentBase();
+          var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartLayer({zIndex: helpers.zIndex.legend}) : this.componentLayer({zIndex: helpers.zIndex.legend});
           legend = new Legend(base, options);
 
           this.attachComponent('legend', legend);
@@ -321,6 +318,10 @@
           changed: changed
         };
       }
+    }),
+
+    scales: property('scales', {
+      defaultValue: {}
     }),
 
     demux: function(name, data) {

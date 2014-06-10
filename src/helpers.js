@@ -1,6 +1,18 @@
 (function(d3, _) {
 
   /**
+    Setup global z-index values
+  */
+  var zIndex = {
+    component: 50,
+    axis: 51,
+    title: 52,
+    chart: 100,
+    labels: 150,
+    legend: 200
+  };
+
+  /**
     Property helper
 
     @example
@@ -624,6 +636,7 @@
 
   // Add helpers to d3.chart (static)
   d3.chart.helpers = _.extend({}, d3.chart.helpers, {
+    zIndex: zIndex,
     property: property,
     valueOrDefault: valueOrDefault,
     dimensions: dimensions,

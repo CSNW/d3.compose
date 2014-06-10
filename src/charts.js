@@ -146,40 +146,30 @@
   */
   d3.chart('Chart').extend('ChartWithLabels', {
     initialize: function() {
-      // Initialize on transform so that all child charts have been added
-      // (make sure labels are on top)
-      // TODO: While this does put labels on top of chart, it puts them on top of all charts
-      // Need to place labels layer closer to parent chart
-      this.once('transform', function() {
-        if (this.showLabels()) {
-          var labelOptions = _.defaults({}, this.options().labels, {
-            displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
-          });
+      // TODO handle display differently so that showLabels can handle changes after initialization
+      if (this.showLabels()) {
+        var labelOptions = _.defaults({}, this.options().labels, {
+          displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
+        });
 
-          var Labels = helpers.resolveChart(this.isValues ? 'LabelValues' : 'Labels', 'Chart', this.isValues);
-          this.labels = new Labels(this.base, labelOptions);
+        var Labels = helpers.resolveChart(this.isValues ? 'LabelValues' : 'Labels', 'Chart', this.isValues ? 'Values' : 'XY');
+        this.labels = new Labels(this.container ? this.container.chartLayer({zIndex: helpers.zIndex.labels}) : this.base, labelOptions);
 
-          this.labels.xScale = property('xScale', {
-            get: function() {
-              return this._xScale();
-            },
-            context: this
-          });
-          this.labels.yScale = property('yScale', {
-            get: function() {
-              return this._yScale();
-            },
-            context: this
-          });
+        this.labels.xScale = property('xScale', {
+          get: function() {
+            return this._xScale();
+          },
+          context: this
+        });
+        this.labels.yScale = property('yScale', {
+          get: function() {
+            return this._yScale();
+          },
+          context: this
+        });
 
-          this.attach('Labels', this.labels);
-        }
-      });
-    },
-
-    transform: function(data) {
-      this.trigger('transform');
-      return data;
+        this.attach('Labels', this.labels);
+      }
     },
 
     showLabels: property('showLabels', {defaultValue: true})
