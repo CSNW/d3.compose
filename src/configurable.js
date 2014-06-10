@@ -73,6 +73,8 @@
         var title = this.componentsById.title;
         var changed = false;
 
+        
+        
         if (!options || _.isEmpty(options)) {
           // Remove title if no options are given
           if (title)
@@ -318,10 +320,6 @@
           changed: changed
         };
       }
-    }),
-
-    scales: property('scales', {
-      defaultValue: {}
     }),
 
     demux: function(name, data) {

@@ -102,76 +102,76 @@
   function property(name, options) {
     options = options || {};
     var propKey = options.propKey || '__properties';
-    
-    function get(context) {
-      return !_.isUndefined(context[propKey]) ? context[propKey][name] : undefined;
-    }
-    function set(context, value) {
-      context[propKey] = context[propKey] || {};
-      context[propKey][name] = value;
-    }
 
     var getSet = function(value, setOptions) {
-      var underlying = get(this);
-      var context = !_.isUndefined(getSet.context) ? getSet.context : this;
       setOptions = setOptions || {};
+      var properties = this[propKey] = this[propKey] || {};
+      var existing = properties[name];
+      var context = !_.isUndefined(getSet.context) ? getSet.context : this;
+      
+      if (!arguments.length)
+        return get.call(this);
+      else
+        return set.call(this);
 
-      if (!arguments.length) {
-        value = !_.isUndefined(underlying) ? underlying : getSet.defaultValue;
+      function get() {
+        value = !_.isUndefined(existing) ? existing : getSet.defaultValue;
 
-        if (value && _.isFunction(value) && options.type != 'Function')
+        // Unwrap value if its type is not a function
+        if (_.isFunction(value) && options.type != 'Function')
           value = value.call(this);
 
-        if (_.isFunction(options.get))
-          return options.get.call(context, value);
-        else
-          return value;
+        return _.isFunction(options.get) ? options.get.call(context, value) : value;
       }
 
-      var previous = underlying;
-      var changed;
-      if (_.isFunction(options.validate) && !options.validate(value)) {
-        if (_.isFunction(this.trigger)) {
-          this.trigger('invalid:' + name, value);
-          this.trigger('invalid', name, value);
+      function set() {
+        var changed;
+
+        // Validate
+        if (_.isFunction(options.validate) && !options.validate.call(this, value)) {
+          if (_.isFunction(this.trigger)) {
+            this.trigger('invalid:' + name, value);
+            this.trigger('invalid', name, value);
+          }
+
+          // Assumption: Previous value already had set called, so don't call set for previous value
+          //             Default value has not had set called, so call set for default value
+          //             Neither previous nor default, don't set value and don't call set
+          if (!_.isUndefined(existing)) {
+            properties[name] = existing;
+            return this;
+          }
+          else if (!_.isUndefined(getSet.defaultValue)) {
+            value = getSet.defaultValue;
+          }
+          else {
+            return this;
+          }
         }
 
-        // Assumption: Previous value already had set called, so don't call set for previous value
-        //             Default value has not had set called, so call set for default value
-        //             Neither previous nor default, don't set value and don't call set
-        if (!_.isUndefined(previous))
-          return set(this, previous);
-        else if (!_.isUndefined(getSet.defaultValue))
-          value = getSet.defaultValue;
-        else
-          return;
-      }
+        properties[name] = value;
 
-      set(this, value);
-      
-      if (_.isFunction(options.set)) {
-        var response = options.set.call(context, value, previous);
-        if (response && _.has(response, 'override'))
-          set(this, response.override);
-        
-        if (response && _.isFunction(response.after))
-          response.after.call(context, get(this));
+        if (_.isFunction(options.set)) {
+          var response = options.set.call(context, value, existing);
+          
+          if (response && _.has(response, 'override'))
+            properties[name] = response.override;
+          if (response && _.isFunction(response.after))
+            response.after.call(context, properties[name]);
+          if (response && _.has(response, 'changed'))
+            changed = response.changed;
+        }
 
-        if (response && _.has(response, 'changed'))
-          changed = response.changed;
-        else
-          changed = !_.isEqual(get(this), previous);
-      }
-      else {
-        changed = !_.isEqual(get(this), previous);
-      }
+        if (_.isUndefined(changed))
+          changed = !_.isEqual(properties[name], existing);
 
-      if (changed && _.isFunction(this.trigger) && !setOptions.silent) {
-        this.trigger('change:' + name, get(this));
-        this.trigger('change', name, get(this));
-      }
+        if (changed && _.isFunction(this.trigger) && !setOptions.silent) {
+          this.trigger('change:' + name, properties[name]);
+          this.trigger('change', name, properties[name]);
+        }
 
-      return this;
+        return this;
+      }
     };
 
     // For checking if function is a property
