@@ -274,6 +274,9 @@
             return _.contains(dataKeys, chart.options().dataKey);
           });
         }
+        else {
+          options.charts = this.charts();
+        }
 
         // If switching from outside to inset, need to change legend base layer, so remove
         if (legend && legend.options().type != options.type) {
@@ -374,6 +377,7 @@
         display: true
       },
       legend: {
+        display: true,
         position: 'right'
       },
       title: {
