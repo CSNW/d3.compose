@@ -11,6 +11,11 @@
     - {String} [position = top] (top, right, bottom, left)
     - {Number} [width = base width]
     - {Number} [height = base height]
+    - {Object} [margins] % margins relative to component dimensions
+      - top {Number} % of height
+      - right {Number} % of width
+      - bottom {Number} % of height
+      - left {Number} % of width
 
     Customization
     - skipLayout: Don't use this component type during layout (e.g. inset within chart)
@@ -42,16 +47,33 @@
       }
     }),
 
+    margins: property('margins', {
+      get: function(values) {
+        var percentages = _.defaults({}, values, {top: 0.0, right: 0.0, bottom: 0.0, left: 0.0});
+        var width = this.width();
+        var height = this.height();
+
+        return {
+          top: percentages.top * height,
+          right: percentages.right * width,
+          bottom: percentages.bottom * height,
+          left: percentages.left * width
+        };
+      }
+    }),
+
     /**
       Height/width/position to use in layout calculations
       (Override for more specific sizing in layout calculations)
     */
     skipLayout: false,
     layoutWidth: function() {
-      return this.width();
+      var margins = this.margins();
+      return this.width() + margins.left + margins.right;
     },
     layoutHeight: function() {
-      return this.height();
+      var margins = this.margins();
+      return this.height() + margins.top + margins.bottom;
     },
     layoutPosition: function() {
       return this.position();
@@ -62,7 +84,8 @@
       (Override for elements placed within chart)
     */
     setLayout: function(x, y, options) {
-      this.base.attr('transform', helpers.transform.translate(x, y));
+      var margins = this.margins();
+      this.base.attr('transform', helpers.transform.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
     }
