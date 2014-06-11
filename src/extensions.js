@@ -79,11 +79,16 @@
   extensions.XY = {
     initialize: function() {
       this.on('change:data', this.setScales);
+      this.on('change:options', createScalesFromOptions.bind(this));
 
-      if (this.options().xScale)
-        this.xScale(helpers.createScaleFromOptions(this.options().xScale));
-      if (this.options().yScale)
-        this.yScale(helpers.createScaleFromOptions(this.options().yScale));
+      createScalesFromOptions.call(this);
+
+      function createScalesFromOptions() {
+        if (this.options().xScale)
+          this.xScale(helpers.createScaleFromOptions(this.options().xScale));
+        if (this.options().yScale)
+          this.yScale(helpers.createScaleFromOptions(this.options().yScale));  
+      }
     },
 
     x: di(function(chart, d, i) {

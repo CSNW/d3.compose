@@ -150,9 +150,14 @@
   d3.chart('Component').extend('Axis', mixin(extensions.Series, extensions.XY, {
     initialize: function() {
       // Transfer generic scale options to specific scale for axis
-      if (this.options().scale) {
-        var scale = this.isXAxis() ? 'xScale' : 'yScale';
-        this[scale](helpers.createScaleFromOptions(this.options().scale));
+      this.on('change:options', createScaleFromOptions.bind(this));
+      createScaleFromOptions.call(this);
+
+      function createScaleFromOptions() {
+        if (this.options().scale) {
+          var scale = this.isXAxis() ? 'xScale' : 'yScale';
+          this[scale](helpers.createScaleFromOptions(this.options().scale));
+        }        
       }
 
       this.axis = d3.svg.axis();

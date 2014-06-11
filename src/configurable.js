@@ -68,26 +68,21 @@
     }),
 
     title: property('title', {
-      set: function(options) {
-        // Get title (if exists)
-        var title = this.componentsById.title;
+      set: function(options, title) {
         var changed = false;
-
-        
         
         if (!options || _.isEmpty(options)) {
           // Remove title if no options are given
-          if (title)
-            this.detachComponent('title');
+          this.detachComponent('title');
 
           return {
             override: undefined
           };
         }
-        else if (_.isString(options)) {
-          // Title may be set directly
+
+        // Title may be set directly
+        if (_.isString(options))
           options = {title: options};
-        }
 
         // Load defaults
         options = _.defaults({}, options, d3.chart('Configurable').defaults.title);
@@ -100,21 +95,17 @@
           this.attachComponent('title', title);
           changed = true;
         }
-        else {
-          // Check for changed from options
-          if (!_.isEqual(title.options(), options))
-            changed = true;
-
-          // Update options
-          title.options(options, {silent: true});
+        else if (!_.isEqual(title.options(), options)) {
+          // Update existing title options
+          title.options(options/*, {silent: true}*/);
+          changed = true;
         }
 
         return {
           override: title,
 
-          // While the title may not have changed,
-          // updating existing object causes change determination to always be false,
-          // so set explicitly
+          // Updating existing object causes change determination to always be false,
+          // so keep track explicitly
           changed: changed
         };
       }
@@ -122,8 +113,9 @@
 
     charts: property('charts', {
       set: function(options, charts) {
+        options = options || {};
         charts = charts || {};
-        var removeIds = _.difference(_.pluck(charts, 'id'), _.keys(options));
+        var removeIds = _.difference(_.keys(charts), _.keys(options));
         var changed = removeIds.length > 0;
                 
         _.each(removeIds, function(removeId) {
@@ -140,36 +132,23 @@
             var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type());
             chart = new Chart(this.chartLayer(), chartOptions);
 
-            // Load matching axis scales (if necessary)
-            var scale;
-            if (!chartOptions.xScale) {
-              scale = this.getMatchingAxisScale(chartOptions.dataKey, 'x');
-              if (scale)
-                chart.xScale = scale;
-            }
-            if (!chartOptions.yScale) {
-              scale = this.getMatchingAxisScale(chartOptions.dataKey, 'y');
-              if (scale)
-                chart.yScale = scale;
-            }
-
             this.attachChart(chartId, chart);
             charts[chartId] = chart;
             changed = true;
           }
-          else {
-            // Check for changes in options
-            if (_.isEqual(chart.options(), chartOptions))
-              changed = true;
-
+          else if (!_.isEqual(chart.options(), chartOptions)) {
             // Update chart
-            chart.options(chartOptions, {silent: true});
+            chart.options(chartOptions/*, {silent: true}*/);
+            changed = true;
           }
         }, this);
 
         return {
           override: charts,
-          changed: changed
+          changed: changed,
+          after: function() {
+            this.bindChartScales();
+          }
         };
       },
       defaultValue: {}
@@ -223,7 +202,7 @@
             if (!_.isEqual(axis.options(), axisOptions))
               changed = true;
 
-            axis.options(axisOptions, {silent: true});
+            axis.options(axisOptions/*, {silent: true}*/);
           }
 
           // Create axis title
@@ -240,7 +219,7 @@
               this.attachComponent(id, title);
             }
             else {
-              title.options(titleOptions, {silent: true});
+              title.options(titleOptions/*, {silent: true}*/);
             }
           }
         }, this);
@@ -272,7 +251,10 @@
 
         return {
           override: axes,
-          changed: changed
+          changed: changed,
+          after: function() {
+            this.bindChartScales();
+          }
         };    
       },
       defaultValue: {}
@@ -362,7 +344,15 @@
       }
     },
 
-    getMatchingAxisScale: function(dataKey, type) {
+    bindChartScales: function() {
+      _.each(this.charts(), function(chart) {
+        // Get scales for chart
+        chart.xScale = this.getScale(chart.options().dataKey, 'x');
+        chart.yScale = this.getScale(chart.options().dataKey, 'y');
+      }, this);
+    },
+
+    getScale: function(dataKey, type) {
       var match = _.find(this.axes(), function(axis) {
         if ((type == 'x' && !axis.isXAxis()) || (type == 'y' && !axis.isYAxis()))
           return false;
@@ -370,15 +360,10 @@
         var axisDataKey = axis.options().dataKey;
         return _.isArray(axisDataKey) ? _.contains(axisDataKey, dataKey) : axisDataKey == dataKey;
       });
-
-      var scaleKey = type == 'x' ? '_xScale' : '_yScale';
       var axis = match || this.axes()[type];
+      var scaleKey = type == 'x' ? '_xScale' : '_yScale';
 
-      return property(type + 'Scale', {
-        get: function () {
-          return axis[scaleKey]();
-        }
-      });
+      return axis[scaleKey].bind(axis);
     }
   }, {
     defaults: {
