@@ -84,7 +84,7 @@
 
         // Title may be set directly
         if (_.isString(options))
-          options = {title: options};
+          options = {text: options};
 
         // Load defaults
         options = _.defaults({}, options, d3.chart('Configurable').defaults.title);
@@ -99,7 +99,7 @@
         }
         else if (!_.isEqual(title.options(), options)) {
           // Update existing title options
-          title.options(options/*, {silent: true}*/);
+          title.options(options, {silent: true});
           changed = true;
         }
 
@@ -140,7 +140,7 @@
           }
           else if (!_.isEqual(chart.options(), chartOptions)) {
             // Update chart
-            chart.options(chartOptions/*, {silent: true}*/);
+            chart.options(chartOptions, {silent: true});
             changed = true;
           }
         }, this);
@@ -204,14 +204,14 @@
             if (!_.isEqual(axis.options(), axisOptions))
               changed = true;
 
-            axis.options(axisOptions/*, {silent: true}*/);
+            axis.options(axisOptions, {silent: true});
           }
 
           // Create axis title
           if (axisOptions.title) {
             var id = 'axis_title.' + axisId;
             var title = this.componentsById[id];
-            var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
+            var titleOptions = _.isString(axisOptions.title) ? {text: axisOptions.title} : axisOptions.title;
             titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
 
             if (!title) {
@@ -221,7 +221,7 @@
               this.attachComponent(id, title);
             }
             else {
-              title.options(titleOptions/*, {silent: true}*/);
+              title.options(titleOptions, {silent: true});
             }
           }
         }, this);

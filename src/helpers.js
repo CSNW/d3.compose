@@ -8,7 +8,7 @@
     axis: 51,
     title: 52,
     chart: 100,
-    labels: 150,
+    // labels: 150,
     legend: 200
   };
 

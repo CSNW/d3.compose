@@ -29,12 +29,8 @@
     }),
     options: property('options', {
       defaultValue: {},
-      set: function(values) {
-        // Set any properties from options
-        _.each(values, function(value, key) {
-          if (this[key] && this[key].isProperty && this[key].setFromOptions)
-            this[key](value, {silent: true});
-        }, this);
+      set: function(options) {
+        this.setFromOptions(options);
       }
     }),
 
@@ -81,6 +77,14 @@
       // so stored data has been fully transformed
       this.data(data);
       return data;
+    },
+
+    setFromOptions: function(options) {
+      // Set any properties from options
+      _.each(options, function(value, key) {
+        if (this[key] && this[key].isProperty && this[key].setFromOptions)
+          this[key](value, {silent: true});
+      }, this);
     }
   });
 

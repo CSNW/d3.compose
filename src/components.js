@@ -121,15 +121,15 @@
               .attr('alignment-baseline', 'middle')
               .attr('text-anchor', 'middle')
               .attr('class', chart.options()['class'])
-              .text(chart.title());
+              .text(chart.text());
           }
         }
       });
     },
 
-    title: property('title', {
+    text: property('text', {
       get: function() {
-        return this.options().title;
+        return this.options().text;
       }
     }),
     rotation: property('rotation', {
@@ -394,7 +394,13 @@
                 .attr('alignment-baseline', 'before-edge');
 
               // Position groups after positioning everything inside
-              this.call(helpers.stack.bind(this, {origin: 'top', padding: 5}));
+              var directionByPosition = {
+                top: 'horizontal',
+                right: 'vertical',
+                bottom: 'horizontal',
+                left: 'vertical'
+              };
+              this.call(helpers.stack.bind(this, {direction: directionByPosition[chart.position()], origin: 'top', padding: 5}));
             }
           }
         });

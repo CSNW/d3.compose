@@ -60,17 +60,18 @@
           chart: {
             type: 'XY',
             charts: {
-              line: {type: 'Line', dataKey: 'values', showLabels: false}
+              line: {type: 'Line', dataKey: 'values', labels: true}
             },
             axes: {
               x: {title: 'X Axis'},
               y: {title: 'Y Axis'}
             },
-            title: {title: 'Chart Title', margins: {top: 1.0, bottom: 1.0}}
+            title: {text: 'Chart Title', margins: {top: 1.0, bottom: 1.0}},
+            legend: {position: 'bottom'}
           },
           data: 'spec-abc',
           run: function(options, chart) {
-            chart.title({title: 'New chart title'});
+            chart.title('New chart title');
           }
         });
       </script>
@@ -85,8 +86,8 @@
           chart: {
             type: 'Values',
             charts: {
-              bars: {type: 'Bars', dataKey: 'values', showLabels: false},
-              line: {type: 'Line', dataKey: 'values', showLabels: false}
+              bars: {type: 'Bars', dataKey: 'values'},
+              line: {type: 'Line', dataKey: 'values'}
             }
           },
           data: 'spec-abc'
@@ -126,7 +127,7 @@
           chart: {
             type: 'XY',
             charts: {
-              line: {type: 'Line', dataKey: 'values', showLabels: false}
+              line: {type: 'Line', dataKey: 'values'}
             },
             axes: {
               y: {scale: {domain: [20, 60]}}
@@ -155,7 +156,7 @@
           chart: {
             type: 'XY',
             charts: {
-              line: {type: 'Line', dataKey: 'values', showLabels: false}
+              line: {type: 'Line', dataKey: 'values'}
             },
             axes: {
               x: {ticks: 5}
@@ -177,7 +178,7 @@
           chart: {
             type: 'XY',
             charts: {
-              line: {type: 'Line', dataKey: 'values', showLabels: false}
+              line: {type: 'Line', dataKey: 'values'}
             },
             axes: {
               x: {ticks: 5},
@@ -208,7 +209,7 @@
           chart: {
             type: 'XY',
             charts: {
-              line: {type: 'Line', dataKey: 'values', showLabels: false}
+              line: {type: 'Line', dataKey: 'values'}
             },
             axes: {
               x: {ticks: 5},
@@ -237,8 +238,8 @@
           chart: {
             type: 'Values',
             charts: {
-              bars: {type: 'Bars', dataKey: 'values', showLabels: false},
-              line: {type: 'Line', dataKey: 'values', showLabels: false}
+              bars: {type: 'Bars', dataKey: 'values'},
+              line: {type: 'Line', dataKey: 'values'}
             }
           },
           data: 'spec-abc'
@@ -257,8 +258,8 @@
           chart: {
             type: 'Values',
             charts: {
-              bars: {type: 'Bars', dataKey: 'values', showLabels: false},
-              line: {type: 'Line', dataKey: 'values', showLabels: false}
+              bars: {type: 'Bars', dataKey: 'values'},
+              line: {type: 'Line', dataKey: 'values'}
             }
           },
           data: 'spec-abc'

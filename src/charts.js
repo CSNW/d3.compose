@@ -47,8 +47,12 @@
       });
     },
 
-    position: property('position', {defaultValue: 'top'}),
-    offset: property('offset', {defaultValue: 14}),
+    transform: function(data) {
+      // TODO reduce data (by mechanism similar to ticks)
+      return data;
+    },
+
+    display: property('display', {defaultValue: true}),
     format: property('format', {
       type: 'Function',
       set: function(value) {
@@ -58,6 +62,13 @@
       }
     }),
 
+
+    
+    position: property('position', {defaultValue: 'top'}),
+    offset: property('offset', {defaultValue: 14}),
+    
+
+
     labelX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
     }),
@@ -65,6 +76,8 @@
       return chart.y.call(this, d, i) + chart.calculatedOffset.call(this, d, i).y;
     }),
     labelValue: di(function(chart, d, i) {
+      if (!chart.display()) return;
+
       var value = chart.yValue.call(this, d, i);
       return chart.format() ? chart.format()(value) : value;
     }),
@@ -119,12 +132,8 @@
       // For labels, only pull in label styles
       // - data.labels.style
       // - series.labels.style
-
-      var data = d.labels || {};
       var series = chart.dataSeries.call(this, d, i) || {};
-      series = series.labels || {};
-
-      var styles = _.defaults({}, data.style, series.style, chart.options().style);
+      var styles = _.defaults({}, d.labels && d.labels.style, series.labels && series.labels.style, chart.options().style);
       
       return helpers.style(styles) || null;
     }),
@@ -134,7 +143,7 @@
     LabelValues
     Chart with labels for centered values
   */
-  d3.chart('Labels').extend('LabelValues', mixin(extensions.Values, {
+  d3.chart('Labels').extend('LabelsValues', mixin(extensions.Values, {
     labelX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
     })
@@ -145,34 +154,48 @@
     Chart with labels attached
   */
   d3.chart('Chart').extend('ChartWithLabels', {
-    initialize: function() {
-      // TODO handle display differently so that showLabels can handle changes after initialization
-      if (this.showLabels()) {
-        var labelOptions = _.defaults({}, this.options().labels, {
+    attachLabels: function() {
+      var Labels = helpers.resolveChart('Labels', this.isValues ? 'Values' : 'XY');
+      this.labels = new Labels(this.base, this.labelOptions());
+
+      // Pull x/y scale from parent chart
+      this.labels.xScale = this._xScale;
+      this.labels.yScale = this._yScale;
+
+      this.attach('Labels', this.labels);
+    },
+
+    options: property('options', {
+      set: function(options) {
+        this.setFromOptions(options);
+
+        if (this.labels)
+          this.labels.options(this.labelOptions(), {silent: true});
+      }
+    }),
+
+    labelOptions: property('labelOptions', {
+      get: function() {
+        var options = this.options().labels;
+
+        // If no options or options is false, display = false
+        // If options is true, display = true
+        // Otherwise use options given
+        if (!options)
+          options = {display: false};
+        else if (options === true)
+          options = {display: true};
+        else
+          options = _.clone(options);
+
+        // Pull options from parent chart
+        options = _.defaults(options, {
           displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
         });
 
-        var Labels = helpers.resolveChart(this.isValues ? 'LabelValues' : 'Labels', 'Chart', this.isValues ? 'Values' : 'XY');
-        this.labels = new Labels(this.container ? this.container.chartLayer({zIndex: helpers.zIndex.labels}) : this.base, labelOptions);
-
-        this.labels.xScale = property('xScale', {
-          get: function() {
-            return this._xScale();
-          },
-          context: this
-        });
-        this.labels.yScale = property('yScale', {
-          get: function() {
-            return this._yScale();
-          },
-          context: this
-        });
-
-        this.attach('Labels', this.labels);
+        return options;
       }
-    },
-
-    showLabels: property('showLabels', {defaultValue: true})
+    })
   });
 
   /**
@@ -212,7 +235,10 @@
           }
         }
       });
+
+      this.attachLabels();
     },
+
     barHeight: di(function(chart, d, i) {
       return Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
     }),
@@ -222,6 +248,8 @@
     barY: di(function(chart, d, i) {
       var y = chart.y.call(this, d, i);
       var y0 = chart.y0();
+
+      // TODO Account for thickness of x-axis
       
       return y < y0 ? y : y0;
     }),
@@ -264,25 +292,16 @@
             this
               .attr('d', function(d, i) {
                 return lines[chart.seriesIndex.call(this, d, i)](chart.seriesValues.call(this, d, i));
-              });
-              // .attr('style', chart.itemStyle);
+              })
+              .attr('style', chart.itemStyle);
           }
         }
       });
+
+      this.attachLabels();
     },
     lines: property('lines', {defaultValue: []}),
-    // lineStyle: di(function(chart, d, i) {
-    //   return helpers.style({
-    //     stroke: chart.lineStroke.call(this, d, i),
-    //     'stroke-dasharray': chart.lineStrokeDashArray.call(this, d, i)
-    //   });
-    // }),
-    // lineStroke: di(function(chart, d, i) {
-    //   return helpers.getValue(['stroke', 'color'], d, chart.options);
-    // }),
-    // lineStrokeDashArray: di(function(chart, d, i) {
-    //   return helpers.getValue(['stroke-dasharray'], d, chart.options);
-    // }),
+
     createLine: function(series) {
       var line = d3.svg.line()
         .x(this.x)
