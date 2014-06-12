@@ -48,6 +48,8 @@
     options: property('options', {
       defaultValue: {},
       set: function(options) {
+        if (!options) return;
+        
         this.type(options.type, {silent: true});
         
         this.axes(options.axes, {silent: true});
