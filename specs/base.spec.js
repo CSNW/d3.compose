@@ -63,14 +63,14 @@
 
           // Create and attach components
           components = [
-            new Component(container.componentLayer({zIndex: helpers.zIndex.labels}), {position: 'top'}),
-            new OverridenComponent(container.componentLayer(), {position: 'top'}),
-            new OverridenComponent(container.componentLayer(), {position: 'right'}),
-            new Component(container.componentLayer({zIndex: helpers.zIndex.chart}), {position: 'right'}),
+            new Component(container.componentLayer({zIndex: 101}), {position: 'top'}),
+            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'top'}),
+            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'right'}),
+            new Component(container.componentLayer({zIndex: 100}), {position: 'right'}),
             new Component(container.componentLayer({zIndex: 1}), {position: 'bottom'}),
-            new OverridenComponent(container.componentLayer(), {position: 'bottom'}),
-            new OverridenComponent(container.componentLayer(), {position: 'left'}),
-            new Component(container.componentLayer({zIndex: helpers.zIndex.legend}), {position: 'left'})
+            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'bottom'}),
+            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'left'}),
+            new Component(container.componentLayer({zIndex: 200}), {position: 'left'})
           ];
           _.each(components, function(component, index) {
             container.attachComponent('component-' + (index + 1), component);
@@ -175,7 +175,7 @@
             {'class': 'chart-component-layer', id: 'component-7', zIndex: 50},
             {'class': 'chart-component-layer', id: 'component-4', zIndex: 100},
             {'class': 'chart-layer', id: 'chart-1', zIndex: 100},
-            {'class': 'chart-component-layer', id: 'component-1', zIndex: 150},
+            {'class': 'chart-component-layer', id: 'component-1', zIndex: 101},
             {'class': 'chart-component-layer', id: 'component-8', zIndex: 200}
           ];
 
