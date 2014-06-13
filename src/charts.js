@@ -246,7 +246,8 @@
     },
 
     barHeight: di(function(chart, d, i) {
-      return Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+      return height > 0 ? height - chart.barOffset() : 0;
     }),
     barX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
@@ -254,12 +255,18 @@
     barY: di(function(chart, d, i) {
       var y = chart.y.call(this, d, i);
       var y0 = chart.y0();
-
-      // TODO Account for thickness of x-axis
       
-      return y < y0 ? y : y0;
+      return y < y0 ? y : y0 + chart.barOffset();
     }),
-    displayAdjacent: property('displayAdjacent', {defaultValue: true})
+    displayAdjacent: property('displayAdjacent', {defaultValue: true}),
+
+    barOffset: function barOffset() {
+      if (!this.__axis)
+        this.__axis = d3.select(chart.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
+
+      var axisThickness = this.__axis[0][0] && parseInt(this.__axis.style('stroke-width')) || 0;
+      return axisThickness / 2;
+    }
   }));
 
   /**
