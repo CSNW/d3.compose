@@ -262,7 +262,7 @@
 
     barOffset: function barOffset() {
       if (!this.__axis)
-        this.__axis = d3.select(chart.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
+        this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
 
       var axisThickness = this.__axis[0][0] && parseInt(this.__axis.style('stroke-width')) || 0;
       return axisThickness / 2;
