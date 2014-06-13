@@ -61,13 +61,9 @@
         }
       }
     }),
-
-
     
     position: property('position', {defaultValue: 'top'}),
     offset: property('offset', {defaultValue: 14}),
-    
-
 
     labelX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
@@ -155,12 +151,22 @@
   */
   d3.chart('Chart').extend('ChartWithLabels', {
     attachLabels: function() {
-      var Labels = helpers.resolveChart('Labels', this.isValues ? 'Values' : 'XY');
+      var Labels = helpers.resolveChart('', 'Labels', this.isValues ? 'Values' : 'XY');
       this.labels = new Labels(this.base, this.labelOptions());
 
       // Pull x/y scale from parent chart
-      this.labels.xScale = this._xScale;
-      this.labels.yScale = this._yScale;
+      this.labels.xScale = property('xScale', {
+        get: function() {
+          return this._xScale();
+        },
+        context: this
+      });
+      this.labels.yScale = property('yScale', {
+        get: function() {
+          return this._yScale();
+        },
+        context: this
+      });
 
       this.attach('Labels', this.labels);
     },
