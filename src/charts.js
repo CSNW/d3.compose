@@ -151,8 +151,9 @@
   */
   d3.chart('Chart').extend('ChartWithLabels', {
     attachLabels: function() {
-      var Labels = helpers.resolveChart('', 'Labels', this.isValues ? 'Values' : 'XY');
-      this.labels = new Labels(this.base, this.labelOptions());
+      var options = this.labelOptions();
+      var Labels = helpers.resolveChart(options.type, 'Labels', this.isValues ? 'Values' : 'XY');
+      this.labels = new Labels(this.base, options);
 
       // Pull x/y scale from parent chart
       this.labels.xScale = property('xScale', {

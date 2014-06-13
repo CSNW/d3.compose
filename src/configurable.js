@@ -50,7 +50,7 @@
       set: function(options) {
         if (!options) return;
         
-        this.type(options.type, {silent: true});
+        this.type(options.type || 'XY', {silent: true});
         
         this.axes(options.axes, {silent: true});
         this.charts(options.charts, {silent: true});
@@ -99,7 +99,7 @@
         }
         else if (!_.isEqual(title.options(), options)) {
           // Update existing title options
-          title.options(options, {silent: true});
+          title.options(options/*, {silent: true} XY needs to know about update for scales*/);
           changed = true;
         }
 
@@ -140,7 +140,7 @@
           }
           else if (!_.isEqual(chart.options(), chartOptions)) {
             // Update chart
-            chart.options(chartOptions, {silent: true});
+            chart.options(chartOptions/*, {silent: true} XY needs to know about update for scales*/);
             changed = true;
           }
         }, this);
@@ -204,7 +204,7 @@
             if (!_.isEqual(axis.options(), axisOptions))
               changed = true;
 
-            axis.options(axisOptions, {silent: true});
+            axis.options(axisOptions/*, {silent: true} XY needs to know about update for scales*/);
           }
 
           // Create axis title
@@ -221,7 +221,7 @@
               this.attachComponent(id, title);
             }
             else {
-              title.options(titleOptions, {silent: true});
+              title.options(titleOptions/*, {silent: true} XY needs to know about update for scales*/);
             }
           }
         }, this);
