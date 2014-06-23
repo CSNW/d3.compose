@@ -390,7 +390,7 @@
 
               this.select('g').each(chart.createSwatch);
               this.select('text')
-                .text(chart.dataValue.bind(chart))
+                .text(chart.dataValue)
                 .attr('alignment-baseline', 'before-edge');
 
               // Position groups after positioning everything inside

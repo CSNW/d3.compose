@@ -54,6 +54,7 @@
         
         this.axes(options.axes, {silent: true});
         this.charts(options.charts, {silent: true});
+        this.components(options.components, {silent: true});
         this.legend(options.legend, {silent: true});
         this.title(options.title, {silent: true});
 
@@ -123,7 +124,7 @@
         _.each(removeIds, function(removeId) {
           this.detachChart(removeId);
           delete charts[removeId];
-        });
+        }, this);
 
         _.each(options, function(chartOptions, chartId) {
           var chart = charts[chartId];
@@ -168,7 +169,7 @@
           this.detachComponent('axis.' + removeId);
           this.detachComponent('axis_title.' + removeId);
           delete axes[removeId];
-        });
+        }, this);
 
         _.each(axisIds, function(axisId) {
           var axis = axes[axisId];
@@ -305,6 +306,54 @@
         return {
           override: legend,
           changed: changed
+        };
+      }
+    }),
+
+    components: property('components', {
+      set: function(options, components) {
+        options = options || {};
+        components = components || {};
+        var removeIds = _.difference(_.keys(components), _.keys(options));
+        var changed = removeIds.length > 0;
+
+        _.each(removeIds, function(removeId) {
+          this.detachComponent(removeId);
+          delete components[removeId];
+        }, this);
+
+        _.each(options, function(componentOptions, componentId) {
+          var component = components[componentId];
+          componentOptions = _.defaults({}, componentOptions);
+
+          if (!component) {
+            // Create component
+            var Component = helpers.resolveChart(componentOptions.type, 'Component', this.type());
+            var layer = Component.layer && Component.layer == 'chart' ? this.chartLayer() : this.componentLayer();
+
+            component = new Component(layer, componentOptions);
+
+            this.attachComponent(componentId, component);
+            components[componentId] = component;
+            changed = true;
+          }
+          else if (!_.isEqual(component.options(), componentOptions)) {
+            component.options(componentOptions/*, {silent: true} XY needs to know about update for scales*/);
+            charted = true;
+          }
+        }, this);
+
+        return {
+          override: components,
+          changed: changed,
+          after: function(components) {
+            _.each(components, function(component) {
+              if (_.isFunction(component.xScale) && _.isFunction(component.yScale)) {
+                component.xScale = this.axes().x._xScale.bind(this.axes().x);
+                component.yScale = this.axes().y._yScale.bind(this.axes().y);
+              }
+            }, this);
+          }
         };
       }
     }),
