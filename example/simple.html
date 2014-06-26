@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.chart.csnw.configurable - Simple</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="css/default.css">
+
+  <link rel="stylesheet" type="text/css" href="../dist/css/d3.chart.csnw.configurable.base.css">
+  <style>
+    #chart {
+      width: 600px;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <svg id="chart"></svg>
+
+
+  <script src="../bower_components/d3/d3.js"></script>
+  <script src="../bower_components/d3.chart/d3.chart.js"></script>
+  <script src="../bower_components/underscore/underscore.js"></script>
+
+  <script src="../dist/d3.chart.csnw.configurable.js"></script>
+  <script type="text/javascript">
+    var config = {
+      charts: {
+        line: {type: 'Line', dataKey: 'line'}
+      }
+    };
+    var data = {
+      line: [
+        {
+          key: 'a',
+          name: 'A',
+          values: [
+            {x: 0, y: 10},
+            {x: 10, y: 30},
+            {x: 20, y: 70},
+            {x: 30, y: 120},
+            {x: 40, y: 180},
+            {x: 50, y: 250}
+          ]
+        }
+      ]
+    };
+
+    var chart = d3.select('#chart')
+      .chart('Configurable', config)
+      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+
+    chart.draw(data);
+  </script>
+</body>
+</html>

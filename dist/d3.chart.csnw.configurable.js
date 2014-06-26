@@ -5,126 +5,259 @@
 (function(d3, _) {
 
   /**
+    Setup global z-index values
+  */
+  var zIndex = {
+    component: 50,
+    axis: 51,
+    title: 52,
+    chart: 100,
+    // labels: 150,
+    legend: 200
+  };
+
+  /**
     Property helper
 
     @example
     ```javascript
     var obj = {};
+
+    // Create property that's stored internally as 'simple'
     obj.simple = property('simple');
+
+    // set
+    obj.simple('Howdy');
+
+    // get
+    console.log(obj.simple()); // -> 'Howdy'
     
-    // Default value
-    obj.hasDefault = property('hasDefault', {
+    // Advanced
+    // --------
+    // Default values:
+    obj.advanced = property('advanced', {
       defaultValue: 'Howdy!'
     });
+  
+    console.log(obj.advanced()); // -> 'Howdy!'
+    obj.advanced('Goodbye');
+    console.log(obj.advanced()); // -> 'Goodbye'
 
-    obj.hasDefault() == 'Howdy!';
-    obj.hasDefault('Hello');
-    obj.hasDefault() == 'Hello';
-    obj.hasDefault(undefined);
-    obj.hasDefault() == 'Howdy!';
+    // Set to undefined to reset to default value
+    obj.advanced(undefined);
+    console.log(obj.advanced()); // -> 'Howdy!'
 
-    // Custom getter
-    obj.getter = property('getter', {
+    // Custom getter:
+    obj.advanced = property('advanced', {
       get: function(value) {
+        // Value is the underlying set value
         return value + '!';
       }
     });
 
-    obj.getter('Howdy');
-    obj.getter() == 'Howdy!';
+    obj.advanced('Howdy');
+    console.log(obj.advanced()); // -> 'Howdy!'
 
-    // Custom setter, that can override set value and do something after overriding
-    obj.setter = property('setter', {
+    // Custom setter:
+    obj.advanced = property('advanced', {
       set: function(value, previous) {
         if (value == 'Hate') {
+          // To override value, return obj with override specified
           return {
             override: 'Love',
+
+            // To do something after override, use after callback
             after: function() {
-              this.setter() == 'Love';
+              console.log('After: ' + this.advanced()); // -> 'After: Love'
             }
           };
         }
       }
+
+      obj.advanced('Hate'); // -> 'After: Love'
+      console.log(obj.advanced()); // -> 'Love'
     });
+
+    // Extensions:
+    obj.advanced = property('advanced', {type: 'Object'})
+    obj.advanced({a: 1, b: 2});
+    obj.advanced.extend({b: 'two', c: 'three'});
+    console.log(obj.advanced()); // -> {a: 1, b: 'two', c: 'three'}
     ```
 
     @param {String} name of stored property
     @param {Object} options
-    - defaultValue: {...} default value for property (when set value is undefined)
+    - defaultValue: default value for property (when set value is undefined)
     - get: function(value) {return ...} getter, where value is the stored value, return desired value
     - set: function(value, previous) {return {override, after}} 
-           setter, return override to set stored value and after() to run after set
-    - type: 'function' if get/set value is function, otherwise get/set is evaluated if they're a function
-    - context: 'Object' context to evaluate get/set/after functions
+      - return override to set stored value and after() to run after set
+    - type: {String} ['Function']
+      - 'Object' gets object extensions: extend({...})
+      - 'Array' gets array extensions: push(...)
+      - 'Function' don't evaluate in get/set
+    - context: {Object} [this] context to evaluate get/set/after functions
+    - propKey: {String} ['__properties'] underlying key on object to store properties on
+
+    @return {Function}
+    - (): get
+    - (value): set
+    - (value, setOptions): set with options (silent: [false] for change notifications)
   */ 
   function property(name, options) {
     options = options || {};
     var propKey = options.propKey || '__properties';
-    
-    function get(context) {
-      return !_.isUndefined(context[propKey]) ? context[propKey][name] : undefined;
-    }
-    function set(context, value) {
-      context[propKey] = context[propKey] || {};
-      context[propKey][name] = value;
-    }
 
-    var getSet = function(value) {
-      var underlying = get(this);
+    var getSet = function(value, setOptions) {
+      setOptions = setOptions || {};
+      var properties = this[propKey] = this[propKey] || {};
+      var existing = properties[name];
       var context = !_.isUndefined(getSet.context) ? getSet.context : this;
+      
+      if (!arguments.length)
+        return get.call(this);
+      else
+        return set.call(this);
 
-      if (!arguments.length) {
-        value = !_.isUndefined(underlying) ? underlying : getSet.defaultValue;
+      function get() {
+        value = !_.isUndefined(existing) ? existing : getSet.defaultValue;
 
-        if (value && typeof value == 'function' && options.type != 'function')
+        // Unwrap value if its type is not a function
+        if (_.isFunction(value) && options.type != 'Function')
           value = value.call(this);
 
-        if (typeof options.get == 'function')
-          return options.get.call(context, value);
-        else
-          return value;
+        return _.isFunction(options.get) ? options.get.call(context, value) : value;
       }
 
-      var previous = underlying;
-      if (typeof options.validate == 'function' && !options.validate(value)) {
-        if (_.isFunction(this.trigger))
-          this.trigger('invalid:' + name, value);
+      function set() {
+        var changed;
 
-        // Assumption: Previous value already had set called, so don't call set for previous value
-        //             Default value has not had set called, so call set for default value
-        //             Neither previous nor default, don't set value and don't call set
-        if (!_.isUndefined(previous))
-          return set(this, previous);
-        else if (!_.isUndefined(getSet.defaultValue))
-          value = getSet.defaultValue;
-        else
-          return;
+        // Validate
+        if (_.isFunction(options.validate) && !options.validate.call(this, value)) {
+          if (_.isFunction(this.trigger)) {
+            this.trigger('invalid:' + name, value);
+            this.trigger('invalid', name, value);
+          }
+
+          // Assumption: Previous value already had set called, so don't call set for previous value
+          //             Default value has not had set called, so call set for default value
+          //             Neither previous nor default, don't set value and don't call set
+          if (!_.isUndefined(existing)) {
+            properties[name] = existing;
+            return this;
+          }
+          else if (!_.isUndefined(getSet.defaultValue)) {
+            value = getSet.defaultValue;
+          }
+          else {
+            return this;
+          }
+        }
+
+        properties[name] = value;
+
+        if (_.isFunction(options.set)) {
+          var response = options.set.call(context, value, existing);
+          
+          if (response && _.has(response, 'override'))
+            properties[name] = response.override;
+          if (response && _.isFunction(response.after))
+            response.after.call(context, properties[name]);
+          if (response && _.has(response, 'changed'))
+            changed = response.changed;
+        }
+
+        if (_.isUndefined(changed))
+          changed = !_.isEqual(properties[name], existing);
+
+        if (changed && _.isFunction(this.trigger) && !setOptions.silent) {
+          this.trigger('change:' + name, properties[name]);
+          this.trigger('change', name, properties[name]);
+        }
+
+        return this;
       }
-
-      set(this, value);
-      
-      if (typeof options.set == 'function') {
-        var response = options.set.call(context, value, previous);
-        if (response && response.override)
-          set(this, response.override);
-        if (response && response.after)
-          response.after.call(context, get(this));
-      }
-
-      if (!_.isEqual(get(this), previous) && _.isFunction(this.trigger))
-        this.trigger('change:' + name, get(this));
-
-      return this;
     };
 
     // For checking if function is a property
-    getSet._isProperty = true;
+    getSet.isProperty = true;
     getSet.setFromOptions = valueOrDefault(options.setFromOptions, true);
     getSet.defaultValue = options.defaultValue;
     getSet.context = options.context;
 
     return getSet;
   }
+
+  /**
+    Property extensions
+    Helpers for doing "native" operations on properties
+
+    @example
+    ```js
+    var instance = {};
+    instance.options = property('optionsProperty', {});
+    instance.options({a: 1, b: 2});
+
+    property.extend(instance, 'options', {b: 'two', c: 'three'});
+    console.log(instance.options()); // -> {a: 1, b: 'two', c: 'three'}
+    ```
+
+    Object:
+    - Extend
+
+    Array:
+    - Push
+  */
+  // Object extensions: extend
+  _.each([
+    'extend'
+  ], function(options) {
+    var name = _.isObject(options) ? options.name : options;
+    var set = (options && options.set) || 'cloned';
+    var method = _[name];
+
+    property[name] = function(parent, key) {
+      if (!parent[key] || !method) return;
+
+      var args = _.toArray(arguments).slice(2);
+      var cloned = _.clone(parent[key]());
+      args.unshift(cloned);
+      var result = method.apply(_, args);
+
+      // Set either result or cloned back to property
+      parent[key](set == 'result' ? result : cloned);
+
+      return result;
+    };
+  });
+
+  // Array extensions: push, concat
+  _.each([
+    'push',
+    'pop',
+    {name: 'concat', set: 'result'},
+    'splice',
+    'shift',
+    'unshift',
+    'reverse',
+    'sort'
+  ], function(options) {
+    var name = _.isObject(options) ? options.name : options;
+    var set = (options && options.set) || 'cloned';
+    var method = Array.prototype[name];
+
+    property[name] = function(parent, key) {
+      if (!parent[key] || !method) return;
+
+      var args = _.toArray(arguments).slice(2);
+      var cloned = _.toArray(parent[key]());
+      var result = method.apply(cloned, args);
+
+      // Set either result or cloned back to property
+      parent[key](set == 'result' ? result : cloned);
+
+      return result;
+    };
+  });
 
   /**
     If value isn't undefined, return value, otherwise use defaultValue
@@ -442,6 +575,7 @@
     3. component type + container type (e.g. Axis + Values = AxisValues)
     4. component type + chart type (e.g. Axis + '' = Axis)
     5. chart type + component type (e.g. Inset + Legend = InsetLegend) 
+    6. component type (e.g. '', Labels, XY = Labels)
 
     @param {String} chartType type of chart
     @param {String} componentType type of component
@@ -456,7 +590,8 @@
       d3.chart(chartType) || 
       d3.chart(componentType + containerType) ||
       d3.chart(componentType + chartType) || 
-      d3.chart(chartType + componentType);
+      d3.chart(chartType + componentType) ||
+      d3.chart(componentType);
 
     if (!Chart)
       throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + chartType + ' and component ' + componentType + ' and container ' + containerType);
@@ -507,6 +642,7 @@
 
   // Add helpers to d3.chart (static)
   d3.chart.helpers = _.extend({}, d3.chart.helpers, {
+    zIndex: zIndex,
     property: property,
     valueOrDefault: valueOrDefault,
     dimensions: dimensions,
@@ -560,7 +696,7 @@
       // Get style for data item in the following progression
       // data.style -> series.style -> chart.style
       var series = chart.dataSeries.call(this, d, i) || {};
-      var styles = _.defaults({}, d.style, series.style, chart.options.style);
+      var styles = _.defaults({}, d.style, series.style, chart.options().style);
       
       return helpers.style(styles) || null;
     }),
@@ -605,11 +741,16 @@
   extensions.XY = {
     initialize: function() {
       this.on('change:data', this.setScales);
+      this.on('change:options', createScalesFromOptions.bind(this));
 
-      if (this.options.xScale)
-        this.xScale(helpers.createScaleFromOptions(this.options.xScale));
-      if (this.options.yScale)
-        this.yScale(helpers.createScaleFromOptions(this.options.yScale));
+      createScalesFromOptions.call(this);
+
+      function createScalesFromOptions() {
+        if (this.options().xScale)
+          this.xScale(helpers.createScaleFromOptions(this.options().xScale));
+        if (this.options().yScale)
+          this.yScale(helpers.createScaleFromOptions(this.options().yScale));  
+      }
     },
 
     x: di(function(chart, d, i) {
@@ -674,17 +815,23 @@
     },
 
     // _xScale and _yScale used to differentiate between user- and internally-set values
-    _xScale: property('_xScale', {type: 'function'}),
-    _yScale: property('_yScale', {type: 'function'}),
-    xScale: property('xScale', {type: 'function', setFromOptions: false}),
-    yScale: property('yScale', {type: 'function', setFromOptions: false}),
+    _xScale: property('_xScale', {type: 'Function'}),
+    _yScale: property('_yScale', {type: 'Function'}),
+    xScale: property('xScale', {type: 'Function', setFromOptions: false}),
+    yScale: property('yScale', {type: 'Function', setFromOptions: false}),
 
     xMin: property('xMin', {
       get: function(value) {
         // Calculate minimum from series data
         var min = _.reduce(this.data(), function(memo, series, index) {
-          var min = d3.extent(this.seriesValues(series, index), this.xValue)[0];
-          return min < memo ? min : memo;
+          var seriesValues = this.seriesValues(series, index);
+          if (_.isArray(seriesValues)) {
+            var seriesMin = d3.extent(seriesValues, this.xValue)[0];
+            return seriesMin < memo ? seriesMin : memo;  
+          }
+          else {
+            return memo;
+          }          
         }, Infinity, this);
 
         return valueOrDefault(value, (min < 0 ? min : 0));
@@ -694,8 +841,14 @@
       get: function(value) {
         // Calculate maximum from series data
         var max = _.reduce(this.data(), function(memo, series, index) {
-          var max = d3.extent(this.seriesValues(series, index), this.xValue)[1];
-          return max > memo ? max : memo;
+          var seriesValues = this.seriesValues(series, index);
+          if (_.isArray(seriesValues)) {
+            var seriesMax = d3.extent(seriesValues, this.xValue)[1];
+            return seriesMax > memo ? seriesMax : memo;
+          }
+          else {
+            return memo;
+          }
         }, -Infinity, this);
 
         return valueOrDefault(value, max);
@@ -705,8 +858,14 @@
       get: function(value) {
         // Calculate minimum from series data
         var min = _.reduce(this.data(), function(memo, series, index) {
-          var min = d3.extent(this.seriesValues(series, index), this.yValue)[0];
-          return min < memo ? min : memo;
+          var seriesValues = this.seriesValues(series, index);
+          if (_.isArray(seriesValues)) {
+            var seriesMin = d3.extent(seriesValues, this.yValue)[0];
+            return seriesMin < memo ? seriesMin : memo;
+          }
+          else {
+            return memo;
+          }
         }, Infinity, this);
         
         // Default behavior: if min is less than zero, use min, otherwise use 0
@@ -717,8 +876,14 @@
       get: function(value) {
         // Calculate maximum from series data
         var max = _.reduce(this.data(), function(memo, series, index) {
-          var max = d3.extent(this.seriesValues(series, index), this.yValue)[1];
-          return max > memo ? max : memo;
+          var seriesValues = this.seriesValues(series, index);
+          if (_.isArray(seriesValues)) {
+            var seriesMax = d3.extent(seriesValues, this.yValue)[1];
+            return seriesMax > memo ? seriesMax : memo;
+          }
+          else {
+            return memo;
+          }
         }, -Infinity, this);
 
         return valueOrDefault(value, max);
@@ -812,30 +977,27 @@
     - {Object} style Overall style of chart/component
   */
   d3.chart('Base', {
-    initialize: function(options) {
-      this.options = options || {};
-
-      // Call any setters that match options
-      _.each(this.options, function(value, key) {
-        if (this[key] && this[key]._isProperty && this[key].setFromOptions)
-          this[key](value);
-      }, this);
-
+    initialize: function() {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
     },
 
     data: property('data', {
       set: function(data) {
-        // This trigger is relied on by other components
-        // and must be called even when the data doesn't necessarily change
-        // TODO Look into why it needs to called every time (even on no change)
-        this.trigger('change:data', data);
+        // BUG This is triggered automatically, but it needs to be re-triggered
+        // Has something to do with how scales are sent to components (e.g. axes)
+        this.trigger('change:data', 'BUG');
       }
     }),
     style: property('style', {
       get: function(value) {
         return helpers.style(value) || null;
+      }
+    }),
+    options: property('options', {
+      defaultValue: {},
+      set: function(options) {
+        this.setFromOptions(options);
       }
     }),
 
@@ -846,18 +1008,62 @@
       return helpers.dimensions(this.base).height;
     },
 
+    /**
+      Trigger redraw on property changes
+
+      @example
+      ```js
+      this.redrawFor('title', 'style')
+      // -> on change:title, redraw()
+      ```
+
+      @param {String...} properties
+    */
+    redrawFor: function(property) {
+      var properties = _.toArray(arguments);
+      var events = _.map(properties, function(property) {
+        return 'change:' + property;
+      });
+
+      // d3.chart doesn't handle events with spaces, register individual handlers
+      _.each(events, function(event) {
+        this.on(event, function() {
+          console.log('REDRAW', arguments);
+          if (_.isFunction(this.redraw))
+            this.redraw();
+          else if (this.container && _.isFunction(this.container.redraw))
+            this.container.redraw();
+        });
+      }, this);
+    },
+
     transform: function(data) {
+      data = data || [];
+
       // Base is last transform to be called,
       // so stored data has been fully transformed
-      this.data(data || []);
-      return data || [];
+      this.data(data);
+      return data;
+    },
+
+    setFromOptions: function(options) {
+      // Set any properties from options
+      _.each(options, function(value, key) {
+        if (this[key] && this[key].isProperty && this[key].setFromOptions)
+          this[key](value, {silent: true});
+      }, this);
     }
   });
 
   /**
     Chart: Foundation for building charts with series data
   */
-  d3.chart('Base').extend('Chart', extensions.Series);
+  d3.chart('Base').extend('Chart', helpers.mixin(extensions.Series, {
+    initialize: function(options) {
+      this.options(options || {});
+      this.redrawFor('options');
+    }
+  }));
 
   /**
     Container
@@ -865,10 +1071,8 @@
     Foundation for chart and component placement
   */
   d3.chart('Base').extend('Container', {
-    initialize: function() {
-      this.charts = [];
+    initialize: function(options) {
       this.chartsById = {};
-      this.components = [];
       this.componentsById = {};
 
       // Overriding transform in init jumps it to the top of the transform cascade
@@ -880,11 +1084,13 @@
       };
 
       this.base.classed('chart', true);
-      this.chartBase(this.base.append('g').classed('chart-base', true));
 
       this.on('change:dimensions', function() {
         this.redraw();
       });
+
+      this.options(options || {});
+      this.redrawFor('options');
     },
 
     draw: function(data) {
@@ -897,7 +1103,7 @@
       this._preDraw(data);
 
       // Layout now that components' dimensions are known
-      this.updateLayout();
+      this.layout();
 
       // Full draw now that everything has been laid out
       d3.chart().prototype.draw.call(this, data);
@@ -909,17 +1115,52 @@
         this.draw(this.rawData());
     },
 
+    chartLayer: function(options) {
+      options = _.defaults({}, options, {
+        zIndex: helpers.zIndex.chart
+      });
+
+      return this.base.append('g')
+        .attr('class', 'chart-layer')
+        .attr('data-zIndex', options.zIndex);
+    },
+
+    componentLayer: function(options) {
+      options = _.defaults({}, options, {
+        zIndex: helpers.zIndex.component
+      });
+
+      return this.base.append('g')
+        .attr('class', 'chart-component-layer')
+        .attr('data-zIndex', options.zIndex);
+    },
+
     attachChart: function(id, chart) {
       chart.id = id;
+      chart.base.attr('data-id', id);
+      chart.container = this;
+
       this.attach(id, chart);
-      this.charts.push(chart);
       this.chartsById[id] = chart;
+    },
+
+    detachChart: function(id) {
+      var chart = this.chartsById[id];
+      if (!chart) return;
+
+      // Remove chart base layer and all children
+      chart.base.remove();
+
+      delete this._attached[id];
+      delete this.chartsById[id];
     },
 
     attachComponent: function(id, component) {
       component.id = id;
+      component.base.attr('data-id', id);
+      component.container = this;
+
       this.attach(id, component);
-      this.components.push(component);
       this.componentsById[id] = component;
 
       component.on('change:position', function() {
@@ -927,20 +1168,25 @@
       });
     },
 
-    componentBase: function() {
-      // Return new group so that "this.base" can be translated within component
-      return this.base.append('g').attr('class', 'chart-component');
+    detachComponent: function(id) {
+      var component = this.componentsById[id];
+      if (!component) return;
+
+      // Remove component base layer and all children
+      component.base.remove();
+
+      component.off('change:position');
+      delete this._attached[id];
+      delete this.componentsById[id];
     },
 
-    updateLayout: function() {
+    layout: function() {
       var layout = this._extractLayout();
       this._updateChartMargins(layout);
-      this._positionChartBase();
-      this._positionComponents(layout);
+      this._positionLayers(layout);
     },
 
     rawData: property('rawData'),
-    chartBase: property('chartBase'),
 
     // Chart margins from Container edges ({top, right, bottom, left})
     chartMargins: property('chartMargins', {
@@ -990,17 +1236,23 @@
     }),
 
     _preDraw: function(data) {
-      this._positionChartBase();
+      this._positionChartLayers();
       _.each(this.componentsById, function(component, id) {
         if (!component.skipLayout)
           component.draw(this.demux ? this.demux(id, data) : data);
       }, this);
     },
 
-    _positionChartBase: function() {
+    _positionLayers: function(layout) {
+      this._positionChartLayers();
+      this._positionComponents(layout);
+      this._positionByZIndex();      
+    },
+
+    _positionChartLayers: function() {
       var margins = this._chartMargins();
 
-      this.chartBase()
+      this.base.selectAll('.chart-layer')
         .attr('transform', helpers.transform.translate(margins.left, margins.top))
         .attr('width', this.chartWidth())
         .attr('height', this.chartHeight());
@@ -1049,6 +1301,21 @@
       }
     },
 
+    _positionByZIndex: function() {
+      // Get layers
+      var elements = this.base.selectAll('.chart-layer, .chart-component-layer')[0];
+
+      // Sort by z-index
+      elements = _.sortBy(elements, function(element) {
+        return +d3.select(element).attr('data-zIndex') || 0;
+      });
+
+      // Move layers to z-index order
+      _.each(elements, function(element) {
+        element.parentNode.appendChild(element);
+      }, this);
+    },
+
     // Update margins from components layout
     _updateChartMargins: function(layout) {
       // Copy margins to prevent updating user-defined margins
@@ -1058,6 +1325,7 @@
           margins[key] += part.offset || 0;
         });
       });
+      
       this._chartMargins(margins);
 
       return margins;
@@ -1066,7 +1334,7 @@
     // Extract layout from components
     _extractLayout: function() {
       var layout = {top: [], right: [], bottom: [], left: []};
-      _.each(this.components, function(component) {
+      _.each(this.componentsById, function(component) {
         if (component.skipLayout)
           return;
 
@@ -1149,16 +1417,23 @@
       });
     },
 
-    position: property('position', {defaultValue: 'top'}),
-    offset: property('offset', {defaultValue: 14}),
+    transform: function(data) {
+      // TODO reduce data (by mechanism similar to ticks)
+      return data;
+    },
+
+    display: property('display', {defaultValue: true}),
     format: property('format', {
-      type: 'function',
+      type: 'Function',
       set: function(value) {
         if (_.isString(value)) {
           return {override: d3.format(value)};
         }
       }
     }),
+    
+    position: property('position', {defaultValue: 'top'}),
+    offset: property('offset', {defaultValue: 14}),
 
     labelX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
@@ -1167,6 +1442,8 @@
       return chart.y.call(this, d, i) + chart.calculatedOffset.call(this, d, i).y;
     }),
     labelValue: di(function(chart, d, i) {
+      if (!chart.display()) return;
+
       var value = chart.yValue.call(this, d, i);
       return chart.format() ? chart.format()(value) : value;
     }),
@@ -1221,12 +1498,8 @@
       // For labels, only pull in label styles
       // - data.labels.style
       // - series.labels.style
-
-      var data = d.labels || {};
       var series = chart.dataSeries.call(this, d, i) || {};
-      series = series.labels || {};
-
-      var styles = _.defaults({}, data.style, series.style, chart.options.style);
+      var styles = _.defaults({}, d.labels && d.labels.style, series.labels && series.labels.style, chart.options().style);
       
       return helpers.style(styles) || null;
     }),
@@ -1236,7 +1509,7 @@
     LabelValues
     Chart with labels for centered values
   */
-  d3.chart('Labels').extend('LabelValues', mixin(extensions.Values, {
+  d3.chart('Labels').extend('LabelsValues', mixin(extensions.Values, {
     labelX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
     })
@@ -1247,44 +1520,59 @@
     Chart with labels attached
   */
   d3.chart('Chart').extend('ChartWithLabels', {
-    initialize: function() {
-      // Initialize on transform so that all child charts have been added
-      // (make sure labels are on top)
-      // TODO: While this does put labels on top of chart, it puts them on top of all charts
-      // Need to place labels layer closer to parent chart
-      this.once('transform', function() {
-        if (this.showLabels()) {
-          var labelOptions = _.defaults({}, this.options.labels, {
-            displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
-          });
+    attachLabels: function() {
+      var options = this.labelOptions();
+      var Labels = helpers.resolveChart(options.type, 'Labels', this.isValues ? 'Values' : 'XY');
+      this.labels = new Labels(this.base, options);
 
-          var Labels = helpers.resolveChart(this.isValues ? 'LabelValues' : 'Labels', 'Chart', this.isValues);
-          this.labels = new Labels(this.base, labelOptions);
-
-          this.labels.xScale = property('xScale', {
-            get: function() {
-              return this._xScale();
-            },
-            context: this
-          });
-          this.labels.yScale = property('yScale', {
-            get: function() {
-              return this._yScale();
-            },
-            context: this
-          });
-
-          this.attach('Labels', this.labels);
-        }
+      // Pull x/y scale from parent chart
+      this.labels.xScale = property('xScale', {
+        get: function() {
+          return this._xScale();
+        },
+        context: this
       });
+      this.labels.yScale = property('yScale', {
+        get: function() {
+          return this._yScale();
+        },
+        context: this
+      });
+
+      this.attach('Labels', this.labels);
     },
 
-    transform: function(data) {
-      this.trigger('transform');
-      return data;
-    },
+    options: property('options', {
+      set: function(options) {
+        this.setFromOptions(options);
 
-    showLabels: property('showLabels', {defaultValue: true})
+        if (this.labels)
+          this.labels.options(this.labelOptions(), {silent: true});
+      }
+    }),
+
+    labelOptions: property('labelOptions', {
+      get: function() {
+        var options = this.options().labels;
+
+        // If no options or options is false, display = false
+        // If options is true, display = true
+        // Otherwise use options given
+        if (!options)
+          options = {display: false};
+        else if (options === true)
+          options = {display: true};
+        else
+          options = _.clone(options);
+
+        // Pull options from parent chart
+        options = _.defaults(options, {
+          displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
+        });
+
+        return options;
+      }
+    })
   });
 
   /**
@@ -1324,9 +1612,13 @@
           }
         }
       });
+
+      this.attachLabels();
     },
+
     barHeight: di(function(chart, d, i) {
-      return Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+      return height > 0 ? height - chart.barOffset() : 0;
     }),
     barX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
@@ -1335,9 +1627,17 @@
       var y = chart.y.call(this, d, i);
       var y0 = chart.y0();
       
-      return y < y0 ? y : y0;
+      return y < y0 ? y : y0 + chart.barOffset();
     }),
-    displayAdjacent: property('displayAdjacent', {defaultValue: true})
+    displayAdjacent: property('displayAdjacent', {defaultValue: true}),
+
+    barOffset: function barOffset() {
+      if (!this.__axis)
+        this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
+
+      var axisThickness = this.__axis[0][0] && parseInt(this.__axis.style('stroke-width')) || 0;
+      return axisThickness / 2;
+    }
   }));
 
   /**
@@ -1376,31 +1676,22 @@
             this
               .attr('d', function(d, i) {
                 return lines[chart.seriesIndex.call(this, d, i)](chart.seriesValues.call(this, d, i));
-              });
-              // .attr('style', chart.itemStyle);
+              })
+              .attr('style', chart.itemStyle);
           }
         }
       });
+
+      this.attachLabels();
     },
     lines: property('lines', {defaultValue: []}),
-    // lineStyle: di(function(chart, d, i) {
-    //   return helpers.style({
-    //     stroke: chart.lineStroke.call(this, d, i),
-    //     'stroke-dasharray': chart.lineStrokeDashArray.call(this, d, i)
-    //   });
-    // }),
-    // lineStroke: di(function(chart, d, i) {
-    //   return helpers.getValue(['stroke', 'color'], d, chart.options);
-    // }),
-    // lineStrokeDashArray: di(function(chart, d, i) {
-    //   return helpers.getValue(['stroke-dasharray'], d, chart.options);
-    // }),
+
     createLine: function(series) {
       var line = d3.svg.line()
         .x(this.x)
         .y(this.y);
 
-      var interpolate = series.interpolate || this.options.interpolate;
+      var interpolate = series.interpolate || this.options().interpolate;
       if (interpolate)
         line.interpolate(interpolate);
 
@@ -1435,6 +1726,11 @@
     - {String} [position = top] (top, right, bottom, left)
     - {Number} [width = base width]
     - {Number} [height = base height]
+    - {Object} [margins] % margins relative to component dimensions
+      - top {Number} % of height
+      - right {Number} % of width
+      - bottom {Number} % of height
+      - left {Number} % of width
 
     Customization
     - skipLayout: Don't use this component type during layout (e.g. inset within chart)
@@ -1444,6 +1740,11 @@
     - setLayout: Override if layout needs to be customized
   */
   d3.chart('Base').extend('Component', {
+    initialize: function(options) {
+      this.options(options || {});
+      this.redrawFor('options');
+    },
+
     position: property('position', {
       defaultValue: 'top',
       validate: function(value) {
@@ -1460,17 +1761,34 @@
         return helpers.dimensions(this.base).height;
       }
     }),
-    skipLayout: false,
+
+    margins: property('margins', {
+      get: function(values) {
+        var percentages = _.defaults({}, values, {top: 0.0, right: 0.0, bottom: 0.0, left: 0.0});
+        var width = this.width();
+        var height = this.height();
+
+        return {
+          top: percentages.top * height,
+          right: percentages.right * width,
+          bottom: percentages.bottom * height,
+          left: percentages.left * width
+        };
+      }
+    }),
 
     /**
       Height/width/position to use in layout calculations
       (Override for more specific sizing in layout calculations)
     */
+    skipLayout: false,
     layoutWidth: function() {
-      return this.width();
+      var margins = this.margins();
+      return this.width() + margins.left + margins.right;
     },
     layoutHeight: function() {
-      return this.height();
+      var margins = this.margins();
+      return this.height() + margins.top + margins.bottom;
     },
     layoutPosition: function() {
       return this.position();
@@ -1481,7 +1799,8 @@
       (Override for elements placed within chart)
     */
     setLayout: function(x, y, options) {
-      this.base.attr('transform', helpers.transform.translate(x, y));
+      var margins = this.margins();
+      this.base.attr('transform', helpers.transform.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
     }
@@ -1497,6 +1816,8 @@
   */
   d3.chart('Component').extend('Title', {
     initialize: function() {
+      this.redrawFor('title', 'rotation');
+
       this.layer('Title', this.base.append('g').classed('chart-title', true), {
         dataBind: function(data) {
           // TODO Look into databound titles
@@ -1514,14 +1835,18 @@
               .attr('style', chart.style())
               .attr('alignment-baseline', 'middle')
               .attr('text-anchor', 'middle')
-              .attr('class', chart.options['class'])
-              .text(chart.title());
+              .attr('class', chart.options()['class'])
+              .text(chart.text());
           }
         }
       });
     },
 
-    title: property('title'),
+    text: property('text', {
+      get: function() {
+        return this.options().text;
+      }
+    }),
     rotation: property('rotation', {
       defaultValue: function() {
         var rotateByPosition = {
@@ -1563,15 +1888,20 @@
   d3.chart('Component').extend('Axis', mixin(extensions.Series, extensions.XY, {
     initialize: function() {
       // Transfer generic scale options to specific scale for axis
-      if (this.options.scale) {
-        var scale = this.isXAxis() ? 'xScale' : 'yScale';
-        this[scale](helpers.createScaleFromOptions(this.options.scale));
+      this.on('change:options', createScaleFromOptions.bind(this));
+      createScaleFromOptions.call(this);
+
+      function createScaleFromOptions() {
+        if (this.options().scale) {
+          var scale = this.isXAxis() ? 'xScale' : 'yScale';
+          this[scale](helpers.createScaleFromOptions(this.options().scale));
+        }        
       }
 
       this.axis = d3.svg.axis();
       this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
 
-      if (this.options.display) {
+      if (this.options().display) {
         this.layer('Axis', this.axisLayer, {
           dataBind: function(data) {
             // Force addition of just one axis with dummy data array
@@ -1658,13 +1988,13 @@
       }
     }),
 
-    ticks: property('ticks', {type: 'function'}),
-    tickValues: property('tickValues', {type: 'function'}),
-    tickSize: property('tickSize', {type: 'function'}),
-    innerTickSize: property('innerTickSize', {type: 'function'}),
-    outerTickSize: property('outerTickSize', {type: 'function'}),
-    tickPadding: property('tickPadding', {type: 'function'}),
-    tickFormat: property('tickFormat', {type: 'function'}),
+    ticks: property('ticks', {type: 'Function'}),
+    tickValues: property('tickValues', {type: 'Function'}),
+    tickSize: property('tickSize', {type: 'Function'}),
+    innerTickSize: property('innerTickSize', {type: 'Function'}),
+    outerTickSize: property('outerTickSize', {type: 'Function'}),
+    tickPadding: property('tickPadding', {type: 'Function'}),
+    tickFormat: property('tickFormat', {type: 'Function'}),
 
     layoutHeight: function() {
       return this._labelOverhang().height;
@@ -1747,47 +2077,58 @@
       this.legend = this.base.append('g')
         .classed('chart-legend', true);
 
-      this.layer('Legend', this.legend, {
-        dataBind: function(data) {
-          var chart = this.chart();
-          return this.selectAll('g')
-            .data(data, chart.dataKey.bind(chart));
-        },
-        insert: function() {
-          var chart = this.chart();
-          var groups = this.append('g')
-            .attr('class', chart.dataGroupClass);
-
-          groups.append('g')
-            .attr('width', 20)
-            .attr('height', 20)
-            .attr('class', 'chart-legend-swatch');
-          groups.append('text')
-            .attr('class', 'chart-legend-label chart-label')
-            .attr('transform', helpers.translate(25, 0));
-          
-          return groups;
-        },
-        events: {
-          merge: function() {
+      if (this.options().display) {
+        this.layer('Legend', this.legend, {
+          dataBind: function(data) {
             var chart = this.chart();
+            return this.selectAll('g')
+              .data(data, chart.dataKey.bind(chart));
+          },
+          insert: function() {
+            var chart = this.chart();
+            var groups = this.append('g')
+              .attr('class', chart.dataGroupClass);
 
-            this.select('g').each(chart.createSwatch);
-            this.select('text')
-              .text(chart.dataValue.bind(chart))
-              .attr('alignment-baseline', 'before-edge');
+            groups.append('g')
+              .attr('width', 20)
+              .attr('height', 20)
+              .attr('class', 'chart-legend-swatch');
+            groups.append('text')
+              .attr('class', 'chart-legend-label chart-label')
+              .attr('transform', helpers.translate(25, 0));
+            
+            return groups;
+          },
+          events: {
+            merge: function() {
+              var chart = this.chart();
 
-            // Position groups after positioning everything inside
-            this.call(helpers.stack.bind(this, {origin: 'top', padding: 5}));
+              this.select('g').each(chart.createSwatch);
+              this.select('text')
+                .text(chart.dataValue)
+                .attr('alignment-baseline', 'before-edge');
+
+              // Position groups after positioning everything inside
+              var directionByPosition = {
+                top: 'horizontal',
+                right: 'vertical',
+                bottom: 'horizontal',
+                left: 'vertical'
+              };
+              this.call(helpers.stack.bind(this, {direction: directionByPosition[chart.position()], origin: 'top', padding: 5}));
+            }
           }
-        }
-      });
+        });
+      }
+      else {
+        this.skipLayout = true;
+      }
     },
     isLegend: true,
 
     transform: function(allData) {
       var extractData = d3.chart('Configurable').prototype.extractData;
-      var data = _.reduce(this.options.charts, function(data, chart) {
+      var data = _.reduce(this.options().charts, function(data, chart) {
         var chartData = _.map(extractData(chart, allData), function(series, index) {
           return {
             chart: chart,
@@ -1816,15 +2157,15 @@
     }),
     dataClass: di(function(chart, d, i) {
       var classes = [chart.dataSeriesClass.call(this, d, i)];
-      if (d.chart.options['class'])
-        classes.push(d.chart.options['class']);
+      if (d.chart.options()['class'])
+        classes.push(d.chart.options()['class']);
       if (d.series['class'])
         classes.push(d.series['class']);
 
       return classes.join(' ') || null;
     }),
     dataStyle: di(function(chart, d, i) {
-      var styles = _.defaults({}, d.series.style, d.chart.options.style);
+      var styles = _.defaults({}, d.series.style, d.chart.options().style);
       
       return helpers.style(styles) || null;
     }),
@@ -1940,148 +2281,321 @@
   */
   d3.chart('Container').extend('Configurable', {
     initialize: function() {
-      this.type = this.options.type || 'XY';
-      this.setupAxes(this.options.axes);
-      this.setupCharts(this.options.charts);
-
-      // TODO Look into placing axes layers below charts
-
-      this.setupLegend(this.options.legend);
-      this.setupTitle(this.options.title);
+      this.redrawFor('title', 'charts', 'axes', 'legend');
     },
 
-    setupAxes: function(options) {
-      options = options || {};
-      this.axes = {};
+    options: property('options', {
+      defaultValue: {},
+      set: function(options) {
+        if (!options) return;
+        
+        this.type(options.type || 'XY', {silent: true});
+        
+        this.axes(options.axes, {silent: true});
+        this.charts(options.charts, {silent: true});
+        this.components(options.components, {silent: true});
+        this.legend(options.legend, {silent: true});
+        this.title(options.title, {silent: true});
 
-      var axisKeys = _.uniq(['x', 'y'].concat(_.keys(this.options.axes)));
-      _.each(axisKeys, function(axisKey) {
-        positionByKey = {
-          x: 'bottom',
-          y: 'left',
-          secondaryX: 'top',
-          secondaryY: 'right'
+        // To avoid changing underlying and then redraw failing due to no "change"
+        // store cloned options
+        return {
+          override: _.clone(options)
         };
-        var defaultOptions = {
-          display: true,
-          position: positionByKey[axisKey]
-        };
+      }
+    }),
 
-        var axisOptions;
-        if (options[axisKey] === false)
-          axisOptions = _.defaults({display: false}, defaultOptions, d3.chart('Configurable').defaultAxisOptions);
-        else
-          axisOptions = _.defaults({}, options[axisKey], defaultOptions, d3.chart('Configurable').defaultAxisOptions);
+    type: property('type', {
+      defaultValue: 'XY'
+    }),
 
-        if (axisKey != 'x' && axisKey != 'y' && !axisOptions.dataKey)
-          throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');
+    title: property('title', {
+      set: function(options, title) {
+        var changed = false;
+        
+        if (!options || _.isEmpty(options)) {
+          // Remove title if no options are given
+          this.detachComponent('title');
 
-        var Axis = helpers.resolveChart(axisOptions.type, 'Axis', this.type);
-        var axis = new Axis(this.chartBase(), axisOptions);
-        var id = 'axis_' + axisKey;
-
-        this.attachComponent(id, axis);
-        this.axes[axisKey] = axis;
-
-        if (axisOptions.title) {
-          var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
-          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
-          
-          var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type);
-          var title = new Title(this.componentBase(), titleOptions);
-          id = id + '_title';
-
-          this.attachComponent(id, title);
+          return {
+            override: undefined
+          };
         }
-      }, this);
 
-      // Setup filter keys for x and y axes
-      _.each(['x', 'y'], function(axisKey) {
-        var axis = this.axes[axisKey];
+        // Title may be set directly
+        if (_.isString(options))
+          options = {text: options};
 
-        // Don't need to filter keys if dataKey already set
-        if (axis.options.dataKey)
-          return;  
+        // Load defaults
+        options = _.defaults({}, options, d3.chart('Configurable').defaults.title);
+        
+        if (!title) {
+          // Create title
+          var Title = helpers.resolveChart(options.type, 'Title', this.type());
+          title = new Title(this.componentLayer({zIndex: helpers.zIndex.title}), options);
 
-        var filterKeys = [];
-        _.each(this.axes, function(filterAxis, filterKey) {
-          if ((axisKey == 'x' && !filterAxis.isXAxis()) || (axisKey == 'y' && !filterAxis.isYAxis()))
-            return;
+          this.attachComponent('title', title);
+          changed = true;
+        }
+        else if (!_.isEqual(title.options(), options)) {
+          // Update existing title options
+          title.options(options/*, {silent: true} XY needs to know about update for scales*/);
+          changed = true;
+        }
 
-          var dataKey = filterAxis.options.dataKey;
-          if (dataKey)
-            filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
+        return {
+          override: title,
+
+          // Updating existing object causes change determination to always be false,
+          // so keep track explicitly
+          changed: changed
+        };
+      }
+    }),
+
+    charts: property('charts', {
+      set: function(options, charts) {
+        options = options || {};
+        charts = charts || {};
+        var removeIds = _.difference(_.keys(charts), _.keys(options));
+        var changed = removeIds.length > 0;
+                
+        _.each(removeIds, function(removeId) {
+          this.detachChart(removeId);
+          delete charts[removeId];
         }, this);
 
-        axis.options.filterKeys = filterKeys;
-      }, this);
-    },
+        _.each(options, function(chartOptions, chartId) {
+          var chart = charts[chartId];
+          chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaults.charts);
 
-    setupCharts: function(charts) {
-      charts = charts || [];
+          if (!chart) {
+            // Create chart
+            var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type());
+            chart = new Chart(this.chartLayer(), chartOptions);
 
-      _.each(charts, function(chartOptions, i) {
-        chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaultChartOptions);
+            this.attachChart(chartId, chart);
+            charts[chartId] = chart;
+            changed = true;
+          }
+          else if (!_.isEqual(chart.options(), chartOptions)) {
+            // Update chart
+            chart.options(chartOptions/*, {silent: true} XY needs to know about update for scales*/);
+            changed = true;
+          }
+        }, this);
 
-        var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type);
-        var chart = new Chart(this.chartBase(), chartOptions);
-        var id = 'chart_' + i;
+        return {
+          override: charts,
+          changed: changed,
+          after: function() {
+            this.bindChartScales();
+          }
+        };
+      },
+      defaultValue: {}
+    }),
 
-        // Load matching axis scales (if necessary)
-        var scale;
-        if (!chartOptions.xScale) {
-          scale = this.getMatchingAxisScale(chartOptions.dataKey, 'x');
-          if (scale)
-            chart.xScale = scale;
+    axes: property('axes', {
+      set: function(options, axes) {
+        options = options || {};
+        axes = axes || {};
+        var axisIds = _.uniq(['x', 'y'].concat(_.keys(options)));
+        var removeIds = _.difference(_.keys(axes), axisIds);
+        var changed = removeIds.length > 0;
+
+        _.each(removeIds, function(removeId) {
+          this.detachComponent('axis.' + removeId);
+          this.detachComponent('axis_title.' + removeId);
+          delete axes[removeId];
+        }, this);
+
+        _.each(axisIds, function(axisId) {
+          var axis = axes[axisId];
+          var positionById = {
+            x: 'bottom',
+            y: 'left',
+            secondaryX: 'top',
+            secondaryY: 'right'
+          };
+          var axisOptions = {
+            position: positionById[axisId]
+          };
+
+          if (options[axisId] === false)
+            axisOptions = _.defaults({display: false}, axisOptions, d3.chart('Configurable').defaults.axes);
+          else
+            axisOptions = _.defaults({}, options[axisId], axisOptions, d3.chart('Configurable').defaults.axes);
+
+          if (axisId != 'x' && axisId != 'y' && !axisOptions.dataKey)
+            throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');
+
+          if (!axis) {
+            // Create axis
+            var Axis = helpers.resolveChart(axisOptions.type, 'Axis', this.type());
+            axis = new Axis(this.chartLayer({zIndex: helpers.zIndex.axis}), axisOptions);
+
+            this.attachComponent('axis.' + axisId, axis);
+            axes[axisId] = axis;
+            changed = true;
+          }
+          else {
+            // Check for changed from options
+            if (!_.isEqual(axis.options(), axisOptions))
+              changed = true;
+
+            axis.options(axisOptions/*, {silent: true} XY needs to know about update for scales*/);
+          }
+
+          // Create axis title
+          if (axisOptions.title) {
+            var id = 'axis_title.' + axisId;
+            var title = this.componentsById[id];
+            var titleOptions = _.isString(axisOptions.title) ? {text: axisOptions.title} : axisOptions.title;
+            titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
+
+            if (!title) {
+              var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type());  
+              title = new Title(this.componentLayer({zIndex: helpers.zIndex.title}), titleOptions);
+
+              this.attachComponent(id, title);
+            }
+            else {
+              title.options(titleOptions/*, {silent: true} XY needs to know about update for scales*/);
+            }
+          }
+        }, this);
+
+        // Setup filter keys for x and y axes
+        _.each(['x', 'y'], function(axisId) {
+          var axis = axes[axisId];
+
+          // Don't need to filter keys if dataKey already set
+          if (axis.options().dataKey)
+            return;  
+
+          var filterKeys = [];
+          _.each(axes, function(filterAxis, filterKey) {
+            if ((axisId == 'x' && !filterAxis.isXAxis()) || (axisId == 'y' && !filterAxis.isYAxis()))
+              return;
+
+            var dataKey = filterAxis.options().dataKey;
+            if (dataKey)
+              filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
+          }, this);
+
+          if (!_.isEqual(axis.options().filterKeys, filterKeys))
+            changed = true;
+
+          // Set filterKeys "internally" to avoid change firing
+          axis.options().filterKeys = filterKeys;
+        }, this);
+
+        return {
+          override: axes,
+          changed: changed,
+          after: function() {
+            this.bindChartScales();
+          }
+        };    
+      },
+      defaultValue: {}
+    }),
+
+    legend: property('legend', {
+      set: function(options, legend) {
+        options = options === false ? {display: false} : (options || {});
+        options = _.defaults({}, options, d3.chart('Configurable').defaults.legend);
+        var changed = false;
+
+        // Load chart information
+        if (options.dataKey) {
+          // Load only charts matching dataKey(s)
+          var dataKeys = _.isArray(options.dataKey) ? options.dataKey : [options.dataKey];
+          options.charts = _.filter(this.charts(), function(chart) {
+            return _.contains(dataKeys, chart.options().dataKey);
+          });
         }
-        if (!chartOptions.yScale) {
-          scale = this.getMatchingAxisScale(chartOptions.dataKey, 'y');
-          if (scale)
-            chart.yScale = scale;
+        else {
+          options.charts = this.charts();
         }
 
-        this.attachChart(id, chart);
-      }, this);
-    },
+        // If switching from outside to inset, need to change legend base layer, so remove
+        if (legend && legend.options().type != options.type) {
+          // TODO Possible alternates for changing base of legend
+          this.detachComponent('legend');
+          legend = undefined;
+        }
 
-    setupLegend: function(options) {
-      options = options === false ? {display: false}: (options || {});
-      options = _.defaults({}, options, d3.chart('Configurable').defaultLegendOptions);
+        if (!legend) {
+          var Legend = helpers.resolveChart(options.type, 'Legend', this.type());
+          var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartLayer({zIndex: helpers.zIndex.legend}) : this.componentLayer({zIndex: helpers.zIndex.legend});
+          legend = new Legend(base, options);
 
-      // Load chart information
-      if (options.dataKey) {
-        // Load only charts matching dataKey(s)
-        var dataKeys = _.isArray(options.dataKey) ? options.dataKey : [options.dataKey];
-        options.charts = _.filter(this.charts, function(chart) {
-          return _.contains(dataKeys, chart.options.dataKey);
-        });
+          this.attachComponent('legend', legend);
+          changed = true;
+        }
+        else {
+          if (!_.isEqual(legend.options(), options))
+            changed = true;
+
+          legend.options(options);
+        }
+
+        return {
+          override: legend,
+          changed: changed
+        };
       }
-      else {
-        options.charts = this.charts;  
+    }),
+
+    components: property('components', {
+      set: function(options, components) {
+        options = options || {};
+        components = components || {};
+        var removeIds = _.difference(_.keys(components), _.keys(options));
+        var changed = removeIds.length > 0;
+
+        _.each(removeIds, function(removeId) {
+          this.detachComponent(removeId);
+          delete components[removeId];
+        }, this);
+
+        _.each(options, function(componentOptions, componentId) {
+          var component = components[componentId];
+          componentOptions = _.defaults({}, componentOptions);
+
+          if (!component) {
+            // Create component
+            var Component = helpers.resolveChart(componentOptions.type, 'Component', this.type());
+            var layer = Component.layer && Component.layer == 'chart' ? this.chartLayer() : this.componentLayer();
+
+            component = new Component(layer, componentOptions);
+
+            this.attachComponent(componentId, component);
+            components[componentId] = component;
+            changed = true;
+          }
+          else if (!_.isEqual(component.options(), componentOptions)) {
+            component.options(componentOptions/*, {silent: true} XY needs to know about update for scales*/);
+            charted = true;
+          }
+        }, this);
+
+        return {
+          override: components,
+          changed: changed,
+          after: function(components) {
+            _.each(components, function(component) {
+              if (_.isFunction(component.xScale) && _.isFunction(component.yScale)) {
+                component.xScale = this.axes().x._xScale.bind(this.axes().x);
+                component.yScale = this.axes().y._yScale.bind(this.axes().y);
+              }
+            }, this);
+          }
+        };
       }
-
-      var Legend = helpers.resolveChart(options.type, 'Legend', this.type);
-      var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartBase() : this.componentBase();
-      var legend = new Legend(base, options);
-
-      this.attachComponent('legend', legend);
-    },
-
-    setupTitle: function(options) {
-      if (!options)
-        return;
-
-      // Title may be set directly
-      if (_.isString(options))
-        options = {title: options};
-
-      options = _.defaults({}, options, d3.chart('Configurable').defaultTitleOptions);
-
-      var Title = helpers.resolveChart(options.type, 'Title', this.type);
-      var title = new Title(this.componentBase(), options);
-
-      this.attachComponent('title', title);
-    },
+    }),
 
     demux: function(name, data) {
       var item = this.chartsById[name] || this.componentsById[name];
@@ -2093,8 +2607,8 @@
     },
 
     extractData: function(item, data) {
-      var dataKey = item.options.dataKey;
-      var filterKeys = item.options.filterKeys;
+      var dataKey = item.options().dataKey;
+      var filterKeys = item.options().filterKeys;
 
       // Legends need all data (filter by charts)
       if (item && item.isLegend)
@@ -2123,37 +2637,43 @@
       }
     },
 
-    getMatchingAxisScale: function(dataKey, type) {
-      var match = _.find(this.axes, function(axis) {
+    bindChartScales: function() {
+      _.each(this.charts(), function(chart) {
+        // Get scales for chart
+        chart.xScale = this.getScale(chart.options().dataKey, 'x');
+        chart.yScale = this.getScale(chart.options().dataKey, 'y');
+      }, this);
+    },
+
+    getScale: function(dataKey, type) {
+      var match = _.find(this.axes(), function(axis) {
         if ((type == 'x' && !axis.isXAxis()) || (type == 'y' && !axis.isYAxis()))
           return false;
 
-        var axisDataKey = axis.options.dataKey;
+        var axisDataKey = axis.options().dataKey;
         return _.isArray(axisDataKey) ? _.contains(axisDataKey, dataKey) : axisDataKey == dataKey;
       });
-
+      var axis = match || this.axes()[type];
       var scaleKey = type == 'x' ? '_xScale' : '_yScale';
-      var axis = match || this.axes[type];
 
-      return property(type + 'Scale', {
-        get: function () {
-          return axis[scaleKey]();
-        }
-      });
+      return axis[scaleKey].bind(axis);
     }
   }, {
-    defaultChartOptions: {
-      type: 'Line'
-    },
-    defaultAxisOptions: {
-      display: true
-    },
-    defaultLegendOptions: {
-      position: 'right'
-    },
-    defaultTitleOptions: {
-      position: 'top',
-      'class': 'chart-title-main'
+    defaults: {
+      charts: {
+        type: 'Line'
+      },
+      axes: {
+        display: true
+      },
+      legend: {
+        display: true,
+        position: 'right'
+      },
+      title: {
+        position: 'top',
+        'class': 'chart-title-main'
+      }
     }
   });
 
