@@ -12,18 +12,11 @@ module.exports = {
     ]
   },
 
-  src: {
-    src: '<%= meta.srcFiles %>',
-    options: {
-      outfile: 'specs/index.html',
-      keepRunner: true  
-    }
-  },
-
   build: {
     src: 'dist/d3.chart.csnw.configurable.js',
     options: {
-      keepRunner: false  
+      outfile: 'specs/index.html',
+      keepRunner: true  
     }
   }
 };

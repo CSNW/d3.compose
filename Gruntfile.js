@@ -33,22 +33,26 @@ module.exports = function(grunt) {
   grunt.loadTasks('tasks');
   this.registerTask('default', ['test']);
   
-  this.registerTask('release', 'Builds a new release of the library', [
-    'test',
+  this.registerTask('build', 'Quick build of the library', [
     'concat',
     'uglify',
-    'jshint:build',
-    'jasmine:build',
     'copy'
+  ]);
+
+  this.registerTask('release', 'Builds a new release of the library', [
+    'test',
+    'build',
+    'jshint:build',
+    'jasmine:build'
   ]);
   
   this.registerTask('test', 'Lint and run specs', [
     'jshint:src',
-    'jshint:specs', 
-    'jasmine:src'
+    'jshint:specs',
+    'jasmine:build'
   ]);
 
-  this.registerTask('example', 'Run example (at http://localhost:4001)', [
+  this.registerTask('server', 'Run example (at http://localhost:4001)', [
     'connect:example'
   ]);
 };
