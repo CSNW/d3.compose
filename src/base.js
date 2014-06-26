@@ -125,11 +125,8 @@
       this.options(options || {});
       this.redrawFor('options');
 
-      // TODO Further work on making sure resize happens properly
-      // this.onResize = _.debounce(function() {
-      //   this.trigger('change:dimensions');
-      // }.bind(this), 250);
-      // d3.select(window).on('resize', this.onResize);
+      this.handleResize();
+      this.handleHover();
     },
 
     draw: function(data) {
@@ -247,15 +244,6 @@
         };
       }
     }),
-    
-    chartWidth: function() {
-      var margins = this._chartMargins();
-      return this.width() - margins.left - margins.right;
-    },
-    chartHeight: function() {
-      var margins = this._chartMargins();
-      return this.height() - margins.top - margins.bottom;
-    },
 
     width: property('width', {
       defaultValue: function() {
@@ -273,6 +261,51 @@
         this.trigger('change:dimensions');
       }
     }),
+    
+    chartWidth: function() {
+      var margins = this._chartMargins();
+      return this.width() - margins.left - margins.right;
+    },
+    chartHeight: function() {
+      var margins = this._chartMargins();
+      return this.height() - margins.top - margins.bottom;
+    },
+
+    handleResize: function() {
+      // TODO Further work on making sure resize happens properly
+      // this.onResize = _.debounce(function() {
+      //   this.trigger('change:dimensions');
+      // }.bind(this), 250);
+      // d3.select(window).on('resize', this.onResize);
+    },
+
+    handleHover: function() {
+      this.on('enter:mouse', function(coordinates) {
+        this.trigger('hover', coordinates);
+      });
+      this.on('move:mouse', function(coordinates) {
+        this.trigger('hover', coordinates);
+      });
+
+      var hovering;
+      var trigger = this.trigger.bind(this);
+      var onMouseMove = this.onMouseMove = _.throttle(function(coordinates) {
+        if (hovering)
+          trigger('move:mouse', coordinates);
+      }, 100);
+
+      this.base.on('mouseenter', function() {
+        hovering = true;
+        trigger('enter:mouse', d3.mouse(this));
+      });
+      this.base.on('mousemove', function() {
+        onMouseMove(d3.mouse(this));
+      });
+      this.base.on('mouseleave', function() {
+        hovering = false;
+        trigger('leave:mouse');
+      });
+    },
 
     _preDraw: function(data) {
       this._positionChartLayers();

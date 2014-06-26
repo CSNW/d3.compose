@@ -33,9 +33,14 @@ module.exports = function(grunt) {
   grunt.loadTasks('tasks');
   this.registerTask('default', ['test']);
   
-  this.registerTask('build', 'Quick build of the library', [
+  this.registerTask('build', 'Full build of the library', [
     'concat',
     'uglify',
+    'copy'
+  ]);
+
+  this.registerTask('build:quick', 'Quick build of the library', [
+    'concat',
     'copy'
   ]);
 
