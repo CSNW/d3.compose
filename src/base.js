@@ -124,6 +124,12 @@
 
       this.options(options || {});
       this.redrawFor('options');
+
+      // TODO Further work on making sure resize happens properly
+      // this.onResize = _.debounce(function() {
+      //   this.trigger('change:dimensions');
+      // }.bind(this), 250);
+      // d3.select(window).on('resize', this.onResize);
     },
 
     draw: function(data) {
