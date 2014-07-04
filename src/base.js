@@ -91,12 +91,13 @@
   /**
     Chart: Foundation for building charts with series data
   */
-  d3.chart('Base').extend('Chart', helpers.mixin(extensions.Series, {
+  d3.chart('Base').extend('Chart', {
     initialize: function(options) {
       this.options(options || {});
       this.redrawFor('options');
     }
-  }));
+  });
+  d3.chart('Chart').extend('SeriesChart', extensions.Series);
 
   /**
     Container

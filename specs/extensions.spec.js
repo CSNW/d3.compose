@@ -69,8 +69,8 @@
       });
 
       it('should get series for element', function() {
-        expect(chart.dataSeries.call(element(1, 2), processed[1].values[2])).toEqual(data[1]);
-        expect(chart.dataSeries.call(element(2, 1), processed[2].values[1])).toEqual(data[2]);
+        expect(chart.seriesData.call(element(1, 2), processed[1].values[2])).toEqual(data[1]);
+        expect(chart.seriesData.call(element(2, 1), processed[2].values[1])).toEqual(data[2]);
       });
 
       it('should get series index for given series after passing through seriesValues', function() {

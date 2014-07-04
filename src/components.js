@@ -170,7 +170,7 @@
     - tickPadding
     - tickFormat
   */
-  d3.chart('Component').extend('Axis', mixin(extensions.Series, extensions.XY, {
+  d3.chart('Component').extend('Axis', mixin(extensions.XYSeries, {
     initialize: function() {
       // Transfer generic scale options to specific scale for axis
       this.on('change:options', createScaleFromOptions.bind(this));
@@ -353,7 +353,7 @@
     AxisValues
     Axis component for (key,value) series data
   */
-  d3.chart('Axis').extend('AxisValues', extensions.Values);
+  d3.chart('Axis').extend('AxisValues', extensions.ValuesSeries);
 
   /**
     Legend

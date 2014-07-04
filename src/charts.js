@@ -12,7 +12,7 @@
     - {Number} [offset = 10] px distance offset from data point
     - {String|Function} format String to be used in d3.format(...) or format function
   */
-  d3.chart('Chart').extend('Labels', mixin(extensions.XY, {
+  d3.chart('SeriesChart').extend('Labels', mixin(extensions.XYSeries, {
     initialize: function() {
       this.seriesLayer('Labels', this.base.append('g').classed('chart-labels', true), {
         dataBind: function(data) {
@@ -128,7 +128,7 @@
       // For labels, only pull in label styles
       // - data.labels.style
       // - series.labels.style
-      var series = chart.dataSeries.call(this, d, i) || {};
+      var series = chart.seriesData.call(this, d, i) || {};
       var styles = _.defaults({}, d.labels && d.labels.style, series.labels && series.labels.style, chart.options().style);
       
       return helpers.style(styles) || null;
@@ -139,7 +139,7 @@
     LabelValues
     Chart with labels for centered values
   */
-  d3.chart('Labels').extend('LabelsValues', mixin(extensions.Values, {
+  d3.chart('Labels').extend('LabelsValues', mixin(extensions.ValuesSeries, {
     labelX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
     })
@@ -149,7 +149,7 @@
     ChartWithLabels
     Chart with labels attached
   */
-  d3.chart('Chart').extend('ChartWithLabels', {
+  d3.chart('SeriesChart').extend('ChartWithLabels', {
     attachLabels: function() {
       var options = this.labelOptions();
       var Labels = helpers.resolveChart(options.type, 'Labels', this.isValues ? 'Values' : 'XY');
@@ -209,7 +209,7 @@
     Bars
     Bar graph with centered key,value data and adjacent display for series
   */
-  d3.chart('ChartWithLabels').extend('Bars', mixin(extensions.XY, extensions.Values, {
+  d3.chart('ChartWithLabels').extend('Bars', mixin(extensions.ValuesSeries, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -274,7 +274,7 @@
     Line
     (x,y) line graph
   */
-  d3.chart('ChartWithLabels').extend('Line', mixin(extensions.XY, {
+  d3.chart('ChartWithLabels').extend('Line', mixin(extensions.XYSeries, {
     initialize: function() {
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
@@ -339,6 +339,6 @@
     LineValues
     Line graph for centered key,value data
   */
-  d3.chart('Line').extend('LineValues', extensions.Values);
+  d3.chart('Line').extend('LineValues', extensions.ValuesSeries);
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
