@@ -272,6 +272,7 @@
         return byPosition[this.position()];
       }
     }),
+    type: property('type'),
 
     ticks: property('ticks', {type: 'Function'}),
     tickValues: property('tickValues', {type: 'Function'}),
@@ -301,10 +302,10 @@
     },
 
     isXAxis: function() {
-      return this.orientation() == 'horizontal';
+      return this.type() == 'x';
     },
     isYAxis: function() {
-      return this.orientation() == 'vertical';
+      return this.type() == 'y';
     },
 
     _setupAxis: function() {

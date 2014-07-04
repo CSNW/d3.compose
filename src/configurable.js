@@ -51,6 +51,7 @@
         if (!options) return;
         
         this.type(options.type || 'XY', {silent: true});
+        this.invertedXY(options.invertedXY || false, {silent: true});
         
         this.axes(options.axes, {silent: true});
         this.charts(options.charts, {silent: true});
@@ -66,8 +67,12 @@
       }
     }),
 
+    // General options
     type: property('type', {
       defaultValue: 'XY'
+    }),
+    invertedXY: property('invertedXY', {
+      defaultValue: false
     }),
 
     title: property('title', {
@@ -88,7 +93,7 @@
           options = {text: options};
 
         // Load defaults
-        options = _.defaults({}, options, d3.chart('Configurable').defaults.title);
+        options = _.defaults({}, options, d3.chart('Configurable').defaults.title, {invertedXY: this.invertedXY()});
         
         if (!title) {
           // Create title
@@ -128,7 +133,7 @@
 
         _.each(options, function(chartOptions, chartId) {
           var chart = charts[chartId];
-          chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaults.charts);
+          chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaults.charts, {invertedXY: this.invertedXY()});
 
           if (!chart) {
             // Create chart
@@ -173,20 +178,29 @@
 
         _.each(axisIds, function(axisId) {
           var axis = axes[axisId];
-          var positionById = {
-            x: 'bottom',
-            y: 'left',
-            secondaryX: 'top',
-            secondaryY: 'right'
+          var positionByInvertedAndId = {
+            notInverted: {
+              x: 'bottom',
+              y: 'left',
+              secondaryX: 'top',
+              secondaryY: 'right'
+            },
+            inverted: {
+              x: 'left',
+              y: 'bottom',
+              secondaryX: 'right',
+              secondaryY: 'top'
+            }
           };
           var axisOptions = {
-            position: positionById[axisId]
+            position: positionByInvertedAndId[this.invertedXY() ? 'inverted' : 'notInverted'][axisId],
+            type: axisId == 'y' || axisId == 'secondaryY' ? 'y' : 'x'
           };
 
           if (options[axisId] === false)
-            axisOptions = _.defaults({display: false}, axisOptions, d3.chart('Configurable').defaults.axes);
+            axisOptions = _.defaults({display: false}, axisOptions, d3.chart('Configurable').defaults.axes, {invertedXY: this.invertedXY()});
           else
-            axisOptions = _.defaults({}, options[axisId], axisOptions, d3.chart('Configurable').defaults.axes);
+            axisOptions = _.defaults({}, options[axisId], axisOptions, d3.chart('Configurable').defaults.axes, {invertedXY: this.invertedXY()});
 
           if (axisId != 'x' && axisId != 'y' && !axisOptions.dataKey)
             throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');

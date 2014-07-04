@@ -91,6 +91,10 @@
       }
     },
 
+    invertedXY: property('invertedXY', {
+      defaultValue: false
+    }),
+
     x: di(function(chart, d, i) {
       return chart._xScale()(chart.xValue.call(this, d, i));
     }),
@@ -139,10 +143,16 @@
     },
 
     setXScaleRange: function(xScale, data, chart) {
-      return xScale.range([0, chart.width()]);
+      if (this.invertedXY())
+        return xScale.range([chart.height(), 0]);
+      else
+        return xScale.range([0, chart.width()]);
     },
     setYScaleRange: function(yScale, data, chart) {
-      return yScale.range([chart.height(), 0]);
+      if (this.invertedXY())
+        return yScale.range([0, chart.width()]);
+      else
+        return yScale.range([chart.height(), 0]);
     },
 
     defaultXScale: function() {
@@ -248,6 +258,10 @@
       return data;
     },
 
+    invertedXY: property('invertedXY', {
+      defaultValue: false
+    }),
+
     // determine centered-x based on series display type (adjacent or layered)
     x: di(function(chart, d, i) {
       return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
@@ -268,7 +282,15 @@
     },
 
     setXScaleRange: function(xScale, data, chart) {
-      return xScale.rangeBands([0, chart.width()], this.itemPadding(), this.itemPadding() / 2);
+      if (_.isFunction(xScale.rangeBands)) {
+        if (this.invertedXY())
+          return xScale.rangeBands([chart.height(), 0], this.itemPadding(), this.itemPadding() / 2);
+        else
+          return xScale.rangeBands([0, chart.width()], this.itemPadding(), this.itemPadding() / 2);
+      }
+      else {
+        return extensions.XY.setXScaleRange.call(this, xScale, data, chart);
+      }
     },
 
     // AdjacentX/Width is used in cases where series are presented next to each other at each value

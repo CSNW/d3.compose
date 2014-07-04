@@ -229,16 +229,16 @@
           'enter': function() {
             var chart = this.chart();
             this
-                .attr('x', chart.barX)
-                .attr('y', chart.y0)
-                .attr('width', chart.itemWidth)
-                .attr('height', 0);
+              .attr('x', chart.barX)
+              .attr('y', chart.y0)
+              .attr('width', chart.itemWidth)
+              .attr('height', 0);
           },
           'merge:transition': function() {
             var chart = this.chart();
             this
-                .attr('y', chart.barY)
-                .attr('height', chart.barHeight);
+              .attr('y', chart.barY)
+              .attr('height', chart.barHeight);
           }
         }
       });
