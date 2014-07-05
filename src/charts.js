@@ -197,7 +197,8 @@
 
         // Pull options from parent chart
         options = _.defaults(options, {
-          displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false
+          displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false,
+          invertedXY: this.invertedXY ? this.invertedXY() : false
         });
 
         return options;

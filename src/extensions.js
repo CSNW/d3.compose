@@ -383,7 +383,16 @@
 
     // determine centered-x based on series display type (adjacent or layered)
     x: di(function(chart, d, i) {
-      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
+      if (chart.invertedXY())
+        return XY.x.original.call(this, chart, d, i);
+      else
+        return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
+    }),
+    y: di(function(chart, d, i) {
+      if (chart.invertedXY())
+        return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
+      else
+        return XY.y.original.call(this, chart, d, i);
     }),
 
     setXScaleDomain: function(xScale, data, chart) {
