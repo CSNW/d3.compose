@@ -31,22 +31,62 @@
   <script src="../dist/d3.chart.csnw.configurable.js"></script>
   <script type="text/javascript">
     var config = {
+      type: 'Values',
+      invertedXY: true,
       charts: {
-        line: {type: 'Line', dataKey: 'line'}
+        bars: {type: 'Bars', dataKey: 'increasing'}
       }
     };
     var data = {
-      line: [
+      increasing: [
         {
-          key: 'a',
-          name: 'A',
+          key: 'inc-a',
+          name: 'Increasing A',
           values: [
             {x: 0, y: 10},
-            {x: 10, y: 30},
+            {x: 10, y: 20},
+            {x: 20, y: 40},
+            {x: 30, y: 70},
+            {x: 40, y: 110},
+            {x: 50, y: 160}
+          ]
+        },
+        {
+          key: 'inc-b',
+          name: 'Increasing B',
+          values: [
+            {x: 0, y: 5},
+            {x: 10, y: 10},
+            {x: 20, y: 20},
+            {x: 30, y: 35},
+            {x: 40, y: 55},
+            {x: 50, y: 80}
+          ]
+        }
+      ],
+      decreasing: [
+        {
+          key: 'dec-a',
+          name: 'Decreasing A',
+          values: [
+            {x: 0, y: 160},
+            {x: 10, y: 110},
             {x: 20, y: 70},
-            {x: 30, y: 120},
-            {x: 40, y: 180},
-            {x: 50, y: 250}
+            {x: 30, y: 40},
+            {x: 40, y: 20},
+            {x: 50, y: 10}
+          ]
+        },
+        {
+          key: 'dec-a',
+          name: 'Decreasing A',
+          values: [
+            {x: 0, y: 80},
+            {x: 10, y: 55},
+            {x: 20, y: 35},
+            {x: 30, y: 20},
+            {x: 40, y: 10},
+            {x: 50, y: 5}
           ]
         }
       ]

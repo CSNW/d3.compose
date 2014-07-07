@@ -229,17 +229,35 @@
         events: {
           'enter': function() {
             var chart = this.chart();
-            this
-              .attr('x', chart.barX)
-              .attr('y', chart.y0)
-              .attr('width', chart.itemWidth)
-              .attr('height', 0);
+
+            if (!chart.invertedXY()) {
+              this
+                .attr('x', chart.barX)
+                .attr('y', chart.y0)
+                .attr('width', chart.itemWidth)
+                .attr('height', 0);  
+            }
+            else {
+              this
+                .attr('x', chart.x0)
+                .attr('y', chart.barY)
+                .attr('width', 0)
+                .attr('height', chart.itemWidth);   
+            }
           },
           'merge:transition': function() {
             var chart = this.chart();
-            this
-              .attr('y', chart.barY)
-              .attr('height', chart.barHeight);
+
+            if (!chart.invertedXY()) {
+              this
+                .attr('y', chart.barY)
+                .attr('height', chart.barHeight);
+            }
+            else {
+              this
+                .attr('x', chart.barX)
+                .attr('width', chart.barHeight);
+            }
           }
         }
       });
@@ -248,24 +266,46 @@
     },
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
-      return height > 0 ? height - chart.barOffset() : 0;
+      var magnitude;
+      if (chart.invertedXY())
+        magnitude = Math.abs(chart.x0.call(this, d, i) - chart.x.call(this, d, i));
+      else
+        magnitude = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+
+      return magnitude > 0 ? magnitude - chart.barOffset() : 0;
     }),
     barX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
+      if (chart.invertedXY()) {
+        var x = chart.x.call(this, d, i);
+        var x0 = chart.x0();
+
+        return x < x0 ? x : x0 + chart.barOffset();
+      }
+      else {
+        return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
+      }
     }),
     barY: di(function(chart, d, i) {
-      var y = chart.y.call(this, d, i);
-      var y0 = chart.y0();
-      
-      return y < y0 ? y : y0 + chart.barOffset();
+      if (chart.invertedXY()) {
+        return chart.y.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
+      }
+      else {
+        var y = chart.y.call(this, d, i);
+        var y0 = chart.y0();
+
+        return y < y0 ? y : y0 + chart.barOffset();
+      }
     }),
     displayAdjacent: property('displayAdjacent', {defaultValue: true}),
 
     barOffset: function barOffset() {
-      if (!this.__axis)
-        this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
-
+      if (!this.__axis) {
+        if (!this.invertedXY())
+          this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
+        else
+          this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.y"] .domain');
+      }
+      
       var axisThickness = this.__axis[0][0] && parseInt(this.__axis.style('stroke-width')) || 0;
       return axisThickness / 2;
     }
