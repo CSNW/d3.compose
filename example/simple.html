@@ -34,7 +34,10 @@
       type: 'Values',
       invertedXY: true,
       charts: {
-        bars: {type: 'Bars', dataKey: 'increasing'}
+        bars: {type: 'StackedBars', dataKey: 'increasing'}
+      },
+      axes: {
+        y: {scale: {domain: [0, 300]}}
       }
     };
     var data = {
