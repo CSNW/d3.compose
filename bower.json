@@ -1,7 +1,7 @@
 {
   "name": "d3.chart.csnw.configurable",
   "main": "dist/d3.chart.csnw.configurable.js",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "homepage": "https://github.com/CSNW/d3.chart.csnw.configurable",
   "authors": [
     "CSNW",
