@@ -2,7 +2,12 @@
   "name": "d3.chart.multi",
   "homepage": "https://github.com/CSNW/d3.chart.multi",
   "version": "0.6.0",
-  "main": "dist/d3.chart.multi.js",
+  "main": [
+    "./dist/d3.chart.multi.js",
+    "./dist/d3.chart.multi.min.js",
+    "./dist/d3.chart.multi.min.map",
+    "./dist/css/d3.chart.multi.main.css"
+  ],
   "scripts": {
     "postinstall": "grunt build"
   },
@@ -30,6 +35,9 @@
   },
   "ignore": [
     "specs",
-    "example"
+    "example",
+    ".gitattributes",
+    ".gitignore",
+    ".jshintrc"
   ]
 }
