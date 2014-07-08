@@ -4,9 +4,8 @@
     describe('Container', function() {
       var fixture, selection, Container, container, Chart, charts, Component, components;
       beforeEach(function() {
-        fixture = setFixtures('<div id="chart"></div>');
-        selection = d3.select('#chart')
-          .append('svg');
+        fixture = setFixtures('<svg id="chart"></svg>');
+        selection = d3.select('#chart');
 
         Container = d3.chart('Container').extend('TestContainer');
         container = new Container(selection);
@@ -19,21 +18,17 @@
       });
 
       it('should attach chart', function() {
-        charts[0] = new Chart(container.chartBase());
+        charts[0] = new Chart(container.chartLayer());
         container.attachChart('chart1', charts[0]);
 
-        expect(container.charts.length).toEqual(1);
-        expect(container.charts[0]).toBe(charts[0]);
         expect(container.chartsById['chart1']).toBe(charts[0]);
         expect(container._attached['chart1']).toBe(charts[0]);
       });
 
       it('should attach component', function() {
-        components[0] = new Component(container.componentBase());
+        components[0] = new Component(container.componentLayer());
         container.attachComponent('component1', components[0]);
-
-        expect(container.components.length).toEqual(1);
-        expect(container.components[0]).toBe(components[0]);
+        
         expect(container.componentsById['component1']).toBe(components[0]);
         expect(container._attached['component1']).toBe(components[0]);
       });
@@ -68,17 +63,17 @@
 
           // Create and attach components
           components = [
-            new Component(container.componentBase(), {position: 'top'}),
-            new OverridenComponent(container.componentBase(), {position: 'top'}),
-            new OverridenComponent(container.componentBase(), {position: 'right'}),
-            new Component(container.componentBase(), {position: 'right'}),
-            new Component(container.componentBase(), {position: 'bottom'}),
-            new OverridenComponent(container.componentBase(), {position: 'bottom'}),
-            new OverridenComponent(container.componentBase(), {position: 'left'}),
-            new Component(container.componentBase(), {position: 'left'})
+            new Component(container.componentLayer({zIndex: 101}), {position: 'top'}),
+            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'top'}),
+            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'right'}),
+            new Component(container.componentLayer({zIndex: 100}), {position: 'right'}),
+            new Component(container.componentLayer({zIndex: 1}), {position: 'bottom'}),
+            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'bottom'}),
+            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'left'}),
+            new Component(container.componentLayer({zIndex: 200}), {position: 'left'})
           ];
           _.each(components, function(component, index) {
-            container.attachComponent('component-' + index, component);
+            container.attachComponent('component-' + (index + 1), component);
           });
 
           // Setup and attach chart
@@ -86,11 +81,11 @@
           Chart = d3.chart('Chart').extend('SimpleChart', {
             draw: chartSpy
           });
-          container.attachChart('chart-1', new Chart(container.chartBase()));
+          container.attachChart('chart-1', new Chart(container.chartLayer()));
 
           // Setup container
           container.width(600).height(400);
-          container.updateLayout();
+          container.layout();
 
           /*
             Expected:
@@ -147,10 +142,12 @@
         });
 
         it('should layout chartBase by component layout', function() {
-          expect(container.chartBase().attr('transform')).toEqual(translate(110, 170));
-          expect(container.chartBase().attr('transform')).toEqual(translate(110, 170));
-          expect(helpers.dimensions(container.chartBase()).width).toEqual(380);
-          expect(helpers.dimensions(container.chartBase()).height).toEqual(60);
+          var chartLayer = container.base.select('.chart-layer');
+
+          expect(chartLayer.attr('transform')).toEqual(translate(110, 170));
+          expect(chartLayer.attr('transform')).toEqual(translate(110, 170));
+          expect(helpers.dimensions(chartLayer).width).toEqual(380);
+          expect(helpers.dimensions(chartLayer).height).toEqual(60);
         });
 
         it('should pre-draw just components on draw', function() {
@@ -162,11 +159,34 @@
         });
 
         it('should layout on draw', function() {
-          spyOn(container, 'updateLayout');
+          spyOn(container, 'layout');
           spyOn(d3.chart().prototype, 'draw');
 
           container.draw([]);
-          expect(container.updateLayout).toHaveBeenCalled();
+          expect(container.layout).toHaveBeenCalled();
+        });
+
+        it('should set "z-index" with layering on draw', function() {
+          var expected = [
+            {'class': 'chart-component-layer', id: 'component-5', zIndex: 1},
+            {'class': 'chart-component-layer', id: 'component-2', zIndex: 50},
+            {'class': 'chart-component-layer', id: 'component-3', zIndex: 50},
+            {'class': 'chart-component-layer', id: 'component-6', zIndex: 50},
+            {'class': 'chart-component-layer', id: 'component-7', zIndex: 50},
+            {'class': 'chart-component-layer', id: 'component-4', zIndex: 100},
+            {'class': 'chart-layer', id: 'chart-1', zIndex: 100},
+            {'class': 'chart-component-layer', id: 'component-1', zIndex: 101},
+            {'class': 'chart-component-layer', id: 'component-8', zIndex: 200}
+          ];
+
+          container.draw([]);
+
+          d3.select('.chart').selectAll('g').each(function(d, i) {
+            var selection = d3.select(this);
+            expect(selection.classed(expected[i]['class'])).toEqual(true);
+            expect(selection.attr('data-id')).toEqual(expected[i].id);
+            expect(+selection.attr('data-zIndex')).toEqual(expected[i].zIndex);
+          });
         });
       });
     });

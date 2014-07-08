@@ -30,7 +30,7 @@
     function setupChart(config) {
       chart = selection.chart('Configurable', config);
 
-      _.each(chart.axes, function(axis) {
+      _.each(chart.axes(), function(axis) {
         axis.setScales();
       });
 
@@ -61,16 +61,16 @@
 
     describe('axes', function() {
       it('should have x and y axes by default', function() {
-        expect(_.keys(chart.axes).length).toEqual(2);
-        expect(chart.axes.x).toBeDefined();
-        expect(chart.axes.y).toBeDefined();
+        expect(_.keys(chart.axes()).length).toEqual(2);
+        expect(chart.axes().x).toBeDefined();
+        expect(chart.axes().y).toBeDefined();
       });
 
       it('should pass x and y axes scales to charts', function() {
-        expect(chart.charts[0].xScale().domain()).toEqual(['a', 'b', 'c']);
-        expect(chart.charts[0].yScale().domain()).toEqual([0, 1000]);
-        expect(chart.charts[1].xScale().domain()).toEqual(['a', 'b', 'c']);
-        expect(chart.charts[1].yScale().domain()).toEqual([0, 1000]);
+        expect(chart.charts()[0].xScale().domain()).toEqual(['a', 'b', 'c']);
+        expect(chart.charts()[0].yScale().domain()).toEqual([0, 1000]);
+        expect(chart.charts()[1].xScale().domain()).toEqual(['a', 'b', 'c']);
+        expect(chart.charts()[1].yScale().domain()).toEqual([0, 1000]);
       });
 
       it('should pass matching axis to chart', function() {
@@ -86,39 +86,39 @@
         });
         setupChart(configuration);
 
-        expect(chart.charts[0].xScale().domain()).toEqual(['d', 'e', 'f']);
-        expect(chart.charts[0].yScale().domain()).toEqual([0, 1000]);
-        expect(chart.charts[1].xScale().domain()).toEqual(['a', 'b', 'c']);
-        expect(chart.charts[1].yScale().domain()).toEqual([0, 500]);
+        expect(chart.charts()[0].xScale().domain()).toEqual(['d', 'e', 'f']);
+        expect(chart.charts()[0].yScale().domain()).toEqual([0, 1000]);
+        expect(chart.charts()[1].xScale().domain()).toEqual(['a', 'b', 'c']);
+        expect(chart.charts()[1].yScale().domain()).toEqual([0, 500]);
       });
     });
 
     describe('data', function() {
       it('should extract data by dataKey(s)', function() {
-        var extracted = chart.extractData({options: {dataKey: 'a'}}, data);
+        var extracted = chart.extractData({options: function() { return {dataKey: 'a'};}}, data);
         expect(_.pluck(extracted, 'key')).toEqual(['a1', 'a2']);
 
-        extracted = chart.extractData({options: {dataKey: 'b'}}, values);
+        extracted = chart.extractData({options: function() { return {dataKey: 'b'};}}, values);
         expect(_.pluck(extracted, 'key')).toEqual(['b']);
 
-        extracted = chart.extractData({options: {dataKey: ['a', 'b']}}, data);
+        extracted = chart.extractData({options: function() { return {dataKey: ['a', 'b']};}}, data);
         expect(_.pluck(extracted, 'key')).toEqual(['a1', 'a2', 'b']);
 
-        extracted = chart.extractData({options: {dataKey: ['b', 'c']}}, values);
+        extracted = chart.extractData({options: function() { return {dataKey: ['b', 'c']};}}, values);
         expect(_.pluck(extracted, 'key')).toEqual(['b', 'c']);
       });
 
       it('should extract data by filterKeys', function() {
-        var extracted = chart.extractData({options: {filterKeys: ['a']}}, data);
+        var extracted = chart.extractData({options: function() { return {filterKeys: ['a']};}}, data);
         expect(_.pluck(extracted, 'key')).toEqual(['b', 'c']);
 
-        extracted = chart.extractData({options: {filterKeys: ['b']}}, values);
+        extracted = chart.extractData({options: function() { return {filterKeys: ['b']};}}, values);
         expect(_.pluck(extracted, 'key')).toEqual(['a1', 'a2', 'c']);
 
-        extracted = chart.extractData({options: {filterKeys: ['a', 'b']}}, data);
+        extracted = chart.extractData({options: function() { return {filterKeys: ['a', 'b']};}}, data);
         expect(_.pluck(extracted, 'key')).toEqual(['c']);
 
-        extracted = chart.extractData({options: {filterKeys: ['b', 'c']}}, values);
+        extracted = chart.extractData({options: function() { return {filterKeys: ['b', 'c']};}}, values);
         expect(_.pluck(extracted, 'key')).toEqual(['a1', 'a2']);
       });
     });

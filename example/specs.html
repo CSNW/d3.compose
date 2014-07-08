@@ -1,0 +1,341 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.chart.csnw.configurable Example</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="css/default.css">
+
+  <link rel="stylesheet" type="text/css" href="../src/css/base.css">
+  <style>
+    .spec {
+      margin-bottom: 16px;
+    }
+    .spec-run {
+      margin-left: 4px;
+    }
+    .spec-chart {
+      margin-top: 10px;
+    }
+
+    .resizable {
+      /* Resizes automatically with container */  
+    }
+  </style>
+
+  <!-- Add jquery here for spec helper -->
+  <script src="../bower_components/jquery/dist/jquery.js"></script>
+  <script type="text/javascript">
+    var specs = [];
+    function spec(options) {
+      // Grab elements from parent of currently executing script
+      var $container = $('script').last().parent();
+      options.elements = {
+        container: $container[0],
+        chart: $container.find('[data-chart]')[0],
+        run: $container.find('[data-run]')[0],
+        reset: $container.find('[data-reset]')[0]
+      };
+
+      specs.push(options);
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>d3.chart.csnw.configurable Specs</h1>
+
+    <section class="spec">
+      <span>Should re-layout correctly on redraw</span>
+      <button class="spec-btn" data-run>Run</button>
+      <button class="spec-btn" data-reset>Reset</button>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: {
+            type: 'XY',
+            charts: {
+              line: {type: 'Line', dataKey: 'values', labels: true}
+            },
+            axes: {
+              x: {title: 'X Axis'},
+              y: {title: 'Y Axis'}
+            },
+            title: {text: 'Chart Title', margins: {top: 1.0, bottom: 1.0}},
+            legend: {position: 'bottom'}
+          },
+          data: 'spec-abc',
+          run: function(options, chart) {
+            chart.title('New chart title');
+          }
+        });
+      </script>
+    </section>
+
+    <section class="spec">
+      <span>Should layout bars adjacent and lines stacked (by default)</span>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: {
+            type: 'Values',
+            charts: {
+              bars: {type: 'Bars', dataKey: 'values'},
+              line: {type: 'Line', dataKey: 'values'}
+            }
+          },
+          data: 'spec-abc'
+        });
+      </script>
+    </section>
+
+    <section class="spec">
+      <span>Should display axis above charts and below labels</span>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: {
+            type: 'XY',
+            charts: {
+              line: {type: 'Line', dataKey: 'values', style: {'stroke-width': '5px'}, labels: {style: {'font-weight': 'bold', 'font-size': '16px'}}},
+            },
+            axes: {
+              x: {position: 'y0'},
+              y: {position: 'x0', scale: {domain: [-5, 5]}}
+            }
+          },
+          data: 'spec-overlap'
+        });
+      </script>
+    </section>
+
+    <section class="spec">
+      <span>Lines should be smooth by default, but can be turned off</span>
+      <button class="spec-btn" data-run>Run</button>
+      <button class="spec-btn" data-reset>Reset</button>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: {
+            type: 'XY',
+            charts: {
+              line: {type: 'Line', dataKey: 'values'}
+            },
+            axes: {
+              y: {scale: {domain: [20, 60]}}
+            },
+            title: 'Smooth'
+          },
+          data: 'spec-smooth',
+          run: function(options, chart) {
+            // TODO Set to not smooth...
+
+            chart.title('Not Smooth');
+          },
+          reset: function(options) {
+            
+          }
+        });
+      </script>
+    </section>
+
+    <section class="spec">
+      <span>d3 Axis extensions should be used by Axis</span>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: {
+            type: 'XY',
+            charts: {
+              line: {type: 'Line', dataKey: 'values'}
+            },
+            axes: {
+              x: {ticks: 5}
+            }
+          },
+          data: 'spec-abc'
+        });
+      </script>
+    </section>
+
+    <section class="spec">
+      <span>Chart should update when options change</span>
+      <button class="spec-btn" data-run>Run</button>
+      <button class="spec-btn" data-reset>Reset</button>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: {
+            type: 'XY',
+            charts: {
+              line: {type: 'Line', dataKey: 'values'}
+            },
+            axes: {
+              x: {ticks: 5},
+            },
+            title: 'Before'
+          },
+          data: 'spec-abc',
+          run: function(options, chart) {
+            d3.chart.helpers.property.extend(chart, 'options', {
+              title: 'After',
+              axes: {
+                x: {ticks: 10, scale: {domain: [0, 200]}}
+              }
+            });
+          }
+        });
+      </script>
+    </section>
+
+    <section class="spec">
+      <span>Chart should update when data-bound options change</span>
+      <button class="spec-btn" data-run>Run</button>
+      <button class="spec-btn" data-reset>Reset</button>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: {
+            type: 'XY',
+            charts: {
+              line: {type: 'Line', dataKey: 'values'}
+            },
+            axes: {
+              x: {ticks: 5},
+            },
+            title: {dataKey: 'title'}
+          },
+          data: 'spec-data-bound',
+          run: function(options, chart) {
+            data[options.data].title = 'After (from data)';
+            chart.draw(data[options.data]);
+          },
+          reset: function(options, chart) {
+            data[options.data].title = 'Before (from data)';
+          }
+        });
+      </script>
+    </section>
+
+    <section class="spec">
+      <span>Should resize automatically (resize window to test)</span>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          resizable: true,
+          chart: {
+            type: 'Values',
+            charts: {
+              bars: {type: 'Bars', dataKey: 'values'},
+              line: {type: 'Line', dataKey: 'values'}
+            }
+          },
+          data: 'spec-abc'
+        });
+      </script>
+    </section>
+
+    <section class="spec">
+      <span>Should have good default margins</span>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          resizable: true,
+          margins: false,
+          chart: {
+            type: 'Values',
+            charts: {
+              bars: {type: 'Bars', dataKey: 'values'},
+              line: {type: 'Line', dataKey: 'values'}
+            }
+          },
+          data: 'spec-abc'
+        });
+      </script>
+    </section>
+  </div>
+
+  <script src="../bower_components/d3/d3.js"></script>
+  <script src="../bower_components/d3.chart/d3.chart.js"></script>
+  <script src="../bower_components/underscore/underscore.js"></script>
+
+  <script src="../src/helpers.js"></script>
+  <script src="../src/extensions.js"></script>
+  <script src="../src/base.js"></script>
+  <script src="../src/charts.js"></script>
+  <script src="../src/components.js"></script>
+  <script src="../src/configurable.js"></script>
+
+  <script src="js/data.js"></script>
+  <script type="text/javascript">
+    // Startup examples
+    var charts = [];
+    _.each(specs, function(options) {
+      options = _.defaults(options, {resizable: false, margins: true});
+
+      var chart;
+      function create() {
+        chart = d3.select(options.elements.chart)
+          .append('svg')
+          .chart('Configurable', options.chart);
+
+        if (!options.resizable)
+          chart.width(600).height(400);
+        else
+          $(options.elements.chart).addClass('resizable');
+
+        if (options.margins)
+          chart.chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+
+        chart.draw(data[options.data]);
+        charts.push(chart);
+      }
+
+      create(); 
+
+      if (_.isFunction(options.run) || _.isFunction(options.reset)) {
+        var $run = $(options.elements.run);
+        var $reset = $(options.elements.reset);
+
+        $reset.prop('disabled', true);
+        if (_.isFunction(options.run)) {
+          $run.on('click', function() {
+            if ($run.attr('disabled'))
+              return;
+
+            options.run(options, chart);
+            $run.attr('disabled', true);
+            $reset.attr('disabled', false);
+          });
+        }
+
+        $reset.on('click', function() {
+          if ($reset.attr('disabled'))
+            return;
+          
+          $(options.elements.chart).empty();
+          if (_.isFunction(options.reset))
+            options.reset(options);
+
+          create();
+          $run.attr('disabled', false);
+          $reset.attr('disabled', true);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

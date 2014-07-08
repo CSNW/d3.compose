@@ -23,9 +23,13 @@ module.exports = function(grunt) {
       'src/helpers.js',
       'src/extensions.js',
       'src/base.js',
-      'src/charts.js',
-      'src/components.js',
-      'src/configurable.js'
+      'src/charts/Labels.js',
+      'src/charts/Bars.js',
+      'src/charts/Line.js',
+      'src/components/Title.js',
+      'src/components/Axis.js',
+      'src/components/Legend.js',
+      'src/Configurable.js'
     ]
   };
   grunt.initConfig(config);
@@ -33,18 +37,31 @@ module.exports = function(grunt) {
   grunt.loadTasks('tasks');
   this.registerTask('default', ['test']);
   
-  this.registerTask('release', 'Builds a new release of the library', [
-    'test',
+  this.registerTask('build', 'Full build of the library', [
     'concat',
     'uglify',
-    'jshint:build',
-    'jasmine:build',
     'copy'
+  ]);
+
+  this.registerTask('build:quick', 'Quick build of the library', [
+    'concat',
+    'copy'
+  ]);
+
+  this.registerTask('release', 'Builds a new release of the library', [
+    'test',
+    'build',
+    'jshint:build',
+    'jasmine:build'
   ]);
   
   this.registerTask('test', 'Lint and run specs', [
     'jshint:src',
-    'jshint:specs', 
-    'jasmine:src'
+    'jshint:specs',
+    'jasmine:build'
+  ]);
+
+  this.registerTask('server', 'Run example (at http://localhost:4001)', [
+    'connect:example'
   ]);
 };

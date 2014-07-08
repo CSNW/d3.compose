@@ -42,148 +42,335 @@
   */
   d3.chart('Container').extend('Configurable', {
     initialize: function() {
-      this.type = this.options.type || 'XY';
-      this.setupAxes(this.options.axes);
-      this.setupCharts(this.options.charts);
-
-      // TODO Look into placing axes layers below charts
-
-      this.setupLegend(this.options.legend);
-      this.setupTitle(this.options.title);
+      this.redrawFor('title', 'charts', 'axes', 'legend');
     },
 
-    setupAxes: function(options) {
-      options = options || {};
-      this.axes = {};
+    options: property('options', {
+      defaultValue: {},
+      set: function(options) {
+        if (!options) return;
+        
+        this.type(options.type || 'XY', {silent: true});
+        this.invertedXY(options.invertedXY || false, {silent: true});
+        
+        this.axes(options.axes, {silent: true});
+        this.charts(options.charts, {silent: true});
+        this.components(options.components, {silent: true});
+        this.legend(options.legend, {silent: true});
+        this.title(options.title, {silent: true});
 
-      var axisKeys = _.uniq(['x', 'y'].concat(_.keys(this.options.axes)));
-      _.each(axisKeys, function(axisKey) {
-        positionByKey = {
-          x: 'bottom',
-          y: 'left',
-          secondaryX: 'top',
-          secondaryY: 'right'
+        // To avoid changing underlying and then redraw failing due to no "change"
+        // store cloned options
+        return {
+          override: _.clone(options)
         };
-        var defaultOptions = {
-          display: true,
-          position: positionByKey[axisKey]
-        };
+      }
+    }),
 
-        var axisOptions;
-        if (options[axisKey] === false)
-          axisOptions = _.defaults({display: false}, defaultOptions, d3.chart('Configurable').defaultAxisOptions);
-        else
-          axisOptions = _.defaults({}, options[axisKey], defaultOptions, d3.chart('Configurable').defaultAxisOptions);
+    // General options
+    type: property('type', {
+      defaultValue: 'XY'
+    }),
+    invertedXY: property('invertedXY', {
+      defaultValue: false
+    }),
 
-        if (axisKey != 'x' && axisKey != 'y' && !axisOptions.dataKey)
-          throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');
+    title: property('title', {
+      set: function(options, title) {
+        var changed = false;
+        
+        if (!options || _.isEmpty(options)) {
+          // Remove title if no options are given
+          this.detachComponent('title');
 
-        var Axis = helpers.resolveChart(axisOptions.type, 'Axis', this.type);
-        var axis = new Axis(this.chartBase(), axisOptions);
-        var id = 'axis_' + axisKey;
-
-        this.attachComponent(id, axis);
-        this.axes[axisKey] = axis;
-
-        if (axisOptions.title) {
-          var titleOptions = _.isString(axisOptions.title) ? {title: axisOptions.title} : axisOptions.title;
-          titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
-          
-          var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type);
-          var title = new Title(this.componentBase(), titleOptions);
-          id = id + '_title';
-
-          this.attachComponent(id, title);
+          return {
+            override: undefined
+          };
         }
-      }, this);
 
-      // Setup filter keys for x and y axes
-      _.each(['x', 'y'], function(axisKey) {
-        var axis = this.axes[axisKey];
+        // Title may be set directly
+        if (_.isString(options))
+          options = {text: options};
 
-        // Don't need to filter keys if dataKey already set
-        if (axis.options.dataKey)
-          return;  
+        // Load defaults
+        options = _.defaults({}, options, d3.chart('Configurable').defaults.title, {invertedXY: this.invertedXY()});
+        
+        if (!title) {
+          // Create title
+          var Title = helpers.resolveChart(options.type, 'Title', this.type());
+          title = new Title(this.componentLayer({zIndex: helpers.zIndex.title}), options);
 
-        var filterKeys = [];
-        _.each(this.axes, function(filterAxis, filterKey) {
-          if ((axisKey == 'x' && !filterAxis.isXAxis()) || (axisKey == 'y' && !filterAxis.isYAxis()))
-            return;
+          this.attachComponent('title', title);
+          changed = true;
+        }
+        else if (!_.isEqual(title.options(), options)) {
+          // Update existing title options
+          title.options(options/*, {silent: true} XY needs to know about update for scales*/);
+          changed = true;
+        }
 
-          var dataKey = filterAxis.options.dataKey;
-          if (dataKey)
-            filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
+        return {
+          override: title,
+
+          // Updating existing object causes change determination to always be false,
+          // so keep track explicitly
+          changed: changed
+        };
+      }
+    }),
+
+    charts: property('charts', {
+      set: function(options, charts) {
+        options = options || {};
+        charts = charts || {};
+        var removeIds = _.difference(_.keys(charts), _.keys(options));
+        var changed = removeIds.length > 0;
+                
+        _.each(removeIds, function(removeId) {
+          this.detachChart(removeId);
+          delete charts[removeId];
         }, this);
 
-        axis.options.filterKeys = filterKeys;
-      }, this);
-    },
+        _.each(options, function(chartOptions, chartId) {
+          var chart = charts[chartId];
+          chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaults.charts, {invertedXY: this.invertedXY()});
 
-    setupCharts: function(charts) {
-      charts = charts || [];
+          if (!chart) {
+            // Create chart
+            var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type());
+            chart = new Chart(this.chartLayer(), chartOptions);
 
-      _.each(charts, function(chartOptions, i) {
-        chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaultChartOptions);
+            this.attachChart(chartId, chart);
+            charts[chartId] = chart;
+            changed = true;
+          }
+          else if (!_.isEqual(chart.options(), chartOptions)) {
+            // Update chart
+            chart.options(chartOptions/*, {silent: true} XY needs to know about update for scales*/);
+            changed = true;
+          }
+        }, this);
 
-        var Chart = helpers.resolveChart(chartOptions.type, 'Chart', this.type);
-        var chart = new Chart(this.chartBase(), chartOptions);
-        var id = 'chart_' + i;
+        return {
+          override: charts,
+          changed: changed,
+          after: function() {
+            this.bindChartScales();
+          }
+        };
+      },
+      defaultValue: {}
+    }),
 
-        // Load matching axis scales (if necessary)
-        var scale;
-        if (!chartOptions.xScale) {
-          scale = this.getMatchingAxisScale(chartOptions.dataKey, 'x');
-          if (scale)
-            chart.xScale = scale;
+    axes: property('axes', {
+      set: function(options, axes) {
+        options = options || {};
+        axes = axes || {};
+        var axisIds = _.uniq(['x', 'y'].concat(_.keys(options)));
+        var removeIds = _.difference(_.keys(axes), axisIds);
+        var changed = removeIds.length > 0;
+
+        _.each(removeIds, function(removeId) {
+          this.detachComponent('axis.' + removeId);
+          this.detachComponent('axis_title.' + removeId);
+          delete axes[removeId];
+        }, this);
+
+        _.each(axisIds, function(axisId) {
+          var axis = axes[axisId];
+          var positionByInvertedAndId = {
+            notInverted: {
+              x: 'bottom',
+              y: 'left',
+              secondaryX: 'top',
+              secondaryY: 'right'
+            },
+            inverted: {
+              x: 'left',
+              y: 'bottom',
+              secondaryX: 'right',
+              secondaryY: 'top'
+            }
+          };
+          var axisOptions = {
+            position: positionByInvertedAndId[this.invertedXY() ? 'inverted' : 'notInverted'][axisId],
+            type: axisId == 'y' || axisId == 'secondaryY' ? 'y' : 'x'
+          };
+
+          if (options[axisId] === false)
+            axisOptions = _.defaults({display: false}, axisOptions, d3.chart('Configurable').defaults.axes, {invertedXY: this.invertedXY()});
+          else
+            axisOptions = _.defaults({}, options[axisId], axisOptions, d3.chart('Configurable').defaults.axes, {invertedXY: this.invertedXY()});
+
+          if (axisId != 'x' && axisId != 'y' && !axisOptions.dataKey)
+            throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');
+
+          if (!axis) {
+            // Create axis
+            var Axis = helpers.resolveChart(axisOptions.type, 'Axis', this.type());
+            axis = new Axis(this.chartLayer({zIndex: helpers.zIndex.axis}), axisOptions);
+
+            this.attachComponent('axis.' + axisId, axis);
+            axes[axisId] = axis;
+            changed = true;
+          }
+          else {
+            // Check for changed from options
+            if (!_.isEqual(axis.options(), axisOptions))
+              changed = true;
+
+            axis.options(axisOptions/*, {silent: true} XY needs to know about update for scales*/);
+          }
+
+          // Create axis title
+          if (axisOptions.title) {
+            var id = 'axis_title.' + axisId;
+            var title = this.componentsById[id];
+            var titleOptions = _.isString(axisOptions.title) ? {text: axisOptions.title} : axisOptions.title;
+            titleOptions = _.defaults({}, titleOptions, {position: axisOptions.position, 'class': 'chart-title-axis'});
+
+            if (!title) {
+              var Title = helpers.resolveChart(titleOptions.type, 'Title', this.type());  
+              title = new Title(this.componentLayer({zIndex: helpers.zIndex.title}), titleOptions);
+
+              this.attachComponent(id, title);
+            }
+            else {
+              title.options(titleOptions/*, {silent: true} XY needs to know about update for scales*/);
+            }
+          }
+        }, this);
+
+        // Setup filter keys for x and y axes
+        _.each(['x', 'y'], function(axisId) {
+          var axis = axes[axisId];
+
+          // Don't need to filter keys if dataKey already set
+          if (axis.options().dataKey)
+            return;  
+
+          var filterKeys = [];
+          _.each(axes, function(filterAxis, filterKey) {
+            if ((axisId == 'x' && !filterAxis.isXAxis()) || (axisId == 'y' && !filterAxis.isYAxis()))
+              return;
+
+            var dataKey = filterAxis.options().dataKey;
+            if (dataKey)
+              filterKeys = filterKeys.concat(_.isArray(dataKey) ? dataKey : [dataKey]);
+          }, this);
+
+          if (!_.isEqual(axis.options().filterKeys, filterKeys))
+            changed = true;
+
+          // Set filterKeys "internally" to avoid change firing
+          axis.options().filterKeys = filterKeys;
+        }, this);
+
+        return {
+          override: axes,
+          changed: changed,
+          after: function() {
+            this.bindChartScales();
+          }
+        };    
+      },
+      defaultValue: {}
+    }),
+
+    legend: property('legend', {
+      set: function(options, legend) {
+        options = options === false ? {display: false} : (options || {});
+        options = _.defaults({}, options, d3.chart('Configurable').defaults.legend);
+        var changed = false;
+
+        // Load chart information
+        if (options.dataKey) {
+          // Load only charts matching dataKey(s)
+          var dataKeys = _.isArray(options.dataKey) ? options.dataKey : [options.dataKey];
+          options.charts = _.filter(this.charts(), function(chart) {
+            return _.contains(dataKeys, chart.options().dataKey);
+          });
         }
-        if (!chartOptions.yScale) {
-          scale = this.getMatchingAxisScale(chartOptions.dataKey, 'y');
-          if (scale)
-            chart.yScale = scale;
+        else {
+          options.charts = this.charts();
         }
 
-        this.attachChart(id, chart);
-      }, this);
-    },
+        // If switching from outside to inset, need to change legend base layer, so remove
+        if (legend && legend.options().type != options.type) {
+          // TODO Possible alternates for changing base of legend
+          this.detachComponent('legend');
+          legend = undefined;
+        }
 
-    setupLegend: function(options) {
-      options = options === false ? {display: false}: (options || {});
-      options = _.defaults({}, options, d3.chart('Configurable').defaultLegendOptions);
+        if (!legend) {
+          var Legend = helpers.resolveChart(options.type, 'Legend', this.type());
+          var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartLayer({zIndex: helpers.zIndex.legend}) : this.componentLayer({zIndex: helpers.zIndex.legend});
+          legend = new Legend(base, options);
 
-      // Load chart information
-      if (options.dataKey) {
-        // Load only charts matching dataKey(s)
-        var dataKeys = _.isArray(options.dataKey) ? options.dataKey : [options.dataKey];
-        options.charts = _.filter(this.charts, function(chart) {
-          return _.contains(dataKeys, chart.options.dataKey);
-        });
+          this.attachComponent('legend', legend);
+          changed = true;
+        }
+        else {
+          if (!_.isEqual(legend.options(), options))
+            changed = true;
+
+          legend.options(options);
+        }
+
+        return {
+          override: legend,
+          changed: changed
+        };
       }
-      else {
-        options.charts = this.charts;  
+    }),
+
+    components: property('components', {
+      set: function(options, components) {
+        options = options || {};
+        components = components || {};
+        var removeIds = _.difference(_.keys(components), _.keys(options));
+        var changed = removeIds.length > 0;
+
+        _.each(removeIds, function(removeId) {
+          this.detachComponent(removeId);
+          delete components[removeId];
+        }, this);
+
+        _.each(options, function(componentOptions, componentId) {
+          var component = components[componentId];
+          componentOptions = _.defaults({}, componentOptions);
+
+          if (!component) {
+            // Create component
+            var Component = helpers.resolveChart(componentOptions.type, 'Component', this.type());
+            var layer = Component.layer && Component.layer == 'chart' ? this.chartLayer() : this.componentLayer();
+
+            component = new Component(layer, componentOptions);
+
+            this.attachComponent(componentId, component);
+            components[componentId] = component;
+            changed = true;
+          }
+          else if (!_.isEqual(component.options(), componentOptions)) {
+            component.options(componentOptions/*, {silent: true} XY needs to know about update for scales*/);
+            charted = true;
+          }
+        }, this);
+
+        return {
+          override: components,
+          changed: changed,
+          after: function(components) {
+            _.each(components, function(component) {
+              if (_.isFunction(component.xScale) && _.isFunction(component.yScale)) {
+                component.xScale = this.axes().x._xScale.bind(this.axes().x);
+                component.yScale = this.axes().y._yScale.bind(this.axes().y);
+              }
+            }, this);
+          }
+        };
       }
-
-      var Legend = helpers.resolveChart(options.type, 'Legend', this.type);
-      var base = options.type == 'Inset' || options.type == 'InsetLegend' ? this.chartBase() : this.componentBase();
-      var legend = new Legend(base, options);
-
-      this.attachComponent('legend', legend);
-    },
-
-    setupTitle: function(options) {
-      if (!options)
-        return;
-
-      // Title may be set directly
-      if (_.isString(options))
-        options = {title: options};
-
-      options = _.defaults({}, options, d3.chart('Configurable').defaultTitleOptions);
-
-      var Title = helpers.resolveChart(options.type, 'Title', this.type);
-      var title = new Title(this.componentBase(), options);
-
-      this.attachComponent('title', title);
-    },
+    }),
 
     demux: function(name, data) {
       var item = this.chartsById[name] || this.componentsById[name];
@@ -195,8 +382,8 @@
     },
 
     extractData: function(item, data) {
-      var dataKey = item.options.dataKey;
-      var filterKeys = item.options.filterKeys;
+      var dataKey = item.options().dataKey;
+      var filterKeys = item.options().filterKeys;
 
       // Legends need all data (filter by charts)
       if (item && item.isLegend)
@@ -225,37 +412,43 @@
       }
     },
 
-    getMatchingAxisScale: function(dataKey, type) {
-      var match = _.find(this.axes, function(axis) {
+    bindChartScales: function() {
+      _.each(this.charts(), function(chart) {
+        // Get scales for chart
+        chart.xScale = this.getScale(chart.options().dataKey, 'x');
+        chart.yScale = this.getScale(chart.options().dataKey, 'y');
+      }, this);
+    },
+
+    getScale: function(dataKey, type) {
+      var match = _.find(this.axes(), function(axis) {
         if ((type == 'x' && !axis.isXAxis()) || (type == 'y' && !axis.isYAxis()))
           return false;
 
-        var axisDataKey = axis.options.dataKey;
+        var axisDataKey = axis.options().dataKey;
         return _.isArray(axisDataKey) ? _.contains(axisDataKey, dataKey) : axisDataKey == dataKey;
       });
-
+      var axis = match || this.axes()[type];
       var scaleKey = type == 'x' ? '_xScale' : '_yScale';
-      var axis = match || this.axes[type];
 
-      return property(type + 'Scale', {
-        get: function () {
-          return axis[scaleKey]();
-        }
-      });
+      return axis[scaleKey].bind(axis);
     }
   }, {
-    defaultChartOptions: {
-      type: 'Line'
-    },
-    defaultAxisOptions: {
-      display: true
-    },
-    defaultLegendOptions: {
-      position: 'right'
-    },
-    defaultTitleOptions: {
-      position: 'top',
-      'class': 'chart-title-main'
+    defaults: {
+      charts: {
+        type: 'Line'
+      },
+      axes: {
+        display: true
+      },
+      legend: {
+        display: true,
+        position: 'right'
+      },
+      title: {
+        position: 'top',
+        'class': 'chart-title-main'
+      }
     }
   });
 

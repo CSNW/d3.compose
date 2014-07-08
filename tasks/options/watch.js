@@ -5,6 +5,10 @@ module.exports = {
   },
   test: {
     files: ['src/**/*.js', 'specs/**/*.js'],
-    tasks: ['test']
+    tasks: ['build:quick', 'test']
+  },
+  build: {
+    files: ['src/**/*.js'],
+    tasks: ['build:quick']
   }
 };

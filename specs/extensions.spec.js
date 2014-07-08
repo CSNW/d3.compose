@@ -29,11 +29,13 @@
 
       Chart = d3.chart('Test', {
         initialize: function() {
-          this.options = {};
           helpers.bindAllDi(this);
         },
         data: function() {
           return data || [];
+        },
+        options: function() {
+          return {};
         },
         height: function() {
           return height;
@@ -67,8 +69,8 @@
       });
 
       it('should get series for element', function() {
-        expect(chart.dataSeries.call(element(1, 2), processed[1].values[2])).toEqual(data[1]);
-        expect(chart.dataSeries.call(element(2, 1), processed[2].values[1])).toEqual(data[2]);
+        expect(chart.seriesData.call(element(1, 2), processed[1].values[2])).toEqual(data[1]);
+        expect(chart.seriesData.call(element(2, 1), processed[2].values[1])).toEqual(data[2]);
       });
 
       it('should get series index for given series after passing through seriesValues', function() {
@@ -81,7 +83,7 @@
         var d = processed[1].values[2];
         var i = 2;
 
-        chart.options.style = {fill: 'red', stroke: 'blue'};
+        chart.options = function() { return {style: {fill: 'red', stroke: 'blue'}};};
         expect(chart.itemStyle.call(context, d, i)).toEqual('fill: red; stroke: blue;');
 
         data[1].style = {fill: 'yellow', 'stroke-width': '1.5px'};
@@ -94,7 +96,7 @@
 
     describe('XY', function() {
       beforeEach(function() {
-        Chart = Chart.extend('XY', helpers.mixin(extensions.Series, extensions.XY));
+        Chart = Chart.extend('XY', helpers.mixin(extensions.XYSeries));
         chart = new Chart();
         chart.setScales();
       });
@@ -136,7 +138,7 @@
 
     describe('Values', function() {
       beforeEach(function() {
-        Chart = Chart.extend('Values', helpers.mixin(extensions.Series, extensions.XY, extensions.Values));
+        Chart = Chart.extend('Values', helpers.mixin(extensions.ValuesSeries));
         data = values;
         width = 500;
 
@@ -164,14 +166,14 @@
         expect(chart.adjacentX(processed[1].values[2])).toEqual(275);
       });
 
-      it('should update itemX and itemWidth with displayAdjacent', function() {
+      it('should update x and itemWidth with displayAdjacent', function() {
         chart.displayAdjacent(false);
-        expect(chart.itemX(processed[0].values[2])).toEqual(250);
-        expect(chart.itemX(processed[1].values[2])).toEqual(250);
+        expect(chart.x(processed[0].values[2])).toEqual(250);
+        expect(chart.x(processed[1].values[2])).toEqual(250);
 
         chart.displayAdjacent(true);
-        expect(chart.itemX(processed[0].values[2])).toEqual(225);
-        expect(chart.itemX(processed[1].values[2])).toEqual(275);
+        expect(chart.x(processed[0].values[2])).toEqual(225);
+        expect(chart.x(processed[1].values[2])).toEqual(275);
       });
     });
   });

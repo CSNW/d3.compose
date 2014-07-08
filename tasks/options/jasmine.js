@@ -1,6 +1,6 @@
 module.exports = {
   options: {
-    specs: 'specs/**/*.spec.js',
+    specs: ['specs/**/*.spec.js'],
     helpers: [
       'bower_components/jquery/dist/jquery.js',
       'bower_components/jasmine-jquery/lib/jasmine-jquery.js'
@@ -12,14 +12,11 @@ module.exports = {
     ]
   },
 
-  src: {
-    src: '<%= meta.srcFiles %>',
-    outfile: 'specs/index.html',
-    keepRunner: true
-  },
-
   build: {
     src: 'dist/d3.chart.csnw.configurable.js',
-    keepRunner: false
+    options: {
+      outfile: 'specs/index.html',
+      keepRunner: true  
+    }
   }
 };

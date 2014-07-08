@@ -10,30 +10,27 @@
     - {Object} style Overall style of chart/component
   */
   d3.chart('Base', {
-    initialize: function(options) {
-      this.options = options || {};
-
-      // Call any setters that match options
-      _.each(this.options, function(value, key) {
-        if (this[key] && this[key]._isProperty && this[key].setFromOptions)
-          this[key](value);
-      }, this);
-
+    initialize: function() {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
     },
 
     data: property('data', {
       set: function(data) {
-        // This trigger is relied on by other components
-        // and must be called even when the data doesn't necessarily change
-        // TODO Look into why it needs to called every time (even on no change)
-        this.trigger('change:data', data);
+        // BUG This is triggered automatically, but it needs to be re-triggered
+        // Has something to do with how scales are sent to components (e.g. axes)
+        this.trigger('change:data', 'BUG');
       }
     }),
     style: property('style', {
       get: function(value) {
         return helpers.style(value) || null;
+      }
+    }),
+    options: property('options', {
+      defaultValue: {},
+      set: function(options) {
+        this.setFromOptions(options);
       }
     }),
 
@@ -44,18 +41,63 @@
       return helpers.dimensions(this.base).height;
     },
 
+    /**
+      Trigger redraw on property changes
+
+      @example
+      ```js
+      this.redrawFor('title', 'style')
+      // -> on change:title, redraw()
+      ```
+
+      @param {String...} properties
+    */
+    redrawFor: function(property) {
+      var properties = _.toArray(arguments);
+      var events = _.map(properties, function(property) {
+        return 'change:' + property;
+      });
+
+      // d3.chart doesn't handle events with spaces, register individual handlers
+      _.each(events, function(event) {
+        this.on(event, function() {
+          console.log('REDRAW', arguments);
+          if (_.isFunction(this.redraw))
+            this.redraw();
+          else if (this.container && _.isFunction(this.container.redraw))
+            this.container.redraw();
+        });
+      }, this);
+    },
+
     transform: function(data) {
+      data = data || [];
+
       // Base is last transform to be called,
       // so stored data has been fully transformed
-      this.data(data || []);
-      return data || [];
+      this.data(data);
+      return data;
+    },
+
+    setFromOptions: function(options) {
+      // Set any properties from options
+      _.each(options, function(value, key) {
+        if (this[key] && this[key].isProperty && this[key].setFromOptions)
+          this[key](value, {silent: true});
+      }, this);
     }
   });
 
   /**
     Chart: Foundation for building charts with series data
   */
-  d3.chart('Base').extend('Chart', extensions.Series);
+  d3.chart('Base').extend('Chart', {
+    initialize: function(options) {
+      this.options(options || {});
+      this.redrawFor('options');
+    }
+  });
+  d3.chart('Chart').extend('SeriesChart', extensions.Series);
 
   /**
     Container
@@ -63,10 +105,8 @@
     Foundation for chart and component placement
   */
   d3.chart('Base').extend('Container', {
-    initialize: function() {
-      this.charts = [];
+    initialize: function(options) {
       this.chartsById = {};
-      this.components = [];
       this.componentsById = {};
 
       // Overriding transform in init jumps it to the top of the transform cascade
@@ -78,11 +118,16 @@
       };
 
       this.base.classed('chart', true);
-      this.chartBase(this.base.append('g').classed('chart-base', true));
 
       this.on('change:dimensions', function() {
         this.redraw();
       });
+
+      this.options(options || {});
+      this.redrawFor('options');
+
+      this.handleResize();
+      this.handleHover();
     },
 
     draw: function(data) {
@@ -95,7 +140,7 @@
       this._preDraw(data);
 
       // Layout now that components' dimensions are known
-      this.updateLayout();
+      this.layout();
 
       // Full draw now that everything has been laid out
       d3.chart().prototype.draw.call(this, data);
@@ -107,17 +152,52 @@
         this.draw(this.rawData());
     },
 
+    chartLayer: function(options) {
+      options = _.defaults({}, options, {
+        zIndex: helpers.zIndex.chart
+      });
+
+      return this.base.append('g')
+        .attr('class', 'chart-layer')
+        .attr('data-zIndex', options.zIndex);
+    },
+
+    componentLayer: function(options) {
+      options = _.defaults({}, options, {
+        zIndex: helpers.zIndex.component
+      });
+
+      return this.base.append('g')
+        .attr('class', 'chart-component-layer')
+        .attr('data-zIndex', options.zIndex);
+    },
+
     attachChart: function(id, chart) {
       chart.id = id;
+      chart.base.attr('data-id', id);
+      chart.container = this;
+
       this.attach(id, chart);
-      this.charts.push(chart);
       this.chartsById[id] = chart;
+    },
+
+    detachChart: function(id) {
+      var chart = this.chartsById[id];
+      if (!chart) return;
+
+      // Remove chart base layer and all children
+      chart.base.remove();
+
+      delete this._attached[id];
+      delete this.chartsById[id];
     },
 
     attachComponent: function(id, component) {
       component.id = id;
+      component.base.attr('data-id', id);
+      component.container = this;
+
       this.attach(id, component);
-      this.components.push(component);
       this.componentsById[id] = component;
 
       component.on('change:position', function() {
@@ -125,20 +205,25 @@
       });
     },
 
-    componentBase: function() {
-      // Return new group so that "this.base" can be translated within component
-      return this.base.append('g').attr('class', 'chart-component');
+    detachComponent: function(id) {
+      var component = this.componentsById[id];
+      if (!component) return;
+
+      // Remove component base layer and all children
+      component.base.remove();
+
+      component.off('change:position');
+      delete this._attached[id];
+      delete this.componentsById[id];
     },
 
-    updateLayout: function() {
+    layout: function() {
       var layout = this._extractLayout();
       this._updateChartMargins(layout);
-      this._positionChartBase();
-      this._positionComponents(layout);
+      this._positionLayers(layout);
     },
 
     rawData: property('rawData'),
-    chartBase: property('chartBase'),
 
     // Chart margins from Container edges ({top, right, bottom, left})
     chartMargins: property('chartMargins', {
@@ -160,15 +245,6 @@
         };
       }
     }),
-    
-    chartWidth: function() {
-      var margins = this._chartMargins();
-      return this.width() - margins.left - margins.right;
-    },
-    chartHeight: function() {
-      var margins = this._chartMargins();
-      return this.height() - margins.top - margins.bottom;
-    },
 
     width: property('width', {
       defaultValue: function() {
@@ -186,19 +262,70 @@
         this.trigger('change:dimensions');
       }
     }),
+    
+    chartWidth: function() {
+      var margins = this._chartMargins();
+      return this.width() - margins.left - margins.right;
+    },
+    chartHeight: function() {
+      var margins = this._chartMargins();
+      return this.height() - margins.top - margins.bottom;
+    },
+
+    handleResize: function() {
+      // TODO Further work on making sure resize happens properly
+      // this.onResize = _.debounce(function() {
+      //   this.trigger('change:dimensions');
+      // }.bind(this), 250);
+      // d3.select(window).on('resize', this.onResize);
+    },
+
+    handleHover: function() {
+      this.on('enter:mouse', function(coordinates) {
+        this.trigger('hover', coordinates);
+      });
+      this.on('move:mouse', function(coordinates) {
+        this.trigger('hover', coordinates);
+      });
+
+      var hovering;
+      var trigger = this.trigger.bind(this);
+      var onMouseMove = this.onMouseMove = _.throttle(function(coordinates) {
+        if (hovering)
+          trigger('move:mouse', coordinates);
+      }, 100);
+
+      this.base.on('mouseenter', function() {
+        hovering = true;
+        trigger('enter:mouse', d3.mouse(this));
+      });
+      this.base.on('mousemove', function() {
+        onMouseMove(d3.mouse(this));
+      });
+      this.base.on('mouseleave', function() {
+        hovering = false;
+        trigger('leave:mouse');
+      });
+    },
 
     _preDraw: function(data) {
-      this._positionChartBase();
+      this._positionChartLayers();
       _.each(this.componentsById, function(component, id) {
         if (!component.skipLayout)
           component.draw(this.demux ? this.demux(id, data) : data);
       }, this);
     },
 
-    _positionChartBase: function() {
+    _positionLayers: function(layout) {
+      this._positionChartLayers();
+      this._positionComponents(layout);
+      this._positionByZIndex();      
+    },
+
+    _positionChartLayers: function() {
       var margins = this._chartMargins();
 
-      this.chartBase()
+      this.base.selectAll('.chart-layer')
         .attr('transform', helpers.transform.translate(margins.left, margins.top))
         .attr('width', this.chartWidth())
         .attr('height', this.chartHeight());
@@ -247,14 +374,31 @@
       }
     },
 
+    _positionByZIndex: function() {
+      // Get layers
+      var elements = this.base.selectAll('.chart-layer, .chart-component-layer')[0];
+
+      // Sort by z-index
+      elements = _.sortBy(elements, function(element) {
+        return +d3.select(element).attr('data-zIndex') || 0;
+      });
+
+      // Move layers to z-index order
+      _.each(elements, function(element) {
+        element.parentNode.appendChild(element);
+      }, this);
+    },
+
     // Update margins from components layout
     _updateChartMargins: function(layout) {
-      var margins = this.chartMargins();
+      // Copy margins to prevent updating user-defined margins
+      var margins = _.extend({}, this.chartMargins());
       _.each(layout, function(parts, key) {
         _.each(parts, function(part) {
           margins[key] += part.offset || 0;
         });
       });
+      
       this._chartMargins(margins);
 
       return margins;
@@ -263,7 +407,7 @@
     // Extract layout from components
     _extractLayout: function() {
       var layout = {top: [], right: [], bottom: [], left: []};
-      _.each(this.components, function(component) {
+      _.each(this.componentsById, function(component) {
         if (component.skipLayout)
           return;
 
@@ -294,5 +438,92 @@
     }),
   });
   
+  /**
+    Component
+    Common component functionality / base for creating components
+
+    Properties
+    - {String} [position = top] (top, right, bottom, left)
+    - {Number} [width = base width]
+    - {Number} [height = base height]
+    - {Object} [margins] % margins relative to component dimensions
+      - top {Number} % of height
+      - right {Number} % of width
+      - bottom {Number} % of height
+      - left {Number} % of width
+
+    Customization
+    - skipLayout: Don't use this component type during layout (e.g. inset within chart)
+    - layoutWidth: Adjust with more precise sizing calculations
+    - layoutHeight: Adjust with more precise sizing calculations
+    - layoutPosition: Adjust layout positioning
+    - setLayout: Override if layout needs to be customized
+  */
+  d3.chart('Base').extend('Component', {
+    initialize: function(options) {
+      this.options(options || {});
+      this.redrawFor('options');
+    },
+
+    position: property('position', {
+      defaultValue: 'top',
+      validate: function(value) {
+        return _.contains(['top', 'right', 'bottom', 'left'], value);
+      }
+    }),
+    width: property('width', {
+      defaultValue: function() {
+        return helpers.dimensions(this.base).width;
+      }
+    }),
+    height: property('height', {
+      defaultValue: function() {
+        return helpers.dimensions(this.base).height;
+      }
+    }),
+
+    margins: property('margins', {
+      get: function(values) {
+        var percentages = _.defaults({}, values, {top: 0.0, right: 0.0, bottom: 0.0, left: 0.0});
+        var width = this.width();
+        var height = this.height();
+
+        return {
+          top: percentages.top * height,
+          right: percentages.right * width,
+          bottom: percentages.bottom * height,
+          left: percentages.left * width
+        };
+      }
+    }),
+
+    /**
+      Height/width/position to use in layout calculations
+      (Override for more specific sizing in layout calculations)
+    */
+    skipLayout: false,
+    layoutWidth: function() {
+      var margins = this.margins();
+      return this.width() + margins.left + margins.right;
+    },
+    layoutHeight: function() {
+      var margins = this.margins();
+      return this.height() + margins.top + margins.bottom;
+    },
+    layoutPosition: function() {
+      return this.position();
+    },
+
+    /**
+      Set layout of underlying base
+      (Override for elements placed within chart)
+    */
+    setLayout: function(x, y, options) {
+      var margins = this.margins();
+      this.base.attr('transform', helpers.transform.translate(x + margins.left, y + margins.top));
+      this.height(options && options.height);
+      this.width(options && options.width);
+    }
+  });
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
