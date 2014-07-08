@@ -29,14 +29,7 @@
     "jasmine-jquery": "~2.0.3"
   },
   "ignore": [
-    "src",
     "specs",
-    "example",
-    "tasks",
-    ".gitattributes",
-    ".gitignore",
-    ".jshintrc",
-    "Gruntfile.js",
-    "package.json"
+    "example"
   ]
 }
