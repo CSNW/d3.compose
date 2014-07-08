@@ -96,7 +96,7 @@
 
     describe('XY', function() {
       beforeEach(function() {
-        Chart = Chart.extend('XY', helpers.mixin(extensions.Series, extensions.XY));
+        Chart = Chart.extend('XY', helpers.mixin(extensions.XYSeries));
         chart = new Chart();
         chart.setScales();
       });
@@ -138,7 +138,7 @@
 
     describe('Values', function() {
       beforeEach(function() {
-        Chart = Chart.extend('Values', helpers.mixin(extensions.Series, extensions.XY, extensions.Values));
+        Chart = Chart.extend('Values', helpers.mixin(extensions.ValuesSeries));
         data = values;
         width = 500;
 

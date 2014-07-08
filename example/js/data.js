@@ -78,8 +78,8 @@
 
     'chart-3': {
       bars: [
-        {key: 'a', name: 'A', values: [{y: 10000}]},
-        {key: 'b', name: 'B', values: [{y: 20000}]}
+        {key: 'a', name: 'A', values: [{key: 'Results', y: 10000}]},
+        {key: 'b', name: 'B', values: [{key: 'Results', y: 20000}]}
       ]
     },
 
