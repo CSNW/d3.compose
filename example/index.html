@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>d3.chart.csnw.configurable Example</title>
+  <title>d3.chart.multi Example</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/default.css">
 
-  <link rel="stylesheet" type="text/css" href="../dist/css/d3.chart.csnw.configurable.base.css">
+  <link rel="stylesheet" type="text/css" href="../dist/css/d3.chart.multi.base.css">
   <style>
     .input .chart-line, .input2 .chart-line {
       stroke-dasharray: 4,4;
@@ -28,13 +28,13 @@
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
 
-  <script src="../dist/d3.chart.csnw.configurable.js"></script>
+  <script src="../tmp/d3.chart.multi.js"></script>
 
   <script src="js/data.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>d3.chart.csnw.configurable Examples</h1>
+    <h1>d3.chart.multi Examples</h1>
 
     <section class="example">
       <h2>Line-Bar</h2>
@@ -42,7 +42,7 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-1')
-          .chart('Configurable', {
+          .chart('Multi', {
             type: 'Values',
             charts: [
               {
@@ -99,7 +99,7 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-2')
-          .chart('Configurable', {
+          .chart('Multi', {
             type: 'XY',
             charts: [
               {type: 'Line', dataKey: 'lines', showLabels: false},
@@ -129,7 +129,7 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-3')
-          .chart('Configurable', {
+          .chart('Multi', {
             type: 'Values',
             charts: [
               {

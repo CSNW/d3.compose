@@ -29,36 +29,35 @@ module.exports = function(grunt) {
       'src/components/Title.js',
       'src/components/Axis.js',
       'src/components/Legend.js',
-      'src/Configurable.js'
+      'src/Multi.js'
     ]
   };
   grunt.initConfig(config);
 
   grunt.loadTasks('tasks');
   this.registerTask('default', ['test']);
-  
-  this.registerTask('build', 'Full build of the library', [
-    'concat',
-    'uglify',
-    'copy'
+
+  this.registerTask('build', 'Temp build of the library', [
+    'concat:temp',
+    'copy:temp'
   ]);
 
-  this.registerTask('build:quick', 'Quick build of the library', [
-    'concat',
-    'copy'
+  this.registerTask('build:release', 'Release build of the library', [
+    'concat:release',
+    'uglify:release',
+    'copy:release'
   ]);
 
   this.registerTask('release', 'Builds a new release of the library', [
-    'test',
-    'build',
-    'jshint:build',
-    'jasmine:build'
+    'build:release',
+    'jshint:release',
+    'jasmine:release'
   ]);
   
   this.registerTask('test', 'Lint and run specs', [
     'jshint:src',
     'jshint:specs',
-    'jasmine:build'
+    'jasmine:temp'
   ]);
 
   this.registerTask('server', 'Run example (at http://localhost:4001)', [

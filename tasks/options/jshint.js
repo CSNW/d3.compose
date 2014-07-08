@@ -5,6 +5,7 @@ module.exports = {
 
   src: ['src/**/*.js'],
   specs: ['specs/*.spec.js'],
-  build: ['dist/<%= pkg.name %>.js'],
+  temp: ['tmp/<%= pkg.name %>.js'],
+  release: ['dist/<%= pkg.name %>.js'],
   grunt: ['Gruntfile.js']
 };

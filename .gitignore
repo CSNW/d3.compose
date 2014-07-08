@@ -4,7 +4,7 @@ bower_components
 specs/index.html
 npm-debug.log
 example/data
-dist/
+tmp/
 
 # OS Junk
 Thumbs.db

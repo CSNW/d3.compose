@@ -12,11 +12,18 @@ module.exports = {
     ]
   },
 
-  build: {
-    src: 'dist/d3.chart.csnw.configurable.js',
+  temp: {
+    src: 'tmp/d3.chart.multi.js',
     options: {
       outfile: 'specs/index.html',
       keepRunner: true  
+    }
+  },
+  release: {
+    src: 'dist/d3.chart.multi.js',
+    options: {
+      outfile: 'specs/index.html',
+      keepRunner: false  
     }
   }
 };

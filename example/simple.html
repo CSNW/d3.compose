@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>d3.chart.csnw.configurable - Simple</title>
+  <title>d3.chart.multi - Simple</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/default.css">
 
-  <link rel="stylesheet" type="text/css" href="../dist/css/d3.chart.csnw.configurable.base.css">
+  <link rel="stylesheet" type="text/css" href="../tmp/css/d3.chart.multi.base.css">
   <style>
     @media (min-width: 768px) {
       #chart {
@@ -28,7 +28,7 @@
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
 
-  <script src="../dist/d3.chart.csnw.configurable.js"></script>
+  <script src="../tmp/d3.chart.multi.js"></script>
   <script type="text/javascript">
     var config = {
       type: 'Values',
@@ -96,7 +96,7 @@
     };
 
     var chart = d3.select('#chart')
-      .chart('Configurable', config)
+      .chart('Multi', config)
       .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
     chart.draw(data);

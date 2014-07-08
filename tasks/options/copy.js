@@ -1,5 +1,16 @@
 module.exports = {
-  styles: {
+  temp: {
+    files: [{
+      expand: true,
+      cwd: 'src/css',
+      src: ['*.css'],
+      dest: 'tmp/css/',
+      rename: function(dest, name) {
+        return dest + '<%= pkg.name %>.' + name;
+      }
+    }]
+  },
+  release: {
     files: [{
       expand: true,
       cwd: 'src/css',
@@ -9,5 +20,5 @@ module.exports = {
         return dest + '<%= pkg.name %>.' + name;
       }
     }]
-  }  
+  }
 };

@@ -1,28 +1,27 @@
 {
-  "name": "d3.chart.csnw.configurable",
+  "name": "d3.chart.multi",
   "version": "0.6.0",
-  "description": "d3-chart configurable chart",
-  "main": "dist/d3.chart.csnw.configurable.js",
+  "description": "d3-chart multi",
+  "main": "dist/d3.chart.multi.js",
   "scripts": {
     "test": "grunt test",
-    "lint": "jshint src",
-    "prepublish": "grunt build"
+    "lint": "jshint src"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/CSNW/d3.chart.csnw.configurable.git"
+    "url": "https://github.com/CSNW/d3.chart.multi.git"
   },
   "keywords": [
     "d3-chart",
     "d3",
     "chart",
-    "configurable"
+    "multi"
   ],
   "author": "CSNW",
   "bugs": {
-    "url": "https://github.com/CSNW/d3.chart.csnw.configurable/issues"
+    "url": "https://github.com/CSNW/d3.chart.multi/issues"
   },
-  "homepage": "https://github.com/CSNW/d3.chart.csnw.configurable",
+  "homepage": "https://github.com/CSNW/d3.chart.multi",
   "license": "MIT",
   "devDependencies": {
     "grunt": "~0.4.4",

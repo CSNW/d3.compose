@@ -2,7 +2,7 @@
   var property = helpers.property;
 
   /**
-    Configurable chart
+    Multi chart
 
     Configure chart based on given options, including adding charts, axes, legend, and other properties
 
@@ -10,7 +10,7 @@
     ```javascript
     var chart = d3.select('#chart')
       .append('svg')
-      .chart('Configurable', {
+      .chart('Multi', {
         type: 'Values'
         charts: [
           {type: 'Bars', dataKey: 'participation', itemPadding: 20},
@@ -40,7 +40,7 @@
       - position: top, right, bottom, left
       - other legend properties
   */
-  d3.chart('Container').extend('Configurable', {
+  d3.chart('Container').extend('Multi', {
     initialize: function() {
       this.redrawFor('title', 'charts', 'axes', 'legend');
     },
@@ -93,7 +93,7 @@
           options = {text: options};
 
         // Load defaults
-        options = _.defaults({}, options, d3.chart('Configurable').defaults.title, {invertedXY: this.invertedXY()});
+        options = _.defaults({}, options, d3.chart('Multi').defaults.title, {invertedXY: this.invertedXY()});
         
         if (!title) {
           // Create title
@@ -133,7 +133,7 @@
 
         _.each(options, function(chartOptions, chartId) {
           var chart = charts[chartId];
-          chartOptions = _.defaults({}, chartOptions, d3.chart('Configurable').defaults.charts, {invertedXY: this.invertedXY()});
+          chartOptions = _.defaults({}, chartOptions, d3.chart('Multi').defaults.charts, {invertedXY: this.invertedXY()});
 
           if (!chart) {
             // Create chart
@@ -198,12 +198,12 @@
           };
 
           if (options[axisId] === false)
-            axisOptions = _.defaults({display: false}, axisOptions, d3.chart('Configurable').defaults.axes, {invertedXY: this.invertedXY()});
+            axisOptions = _.defaults({display: false}, axisOptions, d3.chart('Multi').defaults.axes, {invertedXY: this.invertedXY()});
           else
-            axisOptions = _.defaults({}, options[axisId], axisOptions, d3.chart('Configurable').defaults.axes, {invertedXY: this.invertedXY()});
+            axisOptions = _.defaults({}, options[axisId], axisOptions, d3.chart('Multi').defaults.axes, {invertedXY: this.invertedXY()});
 
           if (axisId != 'x' && axisId != 'y' && !axisOptions.dataKey)
-            throw new Error('d3.chart.csnw.configurable: dataKey(s) are required for axes other than x and y');
+            throw new Error('d3.chart.Multi: dataKey(s) are required for axes other than x and y');
 
           if (!axis) {
             // Create axis
@@ -280,7 +280,7 @@
     legend: property('legend', {
       set: function(options, legend) {
         options = options === false ? {display: false} : (options || {});
-        options = _.defaults({}, options, d3.chart('Configurable').defaults.legend);
+        options = _.defaults({}, options, d3.chart('Multi').defaults.legend);
         var changed = false;
 
         // Load chart information

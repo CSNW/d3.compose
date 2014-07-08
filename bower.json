@@ -30,11 +30,13 @@
   },
   "ignore": [
     "src",
+    "specs",
+    "example",
     "tasks",
-    "package.json",
-    "Gruntfile.js",
     ".gitattributes",
     ".gitignore",
-    ".jshintrc"
+    ".jshintrc",
+    "Gruntfile.js",
+    "package.json"
   ]
 }

@@ -61,7 +61,7 @@
     isLegend: true,
 
     transform: function(allData) {
-      var extractData = d3.chart('Configurable').prototype.extractData;
+      var extractData = d3.chart('Multi').prototype.extractData;
       var data = _.reduce(this.options().charts, function(data, chart) {
         var chartData = _.map(extractData(chart, allData), function(series, index) {
           return {

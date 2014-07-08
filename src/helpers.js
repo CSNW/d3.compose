@@ -590,7 +590,7 @@
       d3.chart(componentType);
 
     if (!Chart)
-      throw new Error('d3.chart.csnw.configurable: Unable to resolve chart for type ' + chartType + ' and component ' + componentType + ' and container ' + containerType);
+      throw new Error('d3.chart.multi: Unable to resolve chart for type ' + chartType + ' and component ' + componentType + ' and container ' + containerType);
 
     return Chart;
   }

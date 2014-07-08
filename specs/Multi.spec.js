@@ -1,6 +1,6 @@
 (function(d3, _, helpers, extensions) {
 
-  describe('configurable', function() {    
+  describe('Multi', function() {    
     var data = {
       a: [
         {key: 'a1', values: [{x:0,y:100}, {x:25,y:200}, {x:50,y:300}, {x:75,y:500}]},
@@ -28,7 +28,7 @@
     var chart, fixture, selection, configuration;
 
     function setupChart(config) {
-      chart = selection.chart('Configurable', config);
+      chart = selection.chart('Multi', config);
 
       _.each(chart.axes(), function(axis) {
         axis.setScales();

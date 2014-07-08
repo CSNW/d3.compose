@@ -1,4 +1,4 @@
-d3.chart.csnw.configurable
+d3.chart.multi
 --------------------------
 
 Build advanced charts easily using configuration.
@@ -8,14 +8,14 @@ Example
 
 ```html
 <!-- Add the following to your page (with css/js paths updated for your structure -->
-<link rel="stylesheet" type="text/css" href="css/d3.chart.csnw.configurable.base.css">
+<link rel="stylesheet" type="text/css" href="css/d3.chart.multi.base.css">
 
 <!-- Body... -->
 
 <script src="js/d3.js"></script>
 <script src="js/d3.chart.js"></script>
 <script src="js/underscore.js"></script>
-<script src="js/d3.chart.csnw.configurable.js"></script>
+<script src="js/d3.chart.multi.js"></script>
 ```
 
 ```js
@@ -26,7 +26,7 @@ var data = {
 
 var chart = d3.select('#chart')
   .append('svg')
-  .chart('Configurable', {
+  .chart('Multi', {
     type: 'Values',
     charts: [
       {

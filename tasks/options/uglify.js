@@ -6,7 +6,7 @@ module.exports = {
       except: ['d3']
     }
   },
-  build: {
+  release: {
     files: {
       'dist/<%= pkg.name %>.min.js': 'dist/<%= pkg.name %>.js'
     }
