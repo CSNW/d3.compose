@@ -4,13 +4,8 @@
   "version": "0.6.0",
   "main": [
     "./dist/d3.chart.multi.js",
-    "./dist/d3.chart.multi.min.js",
-    "./dist/d3.chart.multi.min.map",
     "./dist/css/d3.chart.multi.main.css"
   ],
-  "scripts": {
-    "postinstall": "grunt build"
-  },
   "authors": [
     "CSNW",
     "Tim Hall <tim.hall.engr@gmail.com>"
@@ -34,8 +29,12 @@
     "jasmine-jquery": "~2.0.3"
   },
   "ignore": [
+    "src",
     "specs",
     "example",
+    "tasks",
+    "Gruntfile.js",
+    "package.json",
     ".gitattributes",
     ".gitignore",
     ".jshintrc"
