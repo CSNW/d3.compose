@@ -1,18 +1,21 @@
 {
-  "name": "d3.chart.csnw.configurable",
-  "main": "dist/d3.chart.csnw.configurable.js",
+  "name": "d3.chart.multi",
+  "homepage": "https://github.com/CSNW/d3.chart.multi",
   "version": "0.6.0",
-  "homepage": "https://github.com/CSNW/d3.chart.csnw.configurable",
+  "main": "dist/d3.chart.multi.js",
+  "scripts": {
+    "postinstall": "grunt build"
+  },
   "authors": [
     "CSNW",
     "Tim Hall <tim.hall.engr@gmail.com>"
   ],
-  "description": "d3-chart configurable",
+  "description": "Composable charts with d3.chart",
   "keywords": [
     "d3-chart",
     "d3",
     "chart",
-    "configurable"
+    "multi"
   ],
   "private": true,
   "dependencies": {
@@ -27,8 +30,6 @@
   },
   "ignore": [
     "src",
-    "specs",
-    "example",
     "tasks",
     "package.json",
     "Gruntfile.js",
