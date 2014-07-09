@@ -19,14 +19,14 @@
   ],
   "private": true,
   "dependencies": {
-    "d3": "~3.4.4",
-    "d3.chart": "~0.2.0",
-    "underscore": "~1.6.0"
+    "d3": "~3",
+    "d3.chart": "~0",
+    "underscore": "~1"
   },
   "license": "MIT",
   "devDependencies": {
-    "jquery": "~2.1.0",
-    "jasmine-jquery": "~2.0.3"
+    "jquery": "~2",
+    "jasmine-jquery": "~2"
   },
   "ignore": [
     "src",
