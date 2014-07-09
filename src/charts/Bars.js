@@ -105,6 +105,13 @@
       
       var axisThickness = this.__axis[0][0] && parseInt(this.__axis.style('stroke-width')) || 0;
       return axisThickness / 2;
+    },
+
+    insertSwatch: function() {
+      return this.append('rect')
+        .attr('x', 0).attr('y', 0)
+        .attr('width', 20).attr('height', 20)
+        .attr('class', 'chart-bar');
     }
   }));
   
