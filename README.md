@@ -75,9 +75,10 @@ Development
 -----------
 Install bower (if necessary) `npm install -g bower`
 
-1. Install components `npm install && bower install`
-2. Open example `example/index.html`
-3. Test with `grunt test` or automatically with `grunt watch:test`
+1. Install components `npm install` and `bower install`
+2. Build with `grunt build`
+3. Open example with `grunt server` and `localhost:4001`
+4. Test with `grunt test` or automatically with `grunt watch:test`
 
 Release
 -------

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>d3.chart.multi - Simple</title>
+  <title>d3.chart.multi - Debug</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -22,7 +22,6 @@
 </head>
 <body>
   <svg id="chart"></svg>
-
 
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
@@ -100,6 +99,35 @@
       .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
 
     chart.draw(data);
+
+    // DEBUG
+    chart.on('enter:mouse', function(coordinates) {
+      console.log('enter:mouse', coordinates);
+    });
+    chart.on('move:mouse', function(coordinates) {
+      console.log('move:mouse', coordinates);
+    });
+    chart.on('leave:mouse', function() {
+      console.log('leave:mouse');
+    });
+    chart.on('chart:enter:mouse', function(coordinates) {
+      console.log('chart:enter:mouse', coordinates);
+    });
+    chart.on('chart:move:mouse', function(coordinates) {
+      console.log('chart:move:mouse', coordinates);
+    });
+    chart.on('chart:leave:mouse', function() {
+      console.log('chart:leave:mouse');
+    });
+    chart.on('points:enter:mouse', function(points) {
+      console.log('points:enter:mouse', points);
+    });
+    chart.on('points:move:mouse', function(points) {
+      console.log('points:move:mouse', points);
+    });
+    chart.on('points:leave:mouse', function() {
+      console.log('points:leave:mouse');
+    });
   </script>
 </body>
 </html>
