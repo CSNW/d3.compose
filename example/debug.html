@@ -35,34 +35,56 @@
 
   <script src="../bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript">
-    d3.chart('Chart').extend('HoverPoints', d3.chart.helpers.mixin(d3.chart.extensions.Values, {
+    d3.chart('Chart').extend('HoverLabels', d3.chart.helpers.mixin(d3.chart.extensions.Values, {
       initialize: function() {
-        this.layer('HoverPoints', this.base.append('g').classed('chart-hover-points', true), {
+        this.layer('HoverLabels', this.base.append('g').classed('chart-hover-points', true), {
           dataBind: function(data) {
-            if (!_.isArray(data) || (data[0] && data[0].values))
+            if (!_.isArray(data) || (data[0] && !data[0].coordinates))
               data = [];
             
-            return this.selectAll('circle').data(data);
+            return this.selectAll('g').data(data);
           },
           insert: function() {
-            return this.append('circle')
+            var group = this.append('g');
+
+            group.append('circle')
               .attr('stroke', 'black')
               .attr('fill', 'black')
               .attr('r', 3);
+
+            group.append('text')
+              .attr('text-anchor', 'middle')
+              .attr('alignment-baseline', 'after-edge');
+
+            return group;
           },
           events: {
             'merge': function() {
               var chart = this.chart();
 
-              this
+              this.select('circle')
                 .attr('cx', function(d, i) {
-                  return d.x;
+                  return d.coordinates.x;
                 })
                 .attr('cy', function(d, i) {
-                  return d.y;
+                  return d.coordinates.y;
                 });
+
+              this.select('text')
+                .attr('x', function(d, i) {
+                  return d.coordinates.x;
+                })
+                .attr('y', function(d, i) {
+                  return d.coordinates.y - 10;
+                })
+                .text(function(d, i) {
+                  return d.values.y;
+                });
+            },
+            'exit': function() {
+              this.remove();
             }
-          }
+          },
         });
       }
     }));
@@ -73,7 +95,7 @@
       charts: {
         bars: {type: 'Bars', dataKey: 'decreasing'},
         line: {type: 'Line', dataKey: 'increasing'},
-        points: {type: 'HoverPoints', dataKey: 'decreasing'}
+        points: {type: 'HoverLabels', dataKey: 'decreasing'}
       },
       axes: {
         
@@ -140,8 +162,7 @@
 
     chart.draw(data);
 
-    // var hoverPoints = new (d3.chart('HoverPoints'))(chart.chartLayer());
-    var hoverPoints = chart.chartsById['points']
+    var hoverLabels = chart.chartsById['points']
 
     // DEBUG
     chart.on('enter:mouse', function(coordinates) {
@@ -164,19 +185,15 @@
     });
     chart.on('points:enter:mouse', function(points) {
       logMouse('points', points);
-      hoverPoints.draw(_.map(points, function(point) {
-        return point.coordinates;
-      }));
+      hoverLabels.draw(points);
     });
     chart.on('points:move:mouse', function(points) {
       logMouse('points', points);
-      hoverPoints.draw(_.map(points, function(point) {
-        return point.coordinates;
-      }));
+      hoverLabels.draw(points);
     });
     chart.on('points:leave:mouse', function() {
       logMouse('points');
-      hoverPoints.draw([]);
+      hoverLabels.draw([]);
     });
 
     function logMouse(type, coordinates) {
