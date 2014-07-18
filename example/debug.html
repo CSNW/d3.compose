@@ -22,21 +22,61 @@
 </head>
 <body>
   <svg id="chart"></svg>
+  <div>
+    Container: <span id="mouse-container"></span><br>
+    Chart: <span id="mouse-chart"></span><br>
+    Points: <span id="mouse-points"></span>
+  </div>
 
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
-
   <script src="../tmp/d3.chart.multi.js"></script>
+
+  <script src="../bower_components/jquery/dist/jquery.js"></script>
+  <script type="text/javascript">
+    d3.chart('Chart').extend('HoverPoints', d3.chart.helpers.mixin(d3.chart.extensions.Values, {
+      initialize: function() {
+        this.layer('HoverPoints', this.base.append('g').classed('chart-hover-points', true), {
+          dataBind: function(data) {
+            if (!_.isArray(data) || (data[0] && data[0].values))
+              data = [];
+            
+            return this.selectAll('circle').data(data);
+          },
+          insert: function() {
+            return this.append('circle')
+              .attr('stroke', 'black')
+              .attr('fill', 'black')
+              .attr('r', 3);
+          },
+          events: {
+            'merge': function() {
+              var chart = this.chart();
+
+              this
+                .attr('cx', function(d, i) {
+                  return d.x;
+                })
+                .attr('cy', function(d, i) {
+                  return d.y;
+                });
+            }
+          }
+        });
+      }
+    }));
+  </script>
   <script type="text/javascript">
     var config = {
       type: 'Values',
-      invertedXY: true,
       charts: {
-        bars: {type: 'StackedBars', dataKey: 'increasing'}
+        bars: {type: 'Bars', dataKey: 'decreasing'},
+        line: {type: 'Line', dataKey: 'increasing'},
+        points: {type: 'HoverPoints', dataKey: 'decreasing'}
       },
       axes: {
-        y: {scale: {domain: [0, 300]}}
+        
       }
     };
     var data = {
@@ -57,12 +97,12 @@
           key: 'inc-b',
           name: 'Increasing B',
           values: [
-            {x: 0, y: 5},
-            {x: 10, y: 10},
-            {x: 20, y: 20},
-            {x: 30, y: 35},
-            {x: 40, y: 55},
-            {x: 50, y: 80}
+            {x: 0, y: 25},
+            {x: 10, y: 30},
+            {x: 20, y: 40},
+            {x: 30, y: 55},
+            {x: 40, y: 75},
+            {x: 50, y: 100}
           ]
         }
       ],
@@ -80,15 +120,15 @@
           ]
         },
         {
-          key: 'dec-a',
-          name: 'Decreasing A',
+          key: 'dec-b',
+          name: 'Decreasing B',
           values: [
-            {x: 0, y: 80},
-            {x: 10, y: 55},
-            {x: 20, y: 35},
-            {x: 30, y: 20},
-            {x: 40, y: 10},
-            {x: 50, y: 5}
+            {x: 0, y: 100},
+            {x: 10, y: 75},
+            {x: 20, y: 55},
+            {x: 30, y: 40},
+            {x: 40, y: 30},
+            {x: 50, y: 25}
           ]
         }
       ]
@@ -100,34 +140,72 @@
 
     chart.draw(data);
 
+    // var hoverPoints = new (d3.chart('HoverPoints'))(chart.chartLayer());
+    var hoverPoints = chart.chartsById['points']
+
     // DEBUG
     chart.on('enter:mouse', function(coordinates) {
-      console.log('enter:mouse', coordinates);
+      logMouse('container', coordinates);
     });
     chart.on('move:mouse', function(coordinates) {
-      console.log('move:mouse', coordinates);
+      logMouse('container', coordinates);
     });
     chart.on('leave:mouse', function() {
-      console.log('leave:mouse');
+      logMouse('container');
     });
     chart.on('chart:enter:mouse', function(coordinates) {
-      console.log('chart:enter:mouse', coordinates);
+      logMouse('chart', coordinates);
     });
     chart.on('chart:move:mouse', function(coordinates) {
-      console.log('chart:move:mouse', coordinates);
+      logMouse('chart', coordinates);
     });
     chart.on('chart:leave:mouse', function() {
-      console.log('chart:leave:mouse');
+      logMouse('chart');
     });
     chart.on('points:enter:mouse', function(points) {
-      console.log('points:enter:mouse', points);
+      logMouse('points', points);
+      hoverPoints.draw(_.map(points, function(point) {
+        return point.coordinates;
+      }));
     });
     chart.on('points:move:mouse', function(points) {
-      console.log('points:move:mouse', points);
+      logMouse('points', points);
+      hoverPoints.draw(_.map(points, function(point) {
+        return point.coordinates;
+      }));
     });
     chart.on('points:leave:mouse', function() {
-      console.log('points:leave:mouse');
+      logMouse('points');
+      hoverPoints.draw([]);
     });
+
+    function logMouse(type, coordinates) {
+      var $selector = $('#mouse-' + type);
+
+      if (!coordinates) {
+        $selector.empty();
+      }
+      else {
+        var msg = '';
+
+        // points come in as Array
+        if (_.isArray(coordinates)) {
+          msg = _.compact(_.map(coordinates, logPoint)).join(', ');
+        }
+        else {
+          msg = logCoordinates(coordinates);
+        }
+
+        $selector.text(msg);
+      }
+
+      function logPoint(point) {
+        return point.series.name + ': {x = ' + point.values.x + ', y = ' + point.values.y + '}';
+      }
+      function logCoordinates(coordinates) {
+        return 'x = ' + coordinates.x + ', y = ' + coordinates.y;
+      }
+    }
   </script>
 </body>
 </html>

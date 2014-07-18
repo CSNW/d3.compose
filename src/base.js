@@ -89,7 +89,8 @@
   });
 
   /**
-    Chart: Foundation for building charts with series data
+    Chart
+    Foundation for building charts with series data
   */
   d3.chart('Base').extend('Chart', {
     initialize: function(options) {
@@ -101,8 +102,13 @@
 
   /**
     Container
-
     Foundation for chart and component placement
+
+    Properties:
+    - {Object/Array} rawData
+    - {Object} chartMargins {top, right, bottom, left} in px
+    - {Number} width in px
+    - {Number} height in px
   */
   d3.chart('Base').extend('Container', {
     initialize: function(options) {
@@ -127,6 +133,46 @@
       this.handleResize();
       this.handleHover();
     },
+
+    rawData: property('rawData'),
+
+    // Chart margins from Container edges ({top, right, bottom, left})
+    chartMargins: property('chartMargins', {
+      get: function(values) {
+        values = (values && typeof values == 'object') ? values : {};
+        values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
+
+        return values;
+      },
+      set: function(values, previous) {
+        values = (values && typeof values == 'object') ? values : {};
+        values = _.defaults(values, previous, {top: 0, right: 0, bottom: 0, left: 0});
+
+        return {
+          override: values,
+          after: function() {
+            this.trigger('change:dimensions');
+          }
+        };
+      }
+    }),
+
+    width: property('width', {
+      defaultValue: function() {
+        return helpers.dimensions(this.base).width;
+      },
+      set: function(value) {
+        this.trigger('change:dimensions');
+      }
+    }),
+    height: property('height', {
+      defaultValue: function() {
+        return helpers.dimensions(this.base).height;
+      },
+      set: function(value) {
+        this.trigger('change:dimensions');
+      }
+    }),
 
     draw: function(data) {
       // Explicitly set width and height of container
@@ -206,46 +252,6 @@
       this._updateChartMargins(layout);
       this._positionLayers(layout);
     },
-
-    rawData: property('rawData'),
-
-    // Chart margins from Container edges ({top, right, bottom, left})
-    chartMargins: property('chartMargins', {
-      get: function(values) {
-        values = (values && typeof values == 'object') ? values : {};
-        values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return values;
-      },
-      set: function(values, previous) {
-        values = (values && typeof values == 'object') ? values : {};
-        values = _.defaults(values, previous, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return {
-          override: values,
-          after: function() {
-            this.trigger('change:dimensions');
-          }
-        };
-      }
-    }),
-
-    width: property('width', {
-      defaultValue: function() {
-        return helpers.dimensions(this.base).width;
-      },
-      set: function(value) {
-        this.trigger('change:dimensions');
-      }
-    }),
-    height: property('height', {
-      defaultValue: function() {
-        return helpers.dimensions(this.base).height;
-      },
-      set: function(value) {
-        this.trigger('change:dimensions');
-      }
-    }),
     
     chartWidth: function() {
       var margins = this._chartMargins();
@@ -523,12 +529,16 @@
     _translateCoordinatesToPoints: function(coordinates) {
       var points = _.reduce(this.chartsById, function(memo, chart, id) {
         if (chart && _.isFunction(chart._translateCoordinatesToPoints)) {
-          memo = memo.concat(chart._translateCoordinatesToPoints(coordinates));
+          var chartPoints = chart._translateCoordinatesToPoints(coordinates);
+          if (!chartPoints || !_.isArray(chartPoints))
+            throw new Error('d3.chart.multi: Expected _translateCoordinatesToPoints to return an Array for chart with id: ' + id);
+          else
+            return memo.concat(chartPoints);
         }
         else {
           return memo;
         }
-      }, []);
+      }, [], this);
 
       return points;
     }
