@@ -360,7 +360,7 @@
         };
 
         _.each(series.values, function(point, pointIndex) {
-          var calculated = this._distance(point, pointIndex, coordinates);
+          var calculated = this._distance(point, pointIndex, coordinates, series);
 
           if (calculated.distance < result.distance) {
             result.distance = calculated.distance;
@@ -376,6 +376,16 @@
       }, this);
 
       return points;
+    },
+    _distance: function(point, index, coordinates, series) {
+      var x = this.x.call({_parentData: series}, point, index);
+      var y = this.y.call({_parentData: series}, point, index);
+
+      return {
+        x: x,
+        y: y,
+        distance: Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2))
+      }
     }
   };
 

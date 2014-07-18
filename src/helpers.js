@@ -555,6 +555,10 @@
     @param {Element} element
   */
   function getParentData(element) {
+    // @internal Shortcut if element + parentData needs to be mocked
+    if (element._parentData)
+      return element._parentData;
+
     var parent = element && element.parentNode;
     if (parent) {
       var data = d3.select(parent).data();
