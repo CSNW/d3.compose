@@ -44,8 +44,8 @@
         var chart = d3.select('#chart-1')
           .chart('Multi', {
             type: 'Values',
-            charts: [
-              {
+            charts: {
+              bars: {
                 type: 'Bars', 
                 dataKey: 'results', 
                 labels: {
@@ -57,14 +57,14 @@
                   format: d3.format(',0d')
                 }
               },
-              {
+              line: {
                 type: 'Line',
                 dataKey: 'input',
                 labels: {
                   position: 'top'
                 }
               }
-            ],
+            },
             axes: {
               x: {
                 title: 'X Title'
@@ -101,10 +101,10 @@
         var chart = d3.select('#chart-2')
           .chart('Multi', {
             type: 'XY',
-            charts: [
-              {type: 'Line', dataKey: 'lines', showLabels: false},
-              {type: 'Labels', dataKey: 'labels', offset: 5}
-            ],
+            charts: {
+              line: {type: 'Line', dataKey: 'lines', showLabels: false},
+              labels: {type: 'Labels', dataKey: 'labels', offset: 5}
+            },
             axes: {
               x: {scale: {domain: [2000, 2020]}, title: 'Year', tickFormat: d3.format('####')},
               y: {title: 'Results'}
@@ -131,13 +131,13 @@
         var chart = d3.select('#chart-3')
           .chart('Multi', {
             type: 'Values',
-            charts: [
-              {
+            charts: {
+              bars: {
                 type: 'Bars', 
                 dataKey: 'bars', 
                 labels: {format: d3.format(',0d')}
               }
-            ],
+            },
             axes: {
               // x: false,
               y: {title: 'Results', scale: {domain: [0, 35000]}}

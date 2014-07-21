@@ -1,4 +1,4 @@
-(function(d3, helpers, extensions) {
+(function(d3, _, helpers, extensions) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -206,4 +206,88 @@
     })
   });
 
-})(d3, d3.chart.helpers, d3.chart.extensions);
+  d3.chart('Chart').extend('HoverLabels', {
+    initialize: function() {
+      _.bindAll(this, 'onPointsEnter', 'onPointsMove', 'onPointsLeave');
+
+      this.on('attached', function() {
+        this.container.on('points:enter:mouse', this.onPointsEnter);
+        this.container.on('points:move:mouse', this.onPointsMove);
+        this.container.on('points:leave:mouse', this.onPointsLeave);
+      });
+      this.on('detached', function() {
+        this.container.off('points:enter:mouse', this.onPointsEnter);
+        this.container.off('points:move:mouse', this.onPointsMove);
+        this.container.off('points:leave:mouse', this.onPointsLeave);
+      });
+
+      this.layer('HoverLabels', this.base.append('g').classed('chart-hover-labels', true), {
+        dataBind: function(data) {
+          return this.selectAll('g').data(data);
+        },
+        insert: function() {
+          var group = this.append('g');
+
+          group.append('circle')
+            .attr('stroke', 'black')
+            .attr('fill', 'black')
+            .attr('r', 3);
+
+          group.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('alignment-baseline', 'after-edge');
+
+          return group;
+        },
+        events: {
+          merge: function() {
+            var chart = this.chart();
+
+            this.select('circle')
+              .attr('cx', chart.x)
+              .attr('cy', chart.y);
+
+            this.select('text')
+              .attr('x', chart.x)
+              .attr('y', function(d, i) {
+                return chart.y.call(this, d, i) - 10;
+              })
+              .text(chart.text);
+          },
+          exit: function() {
+            this.remove();
+          }
+        }
+      });
+    },
+
+    draw: function() {
+      // Override default draw call
+      // (only want to draw on hover)
+    },
+    drawPoints: function(points) {
+      d3.chart('Chart').prototype.draw.call(this, points);
+    },
+
+    onPointsEnter: function(points) {
+      this.drawPoints(points);
+    },
+    onPointsMove: function(points) {
+      this.drawPoints(points);
+    },
+    onPointsLeave: function() {
+      this.drawPoints([]);
+    },
+
+    x: di(function(chart, d, i) {
+      return d.coordinates.x;
+    }),
+    y: di(function(chart, d, i) {
+      return d.coordinates.y;
+    }),
+    text: di(function(chart, d, i) {
+      return d.values.y;
+    })
+  });
+
+})(d3, _, d3.chart.helpers, d3.chart.extensions);

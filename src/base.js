@@ -366,12 +366,20 @@
       item.container = this;
 
       this.attach(id, item);
+
+      if (item && _.isFunction(item.trigger)) {
+        item.trigger('attached');
+      }
     },
 
     _detach: function(id, item) {
       item.base.remove();
 
       delete this._attached[id];
+
+      if (item && _.isFunction(item.trigger)) {
+        item.trigger('detached');
+      }
     },
 
     _preDraw: function(data) {
