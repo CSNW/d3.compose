@@ -288,9 +288,6 @@
       clientDimensions.width = parseFloat(styles['width']) - parseFloat(styles['borderLeftWidth']) - parseFloat(styles['borderRightWidth']);
     }
 
-    if (isSVG)
-      console.log('svg', clientDimensions);
-
     var attrDimensions = {width: 0, height: 0};
     if (selection) {
       attrDimensions = {

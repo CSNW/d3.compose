@@ -224,7 +224,7 @@
     _xScale: property('_xScale', {type: 'Function'}),
     _yScale: property('_yScale', {type: 'Function'}),
     
-    _translateCoordinatesToPoints: function(coordinates) {
+    _translateCoordinatesToPoints: function(coordinates, options) {
       var points = [];
       var result = {
         distance: Infinity,
@@ -235,7 +235,7 @@
       };
 
       _.each(this.data(), function(point, index) {
-        var calculated = this._distance(point, index, coordinates);
+        var calculated = this._distance(point, index, coordinates, options);
 
         if (calculated.distance < result.distance) {
           result.distance = calculated.distance;
@@ -251,15 +251,23 @@
 
       return points;
     },
-    _distance: function(point, index, coordinates) {
+    _distance: function(point, index, coordinates, options) {
       var x = this.x(point, index);
       var y = this.y(point, index);
+
+      var distance;
+      if (options.measurement == 'x')
+        distance = Math.abs(x - coordinates.x);
+      else if (options.measurement == 'y')
+        distance = Math.abs(y - coordinates.y);
+      else
+        distance = Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2));
 
       return {
         x: x,
         y: y,
-        distance: Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2))
-      }
+        distance: distance
+      };
     }
   };
 
@@ -345,7 +353,7 @@
       }
     }),
 
-    _translateCoordinatesToPoints: function(coordinates) {
+    _translateCoordinatesToPoints: function(coordinates, options) {
       var points = [];
 
       _.each(this.data(), function(series, seriesIndex) {
@@ -360,7 +368,7 @@
         };
 
         _.each(series.values, function(point, pointIndex) {
-          var calculated = this._distance(point, pointIndex, coordinates, series);
+          var calculated = this._distance(point, pointIndex, coordinates, series, options);
 
           if (calculated.distance < result.distance) {
             result.distance = calculated.distance;
@@ -377,14 +385,22 @@
 
       return points;
     },
-    _distance: function(point, index, coordinates, series) {
+    _distance: function(point, index, coordinates, series, options) {
       var x = this.x.call({_parentData: series}, point, index);
       var y = this.y.call({_parentData: series}, point, index);
+
+      var distance;
+      if (options.measurement == 'x')
+        distance = Math.abs(x - coordinates.x);
+      else if (options.measurement == 'y')
+        distance = Math.abs(y - coordinates.y);
+      else
+        distance = Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2));
 
       return {
         x: x,
         y: y,
-        distance: Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2))
+        distance: distance
       }
     }
   };

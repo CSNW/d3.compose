@@ -538,7 +538,7 @@
     _translateCoordinatesToPoints: function(coordinates) {
       var points = _.reduce(this.chartsById, function(memo, chart, id) {
         if (chart && _.isFunction(chart._translateCoordinatesToPoints)) {
-          var chartPoints = chart._translateCoordinatesToPoints(coordinates);
+          var chartPoints = chart._translateCoordinatesToPoints(coordinates, {measurement: 'x'});
           if (!chartPoints || !_.isArray(chartPoints))
             throw new Error('d3.chart.multi: Expected _translateCoordinatesToPoints to return an Array for chart with id: ' + id);
           else
