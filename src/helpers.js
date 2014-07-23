@@ -270,17 +270,41 @@
   */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
-    var boundingBox = element && typeof element.getBBox == 'function' && element.getBBox() || {};
-    var client = element ? {width: element.clientWidth, height: element.clientHeight} : {width: 0, height: 0};
-    var attr = selection ? {width: selection.attr('width'), height: selection.attr('height')} : {width: 0, height: 0};
+    var boundingBox = element && typeof element.getBBox == 'function' && element.getBBox() || {width: 0, height: 0};
     var isSVG = element ? element.nodeName == 'svg' : false;
+
+    var clientDimensions = {
+      width: (element && element.clientWidth) || 0, 
+      height: (element && element.clientHeight) || 0
+    };
+
+    // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
+    //        calculate from css
+    //        http://stackoverflow.com/questions/13122790/how-to-get-svg-element-dimensions-in-firefox
+    //        Note: This makes assumptions about the box model in use and that width/height are not percent values
+    if (element && isSVG && (!element.clientWidth || !element.clientHeight) && window && window.getComputedStyle) {
+      var styles = window.getComputedStyle(element);
+      clientDimensions.height = parseFloat(styles['height']) - parseFloat(styles['borderTopWidth']) - parseFloat(styles['borderBottomWidth']);
+      clientDimensions.width = parseFloat(styles['width']) - parseFloat(styles['borderLeftWidth']) - parseFloat(styles['borderRightWidth']);
+    }
+
+    if (isSVG)
+      console.log('svg', clientDimensions);
+
+    var attrDimensions = {width: 0, height: 0};
+    if (selection) {
+      attrDimensions = {
+        width: selection.attr('width') || 0,
+        height: selection.attr('height') || 0
+      };
+    }
 
     // Size set by css -> client (only valid for svg and some other elements)
     // Size set by svg -> attr override or boundingBox
     // -> Take maximum
     return {
-      width: _.max([client.width, attr.width || boundingBox.width]) || 0,
-      height: _.max([client.height, attr.height || boundingBox.height]) || 0
+      width: _.max([clientDimensions.width, attrDimensions.width || boundingBox.width]) || 0,
+      height: _.max([clientDimensions.height, attrDimensions.height || boundingBox.height]) || 0
     };
   }
 
