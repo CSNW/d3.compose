@@ -119,8 +119,10 @@
     Stacked Bars
   */
   d3.chart('Bars').extend('StackedBars', {
-    initialize: function() {
+    transform: function(data) {
+      // Re-initialize bar positions each time data changes
       this.barPositions = [];
+      return data;
     },
 
     barHeight: di(function(chart, d, i) {

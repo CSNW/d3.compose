@@ -151,6 +151,47 @@
         chart.draw(data['chart-3']);
       </script>
     </section>
+
+    <section class="example">
+      <h2>Stacked Bars</h2>
+      <svg id="chart-4"></svg>
+
+      <script type="text/javascript">
+        var chart = d3.select('#chart-4')
+          .chart('Multi', {
+            type: 'Values',
+            invertedXY: true,
+            charts: {
+              stacked: {
+                type: 'StackedBars',
+                dataKey: 'stacked'
+              }
+            },
+            axes: {
+              x: false,
+              y: {dataKey: 'stacked', scale: {domain: [0, 200]}},
+              secondaryY: {dataKey: 'stacked', scale: {domain: [0, 100]}}
+            },
+            legend: {
+              margins: {left: 0.2}
+            },
+            title: 'Stacked Bars'
+          })
+          .width(600)
+          .height(200)
+          .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+
+        chart.draw({
+          stacked: [
+            {key: 'a', name: 'A', values: [{x: 0, y: 10}]},
+            {key: 'b', name: 'B', values: [{x: 0, y: 20}]},
+            {key: 'c', name: 'C', values: [{x: 0, y: 50}]},
+            {key: 'd', name: 'D', values: [{x: 0, y: 30}]},
+            {key: 'e', name: 'E', values: [{x: 0, y: 40}]}
+          ]
+        })
+      </script>
+    </section>
   </div>
 </body>
 </html>
