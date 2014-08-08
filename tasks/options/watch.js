@@ -8,7 +8,7 @@ module.exports = {
     tasks: ['build', 'test']
   },
   build: {
-    files: ['src/**/*.js'],
+    files: ['src/**/*.js', 'src/**/*.css'],
     tasks: ['build']
   }
 };

@@ -550,6 +550,30 @@
       }, [], this);
 
       return points;
+    },
+
+    _getLabels: function() {
+      var labels = _.reduce(this.chartsById, function(memo, chart, id) {
+        if (chart && _.isFunction(chart._getLabels)) {
+          var labels = chart._getLabels();
+          if (!labels || !_.isArray(labels)) {
+            throw new Error('d3.chart.multi: Expected _getLabels to return an Array for chart with id: ' + id);
+          }
+          else {
+            // Add chart id to series key
+            _.map(labels, function(series) {
+              series.key = series.key ? id + '-' + series.key : id;
+            });
+
+            return memo.concat(labels);
+          }
+        }
+        else {
+          return memo;
+        }
+      }, [], this);
+
+      return labels;
     }
   });
   

@@ -38,6 +38,10 @@
 /* Labels */
 .chart-label {
   stroke: none;
+  fill: black;
+}
+.chart-label-bg {
+  opacity: 0.5;
 }
 
 /* Title */

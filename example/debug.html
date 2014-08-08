@@ -36,14 +36,10 @@
   <script src="../bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript">
     var config = {
-      type: 'Values',
+      type: 'XY',
       charts: {
-        bars: {type: 'Bars', dataKey: 'decreasing'},
-        line: {type: 'Line', dataKey: 'increasing'},
-        hoverLabels: {type: 'HoverLabels'}
-      },
-      axes: {
-        
+        line: {type: 'Line', dataKey: 'increasing-dense', labels: true},
+        labels: {type: 'Labels'}
       }
     };
     var data = {
@@ -98,8 +94,39 @@
             {x: 50, y: 25}
           ]
         }
+      ],
+      'increasing-dense': [
+        {
+          key: 'inc-dense-a',
+          name: 'Increasing Dense A',
+          values: []  
+        },
+        {
+          key: 'inc-dense-b',
+          name: 'Increasing Dense B',
+          values: []
+        }
+      ],
+      'decreasing-dense': [
+        {
+          key: 'dec-dense-a',
+          name: 'Decreasing Dense A',
+          values: []  
+        },
+        {
+          key: 'dec-dense-b',
+          name: 'Decreasing Dense B',
+          values: []
+        }
       ]
     };
+
+    for (var i = 0; i <= 50; i++) {
+      data['increasing-dense'][0].values.push({x: i, y: Math.round(0.05*Math.pow(i, 2) + 0.5*i + 10, 0)});
+      data['increasing-dense'][1].values.push({x: i, y: Math.round(0.025*Math.pow(i, 2) + 0.25*i + 25, 0)});
+      data['decreasing-dense'][0].values.push({x: i, y: Math.round(0.025*Math.pow(i, 2) - 2.75*i + 160, 0)});
+      data['decreasing-dense'][1].values.push({x: i, y: Math.round(0.05*Math.pow(i, 2) - 5.5*i + 100, 0)});
+    }
 
     var chart = d3.select('#chart')
       .chart('Multi', config)

@@ -7,6 +7,8 @@
     Extensions for handling series data
   */
   var Series = {
+    isSeries: true,
+
     seriesKey: di(function(chart, d, i) {
       return d.key;
     }),
@@ -89,6 +91,8 @@
       - To invert, change range for scale (from width to height or vice-versa) and swap x and y coordinates
   */
   var XY = {
+    isXY: true,
+
     xScale: property('xScale', {type: 'Function', setFromOptions: false}),
     yScale: property('yScale', {type: 'Function', setFromOptions: false}),
 
@@ -173,7 +177,7 @@
       return d.y;
     }),
     keyValue: di(function(chart, d, i) {
-      return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i);
+      return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i) + ',' + chart.yValue.call(this, d, i);
     }),
 
     setScales: function() {
@@ -413,10 +417,11 @@
     Dependencies: XY
   */
   var Values = {
+    isValues: true,
+
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
     itemPadding: property('itemPadding', {defaultValue: 0.1}),
-    isValues: true,
 
     transform: function(data) {
       // Transform series data from values to x,y
@@ -526,13 +531,169 @@
     })
   };
 
+  /**
+    Extensions for handling labels in charts
+
+    Properties:
+    - [labels] {Object}
+    - [labelFormat] {String|Function}
+    - [labelPosition = 'top'] {String} Label position (top, right, bottom, left)
+    - [labelOffset = 0] {Number|Object} Label offset (distance or {x, y})
+  */
+  var Labels = {
+    labels: property('labels', {
+      defaultValue: {},
+      set: function(options) {
+        if (_.isBoolean(options))
+          options = {display: options};
+        else if (options && _.isUndefined(options.display))
+          options.display = true;
+
+        _.each(options, function(value, key) {
+          // Capitalize and append "label" and then set option
+          var labelOption = 'label' + helpers.capitalize(key);
+
+          if (this[labelOption] && this[labelOption].isProperty && this[labelOption].setFromOptions)
+            this[labelOption](value, {silent: true});
+        }, this);
+      }
+    }),
+
+    labelDisplay: property('labelDisplay', {defaultValue: false}),
+    labelFormat: property('labelFormat', {
+      type: 'Function',
+      set: function(value) {
+        if (_.isString(value)) {
+          return {
+            override: d3.format(value)
+          };
+        }
+      }
+    }),
+    labelPosition: property('labelPosition', {
+      defaultValue: 'top',
+      validate: function(value) {
+        return _.contains(['top', 'right', 'bottom', 'left'], value);
+      }
+    }),
+    labelOffset: property('labelOffset', {defaultValue: 0}),
+    labelPadding: property('labelPadding', {defaultValue: 2}),
+
+    labelKey: di(function(chart, d, i) {
+      return chart.keyValue.call(this, d, i);
+    }),
+    labelX: di(function(chart, d, i) {
+      return chart.x.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).x;
+    }),
+    labelY: di(function(chart, d, i) {
+      return chart.y.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).y;
+    }),
+    labelValue: di(function(chart, d, i) {
+      var value = chart.yValue.call(this, d, i);
+      return chart.labelFormat() ? chart.labelFormat()(value) : value;
+    }),
+    labelAnchor: di(function(chart, d, i) {
+      var position = chart.calculatedLabelPosition.call(this, d, i);
+
+      if (position == 'right')
+        return 'start';
+      else if (position == 'left')
+        return 'end';
+      else
+        return 'middle';
+    }),
+    
+    calculatedLabelPosition: di(function(chart, d, i) {
+      return chart.labelPosition();
+    }),
+    calculatedLabelOffset: di(function(chart, d, i) {
+      var offset = chart.labelOffset();
+      if (!_.isObject(offset)) {
+        offset = {
+          top: {x: 0, y: -offset},
+          right: {x: offset, y: 0},
+          bottom: {x: 0, y: offset},
+          left: {x: -offset, y: 0}
+        }[chart.calculatedLabelPosition.call(this, d, i)];
+
+        if (!offset)
+          offset = {x: 0, y: 0};
+      }
+
+      return offset;
+    }),
+
+    _getLabels: function() {
+      var labels = [];
+
+      if (this.labelDisplay()) {
+        labels.push({
+          labels: _.map(this.data(), function(point, index) {
+            return {
+              key: this.labelKey(point, index),
+              x: this.labelX(point, index),
+              y: this.labelY(point, index),
+              value: this.labelValue(point, index),
+              anchor: this.labelAnchor(point, index),
+              padding: this.labelPadding(),
+              'point': point['class'],
+              index: index,
+              point: point
+            };
+          }, this)
+        });
+      }      
+
+      return labels;
+    }
+  };
+
+  /**
+    Extensions for handling labels in series charts
+
+    Dependencies: Labels
+  */
+  var LabelsSeries = {
+    _getLabels: function() {
+      var seriesLabels = [];
+
+      if (this.labelDisplay()) {
+        seriesLabels = _.map(this.data(), function(series, seriesIndex) {
+          return {
+            key: series.key,
+            name: series.name,
+            'class': series['class'],
+            index: seriesIndex,
+            labels: _.map(series.values, function(point, pointIndex) {
+              return {
+                key: this.labelKey.call({_parentData: series}, point, pointIndex),
+                x: this.labelX.call({_parentData: series}, point, pointIndex),
+                y: this.labelY.call({_parentData: series}, point, pointIndex),
+                value: this.labelValue.call({_parentData: series}, point, pointIndex),
+                anchor: this.labelAnchor.call({_parentData: series}, point, pointIndex),
+                padding: this.labelPadding(),
+                'class': point['class'],
+                index: pointIndex,
+                point: point
+              }
+            }, this)
+          };
+        }, this);
+      }
+      
+      return seriesLabels;
+    }
+  }
+
   // Expose extensions
   d3.chart.extensions = _.extend(d3.chart.extensions || {}, {
     Series: Series,
     XY: XY,
     XYSeries: _.extend({}, Series, XY, XYSeries),
     Values: _.extend({}, XY, Values),
-    ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries)
+    ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries),
+    Labels: Labels,
+    LabelsSeries: _.extend({}, Labels, LabelsSeries)
   });
 
 })(d3, _, d3.chart.helpers);

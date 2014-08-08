@@ -7,7 +7,7 @@
     Bars
     Bar graph with centered key,value data and adjacent display for series
   */
-  d3.chart('ChartWithLabels').extend('Bars', mixin(extensions.ValuesSeries, {
+  d3.chart('SeriesChart').extend('Bars', mixin(extensions.ValuesSeries, extensions.LabelsSeries, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -58,8 +58,6 @@
           }
         }
       });
-
-      this.attachLabels();
     },
 
     barHeight: di(function(chart, d, i) {
