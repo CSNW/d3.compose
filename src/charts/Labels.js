@@ -8,12 +8,7 @@
   */
   d3.chart('Chart').extend('Labels', {
     initialize: function() {
-      this.displayedLabels = [];
-      this.on('change:data', function(data) {
-        this.displayedLabels = _.toArray(data);
-      });
-
-      this.layer('Labels', this.base.append('g').classed('chart-hover-labels', true), {
+      this.layer('Labels', this.base.append('g').classed('chart-labels', true), {
         dataBind: function(data) {
           var chart = this.chart();
           var series = this.selectAll('g')
@@ -27,24 +22,9 @@
             .data(chart.seriesLabels, chart.labelKey);
         },
         insert: function() {
-          var groups = this.append('g');
-
-          groups.append('rect')
-            .classed('chart-label-bg', true);
-          groups.append('text')
-            .classed('chart-label', true);
-
-          return groups;
+          return this.chart().insertLabels(this);
         },
         events: {
-          'enter': function() {
-            // Start at 0 opacity
-            this.select('rect').style('opacity', 0);
-            this.select('text').style('opacity', 0);
-          },
-          'update': function() {
-
-          },
           'merge': function() {
             var chart = this.chart();
 
@@ -52,32 +32,21 @@
             chart.drawLabels(this);
 
             // 2. Remove overlapping labels within series
-            chart.removeLabels(this);
+            chart.removeLabels();
 
             // 3. Group overlapping labels between series
-            chart.groupLabels(this);
-          },
-          'enter:transition': function() {
-            // Fade-in
-            this.select('rect').style('opacity', 0.5);
-            this.select('text').style('opacity', 1);
+            chart.groupLabels();
           },
           'exit:transition': function() {
             // Fade-out
-            this.select('rect').style('opacity', 0).remove();
-            this.select('text').style('opacity', 0).remove();
+            this.select('.chart-label-bg').style('opacity', 0).remove();
+            this.select('.chart-label').style('opacity', 0).remove();
           }
         }
-      })
+      });
     },
 
-    displayedLabels: property('displayedLabels', []),
-
-    labelKey: di(function(chart, d, i) { return d.key; }),
-    labelX: di(function(chart, d, i) { return d.x; }),
-    labelY: di(function(chart, d, i) { return d.y; }),
-    labelText: di(function(chart, d, i) { return d.value; }),
-    labelAnchor: di(function(chart, d, i) { return d.anchor; }),
+    labels: property('labels', {defaultValue: []}),
 
     seriesKey: di(function(chart, d, i) {
       return d.key || i;
@@ -102,59 +71,140 @@
       }
     },
 
-    drawLabels: function(selection) {
-      selection.each(this.drawLabel);
+    insertLabels: function(base) {
+      var groups = base.append('g');
+
+      groups.append('rect')
+        .classed('chart-label-bg', true);
+      groups.append('text')
+        .classed('chart-label', true);
+
+      return groups;
     },
-    removeLabels: function(selection) {
+    drawLabels: function(selection) {
+      var labels = [];
       selection.call(function(data) {
         _.each(data, function(series, seriesIndex) {
-          var prev;
-          _.each(series, function(label, labelIndex) {
-            if (this.checkForOverlap(prev, label))
-              d3.select(label).remove();
-            else
-              prev = label;
+          labels.push([]);
+
+          _.each(series, function(labelElement, labelIndex) {
+            var label = new Label(labelElement, d3.select(labelElement).data()[0]);
+            labels[seriesIndex].push(label);
+            label.draw();
           }, this);
         }, this);
       }.bind(this));
+
+      this.labels(labels);
+    },
+    removeLabels: function() {
+      _.each(this.labels(), function(series) {
+        var prev;
+        _.each(series, function(label) {
+          if (label.checkForOverlap(prev)) {
+            label.remove();
+          }
+          else {
+            prev = label;
+          }
+        }, this);
+      }, this);
     },
     groupLabels: function(selection) {
+      var groups = this.groups = [];
 
-    },
+      // TODO handle collisions from making groups
+      checkForCollisions(this.labels());
 
-    drawLabel: di(function(chart, d, i) {
-      var group = d3.select(this);
-      var text = group.select('text');
-      var rect = group.select('rect');
+      function checkForCollisions(labels) {
+        _.each(labels, function(seriesA) {
+          // Check through remaining series for collisions
+          _.each(labels.slice(1), function(seriesB) {
+            _.each(seriesB, function(labelB) {
+              if (!labelB.remove) {
+                _.each(seriesA, function(labelA) {
+                  if (!labelA.removed && labelA.checkForOverlap(labelB)) {
+                    groupLabels(labelA, labelB);
+                  }
+                });
+              }
+            });
+          });
+        });
+      }
 
-      text
-        .attr('x', chart.labelX)
-        .attr('y', chart.labelY)
-        .attr('text-anchor', chart.labelAnchor)
-        .text(chart.labelText);
+      function groupLabels(labelA, labelB) {
+        if (labelA.group) {
+          addLabelToGroup(labelB, labelA.group);
+        }
+        else {
+          var group = {
+            index: groups.length,
+            labels: []
+          };
+          groups.push(group);
 
-      var labelBounds = text.node().getBBox();
-      var offsets = {x: -1, y: 0, width: 3, height: 0};
+          addLabelToGroup(labelA, group);
+          addLabelToGroup(labelB, group);
+        }
+      }
 
-      rect
-        .attr('x', function(d, i) { return labelBounds.x + offsets.x - (d.padding || 0); })
-        .attr('y', function(d, i) { return labelBounds.y + offsets.y - (d.padding || 0); })
-        .attr('width', function(d, i) { return labelBounds.width +  offsets.width + 2 * (d.padding || 0); })
-        .attr('height', function(d, i) { return labelBounds.height + offsets.height + 2 * (d.padding || 0); })
-    }),
+      function addLabelToGroup(label, group) {
+        group.labels.push(label);
+        var positions = findLabelPositions(group.labels);
+        
+        label.group = group;
+        label.selection.attr('data-group-index', group.index);
 
-    checkForOverlap: function(a, b) {
-      if (!a || !b || !_.isFunction(a.getBBox) || !_.isFunction(b.getBBox)) return false;
+        _.each(group.labels, function(label, index) {
+          label.xCenter(positions[index].x).y(positions[index].y);
+        });
+      }
 
-      var aBBox = a.getBBox();
-      var box = b.getBBox();
-      var x1 = aBBox.x;
-      var x2 = aBBox.x + aBBox.width;
-      var y1 = aBBox.y;
-      var y2 = aBBox.y + aBBox.height;
+      function findLabelPositions(labels) {
+        var x = findCenter(labels);
 
-      return ((box.x >= x1 && box.x <= x2) || (box.x + box.width >= x1 && box.x + box.width <= x2))
-        && ((box.y >= y1 && box.y <= y2) || (box.y + box.height >= y1 && box.y + box.height <= y2));
+        // First, sort labels by y
+        var byY = _.chain(labels)
+          .map(function(label, index) {
+            return {
+              index: index,
+              key: label.data.key,
+              y: label.y(),
+              height: label.height()
+            };
+          })
+          .sortBy('y')
+          .reverse()
+          .value();
+
+        // Then, adjust for label height
+        byY[0].groupedY = byY[0].y;
+        _.reduce(byY.slice(1), function(memo, label) {
+          label.groupedY = memo - label.height - 1;
+          return label.groupedY;
+        }, byY[0].groupedY);
+
+        // Then, unsort by index
+        byY = _.sortBy(byY, 'index');
+
+        positions = _.map(labels, function(label, index) {
+          return {
+            x: x,
+            y: byY[index].groupedY
+          };
+        });
+
+        return positions;
+      }
+
+      function findCenter(labels) {
+        var center = labels[0].xCenter();
+        for (var i = 1, l = labels.length; i < l; i++) {
+          center += (labels[i].xCenter() - center) / 2;
+        }
+        return center;
+      }
     }
   });
 
@@ -240,6 +290,203 @@
     text: di(function(chart, d, i) {
       return d.values.y;
     })
+  });
+
+  /**
+    Element helper
+
+    @param {SVG Element} element
+  */
+  function Element(element) {
+    if (!_.isFunction(element.getBBox))
+      throw new Error('Only SVG elements with getBBox() are supported by Element helper');
+
+    this.element = element;
+    this.selection = d3.select(element);
+    this.refreshBounds();
+    this.removed = false;
+
+    return this;
+  }
+  _.extend(Element.prototype, {
+    x: property('x', {
+      set: function(value) {
+        this.selection.attr('x', value);
+      }
+    }),
+    y: property('y', {
+      set: function(value) {
+        this.selection.attr('y', value);
+      }
+    }),
+    width: property('width', {
+      set: function(value) {
+        this.selection.attr('width', value);
+      }
+    }),
+    height: property('height', {
+      set: function(value) {
+        this.selection.attr('height', value);
+      }
+    }),
+    bounds: property('bounds', {
+      get: function() {
+        return {
+          x: this.x(),
+          y: this.y(),
+          width: this.width(),
+          height: this.height()
+        };
+      },
+      set: function(value) {
+        this.x(value.x);
+        this.y(value.y);
+        this.width(value.width);
+        this.height(value.height);
+      }
+    }),
+
+    xCenter: property('xCenter', {
+      get: function() {
+        return this.x() + (this.width() / 2);
+      },
+      set: function(value) {
+        this.x(value - (this.width() / 2));
+      }
+    }),
+
+    getBBox: function() {
+      return this.element.getBBox();
+    },
+    refreshBounds: function() {
+      this.bounds(this.getBBox());
+      return this;
+    },
+    checkForOverlap: function(element) {
+      if (!element || !element.bounds) return false;
+
+      var a = getEdges(this.bounds());
+      var b = getEdges(element.bounds());
+
+      return ((b.left >= a.left && b.left <= a.right) || (b.right >= a.left && b.right <= a.right))
+        && ((b.top >= a.top && b.top <= a.bottom) || (b.bottom >= a.top && b.bottom <= a.bottom));
+
+      function getEdges(bounds) {
+        return {
+          left: bounds.x,
+          right: bounds.x + bounds.width,
+          top: bounds.y,
+          bottom: bounds.y + bounds.height
+        };
+      }
+    }
+  });
+
+  /**
+    Group helper
+
+    @param {SVG Group} group
+  */
+  function Group(group) {
+    Element.call(this, group);
+    return this;
+  }
+  _.extend(Group.prototype, Element.prototype, {
+    getBBox: function() {
+      // getBBox does not account for translate(...), needed for groups
+      var bbox = this.element.getBBox();
+      var transform = this.selection.attr('transform');
+
+      if (transform && _.indexOf(transform, 'translate')) {
+        var parts = transform.split(')');
+        var translate = {x: 0, y: 0};
+        _.each(parts, function(part) {
+          if (_.indexOf(part, 'translate')) {
+            xy = part.replace('translate', '').replace('(', '').split(',');
+            if (xy.length >= 2) {
+              translate.x = +xy[0].trim();
+              translate.y = +xy[1].trim();  
+            }
+          }
+        }, this);
+
+        bbox.x += translate.x;
+        bbox.y += translate.y;
+      }
+
+      return bbox;
+    },
+
+    x: property('x', {
+      set: function(value) {
+        this.selection.attr('transform', helpers.transform.translate(value, this.y()));
+      }
+    }),
+    y: property('y', {
+      set: function(value) {
+        this.selection.attr('transform', helpers.transform.translate(this.x(), value));
+      }
+    })
+  });
+
+  /**
+    Label helper
+
+    @param {SVG Element} element
+  */
+  function Label(element, data) {
+    Group.call(this, element);
+    this.data = data;
+
+    this.text = new Element(this.selection.select('text').node());
+    this.rect = new Element(this.selection.select('rect').node());
+  }
+  _.extend(Label.prototype, Group.prototype, {
+    draw: function() {
+      this.text
+        .x(this.data.x)
+        .y(this.data.y)
+        .selection
+          .attr('text-anchor', 'start')
+          .text(this.data.value);
+
+      var textBounds = this.text.refreshBounds().bounds();
+      var offsets = {x: -1, y: 0, width: 3, height: 0};
+
+      // TODO Handle centering vertically and horizontally
+      var bounds = {
+        x: textBounds.x - (textBounds.width / 2) + offsets.x - (this.data.padding || 0),
+        y: textBounds.y + offsets.y - 2*(this.data.padding || 0),
+        width: textBounds.width + offsets.width + 2*(this.data.padding || 0),
+        height: textBounds.height + offsets.height + 2*(this.data.padding || 0)
+      };
+
+      this
+        .x(bounds.x)
+        .y(bounds.y);
+
+      this.rect
+        .bounds({
+          x: 0,
+          y: 0,
+          width: bounds.width,
+          height: bounds.height
+        });
+
+      this.text
+        .x(this.data.padding || 0)
+        .y(textBounds.height/* + (d.padding || 0) */);
+
+      // Make sure group uses up-to-date rect and text size
+      this.refreshBounds();
+
+      return this;
+    },
+    remove: function() {
+      this.removed = true;
+      this.selection.remove();
+      return this;
+    }
   });
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);

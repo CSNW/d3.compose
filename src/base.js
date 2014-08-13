@@ -356,7 +356,7 @@
       this.on('chart:leave:mouse', function() {
         if (insidePoints) {
           insidePoints = false;
-          trigger('points:leave:mouse')
+          trigger('points:leave:mouse');
         }
       });
     },

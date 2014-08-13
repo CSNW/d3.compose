@@ -12,6 +12,10 @@
 
   <link rel="stylesheet" type="text/css" href="../tmp/css/d3.chart.multi.base.css">
   <style>
+    .container {
+      margin: 0 auto;
+      width: 900px;
+    }
     @media (min-width: 768px) {
       #chart {
         width: 600px;
@@ -21,11 +25,13 @@
   </style>
 </head>
 <body>
-  <svg id="chart"></svg>
-  <div>
-    Container: <span id="mouse-container"></span><br>
-    Chart: <span id="mouse-chart"></span><br>
-    Points: <span id="mouse-points"></span>
+  <div class="container">
+    <svg id="chart"></svg>
+    <div>
+      Container: <span id="mouse-container"></span><br>
+      Chart: <span id="mouse-chart"></span><br>
+      Points: <span id="mouse-points"></span>
+    </div>
   </div>
 
   <script src="../bower_components/d3/d3.js"></script>
@@ -40,6 +46,9 @@
       charts: {
         line: {type: 'Line', dataKey: 'increasing-dense', labels: true},
         labels: {type: 'Labels'}
+      },
+      axes: {
+        x: {scale: {domain: [0, 50]}}
       }
     };
     var data = {

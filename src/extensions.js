@@ -405,7 +405,7 @@
         x: x,
         y: y,
         distance: distance
-      }
+      };
     }
   };
 
@@ -636,7 +636,7 @@
               value: this.labelValue(point, index),
               anchor: this.labelAnchor(point, index),
               padding: this.labelPadding(),
-              'point': point['class'],
+              'class': point['class'],
               index: index,
               point: point
             };
@@ -675,7 +675,7 @@
                 'class': point['class'],
                 index: pointIndex,
                 point: point
-              }
+              };
             }, this)
           };
         }, this);
@@ -683,7 +683,7 @@
       
       return seriesLabels;
     }
-  }
+  };
 
   // Expose extensions
   d3.chart.extensions = _.extend(d3.chart.extensions || {}, {
