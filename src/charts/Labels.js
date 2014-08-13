@@ -170,18 +170,17 @@
         label.selection.attr('data-group-index', group.index);
 
         _.each(group.labels, function(label, index) {
-          label.xCenter(positions[index].x).y(positions[index].y);
+          label.xCenter(positions[index].xCenter).y(positions[index].y);
         });
       }
 
       function findLabelPositions(labels) {
-        var x = findCenter(labels);
-
         // First, sort labels by y
         var byY = _.chain(labels)
           .map(function(label, index) {
             return {
               index: index,
+              xCenter: label.xCenter(),
               y: label.y(),
               height: label.height()
             };
@@ -205,7 +204,7 @@
 
         positions = _.map(labels, function(label, index) {
           return {
-            x: x,
+            xCenter: byY[index].xCenter,
             y: byY[index].groupedY
           };
         });
