@@ -13,7 +13,7 @@
   <link rel="stylesheet" type="text/css" href="../tmp/css/d3.chart.multi.base.css">
   <style>
     .container {
-      margin: 0 auto;
+      margin: 40px auto 0;
       width: 900px;
     }
     @media (min-width: 768px) {
@@ -42,13 +42,15 @@
   <script src="../bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript">
     var config = {
-      type: 'XY',
+      type: 'Values',
       charts: {
-        line: {type: 'Line', dataKey: 'increasing-dense', labels: true},
+        line: {type: 'Line', dataKey: 'increasing', labels: true},
+        bars: {type: 'Bars', dataKey: 'decreasing', labels: true},
         labels: {type: 'Labels'}
       },
       axes: {
-        x: {scale: {domain: [0, 50]}}
+        x: {scale: {type: 'ordinal', domain: [0, 10, 20, 30, 40, 50]}},
+        y: {scale: {domain: [0, 200]}}
       }
     };
     var data = {

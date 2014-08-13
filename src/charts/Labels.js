@@ -5,6 +5,7 @@
 
   /**
     Labels
+    Draw labels from _getLabels for each chart on container
   */
   d3.chart('Chart').extend('Labels', {
     initialize: function() {
@@ -46,7 +47,21 @@
       });
     },
 
+    excludeFromLegend: true,
     labels: property('labels', {defaultValue: []}),
+
+    labelX: di(function(chart, d, i) {
+      return d.x;
+    }),
+    labelY: di(function(chart, d, i) {
+      return d.y;
+    }),
+    labelText: di(function(chart, d, i) {
+      return d.value;
+    }),
+    labelAnchor: di(function(chart, d, i) {
+      return d.anchor;
+    }),
 
     seriesKey: di(function(chart, d, i) {
       return d.key || i;
@@ -88,7 +103,12 @@
           labels.push([]);
 
           _.each(series, function(labelElement, labelIndex) {
-            var label = new Label(labelElement, d3.select(labelElement).data()[0]);
+            var label = new Label(labelElement, d3.select(labelElement).data()[0], {
+              labelX: this.labelX,
+              labelY: this.labelY,
+              labelText: this.labelText,
+              labelAnchor: this.labelAnchor
+            });
             labels[seriesIndex].push(label);
             label.draw();
           }, this);
@@ -111,17 +131,15 @@
       }, this);
     },
     groupLabels: function(selection) {
-      var groups = this.groups = [];
-
       // TODO handle collisions from making groups
       checkForCollisions(this.labels());
 
       function checkForCollisions(labels) {
-        _.each(labels, function(seriesA) {
+        _.each(labels, function(seriesA, seriesIndex) {
           // Check through remaining series for collisions
-          _.each(labels.slice(1), function(seriesB) {
+          _.each(labels.slice(seriesIndex + 1), function(seriesB) {
             _.each(seriesB, function(labelB) {
-              if (!labelB.remove) {
+              if (!labelB.removed) {
                 _.each(seriesA, function(labelA) {
                   if (!labelA.removed && labelA.checkForOverlap(labelB)) {
                     groupLabels(labelA, labelB);
@@ -138,12 +156,7 @@
           addLabelToGroup(labelB, labelA.group);
         }
         else {
-          var group = {
-            index: groups.length,
-            labels: []
-          };
-          groups.push(group);
-
+          var group = {labels: []};
           addLabelToGroup(labelA, group);
           addLabelToGroup(labelB, group);
         }
@@ -169,7 +182,6 @@
           .map(function(label, index) {
             return {
               index: index,
-              key: label.data.key,
               y: label.y(),
               height: label.height()
             };
@@ -179,11 +191,14 @@
           .value();
 
         // Then, adjust for label height
-        byY[0].groupedY = byY[0].y;
-        _.reduce(byY.slice(1), function(memo, label) {
-          label.groupedY = memo - label.height - 1;
+        _.reduce(byY, function(memo, label) {
+          if (_.isUndefined(memo))
+            label.groupedY = label.y;
+          else
+            label.groupedY = memo - label.height;
+
           return label.groupedY;
-        }, byY[0].groupedY);
+        }, undefined);
 
         // Then, unsort by index
         byY = _.sortBy(byY, 'index');
@@ -207,7 +222,13 @@
       }
     }
   });
+  
+  /**
+    HoverLabels
+    Listen to points events and draw labels
 
+    TODO Extend Labels chart
+  */
   d3.chart('Chart').extend('HoverLabels', {
     initialize: function() {
       _.bindAll(this, 'onPointsEnter', 'onPointsMove', 'onPointsLeave');
@@ -263,6 +284,7 @@
       });
     },
 
+    excludeFromLegend: true,
     draw: function() {
       // Override default draw call
       // (only want to draw on hover)
@@ -434,21 +456,28 @@
 
     @param {SVG Element} element
   */
-  function Label(element, data) {
+  function Label(element, data, options) {
     Group.call(this, element);
     this.data = data;
 
     this.text = new Element(this.selection.select('text').node());
     this.rect = new Element(this.selection.select('rect').node());
+
+    this.options = _.defaults({}, options, {
+      labelX: function(d, i) { return d.x; },
+      labelY: function(d, i) { return d.y; },
+      labelText: function(d, i) { return d.value; },
+      labelAnchor: function(d, i) { return d.anchor; }
+    });
   }
   _.extend(Label.prototype, Group.prototype, {
     draw: function() {
       this.text
-        .x(this.data.x)
-        .y(this.data.y)
+        .x(this.options.labelX)
+        .y(this.options.labelY)
         .selection
           .attr('text-anchor', 'start')
-          .text(this.data.value);
+          .text(this.options.labelText);
 
       var textBounds = this.text.refreshBounds().bounds();
       var offsets = {x: -1, y: 0, width: 3, height: 0};

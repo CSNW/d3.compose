@@ -63,6 +63,9 @@
     transform: function(allData) {
       var extractData = d3.chart('Multi').prototype.extractData;
       var data = _.reduce(this.options().charts, function(data, chart) {
+        if (chart.excludeFromLegend)
+          return data;
+
         var chartData = _.map(extractData(chart, allData), function(series, index) {
           return {
             chart: chart,
