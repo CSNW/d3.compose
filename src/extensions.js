@@ -563,6 +563,8 @@
       set: function(options) {
         if (_.isBoolean(options))
           options = {display: options};
+        else if (_.isString(options))
+          options = {display: options == 'display' || options == 'show'}; 
         else if (options && _.isUndefined(options.display))
           options.display = true;
 
@@ -595,6 +597,7 @@
     }),
     labelOffset: property('labelOffset', {defaultValue: 0}),
     labelPadding: property('labelPadding', {defaultValue: 2}),
+    labelStyle: property('labelStyle', {defaultValue: {}}),
 
     labelText: di(function(chart, d, i) {
       var value = chart.yValue.call(this, d, i);
@@ -649,6 +652,7 @@
               padding: this.labelPadding(),
               anchor: this.labelAnchor(point, index),
               'class': point['class'],
+              style: this.labelStyle(),
               values: point,
               index: index,
             };
@@ -667,7 +671,8 @@
         offset: this.calculatedLabelOffset(point.values, point.index),
         padding: this.labelPadding(),
         anchor: this.labelAnchor(point.values, point.index),
-        'class': point['class'],
+        'class': point.values['class'],
+        style: this.labelStyle(),
         values: point.values,
         index: point.index
       };
@@ -702,6 +707,7 @@
                 padding: this.labelPadding(),
                 anchor: this.labelAnchor.call({_parentData: series}, point, pointIndex),
                 'class': point['class'],
+                style: this.labelStyle(),
                 values: point,
                 index: pointIndex,
               };

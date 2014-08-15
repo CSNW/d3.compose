@@ -17,7 +17,7 @@
 
           series.enter()
             .append('g')
-            .attr('class', chart.seriesClass);
+            .attr('class', chart.seriesClass)
           series.exit()
             .remove();
 
@@ -68,6 +68,10 @@
     labelAnchor: di(function(chart, d, i) {
       return d.anchor || 'middle';
     }),
+    labelStyle: di(function(chart, d, i) {
+      var styles = _.defaults({}, d.style, chart.options().style);
+      return helpers.style(styles) || null;
+    }),
 
     seriesKey: di(function(chart, d, i) {
       return d.key || i;
@@ -87,7 +91,8 @@
     },
 
     insertLabels: function(base) {
-      var groups = base.append('g');
+      var groups = base.append('g')
+        .attr('style', this.labelStyle);
 
       groups.append('rect')
         .classed('chart-label-bg', true);
@@ -378,8 +383,10 @@
       var b = getEdges(element.bounds());
       var alignedLR = (a.left == b.left && a.right == b.right);
       var alignedTB = (a.top == b.top && a.bottom == b.bottom);
-      var overlapLR = (b.left > a.left && b.left < a.right) || (b.right > a.left && b.right < a.right) || alignedLR;
-      var overlapTB = (b.top > a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom < a.bottom) || alignedTB;
+      var containedLR = (b.left < a.left && b.right > a.right);
+      var containerTB = (b.bottom < a.bottom && b.top > a.top);
+      var overlapLR = (b.left > a.left && b.left < a.right) || (b.right > a.left && b.right < a.right) || alignedLR || containedLR;
+      var overlapTB = (b.top > a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom < a.bottom) || alignedTB || containerTB;
 
       if (options && options.compare == 'LR')
         return overlapLR;
