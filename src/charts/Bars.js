@@ -29,16 +29,26 @@
 
             if (!chart.invertedXY()) {
               this
-                .attr('x', chart.barX)
                 .attr('y', chart.y0)
-                .attr('width', chart.itemWidth)
                 .attr('height', 0);  
             }
             else {
               this
                 .attr('x', chart.x0)
+                .attr('width', 0);
+            }
+          },
+          'merge': function() {
+            var chart = this.chart();
+
+            if (!chart.invertedXY()) {
+              this
+                .attr('x', chart.barX)
+                .attr('width', chart.itemWidth);
+            }
+            else {
+              this
                 .attr('y', chart.barY)
-                .attr('width', 0)
                 .attr('height', chart.itemWidth);   
             }
           },
@@ -55,6 +65,9 @@
                 .attr('x', chart.barX)
                 .attr('width', chart.barHeight);
             }
+          },
+          'exit': function() {
+            this.remove();
           }
         }
       });

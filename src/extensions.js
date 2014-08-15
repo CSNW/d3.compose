@@ -459,9 +459,9 @@
     setXScaleRange: function(xScale, data, chart) {
       if (_.isFunction(xScale.rangeBands)) {
         if (this.invertedXY())
-          return xScale.rangeBands([chart.height(), 0], this.itemPadding(), this.itemPadding() / 2);
+          return xScale.rangeBands([chart.height(), 0], chart.itemPadding(), chart.itemPadding() / 2);
         else
-          return xScale.rangeBands([0, chart.width()], this.itemPadding(), this.itemPadding() / 2);
+          return xScale.rangeBands([0, chart.width()], chart.itemPadding(), chart.itemPadding() / 2);
       }
       else {
         return XY.setXScaleRange.call(this, xScale, data, chart);
