@@ -18,6 +18,8 @@
           series.enter()
             .append('g')
             .attr('class', chart.seriesClass);
+          series.exit()
+            .remove();
 
           return series.selectAll('g')
             .data(chart.seriesLabels, chart.labelKey);

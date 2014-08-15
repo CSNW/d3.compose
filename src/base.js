@@ -382,14 +382,12 @@
         }
         else if (insideLabels) {
           insideLabels = false;
-          console.log('leave');
           trigger('labels:leave:mouse');
         }
       });
       this.on('points:leave:mouse', function() {
         if (insideLabels) {
           insideLabels = false;
-          console.log('leave');
           trigger('labels:leave:mouse');
         }
       });
