@@ -89,7 +89,8 @@
   });
 
   /**
-    Chart: Foundation for building charts with series data
+    Chart
+    Foundation for building charts with series data
   */
   d3.chart('Base').extend('Chart', {
     initialize: function(options) {
@@ -101,8 +102,13 @@
 
   /**
     Container
-
     Foundation for chart and component placement
+
+    Properties:
+    - {Object/Array} rawData
+    - {Object} chartMargins {top, right, bottom, left} in px
+    - {Number} width in px
+    - {Number} height in px
   */
   d3.chart('Base').extend('Container', {
     initialize: function(options) {
@@ -119,9 +125,7 @@
 
       this.base.classed('chart', true);
 
-      this.on('change:dimensions', function() {
-        this.redraw();
-      });
+      this.on('change:dimensions', this.redraw);
 
       this.options(options || {});
       this.redrawFor('options');
@@ -129,6 +133,46 @@
       this.handleResize();
       this.handleHover();
     },
+
+    rawData: property('rawData'),
+
+    // Chart margins from Container edges ({top, right, bottom, left})
+    chartMargins: property('chartMargins', {
+      get: function(values) {
+        values = (values && typeof values == 'object') ? values : {};
+        values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
+
+        return values;
+      },
+      set: function(values, previous) {
+        values = (values && typeof values == 'object') ? values : {};
+        values = _.defaults(values, previous, {top: 0, right: 0, bottom: 0, left: 0});
+
+        return {
+          override: values,
+          after: function() {
+            this.trigger('change:dimensions');
+          }
+        };
+      }
+    }),
+
+    width: property('width', {
+      defaultValue: function() {
+        return helpers.dimensions(this.base).width;
+      },
+      set: function(value) {
+        this.trigger('change:dimensions');
+      }
+    }),
+    height: property('height', {
+      defaultValue: function() {
+        return helpers.dimensions(this.base).height;
+      },
+      set: function(value) {
+        this.trigger('change:dimensions');
+      }
+    }),
 
     draw: function(data) {
       // Explicitly set width and height of container
@@ -174,11 +218,7 @@
     },
 
     attachChart: function(id, chart) {
-      chart.id = id;
-      chart.base.attr('data-id', id);
-      chart.container = this;
-
-      this.attach(id, chart);
+      this._attach(id, chart);
       this.chartsById[id] = chart;
     },
 
@@ -186,19 +226,12 @@
       var chart = this.chartsById[id];
       if (!chart) return;
 
-      // Remove chart base layer and all children
-      chart.base.remove();
-
-      delete this._attached[id];
+      this._detach(id, chart);
       delete this.chartsById[id];
     },
 
     attachComponent: function(id, component) {
-      component.id = id;
-      component.base.attr('data-id', id);
-      component.container = this;
-
-      this.attach(id, component);
+      this._attach(id, component);
       this.componentsById[id] = component;
 
       component.on('change:position', function() {
@@ -210,11 +243,8 @@
       var component = this.componentsById[id];
       if (!component) return;
 
-      // Remove component base layer and all children
-      component.base.remove();
-
       component.off('change:position');
-      delete this._attached[id];
+      this._detach(id, component);
       delete this.componentsById[id];
     },
 
@@ -223,46 +253,6 @@
       this._updateChartMargins(layout);
       this._positionLayers(layout);
     },
-
-    rawData: property('rawData'),
-
-    // Chart margins from Container edges ({top, right, bottom, left})
-    chartMargins: property('chartMargins', {
-      get: function(values) {
-        values = (values && typeof values == 'object') ? values : {};
-        values = _.defaults(values, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return values;
-      },
-      set: function(values, previous) {
-        values = (values && typeof values == 'object') ? values : {};
-        values = _.defaults(values, previous, {top: 0, right: 0, bottom: 0, left: 0});
-
-        return {
-          override: values,
-          after: function() {
-            this.trigger('change:dimensions');
-          }
-        };
-      }
-    }),
-
-    width: property('width', {
-      defaultValue: function() {
-        return helpers.dimensions(this.base).width;
-      },
-      set: function(value) {
-        this.trigger('change:dimensions');
-      }
-    }),
-    height: property('height', {
-      defaultValue: function() {
-        return helpers.dimensions(this.base).height;
-      },
-      set: function(value) {
-        this.trigger('change:dimensions');
-      }
-    }),
     
     chartWidth: function() {
       var margins = this._chartMargins();
@@ -282,31 +272,147 @@
     },
 
     handleHover: function() {
-      this.on('enter:mouse', function(coordinates) {
-        this.trigger('hover', coordinates);
-      });
-      this.on('move:mouse', function(coordinates) {
-        this.trigger('hover', coordinates);
-      });
-
-      var hovering;
+      var inside;
       var trigger = this.trigger.bind(this);
-      var onMouseMove = this.onMouseMove = _.throttle(function(coordinates) {
-        if (hovering)
+      
+      var throttledMouseMove = _.throttle(function(coordinates) {
+        if (inside)
           trigger('move:mouse', coordinates);
       }, 100);
 
       this.base.on('mouseenter', function() {
-        hovering = true;
-        trigger('enter:mouse', d3.mouse(this));
+        inside = true;
+        trigger('enter:mouse', translateToXY(d3.mouse(this)));
       });
       this.base.on('mousemove', function() {
-        onMouseMove(d3.mouse(this));
+        throttledMouseMove(translateToXY(d3.mouse(this)));
       });
       this.base.on('mouseleave', function() {
-        hovering = false;
+        inside = false;
         trigger('leave:mouse');
       });
+
+      function translateToXY(coordinates) {
+        return {x: coordinates[0], y: coordinates[1]};
+      }
+
+      // Handle hover over charts
+      var insideChart;
+      this.on('enter:mouse', function(coordinates) {
+        var chartCoordinates = this._translateCoordinatesToChart(coordinates);
+        if (chartCoordinates) {
+          insideChart = true;
+          trigger('chart:enter:mouse', chartCoordinates);
+        }
+      });
+      this.on('move:mouse', function(coordinates) {
+        var chartCoordinates = this._translateCoordinatesToChart(coordinates);
+        if (chartCoordinates) {
+          if (insideChart) {
+            trigger('chart:move:mouse', chartCoordinates);
+          }
+          else {
+            insideChart = true;
+            trigger('chart:enter:mouse', chartCoordinates);
+          }
+        }
+        else if (insideChart) {
+          insideChart = false;
+          trigger('chart:leave:mouse');
+        }
+      });
+      this.on('leave:mouse', function() {
+        if (insideChart) {
+          insideChart = false;
+          trigger('chart:leave:mouse');
+        }
+      });
+
+      // Handle hover over points
+      var insidePoints;
+      this.on('chart:enter:mouse', function(coordinates) {
+        var points = this._translateCoordinatesToPoints(coordinates);
+        if (points.length) {
+          insidePoints = true;
+          trigger('points:enter:mouse', points);
+        }
+      });
+      this.on('chart:move:mouse', function(coordinates) {
+        var points = this._translateCoordinatesToPoints(coordinates);
+        if (points.length) {
+          if (insidePoints) {
+            trigger('points:move:mouse', points);
+          }
+          else {
+            insidePoints = true;
+            trigger('points:enter:mouse', points);
+          }
+        }
+        else if (insidePoints) {
+          insidePoints = false;
+          trigger('points:leave:mouse');
+        }
+      });
+      this.on('chart:leave:mouse', function() {
+        if (insidePoints) {
+          insidePoints = false;
+          trigger('points:leave:mouse');
+        }
+      });
+
+      // Handle hover over points labels
+      var insideLabels;
+      this.on('points:enter:mouse', function(points) {
+        var labels = this._convertPointsToLabels(points);
+        if (labels.length) {
+          insideLabels = true;
+          trigger('labels:enter:mouse', labels);
+        }
+      });
+      this.on('points:move:mouse', function(points) {
+        var labels = this._convertPointsToLabels(points);
+        if (labels.length) {
+          if (insideLabels) {
+            trigger('labels:move:mouse', labels);
+          }
+          else {
+            insideLabels = true;
+            trigger('labels:enter:mouse', labels);
+          }
+        }
+        else if (insideLabels) {
+          insideLabels = false;
+          trigger('labels:leave:mouse');
+        }
+      });
+      this.on('points:leave:mouse', function() {
+        if (insideLabels) {
+          insideLabels = false;
+          trigger('labels:leave:mouse');
+        }
+      });
+    },
+
+    _attach: function(id, item) {
+      item.id = id;
+      item.base.attr('data-id', id);
+      item.container = this;
+
+      this.attach(id, item);
+
+      if (item && _.isFunction(item.trigger)) {
+        item.trigger('attached');
+      }
+    },
+
+    _detach: function(id, item) {
+      item.base.remove();
+
+      delete this._attached[id];
+
+      if (item && _.isFunction(item.trigger)) {
+        item.trigger('detached');
+      }
     },
 
     _preDraw: function(data) {
@@ -437,6 +543,102 @@
         return _.extend({}, this.chartMargins());
       }
     }),
+
+    _translateCoordinatesToChart: function(coordinates) {
+      var margins = this._chartMargins();
+      var chartWidth = this.chartWidth();
+      var chartHeight = this.chartHeight();
+
+      var bounds = {
+        top: margins.top,
+        right: margins.left + chartWidth,
+        bottom: margins.top + chartHeight,
+        left: margins.left
+      };
+
+      if (coordinates.x >= bounds.left && coordinates.x <= bounds.right
+          && coordinates.y >= bounds.top && coordinates.y <= bounds.bottom) {
+        var chartCoordinates = {
+          x: coordinates.x - bounds.left,
+          y: coordinates.y - bounds.top
+        };
+
+        return chartCoordinates;
+      }
+    },
+
+    _translateCoordinatesToPoints: function(coordinates) {
+      var points = _.reduce(this.chartsById, function(memo, chart, id) {
+        if (chart && _.isFunction(chart._translateCoordinatesToPoints)) {
+          var chartPoints = chart._translateCoordinatesToPoints(coordinates, {measurement: 'x'});
+          if (!chartPoints || !_.isArray(chartPoints)) {
+            throw new Error('d3.chart.multi: Expected _translateCoordinatesToPoints to return an Array for chart with id: ' + id);
+          }
+          else {
+            // Add chart id to series key
+            _.map(chartPoints, function(series) {
+              series.chartId = id;
+              series.seriesKey = series.key;
+              series.key = series.key ? id + '-' + series.key : id;
+            });
+
+            return memo.concat(chartPoints);
+          }
+            
+        }
+        else {
+          return memo;
+        }
+      }, [], this);
+
+      return points;
+    },
+
+    _convertPointsToLabels: function(points) {
+      var labels = _.map(points, function(series) {
+        series = _.clone(series);
+        var chart = this.chartsById[series.chartId];
+        if (chart && _.isFunction(chart._convertPointToLabel)) {
+          series.labels = _.map(series.points, chart._convertPointToLabel, chart);
+        }
+        else {
+          series.labels = [];
+        }
+
+        // Remove points from labels
+        delete series.points;
+
+        return series;
+      }, this);
+
+      return labels;
+    },
+
+    _getLabels: function() {
+      var labels = _.reduce(this.chartsById, function(memo, chart, id) {
+        if (chart && _.isFunction(chart._getLabels)) {
+          var labels = chart._getLabels();
+          if (!labels || !_.isArray(labels)) {
+            throw new Error('d3.chart.multi: Expected _getLabels to return an Array for chart with id: ' + id);
+          }
+          else {
+            // Add chart id to series key
+            _.map(labels, function(series) {
+              series.chartId = id;
+              series.seriesKey = series.key;
+              series.key = series.key ? id + '-' + series.key : id;
+            });
+
+            return memo.concat(labels);
+          }
+        }
+        else {
+          return memo;
+        }
+      }, [], this);
+
+      return labels;
+    }
   });
   
   /**

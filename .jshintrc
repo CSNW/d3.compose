@@ -5,5 +5,5 @@
   "debug": true,
   "validthis": true,
   "sub": true,
-  "esnext": true
+  "laxbreak": true
 }

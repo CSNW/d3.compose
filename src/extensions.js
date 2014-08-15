@@ -7,6 +7,8 @@
     Extensions for handling series data
   */
   var Series = {
+    isSeries: true,
+
     seriesKey: di(function(chart, d, i) {
       return d.key;
     }),
@@ -89,6 +91,8 @@
       - To invert, change range for scale (from width to height or vice-versa) and swap x and y coordinates
   */
   var XY = {
+    isXY: true,
+
     xScale: property('xScale', {type: 'Function', setFromOptions: false}),
     yScale: property('yScale', {type: 'Function', setFromOptions: false}),
 
@@ -173,7 +177,7 @@
       return d.y;
     }),
     keyValue: di(function(chart, d, i) {
-      return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i);
+      return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i) + ',' + chart.yValue.call(this, d, i);
     }),
 
     setScales: function() {
@@ -224,6 +228,55 @@
     _xScale: property('_xScale', {type: 'Function'}),
     _yScale: property('_yScale', {type: 'Function'}),
     
+    _translateCoordinatesToPoints: function(coordinates, options) {
+      var points = [];
+      var result = {
+        distance: Infinity,
+        coordinates: {
+          x: 0,
+          y: 0
+        }
+      };
+
+      _.each(this.data(), function(point, index) {
+        var calculated = this._distance(point, index, coordinates, options);
+
+        if (calculated.distance < result.distance) {
+          result.distance = calculated.distance;
+          result.coordinates.x = calculated.x;
+          result.coordinates.y = calculated.y;
+          result.values = point;
+          result.index = index;
+        }
+      }, this);
+
+      if (result.distance < Infinity) {
+        points.push({
+          // Leave series information blank (points only)
+          points: [result]
+        });
+      }
+
+      return points;
+    },
+    _distance: function(point, index, coordinates, options) {
+      var x = this.x(point, index);
+      var y = this.y(point, index);
+
+      var distance;
+      if (options.measurement == 'x')
+        distance = Math.abs(x - coordinates.x);
+      else if (options.measurement == 'y')
+        distance = Math.abs(y - coordinates.y);
+      else
+        distance = Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2));
+
+      return {
+        x: x,
+        y: y,
+        distance: distance
+      };
+    }
   };
 
   /**
@@ -306,7 +359,65 @@
 
         return valueOrDefault(value, max);
       }
-    })
+    }),
+
+    _translateCoordinatesToPoints: function(coordinates, options) {
+      var seriesPoints = [];
+
+      _.each(this.data(), function(series, seriesIndex) {
+        var result = {
+          distance: Infinity,
+          coordinates: {x: 0, y: 0},
+          series: {
+            key: series.key,
+            name: series.name,
+            index: seriesIndex
+          }
+        };
+
+        _.each(series.values, function(point, pointIndex) {
+          var calculated = this._distance(point, pointIndex, coordinates, series, options);
+
+          if (calculated.distance < result.distance) {
+            result.distance = calculated.distance;
+            result.coordinates.x = calculated.x;
+            result.coordinates.y = calculated.y;
+            result.values = point;
+            result.index = pointIndex;
+          }
+        }, this);
+
+        if (result.distance < Infinity) {
+          seriesPoints.push({
+            key: series.key,
+            name: series.name,
+            'class': series['class'],
+            index: seriesIndex,
+            points: [result]
+          });
+        }
+      }, this);
+
+      return seriesPoints;
+    },
+    _distance: function(point, index, coordinates, series, options) {
+      var x = this.x.call({_parentData: series}, point, index);
+      var y = this.y.call({_parentData: series}, point, index);
+
+      var distance;
+      if (options.measurement == 'x')
+        distance = Math.abs(x - coordinates.x);
+      else if (options.measurement == 'y')
+        distance = Math.abs(y - coordinates.y);
+      else
+        distance = Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2));
+
+      return {
+        x: x,
+        y: y,
+        distance: distance
+      };
+    }
   };
 
   /**
@@ -317,10 +428,11 @@
     Dependencies: XY
   */
   var Values = {
+    isValues: true,
+
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
     itemPadding: property('itemPadding', {defaultValue: 0.1}),
-    isValues: true,
 
     transform: function(data) {
       // Transform series data from values to x,y
@@ -347,9 +459,9 @@
     setXScaleRange: function(xScale, data, chart) {
       if (_.isFunction(xScale.rangeBands)) {
         if (this.invertedXY())
-          return xScale.rangeBands([chart.height(), 0], this.itemPadding(), this.itemPadding() / 2);
+          return xScale.rangeBands([chart.height(), 0], chart.itemPadding(), chart.itemPadding() / 2);
         else
-          return xScale.rangeBands([0, chart.width()], this.itemPadding(), this.itemPadding() / 2);
+          return xScale.rangeBands([0, chart.width()], chart.itemPadding(), chart.itemPadding() / 2);
       }
       else {
         return XY.setXScaleRange.call(this, xScale, data, chart);
@@ -410,18 +522,24 @@
       var adjacentWidth = chart.adjacentWidth.call(this, d, i);
       var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
       
-      return left + adjacentWidth * chart.seriesIndex.call(this, d, i);
+      return left + adjacentWidth * chart.seriesIndex.call(this, d, i) || 0;
     }),
     adjacentWidth: di(function(chart, d, i) {
-      return chart.layeredWidth.call(this, d, i) / chart.seriesCount.call(this);
+      var seriesCount = chart.seriesCount.call(this);
+
+      if (seriesCount > 0)
+        return chart.layeredWidth.call(this, d, i) / seriesCount;
+      else
+        return 0;
     }),
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
     layeredX: di(function(chart, d, i) {
-      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
+      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
     }),
     layeredWidth: di(function(chart, d, i) {
-      return chart._xScale().rangeBand();
+      var rangeBand = chart._xScale().rangeBand();
+      return isFinite(rangeBand) ? rangeBand : 0;
     }),
 
     // determine item width based on series display type (adjacent or layered)
@@ -430,13 +548,189 @@
     })
   };
 
+  /**
+    Extensions for handling labels in charts
+
+    Properties:
+    - [labels] {Object}
+    - [labelFormat] {String|Function}
+    - [labelPosition = 'top'] {String} Label position (top, right, bottom, left)
+    - [labelOffset = 0] {Number|Object} Label offset (distance or {x, y})
+  */
+  var Labels = {
+    labels: property('labels', {
+      defaultValue: {},
+      set: function(options) {
+        if (_.isBoolean(options))
+          options = {display: options};
+        else if (_.isString(options))
+          options = {display: options == 'display' || options == 'show'}; 
+        else if (options && _.isUndefined(options.display))
+          options.display = true;
+
+        _.each(options, function(value, key) {
+          // Capitalize and append "label" and then set option
+          var labelOption = 'label' + helpers.capitalize(key);
+
+          if (this[labelOption] && this[labelOption].isProperty && this[labelOption].setFromOptions)
+            this[labelOption](value, {silent: true});
+        }, this);
+      }
+    }),
+
+    labelDisplay: property('labelDisplay', {defaultValue: false}),
+    labelFormat: property('labelFormat', {
+      type: 'Function',
+      set: function(value) {
+        if (_.isString(value)) {
+          return {
+            override: d3.format(value)
+          };
+        }
+      }
+    }),
+    labelPosition: property('labelPosition', {
+      validate: function(value) {
+        return _.contains(['top', 'right', 'bottom', 'left'], value);
+      }
+    }),
+    labelOffset: property('labelOffset', {
+      get: function(offset) {
+        if (_.isNumber(offset)) {
+          offset = {
+            top: {x: 0, y: -offset},
+            right: {x: offset, y: 0},
+            bottom: {x: 0, y: offset},
+            left: {x: -offset, y: 0}
+          }[this.labelPosition()];
+
+          if (!offset) {
+            offset = {x: 0, y: 0};
+          }
+        }
+
+        return offset;
+      }
+    }),
+    labelPadding: property('labelPadding', {defaultValue: 2}),
+    labelAnchor: property('labelAnchor', {
+      defaultValue: function() {
+        var position = this.labelPosition();
+        if (!_.isUndefined(position)) {
+          if (position == 'right')
+            return 'start';
+          else if (position == 'left')
+            return 'end';
+          else
+            return 'middle';
+        }
+      },
+      validate: function(value) {
+        return _.contains(['start', 'middle', 'end'], value);
+      }
+    }),
+    labelStyle: property('labelStyle', {defaultValue: {}}),
+
+    labelText: di(function(chart, d, i) {
+      var value = chart.yValue.call(this, d, i);
+      return chart.labelFormat() ? chart.labelFormat()(value) : value;
+    }),
+
+    _getLabels: function() {
+      var labels = [];
+
+      if (this.labelDisplay()) {
+        labels.push({
+          // Leave series information blank (labels only)
+          labels: _.map(this.data(), function(point, index) {
+            return {
+              key: this.keyValue(point, index),
+              coordinates: {
+                x: this.x(point, index),
+                y: this.y(point, index)
+              },
+              text: this.labelText(point, index),
+              offset: this.labelOffset(),
+              padding: this.labelPadding(),
+              anchor: this.labelAnchor(),
+              'class': point['class'],
+              style: this.labelStyle(),
+              values: point,
+              index: index,
+            };
+          }, this)
+        });
+      }      
+
+      return labels;
+    },
+
+    _convertPointToLabel: function(point) {
+      return {
+        key: this.keyValue(point.values, point.index),
+        coordinates: point.coordinates,
+        text: this.labelText(point.values, point.index),
+        offset: this.labelOffset(),
+        padding: this.labelPadding(),
+        anchor: this.labelAnchor(),
+        'class': point.values['class'],
+        style: this.labelStyle(),
+        values: point.values,
+        index: point.index
+      };
+    }
+  };
+
+  /**
+    Extensions for handling labels in series charts
+
+    Dependencies: Labels
+  */
+  var LabelsSeries = {
+    _getLabels: function() {
+      var seriesLabels = [];
+
+      if (this.labelDisplay()) {
+        seriesLabels = _.map(this.data(), function(series, seriesIndex) {
+          return {
+            key: series.key,
+            name: series.name,
+            'class': series['class'],
+            index: seriesIndex,
+            labels: _.map(series.values, function(point, pointIndex) {
+              return {
+                key: this.keyValue.call({_parentData: series}, point, pointIndex),
+                coordinates: {
+                  x: this.x.call({_parentData: series}, point, pointIndex),
+                  y: this.y.call({_parentData: series}, point, pointIndex)
+                },
+                text: this.labelText.call({_parentData: series}, point, pointIndex),
+                offset: this.labelOffset(),
+                padding: this.labelPadding(),
+                anchor: this.labelAnchor(),
+                'class': point['class'],
+                style: this.labelStyle(),
+                values: point,
+                index: pointIndex,
+              };
+            }, this)
+          };
+        }, this);
+      }
+      
+      return seriesLabels;
+    }
+  };
+
   // Expose extensions
   d3.chart.extensions = _.extend(d3.chart.extensions || {}, {
     Series: Series,
     XY: XY,
     XYSeries: _.extend({}, Series, XY, XYSeries),
     Values: _.extend({}, XY, Values),
-    ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries)
+    ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries),
+    Labels: Labels,
+    LabelsSeries: _.extend({}, Labels, LabelsSeries)
   });
 
 })(d3, _, d3.chart.helpers);

@@ -61,6 +61,11 @@ module.exports = function(grunt) {
   ]);
 
   this.registerTask('server', 'Run example (at http://localhost:4001)', [
-    'connect:example'
+    'connect:example:keepalive'
+  ]);
+
+  this.registerTask('debug', 'Run example with automatic build', [
+    'connect:example',
+    'watch:build'
   ]);
 };

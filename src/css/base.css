@@ -36,8 +36,12 @@
 }
 
 /* Labels */
-.chart-label {
+.chart-label-text {
   stroke: none;
+  fill: black;
+}
+.chart-label-bg {
+  opacity: 0.5;
 }
 
 /* Title */

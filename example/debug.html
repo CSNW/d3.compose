@@ -1,0 +1,243 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.chart.multi - Debug</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="css/default.css">
+
+  <link rel="stylesheet" type="text/css" href="../tmp/css/d3.chart.multi.base.css">
+  <style>
+    .container {
+      margin: 40px auto 0;
+      width: 900px;
+    }
+    @media (min-width: 768px) {
+      #chart {
+        width: 600px;
+        height: 400px;
+      }  
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <svg id="chart"></svg>
+    <div>
+      <button id="update">Update</button>
+      <button id="redraw">Redraw</button>
+    </div>
+    <div>
+      Container: <span id="mouse-container"></span><br>
+      Chart: <span id="mouse-chart"></span><br>
+      Points: <span id="mouse-points"></span>
+    </div>
+  </div>
+
+  <script src="../bower_components/d3/d3.js"></script>
+  <script src="../bower_components/d3.chart/d3.chart.js"></script>
+  <script src="../bower_components/underscore/underscore.js"></script>
+  <script src="../tmp/d3.chart.multi.js"></script>
+
+  <script src="../bower_components/jquery/dist/jquery.js"></script>
+  <script type="text/javascript">
+    // var config = {
+    //   type: 'Values',
+    //   charts: {
+    //     line: {type: 'Line', dataKey: 'increasing', labels: true},
+    //     bars: {type: 'Bars', dataKey: 'decreasing', labels: true},
+    //     labels: {type: 'Labels', handleCollisions: true}
+    //   },
+    //   axes: {
+    //     x: {scale: {type: 'ordinal', domain: [0, 10, 20, 30, 40, 50]}},
+    //     y: {scale: {domain: [0, 200]}},
+    //     secondaryY: {scale: {domain: [0, 1000]}, dataKey: 'increasing'}
+    //   }
+    // };
+    var config = {
+      type: 'XY',
+      charts: {
+        line: {type: 'Line', dataKey: 'increasing-dense', labels: true},
+        labels: {type: 'Labels', anchor: 'end'}
+      },
+      axes: {
+        x: {scale: {domain: [0, 50]}, position: 'top', title: 'Howdy'}
+      },
+      legend: false,
+      title: {text: 'HI!', position: 'bottom'}
+    };
+
+    var data = {
+      increasing: [
+        {
+          key: 'inc-a',
+          name: 'Increasing A',
+          values: [
+            {x: 0, y: 10},
+            {x: 10, y: 20},
+            {x: 20, y: 40},
+            {x: 30, y: 70},
+            {x: 40, y: 110},
+            {x: 50, y: 160}
+          ]
+        },
+        {
+          key: 'inc-b',
+          name: 'Increasing B',
+          values: [
+            {x: 0, y: 25},
+            {x: 10, y: 30},
+            {x: 20, y: 40},
+            {x: 30, y: 55},
+            {x: 40, y: 75},
+            {x: 50, y: 100}
+          ]
+        }
+      ],
+      decreasing: [
+        {
+          key: 'dec-a',
+          name: 'Decreasing A',
+          values: [
+            {x: 0, y: 160},
+            {x: 10, y: 110},
+            {x: 20, y: 70},
+            {x: 30, y: 40},
+            {x: 40, y: 20},
+            {x: 50, y: 10}
+          ]
+        },
+        {
+          key: 'dec-b',
+          name: 'Decreasing B',
+          values: [
+            {x: 0, y: 100},
+            {x: 10, y: 75},
+            {x: 20, y: 55},
+            {x: 30, y: 40},
+            {x: 40, y: 30},
+            {x: 50, y: 25}
+          ]
+        }
+      ],
+      'increasing-dense': [
+        {
+          key: 'inc-dense-a',
+          name: 'Increasing Dense A',
+          values: []  
+        },
+        {
+          key: 'inc-dense-b',
+          name: 'Increasing Dense B',
+          values: []
+        }
+      ],
+      'decreasing-dense': [
+        {
+          key: 'dec-dense-a',
+          name: 'Decreasing Dense A',
+          values: []  
+        },
+        {
+          key: 'dec-dense-b',
+          name: 'Decreasing Dense B',
+          values: []
+        }
+      ]
+    };
+
+    for (var i = 0; i <= 50; i++) {
+      data['increasing-dense'][0].values.push({x: i, y: Math.round(0.05*Math.pow(i, 2) + 0.5*i + 10, 0)});
+      data['increasing-dense'][1].values.push({x: i, y: Math.round(0.025*Math.pow(i, 2) + 0.25*i + 25, 0)});
+      data['decreasing-dense'][0].values.push({x: i, y: Math.round(0.025*Math.pow(i, 2) - 2.75*i + 160, 0)});
+      data['decreasing-dense'][1].values.push({x: i, y: Math.round(0.05*Math.pow(i, 2) - 5.5*i + 100, 0)});
+    }
+
+    var chart = d3.select('#chart')
+      .chart('Multi', config)
+      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+
+    chart.draw(data);
+
+    function update() {
+      _.each(data, function(item) {
+        _.each(item, function(series) {
+          _.each(series.values, function(point) {
+            // +/- 10%
+            point.y = Math.round(point.y * (0.9 + Math.random()*0.2), 0);
+          });
+        });
+      });
+      chart.draw(data);
+    }
+
+    function redraw() {
+      chart.redraw();
+    }
+
+    $('#update').on('click', update);
+    $('#redraw').on('click', redraw);
+
+    // DEBUG
+    chart.on('enter:mouse', function(coordinates) {
+      logMouse('container', coordinates);
+    });
+    chart.on('move:mouse', function(coordinates) {
+      logMouse('container', coordinates);
+    });
+    chart.on('leave:mouse', function() {
+      logMouse('container');
+    });
+    chart.on('chart:enter:mouse', function(coordinates) {
+      logMouse('chart', coordinates);
+    });
+    chart.on('chart:move:mouse', function(coordinates) {
+      logMouse('chart', coordinates);
+    });
+    chart.on('chart:leave:mouse', function() {
+      logMouse('chart');
+    });
+    chart.on('points:enter:mouse', function(points) {
+      logMouse('points', points);
+    });
+    chart.on('points:move:mouse', function(points) {
+      logMouse('points', points);
+    });
+    chart.on('points:leave:mouse', function() {
+      logMouse('points');
+    });
+
+    function logMouse(type, coordinates) {
+      var $selector = $('#mouse-' + type);
+
+      if (!coordinates) {
+        $selector.empty();
+      }
+      else {
+        var msg = '';
+
+        // Points come in as array
+        if (_.isArray(coordinates))
+          msg = _.map(coordinates, function(series) {
+            return _.map(series.points, function(point) {
+              return series.name + ': {x = ' + point.values.x + ', y = ' + point.values.y + '}';
+            }).join(', ');
+          }).join(' ');
+        else {
+          msg = logCoordinates(coordinates);
+        }
+
+        $selector.text(msg);
+      }
+
+      function logCoordinates(coordinates) {
+        return 'x = ' + coordinates.x + ', y = ' + coordinates.y;
+      }
+    }
+  </script>
+</body>
+</html>

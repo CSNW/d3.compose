@@ -7,7 +7,7 @@
     Bars
     Bar graph with centered key,value data and adjacent display for series
   */
-  d3.chart('ChartWithLabels').extend('Bars', mixin(extensions.ValuesSeries, {
+  d3.chart('SeriesChart').extend('Bars', mixin(extensions.ValuesSeries, extensions.LabelsSeries, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -29,16 +29,26 @@
 
             if (!chart.invertedXY()) {
               this
-                .attr('x', chart.barX)
                 .attr('y', chart.y0)
-                .attr('width', chart.itemWidth)
                 .attr('height', 0);  
             }
             else {
               this
                 .attr('x', chart.x0)
+                .attr('width', 0);
+            }
+          },
+          'merge': function() {
+            var chart = this.chart();
+
+            if (!chart.invertedXY()) {
+              this
+                .attr('x', chart.barX)
+                .attr('width', chart.itemWidth);
+            }
+            else {
+              this
                 .attr('y', chart.barY)
-                .attr('width', 0)
                 .attr('height', chart.itemWidth);   
             }
           },
@@ -55,11 +65,12 @@
                 .attr('x', chart.barX)
                 .attr('width', chart.barHeight);
             }
+          },
+          'exit': function() {
+            this.remove();
           }
         }
       });
-
-      this.attachLabels();
     },
 
     barHeight: di(function(chart, d, i) {
@@ -119,8 +130,10 @@
     Stacked Bars
   */
   d3.chart('Bars').extend('StackedBars', {
-    initialize: function() {
+    transform: function(data) {
+      // Re-initialize bar positions each time data changes
       this.barPositions = [];
+      return data;
     },
 
     barHeight: di(function(chart, d, i) {

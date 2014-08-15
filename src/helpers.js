@@ -257,6 +257,10 @@
 
   /**
     If value isn't undefined, return value, otherwise use defaultValue
+  
+    @param {Varies} [value]
+    @param {Varies} defaultValue
+    @return {Varies}
   */
   function valueOrDefault(value, defaultValue) {
     return !_.isUndefined(value) ? value : defaultValue;
@@ -267,6 +271,7 @@
     Helper for robustly determining width/height of given selector
 
     @param {d3 Selection} selection
+    @return {Object} {width, height}
   */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
@@ -287,9 +292,6 @@
       clientDimensions.height = parseFloat(styles['height']) - parseFloat(styles['borderTopWidth']) - parseFloat(styles['borderBottomWidth']);
       clientDimensions.width = parseFloat(styles['width']) - parseFloat(styles['borderLeftWidth']) - parseFloat(styles['borderRightWidth']);
     }
-
-    if (isSVG)
-      console.log('svg', clientDimensions);
 
     var attrDimensions = {width: 0, height: 0};
     if (selection) {
@@ -321,6 +323,7 @@
 
       @param {Number|Object} [x] value or object with x and y
       @param {Number} [y]
+      @return {String}
     */
     translate: function translate(x, y) {
       if (_.isObject(x)) {
@@ -336,6 +339,7 @@
 
       @param {Number} degrees
       @param {Object} [center = {x: 0, y: 0}]
+      @return {String}
     */
     rotate: function rotate(degrees, center) {
       var rotation = 'rotate(' + (degrees || 0);
@@ -377,6 +381,7 @@
     - domain: {Array} Domain for scale
     - range: {Array} Range for scale
     - ...: {Arguments Array} Set any other scale properties by passing in "arguments" array
+    @return {d3.scale}
   */
   function createScaleFromOptions(options) {
     options = options || {};
@@ -477,6 +482,7 @@
     style({color: 'red', display: 'block'}) -> color: red; display: block;
 
     @param {Object} styles
+    @return {String}
   */
   function style(styles) {
     if (!styles) return '';
@@ -507,6 +513,7 @@
 
     @param {String or Array} key
     @param {Objects...}
+    @return {Varies}
   */
   function getValue(key, objects) {
     var keys = _.isArray(key) ? key : [key];
@@ -521,6 +528,17 @@
     });
 
     return value;
+  }
+
+  /**
+    Capitalize first letter in string
+
+    @param {String} string
+    @return {String}
+  */
+  function capitalize(string) {
+    if (!string || !_.isFunction(string.charAt) || !_.isFunction(string.slice)) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
   /**
@@ -546,7 +564,8 @@
     // (d, i) and "this" used from d3, "chart" injected automatically
     ```
 
-    @param {function} callback with (chart, d, i) arguments
+    @param {Function} callback with (chart, d, i) arguments
+    @return {Function}
   */
   function di(callback) {
     // Create intermediate wrapping in case it's called without binding
@@ -577,8 +596,13 @@
     Get parent data for element
 
     @param {Element} element
+    @return {Varies}
   */
   function getParentData(element) {
+    // @internal Shortcut if element + parentData needs to be mocked
+    if (element._parentData)
+      return element._parentData;
+
     var parent = element && element.parentNode;
     if (parent) {
       var data = d3.select(parent).data();
@@ -600,6 +624,7 @@
     @param {String} chartType type of chart
     @param {String} componentType type of component
     @param {String} containerType type of container
+    @return {d3.chart}
   */
   function resolveChart(chartType, componentType, containerType) {
     chartType = chartType || '';
@@ -628,6 +653,7 @@
     - remaining are overriden from first to last  
 
     @param {Array or Object...} extensions Array of extensions or separate extension arguments
+    @return {Object}
   */
   function mixin(extensions) {
     extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
@@ -672,6 +698,7 @@
     stack: stack,
     style: style,
     getValue: getValue,
+    capitalize: capitalize,
     di: di,
     bindDi: bindDi,
     bindAllDi: bindAllDi,

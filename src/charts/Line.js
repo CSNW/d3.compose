@@ -7,16 +7,18 @@
     Line
     (x,y) line graph
   */
-  d3.chart('ChartWithLabels').extend('Line', mixin(extensions.XYSeries, {
+  d3.chart('SeriesChart').extend('Line', mixin(extensions.XYSeries, extensions.LabelsSeries, {
     initialize: function() {
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
           var chart = this.chart();
+          var lines = {};
 
           // Add lines based on underlying series data
-          chart.lines(_.map(chart.data(), function(series) {
-            return chart.createLine(series);
-          }));
+          _.each(chart.data(), function(series) {
+            lines[series.seriesIndex] = chart.createLine(series);
+          });
+          chart.lines(lines);
 
           // Rather than use provided series data
           return this.selectAll('path')
@@ -44,10 +46,8 @@
           }
         }
       });
-
-      this.attachLabels();
     },
-    lines: property('lines', {defaultValue: []}),
+    lines: property('lines', {defaultValue: {}}),
 
     createLine: function(series) {
       var line = d3.svg.line()
