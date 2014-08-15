@@ -119,7 +119,7 @@
       _.each(this.labels(), function(series) {
         var prev;
         _.each(series, function(label) {
-          if (label.checkForOverlap(prev)) {
+          if (label.checkForOverlap(prev, {compare: 'LR'})) {
             label.remove();
           }
           else {
@@ -129,7 +129,6 @@
       }, this);
     },
     groupLabels: function(selection) {
-      // TODO handle collisions from making groups
       checkForCollisions(this.labels());
 
       function checkForCollisions(labels) {
@@ -150,8 +149,20 @@
       }
 
       function groupLabels(labelA, labelB) {
-        if (labelA.group) {
+        if (labelA.group && labelB.group) {
+          // Move labelB group labels into labelA group
+          _.each(labelB.group.labels, function(label) {
+            labelA.group.labels.push(label);
+            label.group = labelA.group;
+          });
+
+          updateGroupPositions(labelA.group);
+        }
+        else if (labelA.group) {
           addLabelToGroup(labelB, labelA.group);
+        }
+        else if (labelB.group) {
+          addLabelToGroup(labelA, labelB.group);
         }
         else {
           var group = {labels: []};
@@ -162,11 +173,14 @@
 
       function addLabelToGroup(label, group) {
         group.labels.push(label);
-        var positions = findLabelPositions(group.labels);
-        
         label.group = group;
         label.selection.attr('data-group-index', group.index);
 
+        updateGroupPositions(group);
+      }
+
+      function updateGroupPositions(group) {
+        var positions = findLabelPositions(group.labels);
         _.each(group.labels, function(label, index) {
           label.xCenter(positions[index].xCenter).y(positions[index].y);
         });
@@ -176,33 +190,43 @@
         // First, sort labels by y
         var byY = _.chain(labels)
           .map(function(label, index) {
-            return {
-              index: index,
-              xCenter: label.xCenter(),
-              y: label.y(),
-              height: label.height()
-            };
+            label.index = index;
+            return label;
           })
-          .sortBy('y')
+          .sortBy(function(label) {
+            return label.y();
+          })
           .reverse()
           .value();
 
         // Then, adjust for label height
-        _.reduce(byY, function(memo, label) {
-          if (_.isUndefined(memo))
-            label.groupedY = label.y;
-          else
-            label.groupedY = memo - label.height;
+        _.each(byY, function(label, index) {
+          var prev = _.first(byY, index);
+          var overlap;
+          for (var i = prev.length - 1; i >= 0; i--) {
+            if (label.checkForOverlap(prev[i])) {
+              overlap = prev[i];
+              break;
+            }
+          }
 
-          return label.groupedY;
-        }, undefined);
+          if (overlap) {
+            label.groupedY = overlap.y() - label.height();
+          }
+          else {
+            label.groupedY = label.y();
+          }
+        });
 
         // Then, unsort by index
         byY = _.sortBy(byY, 'index');
 
         positions = _.map(labels, function(label, index) {
+          // Remove added index
+          delete label.index;
+
           return {
-            xCenter: byY[index].xCenter,
+            xCenter: byY[index].xCenter(),
             y: byY[index].groupedY
           };
         });
@@ -345,14 +369,22 @@
       this.bounds(this.getBBox());
       return this;
     },
-    checkForOverlap: function(element) {
+    checkForOverlap: function(element, options) {
       if (!element || !element.bounds) return false;
 
       var a = getEdges(this.bounds());
       var b = getEdges(element.bounds());
+      var alignedLR = (a.left == b.left && a.right == b.right);
+      var alignedTB = (a.top == b.top && a.bottom == b.bottom);
+      var overlapLR = (b.left > a.left && b.left < a.right) || (b.right > a.left && b.right < a.right) || alignedLR;
+      var overlapTB = (b.top > a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom < a.bottom) || alignedTB;
 
-      return ((b.left >= a.left && b.left <= a.right) || (b.right >= a.left && b.right <= a.right))
-        && ((b.top >= a.top && b.top <= a.bottom) || (b.bottom >= a.top && b.bottom <= a.bottom));
+      if (options && options.compare == 'LR')
+        return overlapLR;
+      else if (options && options.compare == 'TB')
+        return overlapTB;
+      else
+        return overlapLR && overlapTB;
 
       function getEdges(bounds) {
         return {

@@ -45,31 +45,31 @@
 
   <script src="../bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript">
-    var config = {
-      type: 'Values',
-      charts: {
-        line: {type: 'Line', dataKey: 'increasing', labels: true},
-        bars: {type: 'Bars', dataKey: 'decreasing', labels: true},
-        labels: {type: 'Labels', handleCollisions: true}
-      },
-      axes: {
-        x: {scale: {type: 'ordinal', domain: [0, 10, 20, 30, 40, 50]}},
-        y: {scale: {domain: [0, 200]}},
-        secondaryY: {scale: {domain: [0, 1000]}, dataKey: 'increasing'}
-      }
-    };
     // var config = {
-    //   type: 'XY',
+    //   type: 'Values',
     //   charts: {
-    //     line: {type: 'Line', dataKey: 'increasing-dense', labels: true},
+    //     line: {type: 'Line', dataKey: 'increasing', labels: true},
+    //     bars: {type: 'Bars', dataKey: 'decreasing', labels: true},
     //     labels: {type: 'Labels', handleCollisions: true}
     //   },
     //   axes: {
-    //     x: {scale: {domain: [0, 50]}, position: 'top', title: 'Howdy'}
-    //   },
-    //   legend: false,
-    //   title: {text: 'HI!', position: 'bottom'}
-    // }
+    //     x: {scale: {type: 'ordinal', domain: [0, 10, 20, 30, 40, 50]}},
+    //     y: {scale: {domain: [0, 200]}},
+    //     secondaryY: {scale: {domain: [0, 1000]}, dataKey: 'increasing'}
+    //   }
+    // };
+    var config = {
+      type: 'XY',
+      charts: {
+        line: {type: 'Line', dataKey: 'increasing-dense', labels: true},
+        labels: {type: 'Labels', handleCollisions: true}
+      },
+      axes: {
+        x: {scale: {domain: [0, 50]}, position: 'top', title: 'Howdy'}
+      },
+      legend: false,
+      title: {text: 'HI!', position: 'bottom'}
+    };
 
     var data = {
       increasing: [
