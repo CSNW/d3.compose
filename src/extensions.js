@@ -590,48 +590,50 @@
       }
     }),
     labelPosition: property('labelPosition', {
-      defaultValue: 'top',
       validate: function(value) {
         return _.contains(['top', 'right', 'bottom', 'left'], value);
       }
     }),
-    labelOffset: property('labelOffset', {defaultValue: 0}),
+    labelOffset: property('labelOffset', {
+      get: function(offset) {
+        if (_.isNumber(offset)) {
+          offset = {
+            top: {x: 0, y: -offset},
+            right: {x: offset, y: 0},
+            bottom: {x: 0, y: offset},
+            left: {x: -offset, y: 0}
+          }[this.labelPosition()];
+
+          if (!offset) {
+            offset = {x: 0, y: 0};
+          }
+        }
+
+        return offset;
+      }
+    }),
     labelPadding: property('labelPadding', {defaultValue: 2}),
+    labelAnchor: property('labelAnchor', {
+      defaultValue: function() {
+        var position = this.labelPosition();
+        if (!_.isUndefined(position)) {
+          if (position == 'right')
+            return 'start';
+          else if (position == 'left')
+            return 'end';
+          else
+            return 'middle';
+        }
+      },
+      validate: function(value) {
+        return _.contains(['start', 'middle', 'end'], value);
+      }
+    }),
     labelStyle: property('labelStyle', {defaultValue: {}}),
 
     labelText: di(function(chart, d, i) {
       var value = chart.yValue.call(this, d, i);
       return chart.labelFormat() ? chart.labelFormat()(value) : value;
-    }),
-    labelAnchor: di(function(chart, d, i) {
-      var position = chart.calculatedLabelPosition.call(this, d, i);
-
-      if (position == 'right')
-        return 'start';
-      else if (position == 'left')
-        return 'end';
-      else
-        return 'middle';
-    }),
-    
-    calculatedLabelPosition: di(function(chart, d, i) {
-      return chart.labelPosition();
-    }),
-    calculatedLabelOffset: di(function(chart, d, i) {
-      var offset = chart.labelOffset();
-      if (!_.isObject(offset)) {
-        offset = {
-          top: {x: 0, y: -offset},
-          right: {x: offset, y: 0},
-          bottom: {x: 0, y: offset},
-          left: {x: -offset, y: 0}
-        }[chart.calculatedLabelPosition.call(this, d, i)];
-
-        if (!offset)
-          offset = {x: 0, y: 0};
-      }
-
-      return offset;
     }),
 
     _getLabels: function() {
@@ -648,9 +650,9 @@
                 y: this.y(point, index)
               },
               text: this.labelText(point, index),
-              offset: this.calculatedLabelOffset(point, index),
+              offset: this.labelOffset(),
               padding: this.labelPadding(),
-              anchor: this.labelAnchor(point, index),
+              anchor: this.labelAnchor(),
               'class': point['class'],
               style: this.labelStyle(),
               values: point,
@@ -668,9 +670,9 @@
         key: this.keyValue(point.values, point.index),
         coordinates: point.coordinates,
         text: this.labelText(point.values, point.index),
-        offset: this.calculatedLabelOffset(point.values, point.index),
+        offset: this.labelOffset(),
         padding: this.labelPadding(),
-        anchor: this.labelAnchor(point.values, point.index),
+        anchor: this.labelAnchor(),
         'class': point.values['class'],
         style: this.labelStyle(),
         values: point.values,
@@ -703,9 +705,9 @@
                   y: this.y.call({_parentData: series}, point, pointIndex)
                 },
                 text: this.labelText.call({_parentData: series}, point, pointIndex),
-                offset: this.calculatedLabelOffset.call({_parentData: series}, point, pointIndex),
+                offset: this.labelOffset(),
                 padding: this.labelPadding(),
-                anchor: this.labelAnchor.call({_parentData: series}, point, pointIndex),
+                anchor: this.labelAnchor(),
                 'class': point['class'],
                 style: this.labelStyle(),
                 values: point,

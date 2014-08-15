@@ -18,6 +18,8 @@
           series.enter()
             .append('g')
             .attr('class', chart.seriesClass)
+            .attr('data-chart-id', chart.seriesChartId)
+            .attr('data-series-key', chart.seriesSeriesKey);
           series.exit()
             .remove();
 
@@ -49,24 +51,67 @@
       });
     },
 
+    transform: function(data) {
+      return this.extractLabels(data);
+    },
+
     excludeFromLegend: true,
     labels: property('labels', {defaultValue: []}),
     handleCollisions: property('handleCollisions', {defaultValue: true}),
+    
+    format: property('format', {
+      type: 'Function',
+      set: function(value) {
+        if (_.isString(value)) {
+          return {
+            override: d3.format(value)
+          };
+        }
+      }
+    }),
+    position: property('position', {
+      defaultValue: 'top',
+      validate: function(value) {
+        return _.contains(['top', 'right', 'bottom', 'left'], value);
+      }
+    }),
+    offset: property('offset', {
+      defaultValue: 0,
+      get: function(offset) {
+        return this.offsetByPosition(offset, this.position());
+      }
+    }),
+    padding: property('padding', {defaultValue: 2}),
+    anchor: property('anchor', {
+      defaultValue: function() {
+        var position = this.position();
+
+        if (position == 'right')
+          return 'start';
+        else if (position == 'left')
+          return 'end';
+        else
+          return 'middle';
+      },
+      validate: function(value) {
+        return _.contains(['start', 'middle', 'end'], value);
+      }
+    }),
 
     labelKey: di(function(chart, d, i) {
       return d.key;
     }),
     labelX: di(function(chart, d, i) {
-      return d.coordinates.x + d.offset.x;
+      var offset = _.defaults({}, chart.offset(), d.offset);
+      return d.coordinates.x + offset.x;
     }),
     labelY: di(function(chart, d, i) {
-      return d.coordinates.y + d.offset.y;
+      var offset = _.defaults({}, chart.offset(), d.offset);
+      return d.coordinates.y + offset.y;
     }),
     labelText: di(function(chart, d, i) {
-      return d.text;
-    }),
-    labelAnchor: di(function(chart, d, i) {
-      return d.anchor || 'middle';
+      var format = chart.format();
+      return format ? format(d.text) : d.text;
     }),
     labelStyle: di(function(chart, d, i) {
       var styles = _.defaults({}, d.style, chart.options().style);
@@ -75,6 +120,12 @@
 
     seriesKey: di(function(chart, d, i) {
       return d.key || i;
+    }),
+    seriesChartId: di(function(chart, d, i) {
+      return d.chartId;
+    }),
+    seriesSeriesKey: di(function(chart, d, i) {
+      return d.seriesKey;
     }),
     seriesClass: di(function(chart, d, i) {
       var seriesIndex = !_.isUndefined(d.index) ? 'chart-index-' + d.index : '';
@@ -85,19 +136,25 @@
     seriesLabels: di(function(chart, d, i) {
       return d.labels;
     }),
+    seriesData: di(function(chart, d, i) {
+      var parentData = helpers.getParentData(this);
 
-    transform: function(data) {
-      return this.extractLabels(data);
-    },
+      // Element may be two-deep (text / rect)
+      if (!parentData.seriesKey && this.parentNode)
+        return helpers.getParentData(this.parentNode);
+      else
+        return parentData;
+    }),
 
     insertLabels: function(base) {
       var groups = base.append('g')
+        .classed('chart-label', true)
         .attr('style', this.labelStyle);
 
       groups.append('rect')
         .classed('chart-label-bg', true);
       groups.append('text')
-        .classed('chart-label', true);
+        .classed('chart-label-text', true);
 
       return groups;
     },
@@ -112,7 +169,8 @@
               labelX: this.labelX,
               labelY: this.labelY,
               labelText: this.labelText,
-              labelAnchor: this.labelAnchor
+              padding: this.padding(),
+              anchor: this.anchor()
             });
             labels[seriesIndex].push(label);
             label.draw();
@@ -258,6 +316,23 @@
       else {
         return [];
       }
+    },
+
+    offsetByPosition: function(offset, position) {
+      if (_.isNumber(offset)) {
+        offset = {
+          top: {x: 0, y: -offset},
+          right: {x: offset, y: 0},
+          bottom: {x: 0, y: offset},
+          left: {x: -offset, y: 0}
+        }[position];
+
+        if (!offset) {
+          offset = {x: 0, y: 0};
+        }
+      }
+
+      return offset;
     }
   });
   
@@ -469,7 +544,8 @@
       labelX: function(d, i) { return d.x; },
       labelY: function(d, i) { return d.y; },
       labelText: function(d, i) { return d.value; },
-      labelAnchor: function(d, i) { return d.anchor; }
+      padding: 0,
+      anchor: 'middle'
     });
   }
   _.extend(Label.prototype, Group.prototype, {
@@ -483,14 +559,21 @@
 
       var textBounds = this.text.refreshBounds().bounds();
       var offsets = {x: -1, y: 0, width: 3, height: 0};
+      var padding = this.data.padding || this.options.padding;
+      var anchor = this.data.anchor || this.options.anchor;
 
       // TODO Handle centering vertically and horizontally
       var bounds = {
-        x: textBounds.x - (textBounds.width / 2) + offsets.x - (this.data.padding || 0),
-        y: textBounds.y + offsets.y - 2*(this.data.padding || 0),
-        width: textBounds.width + offsets.width + 2*(this.data.padding || 0),
-        height: textBounds.height + offsets.height + 2*(this.data.padding || 0)
+        x: textBounds.x - (textBounds.width / 2) + offsets.x - padding,
+        y: textBounds.y + offsets.y - 2*padding,
+        width: textBounds.width + offsets.width + 2*padding,
+        height: textBounds.height + offsets.height + 2*padding
       };
+
+      if (anchor == 'start')
+        bounds.x += bounds.width / 2;
+      else if (anchor == 'end')
+        bounds.x -= bounds.width / 2;
 
       this
         .x(bounds.x)

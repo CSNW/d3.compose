@@ -578,6 +578,7 @@
             // Add chart id to series key
             _.map(chartPoints, function(series) {
               series.chartId = id;
+              series.seriesKey = series.key;
               series.key = series.key ? id + '-' + series.key : id;
             });
 
@@ -624,6 +625,7 @@
             // Add chart id to series key
             _.map(labels, function(series) {
               series.chartId = id;
+              series.seriesKey = series.key;
               series.key = series.key ? id + '-' + series.key : id;
             });
 
