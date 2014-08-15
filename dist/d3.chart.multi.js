@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.6.0
+/*! d3.chart.multi - v0.7.0
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -261,6 +261,10 @@
 
   /**
     If value isn't undefined, return value, otherwise use defaultValue
+  
+    @param {Varies} [value]
+    @param {Varies} defaultValue
+    @return {Varies}
   */
   function valueOrDefault(value, defaultValue) {
     return !_.isUndefined(value) ? value : defaultValue;
@@ -271,20 +275,42 @@
     Helper for robustly determining width/height of given selector
 
     @param {d3 Selection} selection
+    @return {Object} {width, height}
   */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
-    var boundingBox = element && typeof element.getBBox == 'function' && element.getBBox() || {};
-    var client = element ? {width: element.clientWidth, height: element.clientHeight} : {width: 0, height: 0};
-    var attr = selection ? {width: selection.attr('width'), height: selection.attr('height')} : {width: 0, height: 0};
+    var boundingBox = element && typeof element.getBBox == 'function' && element.getBBox() || {width: 0, height: 0};
     var isSVG = element ? element.nodeName == 'svg' : false;
+
+    var clientDimensions = {
+      width: (element && element.clientWidth) || 0, 
+      height: (element && element.clientHeight) || 0
+    };
+
+    // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
+    //        calculate from css
+    //        http://stackoverflow.com/questions/13122790/how-to-get-svg-element-dimensions-in-firefox
+    //        Note: This makes assumptions about the box model in use and that width/height are not percent values
+    if (element && isSVG && (!element.clientWidth || !element.clientHeight) && window && window.getComputedStyle) {
+      var styles = window.getComputedStyle(element);
+      clientDimensions.height = parseFloat(styles['height']) - parseFloat(styles['borderTopWidth']) - parseFloat(styles['borderBottomWidth']);
+      clientDimensions.width = parseFloat(styles['width']) - parseFloat(styles['borderLeftWidth']) - parseFloat(styles['borderRightWidth']);
+    }
+
+    var attrDimensions = {width: 0, height: 0};
+    if (selection) {
+      attrDimensions = {
+        width: selection.attr('width') || 0,
+        height: selection.attr('height') || 0
+      };
+    }
 
     // Size set by css -> client (only valid for svg and some other elements)
     // Size set by svg -> attr override or boundingBox
     // -> Take maximum
     return {
-      width: _.max([client.width, attr.width || boundingBox.width]) || 0,
-      height: _.max([client.height, attr.height || boundingBox.height]) || 0
+      width: _.max([clientDimensions.width, attrDimensions.width || boundingBox.width]) || 0,
+      height: _.max([clientDimensions.height, attrDimensions.height || boundingBox.height]) || 0
     };
   }
 
@@ -301,6 +327,7 @@
 
       @param {Number|Object} [x] value or object with x and y
       @param {Number} [y]
+      @return {String}
     */
     translate: function translate(x, y) {
       if (_.isObject(x)) {
@@ -316,6 +343,7 @@
 
       @param {Number} degrees
       @param {Object} [center = {x: 0, y: 0}]
+      @return {String}
     */
     rotate: function rotate(degrees, center) {
       var rotation = 'rotate(' + (degrees || 0);
@@ -357,6 +385,7 @@
     - domain: {Array} Domain for scale
     - range: {Array} Range for scale
     - ...: {Arguments Array} Set any other scale properties by passing in "arguments" array
+    @return {d3.scale}
   */
   function createScaleFromOptions(options) {
     options = options || {};
@@ -457,6 +486,7 @@
     style({color: 'red', display: 'block'}) -> color: red; display: block;
 
     @param {Object} styles
+    @return {String}
   */
   function style(styles) {
     if (!styles) return '';
@@ -487,6 +517,7 @@
 
     @param {String or Array} key
     @param {Objects...}
+    @return {Varies}
   */
   function getValue(key, objects) {
     var keys = _.isArray(key) ? key : [key];
@@ -501,6 +532,17 @@
     });
 
     return value;
+  }
+
+  /**
+    Capitalize first letter in string
+
+    @param {String} string
+    @return {String}
+  */
+  function capitalize(string) {
+    if (!string || !_.isFunction(string.charAt) || !_.isFunction(string.slice)) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
   /**
@@ -526,7 +568,8 @@
     // (d, i) and "this" used from d3, "chart" injected automatically
     ```
 
-    @param {function} callback with (chart, d, i) arguments
+    @param {Function} callback with (chart, d, i) arguments
+    @return {Function}
   */
   function di(callback) {
     // Create intermediate wrapping in case it's called without binding
@@ -557,8 +600,13 @@
     Get parent data for element
 
     @param {Element} element
+    @return {Varies}
   */
   function getParentData(element) {
+    // @internal Shortcut if element + parentData needs to be mocked
+    if (element._parentData)
+      return element._parentData;
+
     var parent = element && element.parentNode;
     if (parent) {
       var data = d3.select(parent).data();
@@ -580,6 +628,7 @@
     @param {String} chartType type of chart
     @param {String} componentType type of component
     @param {String} containerType type of container
+    @return {d3.chart}
   */
   function resolveChart(chartType, componentType, containerType) {
     chartType = chartType || '';
@@ -608,6 +657,7 @@
     - remaining are overriden from first to last  
 
     @param {Array or Object...} extensions Array of extensions or separate extension arguments
+    @return {Object}
   */
   function mixin(extensions) {
     extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
@@ -652,6 +702,7 @@
     stack: stack,
     style: style,
     getValue: getValue,
+    capitalize: capitalize,
     di: di,
     bindDi: bindDi,
     bindAllDi: bindAllDi,
@@ -669,6 +720,8 @@
     Extensions for handling series data
   */
   var Series = {
+    isSeries: true,
+
     seriesKey: di(function(chart, d, i) {
       return d.key;
     }),
@@ -751,6 +804,8 @@
       - To invert, change range for scale (from width to height or vice-versa) and swap x and y coordinates
   */
   var XY = {
+    isXY: true,
+
     xScale: property('xScale', {type: 'Function', setFromOptions: false}),
     yScale: property('yScale', {type: 'Function', setFromOptions: false}),
 
@@ -835,7 +890,7 @@
       return d.y;
     }),
     keyValue: di(function(chart, d, i) {
-      return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i);
+      return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i) + ',' + chart.yValue.call(this, d, i);
     }),
 
     setScales: function() {
@@ -886,6 +941,55 @@
     _xScale: property('_xScale', {type: 'Function'}),
     _yScale: property('_yScale', {type: 'Function'}),
     
+    _translateCoordinatesToPoints: function(coordinates, options) {
+      var points = [];
+      var result = {
+        distance: Infinity,
+        coordinates: {
+          x: 0,
+          y: 0
+        }
+      };
+
+      _.each(this.data(), function(point, index) {
+        var calculated = this._distance(point, index, coordinates, options);
+
+        if (calculated.distance < result.distance) {
+          result.distance = calculated.distance;
+          result.coordinates.x = calculated.x;
+          result.coordinates.y = calculated.y;
+          result.values = point;
+          result.index = index;
+        }
+      }, this);
+
+      if (result.distance < Infinity) {
+        points.push({
+          // Leave series information blank (points only)
+          points: [result]
+        });
+      }
+
+      return points;
+    },
+    _distance: function(point, index, coordinates, options) {
+      var x = this.x(point, index);
+      var y = this.y(point, index);
+
+      var distance;
+      if (options.measurement == 'x')
+        distance = Math.abs(x - coordinates.x);
+      else if (options.measurement == 'y')
+        distance = Math.abs(y - coordinates.y);
+      else
+        distance = Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2));
+
+      return {
+        x: x,
+        y: y,
+        distance: distance
+      };
+    }
   };
 
   /**
@@ -968,7 +1072,65 @@
 
         return valueOrDefault(value, max);
       }
-    })
+    }),
+
+    _translateCoordinatesToPoints: function(coordinates, options) {
+      var seriesPoints = [];
+
+      _.each(this.data(), function(series, seriesIndex) {
+        var result = {
+          distance: Infinity,
+          coordinates: {x: 0, y: 0},
+          series: {
+            key: series.key,
+            name: series.name,
+            index: seriesIndex
+          }
+        };
+
+        _.each(series.values, function(point, pointIndex) {
+          var calculated = this._distance(point, pointIndex, coordinates, series, options);
+
+          if (calculated.distance < result.distance) {
+            result.distance = calculated.distance;
+            result.coordinates.x = calculated.x;
+            result.coordinates.y = calculated.y;
+            result.values = point;
+            result.index = pointIndex;
+          }
+        }, this);
+
+        if (result.distance < Infinity) {
+          seriesPoints.push({
+            key: series.key,
+            name: series.name,
+            'class': series['class'],
+            index: seriesIndex,
+            points: [result]
+          });
+        }
+      }, this);
+
+      return seriesPoints;
+    },
+    _distance: function(point, index, coordinates, series, options) {
+      var x = this.x.call({_parentData: series}, point, index);
+      var y = this.y.call({_parentData: series}, point, index);
+
+      var distance;
+      if (options.measurement == 'x')
+        distance = Math.abs(x - coordinates.x);
+      else if (options.measurement == 'y')
+        distance = Math.abs(y - coordinates.y);
+      else
+        distance = Math.sqrt(Math.pow(x - coordinates.x, 2) + Math.pow(y - coordinates.y, 2));
+
+      return {
+        x: x,
+        y: y,
+        distance: distance
+      };
+    }
   };
 
   /**
@@ -979,10 +1141,11 @@
     Dependencies: XY
   */
   var Values = {
+    isValues: true,
+
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
     itemPadding: property('itemPadding', {defaultValue: 0.1}),
-    isValues: true,
 
     transform: function(data) {
       // Transform series data from values to x,y
@@ -1009,9 +1172,9 @@
     setXScaleRange: function(xScale, data, chart) {
       if (_.isFunction(xScale.rangeBands)) {
         if (this.invertedXY())
-          return xScale.rangeBands([chart.height(), 0], this.itemPadding(), this.itemPadding() / 2);
+          return xScale.rangeBands([chart.height(), 0], chart.itemPadding(), chart.itemPadding() / 2);
         else
-          return xScale.rangeBands([0, chart.width()], this.itemPadding(), this.itemPadding() / 2);
+          return xScale.rangeBands([0, chart.width()], chart.itemPadding(), chart.itemPadding() / 2);
       }
       else {
         return XY.setXScaleRange.call(this, xScale, data, chart);
@@ -1072,18 +1235,24 @@
       var adjacentWidth = chart.adjacentWidth.call(this, d, i);
       var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
       
-      return left + adjacentWidth * chart.seriesIndex.call(this, d, i);
+      return left + adjacentWidth * chart.seriesIndex.call(this, d, i) || 0;
     }),
     adjacentWidth: di(function(chart, d, i) {
-      return chart.layeredWidth.call(this, d, i) / chart.seriesCount.call(this);
+      var seriesCount = chart.seriesCount.call(this);
+
+      if (seriesCount > 0)
+        return chart.layeredWidth.call(this, d, i) / seriesCount;
+      else
+        return 0;
     }),
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
     layeredX: di(function(chart, d, i) {
-      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
+      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
     }),
     layeredWidth: di(function(chart, d, i) {
-      return chart._xScale().rangeBand();
+      var rangeBand = chart._xScale().rangeBand();
+      return isFinite(rangeBand) ? rangeBand : 0;
     }),
 
     // determine item width based on series display type (adjacent or layered)
@@ -1092,13 +1261,189 @@
     })
   };
 
+  /**
+    Extensions for handling labels in charts
+
+    Properties:
+    - [labels] {Object}
+    - [labelFormat] {String|Function}
+    - [labelPosition = 'top'] {String} Label position (top, right, bottom, left)
+    - [labelOffset = 0] {Number|Object} Label offset (distance or {x, y})
+  */
+  var Labels = {
+    labels: property('labels', {
+      defaultValue: {},
+      set: function(options) {
+        if (_.isBoolean(options))
+          options = {display: options};
+        else if (_.isString(options))
+          options = {display: options == 'display' || options == 'show'}; 
+        else if (options && _.isUndefined(options.display))
+          options.display = true;
+
+        _.each(options, function(value, key) {
+          // Capitalize and append "label" and then set option
+          var labelOption = 'label' + helpers.capitalize(key);
+
+          if (this[labelOption] && this[labelOption].isProperty && this[labelOption].setFromOptions)
+            this[labelOption](value, {silent: true});
+        }, this);
+      }
+    }),
+
+    labelDisplay: property('labelDisplay', {defaultValue: false}),
+    labelFormat: property('labelFormat', {
+      type: 'Function',
+      set: function(value) {
+        if (_.isString(value)) {
+          return {
+            override: d3.format(value)
+          };
+        }
+      }
+    }),
+    labelPosition: property('labelPosition', {
+      validate: function(value) {
+        return _.contains(['top', 'right', 'bottom', 'left'], value);
+      }
+    }),
+    labelOffset: property('labelOffset', {
+      get: function(offset) {
+        if (_.isNumber(offset)) {
+          offset = {
+            top: {x: 0, y: -offset},
+            right: {x: offset, y: 0},
+            bottom: {x: 0, y: offset},
+            left: {x: -offset, y: 0}
+          }[this.labelPosition()];
+
+          if (!offset) {
+            offset = {x: 0, y: 0};
+          }
+        }
+
+        return offset;
+      }
+    }),
+    labelPadding: property('labelPadding', {defaultValue: 2}),
+    labelAnchor: property('labelAnchor', {
+      defaultValue: function() {
+        var position = this.labelPosition();
+        if (!_.isUndefined(position)) {
+          if (position == 'right')
+            return 'start';
+          else if (position == 'left')
+            return 'end';
+          else
+            return 'middle';
+        }
+      },
+      validate: function(value) {
+        return _.contains(['start', 'middle', 'end'], value);
+      }
+    }),
+    labelStyle: property('labelStyle', {defaultValue: {}}),
+
+    labelText: di(function(chart, d, i) {
+      var value = chart.yValue.call(this, d, i);
+      return chart.labelFormat() ? chart.labelFormat()(value) : value;
+    }),
+
+    _getLabels: function() {
+      var labels = [];
+
+      if (this.labelDisplay()) {
+        labels.push({
+          // Leave series information blank (labels only)
+          labels: _.map(this.data(), function(point, index) {
+            return {
+              key: this.keyValue(point, index),
+              coordinates: {
+                x: this.x(point, index),
+                y: this.y(point, index)
+              },
+              text: this.labelText(point, index),
+              offset: this.labelOffset(),
+              padding: this.labelPadding(),
+              anchor: this.labelAnchor(),
+              'class': point['class'],
+              style: this.labelStyle(),
+              values: point,
+              index: index,
+            };
+          }, this)
+        });
+      }      
+
+      return labels;
+    },
+
+    _convertPointToLabel: function(point) {
+      return {
+        key: this.keyValue(point.values, point.index),
+        coordinates: point.coordinates,
+        text: this.labelText(point.values, point.index),
+        offset: this.labelOffset(),
+        padding: this.labelPadding(),
+        anchor: this.labelAnchor(),
+        'class': point.values['class'],
+        style: this.labelStyle(),
+        values: point.values,
+        index: point.index
+      };
+    }
+  };
+
+  /**
+    Extensions for handling labels in series charts
+
+    Dependencies: Labels
+  */
+  var LabelsSeries = {
+    _getLabels: function() {
+      var seriesLabels = [];
+
+      if (this.labelDisplay()) {
+        seriesLabels = _.map(this.data(), function(series, seriesIndex) {
+          return {
+            key: series.key,
+            name: series.name,
+            'class': series['class'],
+            index: seriesIndex,
+            labels: _.map(series.values, function(point, pointIndex) {
+              return {
+                key: this.keyValue.call({_parentData: series}, point, pointIndex),
+                coordinates: {
+                  x: this.x.call({_parentData: series}, point, pointIndex),
+                  y: this.y.call({_parentData: series}, point, pointIndex)
+                },
+                text: this.labelText.call({_parentData: series}, point, pointIndex),
+                offset: this.labelOffset(),
+                padding: this.labelPadding(),
+                anchor: this.labelAnchor(),
+                'class': point['class'],
+                style: this.labelStyle(),
+                values: point,
+                index: pointIndex,
+              };
+            }, this)
+          };
+        }, this);
+      }
+      
+      return seriesLabels;
+    }
+  };
+
   // Expose extensions
   d3.chart.extensions = _.extend(d3.chart.extensions || {}, {
     Series: Series,
     XY: XY,
     XYSeries: _.extend({}, Series, XY, XYSeries),
     Values: _.extend({}, XY, Values),
-    ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries)
+    ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries),
+    Labels: Labels,
+    LabelsSeries: _.extend({}, Labels, LabelsSeries)
   });
 
 })(d3, _, d3.chart.helpers);
@@ -1166,7 +1511,7 @@
       // d3.chart doesn't handle events with spaces, register individual handlers
       _.each(events, function(event) {
         this.on(event, function() {
-          console.log('REDRAW', arguments);
+          // console.log('REDRAW', _.isFunction(this.redraw), this.container && _.isFunction(this.container.redraw));
           if (_.isFunction(this.redraw))
             this.redraw();
           else if (this.container && _.isFunction(this.container.redraw))
@@ -1194,7 +1539,8 @@
   });
 
   /**
-    Chart: Foundation for building charts with series data
+    Chart
+    Foundation for building charts with series data
   */
   d3.chart('Base').extend('Chart', {
     initialize: function(options) {
@@ -1206,8 +1552,13 @@
 
   /**
     Container
-
     Foundation for chart and component placement
+
+    Properties:
+    - {Object/Array} rawData
+    - {Object} chartMargins {top, right, bottom, left} in px
+    - {Number} width in px
+    - {Number} height in px
   */
   d3.chart('Base').extend('Container', {
     initialize: function(options) {
@@ -1224,108 +1575,13 @@
 
       this.base.classed('chart', true);
 
-      this.on('change:dimensions', function() {
-        this.redraw();
-      });
+      this.on('change:dimensions', this.redraw);
 
       this.options(options || {});
       this.redrawFor('options');
 
       this.handleResize();
       this.handleHover();
-    },
-
-    draw: function(data) {
-      // Explicitly set width and height of container
-      this.base
-        .attr('width', this.width())
-        .attr('height', this.height());
-
-      // Pre-draw for accurate dimensions for layout
-      this._preDraw(data);
-
-      // Layout now that components' dimensions are known
-      this.layout();
-
-      // Full draw now that everything has been laid out
-      d3.chart().prototype.draw.call(this, data);
-    },
-
-    redraw: function() {
-      // Using previously saved rawData, redraw chart      
-      if (this.rawData())
-        this.draw(this.rawData());
-    },
-
-    chartLayer: function(options) {
-      options = _.defaults({}, options, {
-        zIndex: helpers.zIndex.chart
-      });
-
-      return this.base.append('g')
-        .attr('class', 'chart-layer')
-        .attr('data-zIndex', options.zIndex);
-    },
-
-    componentLayer: function(options) {
-      options = _.defaults({}, options, {
-        zIndex: helpers.zIndex.component
-      });
-
-      return this.base.append('g')
-        .attr('class', 'chart-component-layer')
-        .attr('data-zIndex', options.zIndex);
-    },
-
-    attachChart: function(id, chart) {
-      chart.id = id;
-      chart.base.attr('data-id', id);
-      chart.container = this;
-
-      this.attach(id, chart);
-      this.chartsById[id] = chart;
-    },
-
-    detachChart: function(id) {
-      var chart = this.chartsById[id];
-      if (!chart) return;
-
-      // Remove chart base layer and all children
-      chart.base.remove();
-
-      delete this._attached[id];
-      delete this.chartsById[id];
-    },
-
-    attachComponent: function(id, component) {
-      component.id = id;
-      component.base.attr('data-id', id);
-      component.container = this;
-
-      this.attach(id, component);
-      this.componentsById[id] = component;
-
-      component.on('change:position', function() {
-        this.trigger('change:dimensions');
-      });
-    },
-
-    detachComponent: function(id) {
-      var component = this.componentsById[id];
-      if (!component) return;
-
-      // Remove component base layer and all children
-      component.base.remove();
-
-      component.off('change:position');
-      delete this._attached[id];
-      delete this.componentsById[id];
-    },
-
-    layout: function() {
-      var layout = this._extractLayout();
-      this._updateChartMargins(layout);
-      this._positionLayers(layout);
     },
 
     rawData: property('rawData'),
@@ -1367,6 +1623,86 @@
         this.trigger('change:dimensions');
       }
     }),
+
+    draw: function(data) {
+      // Explicitly set width and height of container
+      // (if width/height > 0)
+      this.base
+        .attr('width', this.width() || null)
+        .attr('height', this.height() || null);
+
+      // Pre-draw for accurate dimensions for layout
+      this._preDraw(data);
+
+      // Layout now that components' dimensions are known
+      this.layout();
+
+      // Full draw now that everything has been laid out
+      d3.chart().prototype.draw.call(this, data);
+    },
+
+    redraw: function() {
+      // Using previously saved rawData, redraw chart      
+      if (this.rawData())
+        this.draw(this.rawData());
+    },
+
+    chartLayer: function(options) {
+      options = _.defaults({}, options, {
+        zIndex: helpers.zIndex.chart
+      });
+
+      return this.base.append('g')
+        .attr('class', 'chart-layer')
+        .attr('data-zIndex', options.zIndex);
+    },
+
+    componentLayer: function(options) {
+      options = _.defaults({}, options, {
+        zIndex: helpers.zIndex.component
+      });
+
+      return this.base.append('g')
+        .attr('class', 'chart-component-layer')
+        .attr('data-zIndex', options.zIndex);
+    },
+
+    attachChart: function(id, chart) {
+      this._attach(id, chart);
+      this.chartsById[id] = chart;
+    },
+
+    detachChart: function(id) {
+      var chart = this.chartsById[id];
+      if (!chart) return;
+
+      this._detach(id, chart);
+      delete this.chartsById[id];
+    },
+
+    attachComponent: function(id, component) {
+      this._attach(id, component);
+      this.componentsById[id] = component;
+
+      component.on('change:position', function() {
+        this.trigger('change:dimensions');
+      });
+    },
+
+    detachComponent: function(id) {
+      var component = this.componentsById[id];
+      if (!component) return;
+
+      component.off('change:position');
+      this._detach(id, component);
+      delete this.componentsById[id];
+    },
+
+    layout: function() {
+      var layout = this._extractLayout();
+      this._updateChartMargins(layout);
+      this._positionLayers(layout);
+    },
     
     chartWidth: function() {
       var margins = this._chartMargins();
@@ -1386,31 +1722,147 @@
     },
 
     handleHover: function() {
-      this.on('enter:mouse', function(coordinates) {
-        this.trigger('hover', coordinates);
-      });
-      this.on('move:mouse', function(coordinates) {
-        this.trigger('hover', coordinates);
-      });
-
-      var hovering;
+      var inside;
       var trigger = this.trigger.bind(this);
-      var onMouseMove = this.onMouseMove = _.throttle(function(coordinates) {
-        if (hovering)
+      
+      var throttledMouseMove = _.throttle(function(coordinates) {
+        if (inside)
           trigger('move:mouse', coordinates);
       }, 100);
 
       this.base.on('mouseenter', function() {
-        hovering = true;
-        trigger('enter:mouse', d3.mouse(this));
+        inside = true;
+        trigger('enter:mouse', translateToXY(d3.mouse(this)));
       });
       this.base.on('mousemove', function() {
-        onMouseMove(d3.mouse(this));
+        throttledMouseMove(translateToXY(d3.mouse(this)));
       });
       this.base.on('mouseleave', function() {
-        hovering = false;
+        inside = false;
         trigger('leave:mouse');
       });
+
+      function translateToXY(coordinates) {
+        return {x: coordinates[0], y: coordinates[1]};
+      }
+
+      // Handle hover over charts
+      var insideChart;
+      this.on('enter:mouse', function(coordinates) {
+        var chartCoordinates = this._translateCoordinatesToChart(coordinates);
+        if (chartCoordinates) {
+          insideChart = true;
+          trigger('chart:enter:mouse', chartCoordinates);
+        }
+      });
+      this.on('move:mouse', function(coordinates) {
+        var chartCoordinates = this._translateCoordinatesToChart(coordinates);
+        if (chartCoordinates) {
+          if (insideChart) {
+            trigger('chart:move:mouse', chartCoordinates);
+          }
+          else {
+            insideChart = true;
+            trigger('chart:enter:mouse', chartCoordinates);
+          }
+        }
+        else if (insideChart) {
+          insideChart = false;
+          trigger('chart:leave:mouse');
+        }
+      });
+      this.on('leave:mouse', function() {
+        if (insideChart) {
+          insideChart = false;
+          trigger('chart:leave:mouse');
+        }
+      });
+
+      // Handle hover over points
+      var insidePoints;
+      this.on('chart:enter:mouse', function(coordinates) {
+        var points = this._translateCoordinatesToPoints(coordinates);
+        if (points.length) {
+          insidePoints = true;
+          trigger('points:enter:mouse', points);
+        }
+      });
+      this.on('chart:move:mouse', function(coordinates) {
+        var points = this._translateCoordinatesToPoints(coordinates);
+        if (points.length) {
+          if (insidePoints) {
+            trigger('points:move:mouse', points);
+          }
+          else {
+            insidePoints = true;
+            trigger('points:enter:mouse', points);
+          }
+        }
+        else if (insidePoints) {
+          insidePoints = false;
+          trigger('points:leave:mouse');
+        }
+      });
+      this.on('chart:leave:mouse', function() {
+        if (insidePoints) {
+          insidePoints = false;
+          trigger('points:leave:mouse');
+        }
+      });
+
+      // Handle hover over points labels
+      var insideLabels;
+      this.on('points:enter:mouse', function(points) {
+        var labels = this._convertPointsToLabels(points);
+        if (labels.length) {
+          insideLabels = true;
+          trigger('labels:enter:mouse', labels);
+        }
+      });
+      this.on('points:move:mouse', function(points) {
+        var labels = this._convertPointsToLabels(points);
+        if (labels.length) {
+          if (insideLabels) {
+            trigger('labels:move:mouse', labels);
+          }
+          else {
+            insideLabels = true;
+            trigger('labels:enter:mouse', labels);
+          }
+        }
+        else if (insideLabels) {
+          insideLabels = false;
+          trigger('labels:leave:mouse');
+        }
+      });
+      this.on('points:leave:mouse', function() {
+        if (insideLabels) {
+          insideLabels = false;
+          trigger('labels:leave:mouse');
+        }
+      });
+    },
+
+    _attach: function(id, item) {
+      item.id = id;
+      item.base.attr('data-id', id);
+      item.container = this;
+
+      this.attach(id, item);
+
+      if (item && _.isFunction(item.trigger)) {
+        item.trigger('attached');
+      }
+    },
+
+    _detach: function(id, item) {
+      item.base.remove();
+
+      delete this._attached[id];
+
+      if (item && _.isFunction(item.trigger)) {
+        item.trigger('detached');
+      }
     },
 
     _preDraw: function(data) {
@@ -1541,6 +1993,102 @@
         return _.extend({}, this.chartMargins());
       }
     }),
+
+    _translateCoordinatesToChart: function(coordinates) {
+      var margins = this._chartMargins();
+      var chartWidth = this.chartWidth();
+      var chartHeight = this.chartHeight();
+
+      var bounds = {
+        top: margins.top,
+        right: margins.left + chartWidth,
+        bottom: margins.top + chartHeight,
+        left: margins.left
+      };
+
+      if (coordinates.x >= bounds.left && coordinates.x <= bounds.right
+          && coordinates.y >= bounds.top && coordinates.y <= bounds.bottom) {
+        var chartCoordinates = {
+          x: coordinates.x - bounds.left,
+          y: coordinates.y - bounds.top
+        };
+
+        return chartCoordinates;
+      }
+    },
+
+    _translateCoordinatesToPoints: function(coordinates) {
+      var points = _.reduce(this.chartsById, function(memo, chart, id) {
+        if (chart && _.isFunction(chart._translateCoordinatesToPoints)) {
+          var chartPoints = chart._translateCoordinatesToPoints(coordinates, {measurement: 'x'});
+          if (!chartPoints || !_.isArray(chartPoints)) {
+            throw new Error('d3.chart.multi: Expected _translateCoordinatesToPoints to return an Array for chart with id: ' + id);
+          }
+          else {
+            // Add chart id to series key
+            _.map(chartPoints, function(series) {
+              series.chartId = id;
+              series.seriesKey = series.key;
+              series.key = series.key ? id + '-' + series.key : id;
+            });
+
+            return memo.concat(chartPoints);
+          }
+            
+        }
+        else {
+          return memo;
+        }
+      }, [], this);
+
+      return points;
+    },
+
+    _convertPointsToLabels: function(points) {
+      var labels = _.map(points, function(series) {
+        series = _.clone(series);
+        var chart = this.chartsById[series.chartId];
+        if (chart && _.isFunction(chart._convertPointToLabel)) {
+          series.labels = _.map(series.points, chart._convertPointToLabel, chart);
+        }
+        else {
+          series.labels = [];
+        }
+
+        // Remove points from labels
+        delete series.points;
+
+        return series;
+      }, this);
+
+      return labels;
+    },
+
+    _getLabels: function() {
+      var labels = _.reduce(this.chartsById, function(memo, chart, id) {
+        if (chart && _.isFunction(chart._getLabels)) {
+          var labels = chart._getLabels();
+          if (!labels || !_.isArray(labels)) {
+            throw new Error('d3.chart.multi: Expected _getLabels to return an Array for chart with id: ' + id);
+          }
+          else {
+            // Add chart id to series key
+            _.map(labels, function(series) {
+              series.chartId = id;
+              series.seriesKey = series.key;
+              series.key = series.key ? id + '-' + series.key : id;
+            });
+
+            return memo.concat(labels);
+          }
+        }
+        else {
+          return memo;
+        }
+      }, [], this);
+
+      return labels;
+    }
   });
   
   /**
@@ -1633,215 +2181,612 @@
 
 })(d3, _, d3.chart.helpers, d3.chart.extensions);
 
-(function(d3, helpers, extensions) {
+(function(d3, _, helpers, extensions) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
 
   /**
     Labels
-    Chart with labels positioned at (x,y) points
-
-    Properties:
-    - {String} [position = top] top, right, bottom, left, or a|b (a for positive values or 0, b for negative)
-    - {Number} [offset = 10] px distance offset from data point
-    - {String|Function} format String to be used in d3.format(...) or format function
+    Draw labels from _getLabels for each chart on container
   */
-  d3.chart('SeriesChart').extend('Labels', mixin(extensions.XYSeries, {
+  d3.chart('Chart').extend('Labels', {
     initialize: function() {
-      this.seriesLayer('Labels', this.base.append('g').classed('chart-labels', true), {
+      this.layer('Labels', this.base.append('g').classed('chart-labels', true), {
         dataBind: function(data) {
           var chart = this.chart();
-          return this.selectAll('text')
-            .data(data, chart.keyValue);
+          var series = this.selectAll('g')
+            .data(data, chart.seriesKey);
+
+          series.enter()
+            .append('g')
+            .attr('class', chart.seriesClass)
+            .attr('data-chart-id', chart.seriesChartId)
+            .attr('data-series-key', chart.seriesSeriesKey);
+          series.exit()
+            .remove();
+
+          return series.selectAll('g')
+            .data(chart.seriesLabels, chart.labelKey);
         },
         insert: function() {
-          var chart = this.chart();
-
-          return this.append('text')
-            .classed('chart-label', true)
-            .attr('alignment-baseline', chart.labelAlignment)
-            .attr('style', chart.itemStyle);
+          return this.chart().insertLabels(this);
         },
         events: {
-          'enter': function() {
-            var chart = this.chart();
-            this
-              .attr('x', chart.labelX)
-              .attr('y', chart.y0)
-              .attr('text-anchor', chart.labelAnchor)
-              .text(0);
-          },
           'merge:transition': function() {
             var chart = this.chart();
-            this
-              .attr('y', chart.labelY)
-              .text(chart.labelValue);
+
+            // 1. Draw all labels
+            chart.drawLabels(this);
+
+            if (chart.handleCollisions()) {
+              // 2. Remove overlapping labels within series
+              chart.removeLabels();
+
+              // 3. Group overlapping labels between series
+              chart.groupLabels();
+            }            
+          },
+          'exit': function() {
+            this.remove();
           }
         }
       });
     },
 
     transform: function(data) {
-      // TODO reduce data (by mechanism similar to ticks)
-      return data;
+      return this.extractLabels(data);
     },
 
-    display: property('display', {defaultValue: true}),
+    excludeFromLegend: true,
+    labels: property('labels', {defaultValue: []}),
+    handleCollisions: property('handleCollisions', {defaultValue: true}),
+    
     format: property('format', {
       type: 'Function',
       set: function(value) {
         if (_.isString(value)) {
-          return {override: d3.format(value)};
+          return {
+            override: d3.format(value)
+          };
         }
       }
     }),
-    
-    position: property('position', {defaultValue: 'top'}),
-    offset: property('offset', {defaultValue: 14}),
+    position: property('position', {
+      defaultValue: 'top',
+      validate: function(value) {
+        return _.contains(['top', 'right', 'bottom', 'left'], value);
+      }
+    }),
+    offset: property('offset', {
+      defaultValue: 0,
+      get: function(offset) {
+        return this.offsetByPosition(offset, this.position());
+      }
+    }),
+    padding: property('padding', {defaultValue: 2}),
+    anchor: property('anchor', {
+      defaultValue: function() {
+        var position = this.position();
 
+        if (position == 'right')
+          return 'start';
+        else if (position == 'left')
+          return 'end';
+        else
+          return 'middle';
+      },
+      validate: function(value) {
+        return _.contains(['start', 'middle', 'end'], value);
+      }
+    }),
+
+    labelKey: di(function(chart, d, i) {
+      return d.key;
+    }),
     labelX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
+      var offset = _.defaults({}, chart.offset(), d.offset);
+      return d.coordinates.x + offset.x;
     }),
     labelY: di(function(chart, d, i) {
-      return chart.y.call(this, d, i) + chart.calculatedOffset.call(this, d, i).y;
+      var offset = _.defaults({}, chart.offset(), d.offset);
+      return d.coordinates.y + offset.y;
     }),
-    labelValue: di(function(chart, d, i) {
-      if (!chart.display()) return;
-
-      var value = chart.yValue.call(this, d, i);
-      return chart.format() ? chart.format()(value) : value;
+    labelText: di(function(chart, d, i) {
+      var format = chart.format();
+      return format ? format(d.text) : d.text;
     }),
-
-    calculatedOffset: di(function(chart, d, i) {
-      var offset = chart.offset();
-
-      var byPosition = {
-        top: {x: 0, y: -offset},
-        right: {x: offset, y: 0},
-        bottom: {x: 0, y: offset},
-        left: {x: -offset, y: 0}
-      };
-      
-      return byPosition[chart.calculatedPosition.call(this, d, i)];
-    }),
-    labelAnchor: di(function(chart, d, i) {
-      if (chart.calculatedPosition.call(this, d, i) == 'right')
-        return 'start';
-      else if (chart.calculatedPosition.call(this, d, i) == 'left')
-        return 'end';
-      else
-        return 'middle';
-    }),
-    labelAlignment: di(function(chart, d, i) {
-      // Set alignment-baseline so that font size does not play into calculations
-      // http://www.w3.org/TR/SVG/text.html#BaselineAlignmentProperties
-      var byPosition = {
-        top: 'after-edge',
-        right: 'middle',
-        bottom: 'before-edge',
-        left: 'middle'
-      };
-
-      return byPosition[chart.calculatedPosition.call(this, d, i)];
-    }),
-
-    calculatedPosition: di(function(chart, d, i) {
-      var position = chart.position();
-      var parts = position.split('|');
-
-      if (parts.length > 1) {
-        var value = parts[0] == 'top' || parts[0] == 'bottom' ? chart.yValue.call(this, d, i) : chart.xValue.call(this, d, i);
-        return value >= 0 ? parts[0] : parts[1];
-      }
-      else {
-        return parts[0];
-      }
-    }),
-
-    itemStyle: di(function(chart, d, i) {
-      // For labels, only pull in label styles
-      // - data.labels.style
-      // - series.labels.style
-      var series = chart.seriesData.call(this, d, i) || {};
-      var styles = _.defaults({}, d.labels && d.labels.style, series.labels && series.labels.style, chart.options().style);
-      
+    labelStyle: di(function(chart, d, i) {
+      var styles = _.defaults({}, d.style, chart.options().style);
       return helpers.style(styles) || null;
     }),
-  }));
-  
-  /**
-    LabelValues
-    Chart with labels for centered values
-  */
-  d3.chart('Labels').extend('LabelsValues', mixin(extensions.ValuesSeries, {
-    labelX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i) + chart.calculatedOffset.call(this, d, i).x;
-    })
-  }));
 
-  /**
-    ChartWithLabels
-    Chart with labels attached
-  */
-  d3.chart('SeriesChart').extend('ChartWithLabels', {
-    attachLabels: function() {
-      var options = this.labelOptions();
-      var Labels = helpers.resolveChart(options.type, 'Labels', this.isValues ? 'Values' : 'XY');
-      this.labels = new Labels(this.base, options);
+    seriesKey: di(function(chart, d, i) {
+      return d.key || i;
+    }),
+    seriesChartId: di(function(chart, d, i) {
+      return d.chartId;
+    }),
+    seriesSeriesKey: di(function(chart, d, i) {
+      return d.seriesKey;
+    }),
+    seriesClass: di(function(chart, d, i) {
+      var seriesIndex = !_.isUndefined(d.index) ? 'chart-index-' + d.index : '';
+      var seriesClass = d['class'] ? ' ' + d['class'] : '';
 
-      // Pull x/y scale from parent chart
-      this.labels.xScale = property('xScale', {
-        get: function() {
-          return this._xScale();
-        },
-        context: this
-      });
-      this.labels.yScale = property('yScale', {
-        get: function() {
-          return this._yScale();
-        },
-        context: this
-      });
+      return _.compact(['chart-series', seriesIndex, seriesClass]).join(' ');
+    }),
+    seriesLabels: di(function(chart, d, i) {
+      return d.labels;
+    }),
+    seriesData: di(function(chart, d, i) {
+      var parentData = helpers.getParentData(this);
 
-      this.attach('Labels', this.labels);
+      // Element may be two-deep (text / rect)
+      if (!parentData.seriesKey && this.parentNode)
+        return helpers.getParentData(this.parentNode);
+      else
+        return parentData;
+    }),
+
+    insertLabels: function(base) {
+      var groups = base.append('g')
+        .classed('chart-label', true)
+        .attr('style', this.labelStyle);
+
+      groups.append('rect')
+        .classed('chart-label-bg', true);
+      groups.append('text')
+        .classed('chart-label-text', true);
+
+      return groups;
+    },
+    drawLabels: function(selection) {
+      var labels = [];
+      selection.call(function(data) {
+        _.each(data, function(series, seriesIndex) {
+          labels.push([]);
+
+          _.each(series, function(labelElement, labelIndex) {
+            var label = new Label(labelElement, d3.select(labelElement).data()[0], {
+              labelX: this.labelX,
+              labelY: this.labelY,
+              labelText: this.labelText,
+              padding: this.padding(),
+              anchor: this.anchor()
+            });
+            labels[seriesIndex].push(label);
+            label.draw();
+          }, this);
+        }, this);
+      }.bind(this));
+
+      this.labels(labels);
+    },
+    removeLabels: function() {
+      _.each(this.labels(), function(series) {
+        var prev;
+        _.each(series, function(label) {
+          if (label.checkForOverlap(prev, {compare: 'LR'})) {
+            label.remove();
+          }
+          else {
+            prev = label;
+          }
+        }, this);
+      }, this);
+    },
+    groupLabels: function(selection) {
+      checkForCollisions(this.labels());
+
+      function checkForCollisions(labels) {
+        _.each(labels, function(seriesA, seriesIndex) {
+          // Check through remaining series for collisions
+          _.each(labels.slice(seriesIndex + 1), function(seriesB) {
+            _.each(seriesB, function(labelB) {
+              if (!labelB.removed) {
+                _.each(seriesA, function(labelA) {
+                  if (!labelA.removed && labelA.checkForOverlap(labelB)) {
+                    groupLabels(labelA, labelB);
+                  }
+                });
+              }
+            });
+          });
+        });
+      }
+
+      function groupLabels(labelA, labelB) {
+        if (labelA.group && labelB.group) {
+          // Move labelB group labels into labelA group
+          _.each(labelB.group.labels, function(label) {
+            labelA.group.labels.push(label);
+            label.group = labelA.group;
+          });
+
+          updateGroupPositions(labelA.group);
+        }
+        else if (labelA.group) {
+          addLabelToGroup(labelB, labelA.group);
+        }
+        else if (labelB.group) {
+          addLabelToGroup(labelA, labelB.group);
+        }
+        else {
+          var group = {labels: []};
+          addLabelToGroup(labelA, group);
+          addLabelToGroup(labelB, group);
+        }
+      }
+
+      function addLabelToGroup(label, group) {
+        group.labels.push(label);
+        label.group = group;
+        label.selection.attr('data-group-index', group.index);
+
+        updateGroupPositions(group);
+      }
+
+      function updateGroupPositions(group) {
+        var positions = findLabelPositions(group.labels);
+        _.each(group.labels, function(label, index) {
+          label.xCenter(positions[index].xCenter).y(positions[index].y);
+        });
+      }
+
+      function findLabelPositions(labels) {
+        // First, sort labels by y
+        var byY = _.chain(labels)
+          .map(function(label, index) {
+            label.index = index;
+            return label;
+          })
+          .sortBy(function(label) {
+            return label.y();
+          })
+          .reverse()
+          .value();
+
+        // Then, adjust for label height
+        _.each(byY, function(label, index) {
+          var prev = _.first(byY, index);
+          var overlap;
+          for (var i = prev.length - 1; i >= 0; i--) {
+            if (label.checkForOverlap(prev[i])) {
+              overlap = prev[i];
+              break;
+            }
+          }
+
+          if (overlap) {
+            label.groupedY = overlap.y() - label.height();
+          }
+          else {
+            label.groupedY = label.y();
+          }
+        });
+
+        // Then, unsort by index
+        byY = _.sortBy(byY, 'index');
+
+        positions = _.map(labels, function(label, index) {
+          // Remove added index
+          delete label.index;
+
+          return {
+            xCenter: byY[index].xCenter(),
+            y: byY[index].groupedY
+          };
+        });
+
+        return positions;
+      }
+
+      function findCenter(labels) {
+        var center = labels[0].xCenter();
+        for (var i = 1, l = labels.length; i < l; i++) {
+          center += (labels[i].xCenter() - center) / 2;
+        }
+        return center;
+      }
     },
 
-    options: property('options', {
-      set: function(options) {
-        this.setFromOptions(options);
+    extractLabels: function(data) {
+      // Get labels from container
+      if (this.container && _.isFunction(this.container._getLabels)) {
+        return this.container._getLabels();
+      }
+      else {
+        return [];
+      }
+    },
 
-        if (this.labels)
-          this.labels.options(this.labelOptions(), {silent: true});
+    offsetByPosition: function(offset, position) {
+      if (_.isNumber(offset)) {
+        offset = {
+          top: {x: 0, y: -offset},
+          right: {x: offset, y: 0},
+          bottom: {x: 0, y: offset},
+          left: {x: -offset, y: 0}
+        }[position];
+
+        if (!offset) {
+          offset = {x: 0, y: 0};
+        }
+      }
+
+      return offset;
+    }
+  });
+  
+  /**
+    HoverLabels
+    Listen to points events and draw labels
+  */
+  d3.chart('Labels').extend('HoverLabels', {
+    initialize: function() {
+      _.bindAll(this, 'onLabelsEnter', 'onLabelsMove', 'onLabelsLeave');
+
+      this.on('attached', function() {
+        this.container.on('labels:enter:mouse', this.onLabelsEnter);
+        this.container.on('labels:move:mouse', this.onLabelsMove);
+        this.container.on('labels:leave:mouse', this.onLabelsLeave);
+      });
+      this.on('detached', function() {
+        this.container.off('labels:enter:mouse', this.onLabelsEnter);
+        this.container.off('labels:move:mouse', this.onLabelsMove);
+        this.container.off('labels:leave:mouse', this.onLabelsLeave);
+      });
+    },
+
+    excludeFromLegend: true,
+    draw: function() {
+      // Override default draw call
+      // (only want to draw on hover)
+    },
+    _draw: function(labels) {
+      d3.chart('Chart').prototype.draw.call(this, labels);
+    },
+
+    onLabelsEnter: function(points) {
+      this._draw(points);
+    },
+    onLabelsMove: function(points) {
+      this._draw(points);
+    },
+    onLabelsLeave: function() {
+      this._draw([]);
+    },
+
+    extractLabels: function(data) {
+      // Pass through labels data
+      return data;
+    }
+  });
+
+  /**
+    Element helper
+
+    @param {SVG Element} element
+  */
+  function Element(element) {
+    if (!_.isFunction(element.getBBox))
+      throw new Error('Only SVG elements with getBBox() are supported by Element helper');
+
+    this.element = element;
+    this.selection = d3.select(element);
+    this.refreshBounds();
+    this.removed = false;
+
+    return this;
+  }
+  _.extend(Element.prototype, {
+    x: property('x', {
+      set: function(value) {
+        this.selection.attr('x', value);
+      }
+    }),
+    y: property('y', {
+      set: function(value) {
+        this.selection.attr('y', value);
+      }
+    }),
+    width: property('width', {
+      set: function(value) {
+        this.selection.attr('width', value);
+      }
+    }),
+    height: property('height', {
+      set: function(value) {
+        this.selection.attr('height', value);
+      }
+    }),
+    bounds: property('bounds', {
+      get: function() {
+        return {
+          x: this.x(),
+          y: this.y(),
+          width: this.width(),
+          height: this.height()
+        };
+      },
+      set: function(value) {
+        this.x(value.x);
+        this.y(value.y);
+        this.width(value.width);
+        this.height(value.height);
       }
     }),
 
-    labelOptions: property('labelOptions', {
+    xCenter: property('xCenter', {
       get: function() {
-        var options = this.options().labels;
+        return this.x() + (this.width() / 2);
+      },
+      set: function(value) {
+        this.x(value - (this.width() / 2));
+      }
+    }),
 
-        // If no options or options is false, display = false
-        // If options is true, display = true
-        // Otherwise use options given
-        if (!options)
-          options = {display: false};
-        else if (options === true)
-          options = {display: true};
-        else
-          options = _.clone(options);
+    getBBox: function() {
+      return this.element.getBBox();
+    },
+    refreshBounds: function() {
+      this.bounds(this.getBBox());
+      return this;
+    },
+    checkForOverlap: function(element, options) {
+      if (!element || !element.bounds) return false;
 
-        // Pull options from parent chart
-        options = _.defaults(options, {
-          displayAdjacent: this.displayAdjacent ? this.displayAdjacent() : false,
-          invertedXY: this.invertedXY ? this.invertedXY() : false
-        });
+      var a = getEdges(this.bounds());
+      var b = getEdges(element.bounds());
+      var alignedLR = (a.left == b.left && a.right == b.right);
+      var alignedTB = (a.top == b.top && a.bottom == b.bottom);
+      var containedLR = (b.left < a.left && b.right > a.right);
+      var containerTB = (b.bottom < a.bottom && b.top > a.top);
+      var overlapLR = (b.left > a.left && b.left < a.right) || (b.right > a.left && b.right < a.right) || alignedLR || containedLR;
+      var overlapTB = (b.top > a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom < a.bottom) || alignedTB || containerTB;
 
-        return options;
+      if (options && options.compare == 'LR')
+        return overlapLR;
+      else if (options && options.compare == 'TB')
+        return overlapTB;
+      else
+        return overlapLR && overlapTB;
+
+      function getEdges(bounds) {
+        return {
+          left: bounds.x,
+          right: bounds.x + bounds.width,
+          top: bounds.y,
+          bottom: bounds.y + bounds.height
+        };
+      }
+    }
+  });
+
+  /**
+    Group helper
+
+    @param {SVG Group} group
+  */
+  function Group(group) {
+    Element.call(this, group);
+    return this;
+  }
+  _.extend(Group.prototype, Element.prototype, {
+    getBBox: function() {
+      // getBBox does not account for translate(...), needed for groups
+      var bbox = this.element.getBBox();
+      var transform = this.selection.attr('transform');
+
+      if (transform && _.indexOf(transform, 'translate')) {
+        var parts = transform.split(')');
+        var translate = {x: 0, y: 0};
+        _.each(parts, function(part) {
+          if (_.indexOf(part, 'translate')) {
+            xy = part.replace('translate', '').replace('(', '').split(',');
+            if (xy.length >= 2) {
+              translate.x = +xy[0].trim();
+              translate.y = +xy[1].trim();  
+            }
+          }
+        }, this);
+
+        bbox.x += translate.x;
+        bbox.y += translate.y;
+      }
+
+      return bbox;
+    },
+
+    x: property('x', {
+      set: function(value) {
+        this.selection.attr('transform', helpers.transform.translate(value, this.y()));
+      }
+    }),
+    y: property('y', {
+      set: function(value) {
+        this.selection.attr('transform', helpers.transform.translate(this.x(), value));
       }
     })
   });
 
-})(d3, d3.chart.helpers, d3.chart.extensions);
+  /**
+    Label helper
+
+    @param {SVG Element} element
+  */
+  function Label(element, data, options) {
+    Group.call(this, element);
+    this.data = data;
+
+    this.text = new Element(this.selection.select('text').node());
+    this.rect = new Element(this.selection.select('rect').node());
+
+    this.options = _.defaults({}, options, {
+      labelX: function(d, i) { return d.x; },
+      labelY: function(d, i) { return d.y; },
+      labelText: function(d, i) { return d.value; },
+      padding: 0,
+      anchor: 'middle'
+    });
+  }
+  _.extend(Label.prototype, Group.prototype, {
+    draw: function() {
+      this.text
+        .x(this.options.labelX)
+        .y(this.options.labelY)
+        .selection
+          .attr('text-anchor', 'start')
+          .text(this.options.labelText);
+
+      var textBounds = this.text.refreshBounds().bounds();
+      var offsets = {x: -1, y: 0, width: 3, height: 0};
+      var padding = this.data.padding || this.options.padding;
+      var anchor = this.data.anchor || this.options.anchor;
+
+      // TODO Handle centering vertically and horizontally
+      var bounds = {
+        x: textBounds.x - (textBounds.width / 2) + offsets.x - padding,
+        y: textBounds.y + offsets.y - 2*padding,
+        width: textBounds.width + offsets.width + 2*padding,
+        height: textBounds.height + offsets.height + 2*padding
+      };
+
+      if (anchor == 'start')
+        bounds.x += bounds.width / 2;
+      else if (anchor == 'end')
+        bounds.x -= bounds.width / 2;
+
+      this
+        .x(bounds.x)
+        .y(bounds.y);
+
+      this.rect
+        .bounds({
+          x: 0,
+          y: 0,
+          width: bounds.width,
+          height: bounds.height
+        });
+
+      this.text
+        .x(this.data.padding || 0)
+        .y(textBounds.height/* + (d.padding || 0) */);
+
+      // Make sure group uses up-to-date rect and text size
+      this.refreshBounds();
+
+      return this;
+    },
+    remove: function() {
+      this.removed = true;
+      this.selection.remove();
+      return this;
+    }
+  });
+
+})(d3, _, d3.chart.helpers, d3.chart.extensions);
 
 (function(d3, helpers, extensions) {
   var mixin = helpers.mixin;
@@ -1852,7 +2797,7 @@
     Bars
     Bar graph with centered key,value data and adjacent display for series
   */
-  d3.chart('ChartWithLabels').extend('Bars', mixin(extensions.ValuesSeries, {
+  d3.chart('SeriesChart').extend('Bars', mixin(extensions.ValuesSeries, extensions.LabelsSeries, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -1874,16 +2819,26 @@
 
             if (!chart.invertedXY()) {
               this
-                .attr('x', chart.barX)
                 .attr('y', chart.y0)
-                .attr('width', chart.itemWidth)
                 .attr('height', 0);  
             }
             else {
               this
                 .attr('x', chart.x0)
+                .attr('width', 0);
+            }
+          },
+          'merge': function() {
+            var chart = this.chart();
+
+            if (!chart.invertedXY()) {
+              this
+                .attr('x', chart.barX)
+                .attr('width', chart.itemWidth);
+            }
+            else {
+              this
                 .attr('y', chart.barY)
-                .attr('width', 0)
                 .attr('height', chart.itemWidth);   
             }
           },
@@ -1900,11 +2855,12 @@
                 .attr('x', chart.barX)
                 .attr('width', chart.barHeight);
             }
+          },
+          'exit': function() {
+            this.remove();
           }
         }
       });
-
-      this.attachLabels();
     },
 
     barHeight: di(function(chart, d, i) {
@@ -1964,8 +2920,10 @@
     Stacked Bars
   */
   d3.chart('Bars').extend('StackedBars', {
-    initialize: function() {
+    transform: function(data) {
+      // Re-initialize bar positions each time data changes
       this.barPositions = [];
+      return data;
     },
 
     barHeight: di(function(chart, d, i) {
@@ -2036,16 +2994,18 @@
     Line
     (x,y) line graph
   */
-  d3.chart('ChartWithLabels').extend('Line', mixin(extensions.XYSeries, {
+  d3.chart('SeriesChart').extend('Line', mixin(extensions.XYSeries, extensions.LabelsSeries, {
     initialize: function() {
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
           var chart = this.chart();
+          var lines = {};
 
           // Add lines based on underlying series data
-          chart.lines(_.map(chart.data(), function(series) {
-            return chart.createLine(series);
-          }));
+          _.each(chart.data(), function(series) {
+            lines[series.seriesIndex] = chart.createLine(series);
+          });
+          chart.lines(lines);
 
           // Rather than use provided series data
           return this.selectAll('path')
@@ -2073,10 +3033,8 @@
           }
         }
       });
-
-      this.attachLabels();
     },
-    lines: property('lines', {defaultValue: []}),
+    lines: property('lines', {defaultValue: {}}),
 
     createLine: function(series) {
       var line = d3.svg.line()
@@ -2448,6 +3406,9 @@
     transform: function(allData) {
       var extractData = d3.chart('Multi').prototype.extractData;
       var data = _.reduce(this.options().charts, function(data, chart) {
+        if (chart.excludeFromLegend)
+          return data;
+
         var chartData = _.map(extractData(chart, allData), function(series, index) {
           return {
             chart: chart,
