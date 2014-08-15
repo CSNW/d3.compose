@@ -28,6 +28,10 @@
   <div class="container">
     <svg id="chart"></svg>
     <div>
+      <button id="update">Update</button>
+      <button id="redraw">Redraw</button>
+    </div>
+    <div>
       Container: <span id="mouse-container"></span><br>
       Chart: <span id="mouse-chart"></span><br>
       Points: <span id="mouse-points"></span>
@@ -46,13 +50,27 @@
       charts: {
         line: {type: 'Line', dataKey: 'increasing', labels: true},
         bars: {type: 'Bars', dataKey: 'decreasing', labels: true},
-        labels: {type: 'Labels'}
+        labels: {type: 'Labels', handleCollisions: true}
       },
       axes: {
         x: {scale: {type: 'ordinal', domain: [0, 10, 20, 30, 40, 50]}},
-        y: {scale: {domain: [0, 200]}}
+        y: {scale: {domain: [0, 200]}},
+        secondaryY: {scale: {domain: [0, 1000]}, dataKey: 'increasing'}
       }
     };
+    // var config = {
+    //   type: 'XY',
+    //   charts: {
+    //     line: {type: 'Line', dataKey: 'increasing-dense', labels: true},
+    //     labels: {type: 'Labels', handleCollisions: true}
+    //   },
+    //   axes: {
+    //     x: {scale: {domain: [0, 50]}, position: 'top', title: 'Howdy'}
+    //   },
+    //   legend: false,
+    //   title: {text: 'HI!', position: 'bottom'}
+    // }
+
     var data = {
       increasing: [
         {
@@ -145,6 +163,25 @@
 
     chart.draw(data);
 
+    function update() {
+      _.each(data, function(item) {
+        _.each(item, function(series) {
+          _.each(series.values, function(point) {
+            // +/- 10%
+            point.y = Math.round(point.y * (0.9 + Math.random()*0.2), 0);
+          });
+        });
+      });
+      chart.draw(data);
+    }
+
+    function redraw() {
+      chart.redraw();
+    }
+
+    $('#update').on('click', update);
+    $('#redraw').on('click', redraw);
+
     // DEBUG
     chart.on('enter:mouse', function(coordinates) {
       logMouse('container', coordinates);
@@ -183,10 +220,13 @@
       else {
         var msg = '';
 
-        // points come in as Array
-        if (_.isArray(coordinates)) {
-          msg = _.compact(_.map(coordinates, logPoint)).join(', ');
-        }
+        // Points come in as array
+        if (_.isArray(coordinates))
+          msg = _.map(coordinates, function(series) {
+            return _.map(series.points, function(point) {
+              return series.name + ': {x = ' + point.values.x + ', y = ' + point.values.y + '}';
+            }).join(', ');
+          }).join(' ');
         else {
           msg = logCoordinates(coordinates);
         }
@@ -194,9 +234,6 @@
         $selector.text(msg);
       }
 
-      function logPoint(point) {
-        return point.series.name + ': {x = ' + point.values.x + ', y = ' + point.values.y + '}';
-      }
       function logCoordinates(coordinates) {
         return 'x = ' + coordinates.x + ', y = ' + coordinates.y;
       }

@@ -359,6 +359,40 @@
           trigger('points:leave:mouse');
         }
       });
+
+      // Handle hover over points labels
+      var insideLabels;
+      this.on('points:enter:mouse', function(points) {
+        var labels = this._convertPointsToLabels(points);
+        if (labels.length) {
+          insideLabels = true;
+          trigger('labels:enter:mouse', labels);
+        }
+      });
+      this.on('points:move:mouse', function(points) {
+        var labels = this._convertPointsToLabels(points);
+        if (labels.length) {
+          if (insideLabels) {
+            trigger('labels:move:mouse', labels);
+          }
+          else {
+            insideLabels = true;
+            trigger('labels:enter:mouse', labels);
+          }
+        }
+        else if (insideLabels) {
+          insideLabels = false;
+          console.log('leave');
+          trigger('labels:leave:mouse');
+        }
+      });
+      this.on('points:leave:mouse', function() {
+        if (insideLabels) {
+          insideLabels = false;
+          console.log('leave');
+          trigger('labels:leave:mouse');
+        }
+      });
     },
 
     _attach: function(id, item) {
@@ -539,10 +573,19 @@
       var points = _.reduce(this.chartsById, function(memo, chart, id) {
         if (chart && _.isFunction(chart._translateCoordinatesToPoints)) {
           var chartPoints = chart._translateCoordinatesToPoints(coordinates, {measurement: 'x'});
-          if (!chartPoints || !_.isArray(chartPoints))
+          if (!chartPoints || !_.isArray(chartPoints)) {
             throw new Error('d3.chart.multi: Expected _translateCoordinatesToPoints to return an Array for chart with id: ' + id);
-          else
+          }
+          else {
+            // Add chart id to series key
+            _.map(chartPoints, function(series) {
+              series.chartId = id;
+              series.key = series.key ? id + '-' + series.key : id;
+            });
+
             return memo.concat(chartPoints);
+          }
+            
         }
         else {
           return memo;
@@ -550,6 +593,26 @@
       }, [], this);
 
       return points;
+    },
+
+    _convertPointsToLabels: function(points) {
+      var labels = _.map(points, function(series) {
+        series = _.clone(series);
+        var chart = this.chartsById[series.chartId];
+        if (chart && _.isFunction(chart._convertPointToLabel)) {
+          series.labels = _.map(series.points, chart._convertPointToLabel, chart);
+        }
+        else {
+          series.labels = [];
+        }
+
+        // Remove points from labels
+        delete series.points;
+
+        return series;
+      }, this);
+
+      return labels;
     },
 
     _getLabels: function() {
@@ -562,6 +625,7 @@
           else {
             // Add chart id to series key
             _.map(labels, function(series) {
+              series.chartId = id;
               series.key = series.key ? id + '-' + series.key : id;
             });
 

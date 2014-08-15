@@ -26,22 +26,22 @@
           return this.chart().insertLabels(this);
         },
         events: {
-          'merge': function() {
+          'merge:transition': function() {
             var chart = this.chart();
 
             // 1. Draw all labels
             chart.drawLabels(this);
 
-            // 2. Remove overlapping labels within series
-            chart.removeLabels();
+            if (chart.handleCollisions()) {
+              // 2. Remove overlapping labels within series
+              chart.removeLabels();
 
-            // 3. Group overlapping labels between series
-            chart.groupLabels();
+              // 3. Group overlapping labels between series
+              chart.groupLabels();
+            }            
           },
-          'exit:transition': function() {
-            // Fade-out
-            this.select('.chart-label-bg').style('opacity', 0).remove();
-            this.select('.chart-label').style('opacity', 0).remove();
+          'exit': function() {
+            this.remove();
           }
         }
       });
@@ -49,18 +49,22 @@
 
     excludeFromLegend: true,
     labels: property('labels', {defaultValue: []}),
+    handleCollisions: property('handleCollisions', {defaultValue: true}),
 
+    labelKey: di(function(chart, d, i) {
+      return d.key;
+    }),
     labelX: di(function(chart, d, i) {
-      return d.x;
+      return d.coordinates.x + d.offset.x;
     }),
     labelY: di(function(chart, d, i) {
-      return d.y;
+      return d.coordinates.y + d.offset.y;
     }),
     labelText: di(function(chart, d, i) {
-      return d.value;
+      return d.text;
     }),
     labelAnchor: di(function(chart, d, i) {
-      return d.anchor;
+      return d.anchor || 'middle';
     }),
 
     seriesKey: di(function(chart, d, i) {
@@ -77,13 +81,7 @@
     }),
 
     transform: function(data) {
-      // Get labels from container
-      if (this.container && _.isFunction(this.container._getLabels)) {
-        return this.container._getLabels();
-      }
-      else {
-        return [];
-      }
+      return this.extractLabels(data);
     },
 
     insertLabels: function(base) {
@@ -219,67 +217,36 @@
         }
         return center;
       }
+    },
+
+    extractLabels: function(data) {
+      // Get labels from container
+      if (this.container && _.isFunction(this.container._getLabels)) {
+        return this.container._getLabels();
+      }
+      else {
+        return [];
+      }
     }
   });
   
   /**
     HoverLabels
     Listen to points events and draw labels
-
-    TODO Extend Labels chart
   */
-  d3.chart('Chart').extend('HoverLabels', {
+  d3.chart('Labels').extend('HoverLabels', {
     initialize: function() {
-      _.bindAll(this, 'onPointsEnter', 'onPointsMove', 'onPointsLeave');
+      _.bindAll(this, 'onLabelsEnter', 'onLabelsMove', 'onLabelsLeave');
 
       this.on('attached', function() {
-        this.container.on('points:enter:mouse', this.onPointsEnter);
-        this.container.on('points:move:mouse', this.onPointsMove);
-        this.container.on('points:leave:mouse', this.onPointsLeave);
+        this.container.on('labels:enter:mouse', this.onLabelsEnter);
+        this.container.on('labels:move:mouse', this.onLabelsMove);
+        this.container.on('labels:leave:mouse', this.onLabelsLeave);
       });
       this.on('detached', function() {
-        this.container.off('points:enter:mouse', this.onPointsEnter);
-        this.container.off('points:move:mouse', this.onPointsMove);
-        this.container.off('points:leave:mouse', this.onPointsLeave);
-      });
-
-      this.layer('HoverLabels', this.base.append('g').classed('chart-hover-labels', true), {
-        dataBind: function(data) {
-          return this.selectAll('g').data(data);
-        },
-        insert: function() {
-          var group = this.append('g');
-
-          group.append('circle')
-            .attr('stroke', 'black')
-            .attr('fill', 'black')
-            .attr('r', 3);
-
-          group.append('text')
-            .attr('text-anchor', 'middle')
-            .attr('alignment-baseline', 'after-edge');
-
-          return group;
-        },
-        events: {
-          merge: function() {
-            var chart = this.chart();
-
-            this.select('circle')
-              .attr('cx', chart.x)
-              .attr('cy', chart.y);
-
-            this.select('text')
-              .attr('x', chart.x)
-              .attr('y', function(d, i) {
-                return chart.y.call(this, d, i) - 10;
-              })
-              .text(chart.text);
-          },
-          exit: function() {
-            this.remove();
-          }
-        }
+        this.container.off('labels:enter:mouse', this.onLabelsEnter);
+        this.container.off('labels:move:mouse', this.onLabelsMove);
+        this.container.off('labels:leave:mouse', this.onLabelsLeave);
       });
     },
 
@@ -288,29 +255,24 @@
       // Override default draw call
       // (only want to draw on hover)
     },
-    drawPoints: function(points) {
-      d3.chart('Chart').prototype.draw.call(this, points);
+    _draw: function(labels) {
+      d3.chart('Chart').prototype.draw.call(this, labels);
     },
 
-    onPointsEnter: function(points) {
-      this.drawPoints(points);
+    onLabelsEnter: function(points) {
+      this._draw(points);
     },
-    onPointsMove: function(points) {
-      this.drawPoints(points);
+    onLabelsMove: function(points) {
+      this._draw(points);
     },
-    onPointsLeave: function() {
-      this.drawPoints([]);
+    onLabelsLeave: function() {
+      this._draw([]);
     },
 
-    x: di(function(chart, d, i) {
-      return d.coordinates.x;
-    }),
-    y: di(function(chart, d, i) {
-      return d.coordinates.y;
-    }),
-    text: di(function(chart, d, i) {
-      return d.values.y;
-    })
+    extractLabels: function(data) {
+      // Pass through labels data
+      return data;
+    }
   });
 
   /**

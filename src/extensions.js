@@ -250,8 +250,12 @@
         }
       }, this);
 
-      if (result.distance < Infinity)
-        points.push(result);
+      if (result.distance < Infinity) {
+        points.push({
+          // Leave series information blank (points only)
+          points: [result]
+        });
+      }
 
       return points;
     },
@@ -358,7 +362,7 @@
     }),
 
     _translateCoordinatesToPoints: function(coordinates, options) {
-      var points = [];
+      var seriesPoints = [];
 
       _.each(this.data(), function(series, seriesIndex) {
         var result = {
@@ -383,11 +387,18 @@
           }
         }, this);
 
-        if (result.distance < Infinity)
-          points.push(result);
+        if (result.distance < Infinity) {
+          seriesPoints.push({
+            key: series.key,
+            name: series.name,
+            'class': series['class'],
+            index: seriesIndex,
+            points: [result]
+          });
+        }
       }, this);
 
-      return points;
+      return seriesPoints;
     },
     _distance: function(point, index, coordinates, series, options) {
       var x = this.x.call({_parentData: series}, point, index);
@@ -511,18 +522,24 @@
       var adjacentWidth = chart.adjacentWidth.call(this, d, i);
       var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
       
-      return left + adjacentWidth * chart.seriesIndex.call(this, d, i);
+      return left + adjacentWidth * chart.seriesIndex.call(this, d, i) || 0;
     }),
     adjacentWidth: di(function(chart, d, i) {
-      return chart.layeredWidth.call(this, d, i) / chart.seriesCount.call(this);
+      var seriesCount = chart.seriesCount.call(this);
+
+      if (seriesCount > 0)
+        return chart.layeredWidth.call(this, d, i) / seriesCount;
+      else
+        return 0;
     }),
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
     layeredX: di(function(chart, d, i) {
-      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this);
+      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
     }),
     layeredWidth: di(function(chart, d, i) {
-      return chart._xScale().rangeBand();
+      var rangeBand = chart._xScale().rangeBand();
+      return isFinite(rangeBand) ? rangeBand : 0;
     }),
 
     // determine item width based on series display type (adjacent or layered)
@@ -579,16 +596,7 @@
     labelOffset: property('labelOffset', {defaultValue: 0}),
     labelPadding: property('labelPadding', {defaultValue: 2}),
 
-    labelKey: di(function(chart, d, i) {
-      return chart.keyValue.call(this, d, i);
-    }),
-    labelX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).x;
-    }),
-    labelY: di(function(chart, d, i) {
-      return chart.y.call(this, d, i) + chart.calculatedLabelOffset.call(this, d, i).y;
-    }),
-    labelValue: di(function(chart, d, i) {
+    labelText: di(function(chart, d, i) {
       var value = chart.yValue.call(this, d, i);
       return chart.labelFormat() ? chart.labelFormat()(value) : value;
     }),
@@ -628,23 +636,41 @@
 
       if (this.labelDisplay()) {
         labels.push({
+          // Leave series information blank (labels only)
           labels: _.map(this.data(), function(point, index) {
             return {
-              key: this.labelKey(point, index),
-              x: this.labelX(point, index),
-              y: this.labelY(point, index),
-              value: this.labelValue(point, index),
-              anchor: this.labelAnchor(point, index),
+              key: this.keyValue(point, index),
+              coordinates: {
+                x: this.x(point, index),
+                y: this.y(point, index)
+              },
+              text: this.labelText(point, index),
+              offset: this.calculatedLabelOffset(point, index),
               padding: this.labelPadding(),
+              anchor: this.labelAnchor(point, index),
               'class': point['class'],
+              values: point,
               index: index,
-              point: point
             };
           }, this)
         });
       }      
 
       return labels;
+    },
+
+    _convertPointToLabel: function(point) {
+      return {
+        key: this.keyValue(point.values, point.index),
+        coordinates: point.coordinates,
+        text: this.labelText(point.values, point.index),
+        offset: this.calculatedLabelOffset(point.values, point.index),
+        padding: this.labelPadding(),
+        anchor: this.labelAnchor(point.values, point.index),
+        'class': point['class'],
+        values: point.values,
+        index: point.index
+      };
     }
   };
 
@@ -666,15 +692,18 @@
             index: seriesIndex,
             labels: _.map(series.values, function(point, pointIndex) {
               return {
-                key: this.labelKey.call({_parentData: series}, point, pointIndex),
-                x: this.labelX.call({_parentData: series}, point, pointIndex),
-                y: this.labelY.call({_parentData: series}, point, pointIndex),
-                value: this.labelValue.call({_parentData: series}, point, pointIndex),
-                anchor: this.labelAnchor.call({_parentData: series}, point, pointIndex),
+                key: this.keyValue.call({_parentData: series}, point, pointIndex),
+                coordinates: {
+                  x: this.x.call({_parentData: series}, point, pointIndex),
+                  y: this.y.call({_parentData: series}, point, pointIndex)
+                },
+                text: this.labelText.call({_parentData: series}, point, pointIndex),
+                offset: this.calculatedLabelOffset.call({_parentData: series}, point, pointIndex),
                 padding: this.labelPadding(),
+                anchor: this.labelAnchor.call({_parentData: series}, point, pointIndex),
                 'class': point['class'],
+                values: point,
                 index: pointIndex,
-                point: point
               };
             }, this)
           };
