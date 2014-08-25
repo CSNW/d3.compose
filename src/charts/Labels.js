@@ -456,12 +456,10 @@
 
       var a = getEdges(this.bounds());
       var b = getEdges(element.bounds());
-      var alignedLR = (a.left == b.left && a.right == b.right);
-      var alignedTB = (a.top == b.top && a.bottom == b.bottom);
       var containedLR = (b.left < a.left && b.right > a.right);
       var containerTB = (b.bottom < a.bottom && b.top > a.top);
-      var overlapLR = (b.left > a.left && b.left < a.right) || (b.right > a.left && b.right < a.right) || alignedLR || containedLR;
-      var overlapTB = (b.top > a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom < a.bottom) || alignedTB || containerTB;
+      var overlapLR = (b.left >= a.left && b.left < a.right) || (b.right > a.left && b.right <= a.right) || containedLR;
+      var overlapTB = (b.top >= a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom <= a.bottom) || containerTB;
 
       if (options && options.compare == 'LR')
         return overlapLR;
