@@ -378,6 +378,13 @@
         };
       }
     }),
+  
+    draw: function(data, options) {
+      if (!_.isUndefined(options))
+        this.options(options, {silent: true});
+
+      d3.chart('Container').prototype.draw.call(this, data);
+    },
 
     demux: function(name, data) {
       var item = this.chartsById[name] || this.componentsById[name];

@@ -182,6 +182,7 @@
     var count = 1;
     function change() {
       d3.chart.helpers.property.extend(chart, 'options', {title: {position: 'bottom', text: 'Howdy ' + count++ + '!'}});
+      // chart.draw(data, _.extend(chart.options(), {title: {position: 'bottom', text: 'Howdy ' + count++ + '!'}}));
     }
 
     function redraw() {
