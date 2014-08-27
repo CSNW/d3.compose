@@ -61,7 +61,7 @@
       // d3.chart doesn't handle events with spaces, register individual handlers
       _.each(events, function(event) {
         this.on(event, function() {
-          // console.log('REDRAW', _.isFunction(this.redraw), this.container && _.isFunction(this.container.redraw));
+          helpers.log('redrawFor', event);
           if (_.isFunction(this.redraw))
             this.redraw();
           else if (this.container && _.isFunction(this.container.redraw))
@@ -175,6 +175,9 @@
     }),
 
     draw: function(data) {
+      helpers.log('draw', data);
+      helpers.log.time('Base#draw');
+
       // Explicitly set width and height of container
       // (if width/height > 0)
       this.base
@@ -182,19 +185,25 @@
         .attr('height', this.height() || null);
 
       // Pre-draw for accurate dimensions for layout
+      helpers.log.time('Base#draw.layout');
       this._preDraw(data);
 
       // Layout now that components' dimensions are known
       this.layout();
+      helpers.log.timeEnd('Base#draw.layout');
 
       // Full draw now that everything has been laid out
       d3.chart().prototype.draw.call(this, data);
+
+      helpers.log.timeEnd('Base#draw');
     },
 
     redraw: function() {
       // Using previously saved rawData, redraw chart      
-      if (this.rawData())
+      if (this.rawData()) {
+        helpers.log('redraw');
         this.draw(this.rawData());
+      }
     },
 
     chartLayer: function(options) {

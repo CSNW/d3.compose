@@ -152,7 +152,7 @@
         properties[name] = value;
 
         if (_.isFunction(options.set)) {
-          var response = options.set.call(context, value, existing);
+          var response = options.set.call(context, value, existing, setOptions);
           
           if (response && _.has(response, 'override'))
             properties[name] = response.override;
@@ -593,6 +593,27 @@
   }
 
   /**
+    Logging helpers
+  */
+  var log = function log() {
+    if (log.enable) {
+      var args = _.toArray(arguments);
+      args.unshift('d3.chart.multi:');
+      console.log.apply(console, args);
+    }
+  };
+  log.enable = false;
+  log.time = function(id) {
+    if (log.enable && _.isFunction(console.time))
+      console.time('d3.chart.multi: ' + id);
+  };
+  log.timeEnd = function(id) {
+    if (log.enable && _.isFunction(console.timeEnd))
+      console.timeEnd('d3.chart.multi: ' + id);
+  };
+
+
+  /**
     Get parent data for element
 
     @param {Element} element
@@ -702,6 +723,7 @@
     di: di,
     bindDi: bindDi,
     bindAllDi: bindAllDi,
+    log: log,
     getParentData: getParentData,
     resolveChart: resolveChart,
     mixin: mixin

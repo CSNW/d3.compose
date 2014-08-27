@@ -33,16 +33,25 @@
           'merge:transition': function() {
             var chart = this.chart();
 
+            helpers.log.time('Labels.draw');
             // 1. Draw all labels
             chart.drawLabels(this);
 
             if (chart.handleCollisions()) {
+              helpers.log.time('Chart.handleCollisions');
+              
               // 2. Remove overlapping labels within series
               chart.removeLabels();
 
               // 3. Group overlapping labels between series
               chart.groupLabels();
-            }            
+
+              helpers.log.timeEnd('Chart.handleCollisions');
+            }           
+
+            // 4. Layout labels
+            chart.layoutLabels();
+            helpers.log.timeEnd('Labels.draw');
           },
           'exit': function() {
             this.remove();
@@ -160,12 +169,14 @@
     },
     drawLabels: function(selection) {
       var labels = [];
+      
+      // Add labels
       selection.call(function(data) {
         _.each(data, function(series, seriesIndex) {
           labels.push([]);
 
           _.each(series, function(labelElement, labelIndex) {
-            var label = new Label(labelElement, d3.select(labelElement).data()[0], {
+            var label = new this.Label(labelElement, d3.select(labelElement).data()[0], {
               labelX: this.labelX,
               labelY: this.labelY,
               labelText: this.labelText,
@@ -178,6 +189,13 @@
         }, this);
       }.bind(this));
 
+      // After adding all labels, calculate bounds
+      _.each(labels, function(series) {
+        _.each(series, function(label) {
+          label.setBounds();
+        });
+      });
+      
       this.labels(labels);
     },
     removeLabels: function() {
@@ -307,6 +325,14 @@
         return center;
       }
     },
+    layoutLabels: function() {
+      _.each(this.labels(), function(series) {
+        _.each(series, function(label) {
+          if (!label.removed)
+            label.layout();
+        });
+      });
+    },
 
     extractLabels: function(data) {
       // Get labels from container
@@ -333,7 +359,9 @@
       }
 
       return offset;
-    }
+    },
+
+    Label: Label
   });
   
   /**
@@ -392,32 +420,16 @@
 
     this.element = element;
     this.selection = d3.select(element);
-    this.refreshBounds();
     this.removed = false;
 
     return this;
   }
   _.extend(Element.prototype, {
-    x: property('x', {
-      set: function(value) {
-        this.selection.attr('x', value);
-      }
-    }),
-    y: property('y', {
-      set: function(value) {
-        this.selection.attr('y', value);
-      }
-    }),
-    width: property('width', {
-      set: function(value) {
-        this.selection.attr('width', value);
-      }
-    }),
-    height: property('height', {
-      set: function(value) {
-        this.selection.attr('height', value);
-      }
-    }),
+    x: property('x', {type: 'Function', defaultValue: 0}),
+    y: property('y', {type: 'Function', defaultValue: 0}),
+    width: property('width', {type: 'Function', defaultValue: 0}),
+    height: property('height', {type: 'Function', defaultValue: 0}),
+
     bounds: property('bounds', {
       get: function() {
         return {
@@ -427,11 +439,11 @@
           height: this.height()
         };
       },
-      set: function(value) {
-        this.x(value.x);
-        this.y(value.y);
-        this.width(value.width);
-        this.height(value.height);
+      set: function(bounds) {
+        this.x(bounds.x);
+        this.y(bounds.y);
+        this.width(bounds.width);
+        this.height(bounds.height);
       }
     }),
 
@@ -444,24 +456,31 @@
       }
     }),
 
+    layout: function() {
+      this.selection
+        .attr('x', this.x())
+        .attr('y', this.y())
+        .attr('width', this.width())
+        .attr('height', this.height());
+    },
+
     getBBox: function() {
       return this.element.getBBox();
     },
-    refreshBounds: function() {
+    setBounds: function() {
       this.bounds(this.getBBox());
       return this;
     },
+    
     checkForOverlap: function(element, options) {
       if (!element || !element.bounds) return false;
 
       var a = getEdges(this.bounds());
       var b = getEdges(element.bounds());
-      var alignedLR = (a.left == b.left && a.right == b.right);
-      var alignedTB = (a.top == b.top && a.bottom == b.bottom);
       var containedLR = (b.left < a.left && b.right > a.right);
       var containerTB = (b.bottom < a.bottom && b.top > a.top);
-      var overlapLR = (b.left > a.left && b.left < a.right) || (b.right > a.left && b.right < a.right) || alignedLR || containedLR;
-      var overlapTB = (b.top > a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom < a.bottom) || alignedTB || containerTB;
+      var overlapLR = (b.left >= a.left && b.left < a.right) || (b.right > a.left && b.right <= a.right) || containedLR;
+      var overlapTB = (b.top >= a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom <= a.bottom) || containerTB;
 
       if (options && options.compare == 'LR')
         return overlapLR;
@@ -516,22 +535,20 @@
       return bbox;
     },
 
-    x: property('x', {
-      set: function(value) {
-        this.selection.attr('transform', helpers.transform.translate(value, this.y()));
-      }
-    }),
-    y: property('y', {
-      set: function(value) {
-        this.selection.attr('transform', helpers.transform.translate(this.x(), value));
-      }
-    })
+    layout: function() {
+      this.selection
+        .attr('transform', helpers.transform.translate(this.x(), this.y()))
+        .attr('width', this.width())
+        .attr('height', this.height());
+    }
   });
 
   /**
     Label helper
 
     @param {SVG Element} element
+    @param {Object} data
+    @param {Object} options
   */
   function Label(element, data, options) {
     Group.call(this, element);
@@ -550,19 +567,30 @@
   }
   _.extend(Label.prototype, Group.prototype, {
     draw: function() {
-      this.text
-        .x(this.options.labelX)
-        .y(this.options.labelY)
-        .selection
-          .attr('text-anchor', 'start')
-          .text(this.options.labelText);
+      this.text.selection
+        .attr('x', this.options.labelX)
+        .attr('y', this.options.labelY)
+        .attr('text-anchor', 'start')
+        .text(this.options.labelText);
 
-      var textBounds = this.text.refreshBounds().bounds();
+      return this;
+    },
+
+    layout: function() {
+      this.selection
+        .attr('transform', helpers.transform.translate(this.x(), this.y()));
+
+      this.rect.layout();
+      this.text.layout();
+
+      return this;
+    },
+
+    setBounds: function() {
+      var textBounds = this.text.setBounds().bounds();
       var offsets = {x: -1, y: 0, width: 3, height: 0};
       var padding = this.data.padding || this.options.padding;
       var anchor = this.data.anchor || this.options.anchor;
-
-      // TODO Handle centering vertically and horizontally
       var bounds = {
         x: textBounds.x - (textBounds.width / 2) + offsets.x - padding,
         y: textBounds.y + offsets.y - 2*padding,
@@ -576,8 +604,7 @@
         bounds.x -= bounds.width / 2;
 
       this
-        .x(bounds.x)
-        .y(bounds.y);
+        .bounds(bounds);
 
       this.rect
         .bounds({
@@ -588,14 +615,12 @@
         });
 
       this.text
-        .x(this.data.padding || 0)
-        .y(textBounds.height/* + (d.padding || 0) */);
-
-      // Make sure group uses up-to-date rect and text size
-      this.refreshBounds();
+        .x(padding)
+        .y(textBounds.height + padding);
 
       return this;
     },
+
     remove: function() {
       this.removed = true;
       this.selection.remove();

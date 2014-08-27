@@ -29,6 +29,7 @@
     <svg id="chart"></svg>
     <div>
       <button id="update">Update</button>
+      <button id="change">Change</button>
       <button id="redraw">Redraw</button>
     </div>
     <div>
@@ -45,6 +46,8 @@
 
   <script src="../bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript">
+    d3.chart.helpers.log.enable = true;
+
     // var config = {
     //   type: 'Values',
     //   charts: {
@@ -68,7 +71,7 @@
         x: {scale: {domain: [0, 50]}, position: 'top', title: 'Howdy'}
       },
       legend: false,
-      title: {text: 'HI!', position: 'bottom'}
+      title: {text: 'Howdy!', position: 'bottom'}
     };
 
     var data = {
@@ -172,7 +175,14 @@
           });
         });
       });
+      
       chart.draw(data);
+    }
+
+    var count = 1;
+    function change() {
+      d3.chart.helpers.property.extend(chart, 'options', {title: {position: 'bottom', text: 'Howdy ' + count++ + '!'}});
+      // chart.draw(data, _.extend(chart.options(), {title: {position: 'bottom', text: 'Howdy ' + count++ + '!'}}));
     }
 
     function redraw() {
@@ -180,6 +190,7 @@
     }
 
     $('#update').on('click', update);
+    $('#change').on('click', change);
     $('#redraw').on('click', redraw);
 
     // DEBUG
