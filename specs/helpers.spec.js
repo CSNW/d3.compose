@@ -274,7 +274,7 @@
 
           it('should reset to previous value when invalid and not call set', function() {
             instance.message('Valid');
-            expect(spy.calls.argsFor(0)).toEqual(['Valid', undefined]);
+            expect(spy.calls.argsFor(0)).toEqual(['Valid', undefined, {}]);
 
             instance.message('INVALID');
             expect(instance.message()).toEqual('Valid');
@@ -283,7 +283,7 @@
 
           it('should reset to default value if no previous value when invalid', function() {
             instance.message('INVALID');
-            expect(spy.calls.argsFor(0)).toEqual(['Default', undefined]);
+            expect(spy.calls.argsFor(0)).toEqual(['Default', undefined, {}]);
             expect(instance.message()).toEqual('Default');
           });
 

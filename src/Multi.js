@@ -50,7 +50,7 @@
       set: function(options) {
         if (!options) return;
         
-        helpers.log.time('Multi#options')
+        helpers.log.time('Multi#options');
         this.type(options.type || 'XY', {silent: true});
         this.invertedXY(options.invertedXY || false, {silent: true});
         

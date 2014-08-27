@@ -1,6 +1,6 @@
 {
   "name": "d3.chart.multi",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "d3-chart multi",
   "main": "dist/d3.chart.multi.js",
   "scripts": {
