@@ -159,7 +159,9 @@
       return groups;
     },
     drawLabels: function(selection) {
+      helpers.log.time('Labels#drawLabels');
       var labels = [];
+      
       selection.call(function(data) {
         _.each(data, function(series, seriesIndex) {
           labels.push([]);
@@ -177,8 +179,9 @@
           }, this);
         }, this);
       }.bind(this));
-
+      
       this.labels(labels);
+      helpers.log.timeEnd('Labels#drawLabels');
     },
     removeLabels: function() {
       _.each(this.labels(), function(series) {

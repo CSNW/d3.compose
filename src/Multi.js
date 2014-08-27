@@ -50,6 +50,7 @@
       set: function(options) {
         if (!options) return;
         
+        helpers.log.time('Multi#options')
         this.type(options.type || 'XY', {silent: true});
         this.invertedXY(options.invertedXY || false, {silent: true});
         
@@ -58,6 +59,7 @@
         this.components(options.components, {silent: true});
         this.legend(options.legend, {silent: true});
         this.title(options.title, {silent: true});
+        helpers.log.timeEnd('Multi#options');
 
         // To avoid changing underlying and then redraw failing due to no "change"
         // store cloned options
@@ -76,8 +78,9 @@
     }),
 
     title: property('title', {
-      set: function(options, title) {
+      set: function(options, title, setOptions) {
         var changed = false;
+        var silent = _.isBoolean(setOptions && setOptions.silent) && setOptions.silent || false;
         
         if (!options || _.isEmpty(options)) {
           // Remove title if no options are given
@@ -105,7 +108,7 @@
         }
         else if (!_.isEqual(title.options(), options)) {
           // Update existing title options
-          title.options(options/*, {silent: true} XY needs to know about update for scales*/);
+          title.options(options, {silent: silent});
           changed = true;
         }
 
@@ -114,17 +117,18 @@
 
           // Updating existing object causes change determination to always be false,
           // so keep track explicitly
-          changed: changed
+          changed: silent ? false : changed
         };
       }
     }),
 
     charts: property('charts', {
-      set: function(options, charts) {
+      set: function(options, charts, setOptions) {
         options = options || {};
         charts = charts || {};
         var removeIds = _.difference(_.keys(charts), _.keys(options));
         var changed = removeIds.length > 0;
+        var silent = _.isBoolean(setOptions && setOptions.silent) && setOptions.silent || false;
                 
         _.each(removeIds, function(removeId) {
           this.detachChart(removeId);
@@ -146,14 +150,14 @@
           }
           else if (!_.isEqual(chart.options(), chartOptions)) {
             // Update chart
-            chart.options(chartOptions/*, {silent: true} XY needs to know about update for scales*/);
+            chart.options(chartOptions, {silent: silent});
             changed = true;
           }
         }, this);
 
         return {
           override: charts,
-          changed: changed,
+          changed: silent ? false : changed,
           after: function() {
             this.bindChartScales();
           }
@@ -163,12 +167,13 @@
     }),
 
     axes: property('axes', {
-      set: function(options, axes) {
+      set: function(options, axes, setOptions) {
         options = options || {};
         axes = axes || {};
         var axisIds = _.uniq(['x', 'y'].concat(_.keys(options)));
         var removeIds = _.difference(_.keys(axes), axisIds);
         var changed = removeIds.length > 0;
+        var silent = _.isBoolean(setOptions && setOptions.silent) && setOptions.silent || false;
 
         _.each(removeIds, function(removeId) {
           this.detachComponent('axis.' + removeId);
@@ -219,7 +224,7 @@
             if (!_.isEqual(axis.options(), axisOptions))
               changed = true;
 
-            axis.options(axisOptions/*, {silent: true} XY needs to know about update for scales*/);
+            axis.options(axisOptions, {silent: silent});
           }
 
           // Create axis title
@@ -236,7 +241,7 @@
               this.attachComponent(id, title);
             }
             else {
-              title.options(titleOptions/*, {silent: true} XY needs to know about update for scales*/);
+              title.options(titleOptions, {silent: silent});
             }
           }
         }, this);
@@ -268,7 +273,7 @@
 
         return {
           override: axes,
-          changed: changed,
+          changed: silent ? false : changed,
           after: function() {
             this.bindChartScales();
           }
@@ -278,10 +283,11 @@
     }),
 
     legend: property('legend', {
-      set: function(options, legend) {
+      set: function(options, legend, setOptions) {
         options = options === false ? {display: false} : (options || {});
         options = _.defaults({}, options, d3.chart('Multi').defaults.legend);
         var changed = false;
+        var silent = _.isBoolean(setOptions && setOptions.silent) && setOptions.silent || false;
 
         // Load chart information
         if (options.dataKey) {
@@ -314,22 +320,23 @@
           if (!_.isEqual(legend.options(), options))
             changed = true;
 
-          legend.options(options);
+          legend.options(options, {silent: silent});
         }
 
         return {
           override: legend,
-          changed: changed
+          changed: silent ? false : changed
         };
       }
     }),
 
     components: property('components', {
-      set: function(options, components) {
+      set: function(options, components, setOptions) {
         options = options || {};
         components = components || {};
         var removeIds = _.difference(_.keys(components), _.keys(options));
         var changed = removeIds.length > 0;
+        var silent = _.isBoolean(setOptions && setOptions.silent) && setOptions.silent || false;
 
         _.each(removeIds, function(removeId) {
           this.detachComponent(removeId);
@@ -352,14 +359,14 @@
             changed = true;
           }
           else if (!_.isEqual(component.options(), componentOptions)) {
-            component.options(componentOptions/*, {silent: true} XY needs to know about update for scales*/);
+            component.options(componentOptions, {silent: silent});
             charted = true;
           }
         }, this);
 
         return {
           override: components,
-          changed: changed,
+          changed: silent ? false : changed,
           after: function(components) {
             _.each(components, function(component) {
               if (_.isFunction(component.xScale) && _.isFunction(component.yScale)) {
