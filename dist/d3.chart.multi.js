@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.7.2
+/*! d3.chart.multi - v0.7.3
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -3231,15 +3231,16 @@
   d3.chart('Component').extend('Axis', mixin(extensions.XYSeries, {
     initialize: function() {
       // Transfer generic scale options to specific scale for axis
-      this.on('change:options', createScaleFromOptions.bind(this));
-      createScaleFromOptions.call(this);
-
-      function createScaleFromOptions() {
+      this.on('change:scale', function() {
         if (this.options().scale) {
           var scale = this.isXAxis() ? 'xScale' : 'yScale';
           this[scale](helpers.createScaleFromOptions(this.options().scale));
-        }        
-      }
+        }
+      }.bind(this));
+      this.on('change:options', function() {
+        this.trigger('change:scale');
+      }.bind(this));
+      this.trigger('change:scale');
 
       this.axis = d3.svg.axis();
       this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
@@ -3817,7 +3818,11 @@
             if (!_.isEqual(axis.options(), axisOptions))
               changed = true;
 
-            axis.options(axisOptions/*, {silent: silent} Need to update axes to update scales */);
+            axis.options(axisOptions, {silent: silent});
+            
+            // Manually trigger change:scale (if necessary)
+            if (silent)
+              axis.trigger('change:scale');
           }
 
           // Create axis title
