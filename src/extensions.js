@@ -612,7 +612,7 @@
         return offset;
       }
     }),
-    labelPadding: property('labelPadding', {defaultValue: 2}),
+    labelPadding: property('labelPadding'),
     labelAnchor: property('labelAnchor', {
       defaultValue: function() {
         var position = this.labelPosition();
@@ -627,6 +627,24 @@
       },
       validate: function(value) {
         return _.contains(['start', 'middle', 'end'], value);
+      }
+    }),
+    labelAlignment: property('labelAlignment', {
+      defaultValue: function() {
+        var position = this.labelPosition();
+        if (!_.isUndefined(position)) {
+          var alignmentByPosition = {
+            'top': 'bottom',
+            'right': 'middle',
+            'bottom': 'top',
+            'left': 'middle'
+          };
+
+          return alignmentByPosition[position];
+        }        
+      },
+      validate: function(value) {
+        return _.contains(['top', 'middle', 'bottom'], value);
       }
     }),
     labelStyle: property('labelStyle', {defaultValue: {}}),
@@ -653,6 +671,7 @@
               offset: this.labelOffset(),
               padding: this.labelPadding(),
               anchor: this.labelAnchor(),
+              alignment: this.labelAlignment(),
               'class': point['class'],
               style: this.labelStyle(),
               values: point,
@@ -673,6 +692,7 @@
         offset: this.labelOffset(),
         padding: this.labelPadding(),
         anchor: this.labelAnchor(),
+        alignment: this.labelAlignment(),
         'class': point.values['class'],
         style: this.labelStyle(),
         values: point.values,
@@ -708,6 +728,7 @@
                 offset: this.labelOffset(),
                 padding: this.labelPadding(),
                 anchor: this.labelAnchor(),
+                alignment: this.labelAlignment(),
                 'class': point['class'],
                 style: this.labelStyle(),
                 values: point,

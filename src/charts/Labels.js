@@ -106,6 +106,21 @@
         return _.contains(['start', 'middle', 'end'], value);
       }
     }),
+    alignment: property('alignment', {
+      defaultValue: function() {
+        var alignmentByPosition = {
+          'top': 'bottom',
+          'right': 'middle',
+          'bottom': 'top',
+          'left': 'middle'
+        };
+
+        return alignmentByPosition[this.position()];
+      },
+      validate: function(value) {
+        return _.contains(['top', 'middle', 'bottom'], value);
+      }
+    }),
 
     labelKey: di(function(chart, d, i) {
       return d.key;
@@ -181,7 +196,8 @@
               labelY: this.labelY,
               labelText: this.labelText,
               padding: this.padding(),
-              anchor: this.anchor()
+              anchor: this.anchor(),
+              alignment: this.alignment()
             });
             labels[seriesIndex].push(label);
             label.draw();
@@ -257,24 +273,17 @@
       function addLabelToGroup(label, group) {
         group.labels.push(label);
         label.group = group;
+        label.originalY = label.y();
         label.selection.attr('data-group-index', group.index);
 
         updateGroupPositions(group);
       }
 
       function updateGroupPositions(group) {
-        var positions = findLabelPositions(group.labels);
-        _.each(group.labels, function(label, index) {
-          label.xCenter(positions[index].xCenter).y(positions[index].y);
-        });
-      }
-
-      function findLabelPositions(labels) {
-        // First, sort labels by y
-        var byY = _.chain(labels)
-          .map(function(label, index) {
-            label.index = index;
-            return label;
+        var byY = _.chain(group.labels)
+          .each(function(label) {
+            // Reset to original y
+            label.y(label.originalY);
           })
           .sortBy(function(label) {
             return label.y();
@@ -282,7 +291,6 @@
           .reverse()
           .value();
 
-        // Then, adjust for label height
         _.each(byY, function(label, index) {
           var prev = _.first(byY, index);
           var overlap;
@@ -294,35 +302,9 @@
           }
 
           if (overlap) {
-            label.groupedY = overlap.y() - label.height();
-          }
-          else {
-            label.groupedY = label.y();
+            label.y(overlap.y() - label.height());
           }
         });
-
-        // Then, unsort by index
-        byY = _.sortBy(byY, 'index');
-
-        positions = _.map(labels, function(label, index) {
-          // Remove added index
-          delete label.index;
-
-          return {
-            xCenter: byY[index].xCenter(),
-            y: byY[index].groupedY
-          };
-        });
-
-        return positions;
-      }
-
-      function findCenter(labels) {
-        var center = labels[0].xCenter();
-        for (var i = 1, l = labels.length; i < l; i++) {
-          center += (labels[i].xCenter() - center) / 2;
-        }
-        return center;
       }
     },
     layoutLabels: function() {
@@ -562,7 +544,9 @@
       labelY: function(d, i) { return d.y; },
       labelText: function(d, i) { return d.value; },
       padding: 0,
-      anchor: 'middle'
+      offset: {x: 0, y: 0},
+      anchor: 'middle',
+      alignment: 'bottom'
     });
   }
   _.extend(Label.prototype, Group.prototype, {
@@ -588,20 +572,33 @@
 
     setBounds: function() {
       var textBounds = this.text.setBounds().bounds();
-      var offsets = {x: -1, y: 0, width: 3, height: 0};
+      var adjustments = {x: 0, y: -3, width: 0, height: 0};
+      var offset = this.data.offset || this.options.offset;
       var padding = this.data.padding || this.options.padding;
       var anchor = this.data.anchor || this.options.anchor;
-      var bounds = {
-        x: textBounds.x - (textBounds.width / 2) + offsets.x - padding,
-        y: textBounds.y + offsets.y - 2*padding,
-        width: textBounds.width + offsets.width + 2*padding,
-        height: textBounds.height + offsets.height + 2*padding
+      var alignment = this.data.alignment || this.options.alignment;
+
+      var center = {
+        x: textBounds.x,
+        y: textBounds.y + textBounds.height
       };
+      var bounds = {
+        width: textBounds.width + 2*padding + adjustments.width,
+        height: textBounds.height + 2*padding + adjustments.height
+      };
+
+      bounds.x = center.x - bounds.width/2 + offset.x + adjustments.x;
+      bounds.y = center.y - bounds.height/2 + offset.y + adjustments.y;
 
       if (anchor == 'start')
         bounds.x += bounds.width / 2;
       else if (anchor == 'end')
         bounds.x -= bounds.width / 2;
+      
+      if (alignment == 'bottom')
+        bounds.y -= bounds.height / 2;
+      else if (alignment == 'top')
+        bounds.y += bounds.height / 2;
 
       this
         .bounds(bounds);
@@ -616,7 +613,7 @@
 
       this.text
         .x(padding)
-        .y(textBounds.height + padding);
+        .y(textBounds.height + padding + adjustments.y);
 
       return this;
     },

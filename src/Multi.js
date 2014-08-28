@@ -224,7 +224,7 @@
             if (!_.isEqual(axis.options(), axisOptions))
               changed = true;
 
-            axis.options(axisOptions, {silent: silent});
+            axis.options(axisOptions/*, {silent: silent} Need to update axes to update scales */);
           }
 
           // Create axis title
