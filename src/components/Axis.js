@@ -25,15 +25,16 @@
   d3.chart('Component').extend('Axis', mixin(extensions.XYSeries, {
     initialize: function() {
       // Transfer generic scale options to specific scale for axis
-      this.on('change:options', createScaleFromOptions.bind(this));
-      createScaleFromOptions.call(this);
-
-      function createScaleFromOptions() {
+      this.on('change:scale', function() {
         if (this.options().scale) {
           var scale = this.isXAxis() ? 'xScale' : 'yScale';
           this[scale](helpers.createScaleFromOptions(this.options().scale));
-        }        
-      }
+        }
+      }.bind(this));
+      this.on('change:options', function() {
+        this.trigger('change:scale');
+      }.bind(this));
+      this.trigger('change:scale');
 
       this.axis = d3.svg.axis();
       this.axisLayer = this.base.append('g').attr('class', 'chart-axis');

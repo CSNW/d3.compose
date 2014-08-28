@@ -224,7 +224,11 @@
             if (!_.isEqual(axis.options(), axisOptions))
               changed = true;
 
-            axis.options(axisOptions/*, {silent: silent} Need to update axes to update scales */);
+            axis.options(axisOptions, {silent: silent});
+            
+            // Manually trigger change:scale (if necessary)
+            if (silent)
+              axis.trigger('change:scale');
           }
 
           // Create axis title
