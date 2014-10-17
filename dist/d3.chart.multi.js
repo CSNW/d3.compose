@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.7.3
+/*! d3.chart.multi - v0.7.4
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -2884,7 +2884,7 @@
           var chart = this.chart();
 
           return this.append('rect')
-            .classed('chart-bar', true)
+            .attr('class', chart.barClass)
             .attr('style', chart.itemStyle);
         },
         events: {
@@ -2937,6 +2937,8 @@
       });
     },
 
+    displayAdjacent: property('displayAdjacent', {defaultValue: true}),
+
     barHeight: di(function(chart, d, i) {
       if (chart.invertedXY()) {
         return Math.abs(chart.x.call(this, d, i) - chart.x0.call(this, d, i));
@@ -2968,7 +2970,9 @@
         return y < y0 ? y : y0 + chart.barOffset();
       }
     }),
-    displayAdjacent: property('displayAdjacent', {defaultValue: true}),
+    barClass: di(function(chart, d, i) {
+      return 'chart-bar' + (d['class'] ? ' ' + d['class'] : '');
+    }),
 
     barOffset: function barOffset() {
       if (!this.__axis) {
