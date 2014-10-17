@@ -673,7 +673,7 @@
               anchor: this.labelAnchor(),
               alignment: this.labelAlignment(),
               'class': point['class'],
-              style: this.labelStyle(),
+              style: _.extend({}, this.labelStyle(), point['labelStyle']),
               values: point,
               index: index,
             };
@@ -694,7 +694,7 @@
         anchor: this.labelAnchor(),
         alignment: this.labelAlignment(),
         'class': point.values['class'],
-        style: this.labelStyle(),
+        style: _.extend({}, this.labelStyle(), point['labelStyle']),
         values: point.values,
         index: point.index
       };
@@ -730,7 +730,7 @@
                 anchor: this.labelAnchor(),
                 alignment: this.labelAlignment(),
                 'class': point['class'],
-                style: this.labelStyle(),
+                style: _.extend({}, this.labelStyle(), point['labelStyle']),
                 values: point,
                 index: pointIndex,
               };

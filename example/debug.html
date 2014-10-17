@@ -16,6 +16,9 @@
       margin: 40px auto 0;
       width: 900px;
     }
+    .highlight {
+      fill: #2ca02c;
+    }
     @media (min-width: 768px) {
       #chart {
         width: 600px;
@@ -74,13 +77,16 @@
       title: {text: 'Howdy!', position: 'bottom'}
     };
 
+    var highlight_class = 'highlight';
+    var highlight_style = {fill: '#2ca02c'};
+
     var data = {
       increasing: [
         {
           key: 'inc-a',
           name: 'Increasing A',
           values: [
-            {x: 0, y: 10},
+            {x: 0, y: 10, 'class': highlight_class},
             {x: 10, y: 20},
             {x: 20, y: 40},
             {x: 30, y: 70},
@@ -92,7 +98,7 @@
           key: 'inc-b',
           name: 'Increasing B',
           values: [
-            {x: 0, y: 25},
+            {x: 0, y: 25, 'labelStyle': highlight_style},
             {x: 10, y: 30},
             {x: 20, y: 40},
             {x: 30, y: 55},
@@ -106,7 +112,7 @@
           key: 'dec-a',
           name: 'Decreasing A',
           values: [
-            {x: 0, y: 160},
+            {x: 0, y: 160, 'class': highlight_class},
             {x: 10, y: 110},
             {x: 20, y: 70},
             {x: 30, y: 40},
@@ -118,7 +124,7 @@
           key: 'dec-b',
           name: 'Decreasing B',
           values: [
-            {x: 0, y: 100},
+            {x: 0, y: 100, 'labelStyle': highlight_style},
             {x: 10, y: 75},
             {x: 20, y: 55},
             {x: 30, y: 40},
@@ -159,7 +165,11 @@
       data['decreasing-dense'][0].values.push({x: i, y: Math.round(0.025*Math.pow(i, 2) - 2.75*i + 160, 0)});
       data['decreasing-dense'][1].values.push({x: i, y: Math.round(0.05*Math.pow(i, 2) - 5.5*i + 100, 0)});
     }
-
+    data['increasing-dense'][0].values[0]['class'] = highlight_class;
+    data['increasing-dense'][1].values[0]['labelStyle'] = highlight_style;
+    data['decreasing-dense'][0].values[0]['class'] = highlight_class;
+    data['decreasing-dense'][1].values[0]['labelStyle'] = highlight_style;
+    
     var chart = d3.select('#chart')
       .chart('Multi', config)
       .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
