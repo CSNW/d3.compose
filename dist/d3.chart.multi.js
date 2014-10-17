@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.7.4
+/*! d3.chart.multi - v0.7.5
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -1408,7 +1408,7 @@
               anchor: this.labelAnchor(),
               alignment: this.labelAlignment(),
               'class': point['class'],
-              style: this.labelStyle(),
+              style: _.extend({}, this.labelStyle(), point['labelStyle']),
               values: point,
               index: index,
             };
@@ -1429,7 +1429,7 @@
         anchor: this.labelAnchor(),
         alignment: this.labelAlignment(),
         'class': point.values['class'],
-        style: this.labelStyle(),
+        style: _.extend({}, this.labelStyle(), point['labelStyle']),
         values: point.values,
         index: point.index
       };
@@ -1465,7 +1465,7 @@
                 anchor: this.labelAnchor(),
                 alignment: this.labelAlignment(),
                 'class': point['class'],
-                style: this.labelStyle(),
+                style: _.extend({}, this.labelStyle(), point['labelStyle']),
                 values: point,
                 index: pointIndex,
               };
@@ -2249,7 +2249,7 @@
           var chart = this.chart();
           var series = this.selectAll('g')
             .data(data, chart.seriesKey);
-
+          
           series.enter()
             .append('g')
             .attr('class', chart.seriesClass)
@@ -2372,6 +2372,9 @@
       var format = chart.format();
       return format ? format(d.text) : d.text;
     }),
+    labelClass: di(function(chart, d, i) {
+      return 'chart-label' + (d['class'] ? ' ' + d['class'] : '');
+    }),
     labelStyle: di(function(chart, d, i) {
       var styles = _.defaults({}, d.style, chart.options().style);
       return helpers.style(styles) || null;
@@ -2407,7 +2410,7 @@
 
     insertLabels: function(base) {
       var groups = base.append('g')
-        .classed('chart-label', true)
+        .attr('class', this.labelClass)
         .attr('style', this.labelStyle);
 
       groups.append('rect')
