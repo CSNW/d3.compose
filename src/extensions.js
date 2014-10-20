@@ -711,7 +711,9 @@
       var seriesLabels = [];
 
       if (this.labelDisplay()) {
-        seriesLabels = _.map(this.data(), function(series, seriesIndex) {
+        seriesLabels = _.compact(_.map(this.data(), function(series, seriesIndex) {
+          if (series.excludeFromLabels) return;
+
           return {
             key: series.key,
             name: series.name,
@@ -736,7 +738,7 @@
               };
             }, this)
           };
-        }, this);
+        }, this));
       }
       
       return seriesLabels;

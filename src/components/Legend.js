@@ -66,13 +66,15 @@
         if (chart.excludeFromLegend)
           return data;
 
-        var chartData = _.map(extractData(chart, allData), function(series, index) {
+        var chartData = _.compact(_.map(extractData(chart, allData), function(series, index) {
+          if (series.excludeFromLegend) return;
+          
           return {
             chart: chart,
             series: series,
             seriesIndex: index
           };
-        });
+        }));
 
         return data.concat(chartData);
       }, [], this);
