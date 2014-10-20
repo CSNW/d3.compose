@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.7.5
+/*! d3.chart.multi - v0.7.6
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -1446,7 +1446,9 @@
       var seriesLabels = [];
 
       if (this.labelDisplay()) {
-        seriesLabels = _.map(this.data(), function(series, seriesIndex) {
+        seriesLabels = _.compact(_.map(this.data(), function(series, seriesIndex) {
+          if (series.excludeFromLabels) return;
+
           return {
             key: series.key,
             name: series.name,
@@ -1471,7 +1473,7 @@
               };
             }, this)
           };
-        }, this);
+        }, this));
       }
       
       return seriesLabels;
@@ -3491,13 +3493,15 @@
         if (chart.excludeFromLegend)
           return data;
 
-        var chartData = _.map(extractData(chart, allData), function(series, index) {
+        var chartData = _.compact(_.map(extractData(chart, allData), function(series, index) {
+          if (series.excludeFromLegend) return;
+          
           return {
             chart: chart,
             series: series,
             seriesIndex: index
           };
-        });
+        }));
 
         return data.concat(chartData);
       }, [], this);
