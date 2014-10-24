@@ -113,7 +113,7 @@
       var selection = d3.select(this);
 
       // Clear existing swatch
-      selection.empty();
+      selection.selectAll('*').remove();
       selection
         .attr('class', chart.dataClass);
 
