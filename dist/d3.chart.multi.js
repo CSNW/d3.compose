@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.7.6
+/*! d3.chart.multi - v0.7.7
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -3540,7 +3540,7 @@
       var selection = d3.select(this);
 
       // Clear existing swatch
-      selection.empty();
+      selection.selectAll('*').remove();
       selection
         .attr('class', chart.dataClass);
 
