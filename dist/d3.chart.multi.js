@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.7.7
+/*! d3.chart.multi - v0.7.8
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -279,8 +279,18 @@
   */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
-    var boundingBox = element && typeof element.getBBox == 'function' && element.getBBox() || {width: 0, height: 0};
     var isSVG = element ? element.nodeName == 'svg' : false;
+
+    // Firefox throws error when calling getBBox when svg hasn't been displayed
+    // ignore error and set to empty
+    var boundingBox;
+    try {
+      boundingBox = element && typeof element.getBBox == 'function' && element.getBBox();
+    }
+    catch(ex) {}
+
+    if (!boundingBox)
+      boundingBox = {width: 0, height: 0};
 
     var clientDimensions = {
       width: (element && element.clientWidth) || 0, 
