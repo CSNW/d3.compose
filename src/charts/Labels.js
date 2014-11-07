@@ -198,6 +198,7 @@
               labelX: this.labelX,
               labelY: this.labelY,
               labelText: this.labelText,
+              labelHtml: this.labelHtml,
               padding: this.padding(),
               anchor: this.anchor(),
               alignment: this.alignment()
@@ -554,11 +555,19 @@
   }
   _.extend(Label.prototype, Group.prototype, {
     draw: function() {
-      this.text.selection
+      var selection = this.text.selection;
+      selection
         .attr('x', this.options.labelX)
         .attr('y', this.options.labelY)
         .attr('text-anchor', 'start')
         .text(this.options.labelText);
+
+      if (this.options.labelHtml) {
+        selection.html(this.options.labelHtml);
+      }
+      else {
+        selection.text(this.options.labelText);
+      }
 
       return this;
     },
