@@ -101,13 +101,13 @@
         var min = this.data() && d3.extent(this.data(), this.xValue)[0];
 
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return valueOrDefault(value, (min < 0 ? min : 0));
+        return +valueOrDefault(value, (min < 0 ? min : 0));
       }
     }),
     xMax: property('xMax', {
       get: function(value) {
         var max = this.data() && d3.extent(this.data(), this.xValue)[1];
-        return valueOrDefault(value, max);
+        return +valueOrDefault(value, max);
       }
     }),
     yMin: property('yMin', {
@@ -115,13 +115,13 @@
         var min = this.data() && d3.extent(this.data(), this.yValue)[0];
 
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return valueOrDefault(value, (min < 0 ? min : 0));
+        return +valueOrDefault(value, (min < 0 ? min : 0));
       }
     }),
     yMax: property('yMax', {
       get: function(value) {
         var max = this.data() && d3.extent(this.data(), this.yValue)[1];
-        return valueOrDefault(value, max);
+        return +valueOrDefault(value, max);
       }
     }),
 
@@ -147,27 +147,27 @@
 
     x: di(function(chart, d, i) {
       if (chart.invertedXY())
-        return chart._yScale()(chart.yValue.call(this, d, i));
+        return +chart._yScale()(chart.yValue.call(this, d, i));
       else
-        return chart._xScale()(chart.xValue.call(this, d, i));
+        return +chart._xScale()(chart.xValue.call(this, d, i));
     }),
     y: di(function(chart, d, i) {
       if (chart.invertedXY())
-        return chart._xScale()(chart.xValue.call(this, d, i));
+        return +chart._xScale()(chart.xValue.call(this, d, i));
       else
-        return chart._yScale()(chart.yValue.call(this, d, i));
+        return +chart._yScale()(chart.yValue.call(this, d, i));
     }),
     x0: di(function(chart, d, i) {
       if (chart.invertedXY())
-        return chart._yScale()(0);
+        return +chart._yScale()(0);
       else
-        return chart._xScale()(0);
+        return +chart._xScale()(0);
     }),
     y0: di(function(chart, d, i) {
       if (chart.invertedXY())
-        return chart._xScale()(0);
+        return +chart._xScale()(0);
       else
-        return chart._yScale()(0);
+        return +chart._yScale()(0);
     }),
 
     xValue: di(function(chart, d, i) {
@@ -305,7 +305,7 @@
         }, Infinity, this);
 
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return valueOrDefault(value, (min < 0 ? min : 0));
+        return +valueOrDefault(value, (min < 0 ? min : 0));
       }
     }),
     xMax: property('xMax', {
@@ -322,7 +322,7 @@
           }
         }, -Infinity, this);
 
-        return valueOrDefault(value, max);
+        return +valueOrDefault(value, max);
       }
     }),
     yMin: property('yMin', {
@@ -340,7 +340,7 @@
         }, Infinity, this);
         
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return valueOrDefault(value, (min < 0 ? min : 0));
+        return +valueOrDefault(value, (min < 0 ? min : 0));
       }
     }),
     yMax: property('yMax', {
@@ -357,7 +357,7 @@
           }
         }, -Infinity, this);
 
-        return valueOrDefault(value, max);
+        return +valueOrDefault(value, max);
       }
     }),
 
