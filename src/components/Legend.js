@@ -172,6 +172,9 @@
         this.legend.attr('transform', helpers.translate(position.x, position.y));
       }
     }
+  }, {
+    // @static
+    layerType: 'chart'
   });
   
 })(d3, d3.chart.helpers, d3.chart.extensions);

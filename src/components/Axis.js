@@ -39,35 +39,30 @@
       this.axis = d3.svg.axis();
       this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
 
-      if (this.options().display) {
-        this.layer('Axis', this.axisLayer, {
-          dataBind: function(data) {
-            // Force addition of just one axis with dummy data array
-            // (Axis will be drawn using underlying chart scales)
-            return this.selectAll('g')
-              .data([0]);
-          },
-          insert: function() {
-            return this.append('g');
-          },
-          events: {
-            merge: function() {
-              var chart = this.chart();
+      this.layer('Axis', this.axisLayer, {
+        dataBind: function(data) {
+          // Force addition of just one axis with dummy data array
+          // (Axis will be drawn using underlying chart scales)
+          return this.selectAll('g')
+            .data([0]);
+        },
+        insert: function() {
+          return this.append('g');
+        },
+        events: {
+          merge: function() {
+            var chart = this.chart();
 
-              // Setup axis (scale and properties)
-              chart._setupAxis();
+            // Setup axis (scale and properties)
+            chart._setupAxis();
 
-              // Place and render axis
-              this
-                .attr('transform', chart.translation())
-                .call(chart.axis);
-            }
+            // Place and render axis
+            this
+              .attr('transform', chart.translation())
+              .call(chart.axis);
           }
-        });
-      }
-      else {
-        this.skipLayout = true;
-      }
+        }
+      });
     },
 
     position: property('position', {

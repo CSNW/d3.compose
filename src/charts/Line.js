@@ -15,8 +15,8 @@
           var lines = {};
 
           // Add lines based on underlying series data
-          _.each(chart.data(), function(series) {
-            lines[series.seriesIndex] = chart.createLine(series);
+          _.each(chart.data(), function(series, index) {
+            lines[index] = chart.createLine(series);
           });
           chart.lines(lines);
 

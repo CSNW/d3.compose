@@ -196,14 +196,8 @@
     property.extend(instance, 'options', {b: 'two', c: 'three'});
     console.log(instance.options()); // -> {a: 1, b: 'two', c: 'three'}
     ```
-
-    Object:
-    - Extend
-
-    Array:
-    - Push
   */
-  // Object extensions: extend
+  // Object extensions
   _.each([
     'extend'
   ], function(options) {
@@ -226,7 +220,7 @@
     };
   });
 
-  // Array extensions: push, concat
+  // Array extensions
   _.each([
     'push',
     'pop',

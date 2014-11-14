@@ -1,78 +1,85 @@
-d3.chart.multi
---------------------------
+# d3.chart.multi
 
-Build advanced charts easily using configuration.
+Build advanced data-bound charts with d3.chart
 
-Example
--------
-
-```html
-<!-- Add the following to your page (with css/js paths updated for your structure -->
-<link rel="stylesheet" type="text/css" href="css/d3.chart.multi.base.css">
-
-<!-- Body... -->
-
-<script src="js/d3.js"></script>
-<script src="js/d3.chart.js"></script>
-<script src="js/underscore.js"></script>
-<script src="js/d3.chart.multi.js"></script>
-```
+## Example
 
 ```js
-var data = {
-  input: [{key: 'input', values: [{key: '2000', value: 100}/*, ... */]}],
-  output: [{key: 'output', values: [{key: '2000', value: 100}/*, ... */]}]
-};
+var data = [
+  {key: 'input', name: 'Input', values: [{key: ..., x: ..., y: ...}, ...]},
+  {key: 'output', name: 'Output', values: [{key: ..., x: ..., y: ...}, ...]}
+];
 
-var chart = d3.select('#chart')
-  .append('svg')
-  .chart('Multi', {
-    type: 'Values',
-    charts: [
-      {
+var chart = d3.select('.chart')
+.chart('Multi', function(data) {
+  // Prepare data for chart configuration
+  var input = _.filter(data, {key: 'input'});
+  var output = _.filter(data, {key: 'output'});
+  var scales = {
+    x: d3.helpers.scaleFromOptions({data: data, select: 'x'}),
+    y1: d3.helpers.scaleFromOptions({data: input, select: 'y'}),
+    y2: d3.helpers.scaleFromOptions({data: output, select: 'y'})
+  };
+
+  // Setup configuration for drawing chart
+  return {
+    charts: {
+      line: {
         type: 'Line',
-        dataKey: 'input',
+        data: input,
+
+        xScale: scales.x,
+        yScale: scales.y1,
+
         labels: {
-          position: 'top'
+          format: ',0d',
+          // data: [optional...]
         }
       },
-      {
-        type: 'Bars', 
-        dataKey: 'output', 
-        labels: {
-          format: d3.format(',0d')
-        }
+      bars: {
+        type: 'Bars',
+        data: output,
+
+        xScale: scales.x,
+        yScale: scales.y2
       }
-    ],
+    },
     axes: {
-      x: {
-        title: 'X Title'
-      },
-      y: {
-        scale: {domain: [0, 20000]}, 
-        title: 'Y1 Title'
-      },
-      secondaryY: {
-        dataKey: 'input', 
-        scale: {domain: [0, 90]}, 
-        title: 'Y2 Title'
-      }
+      x: {scale: scales.x, title: '...', position: 'bottom'},
+      y: {scale: scales.y, title: '...', position: 'left'}
     },
     legend: {
-      type: 'Inset',
-      position: {x: 10, y: 0}
+      charts: ['line', 'bars'],
+      // data: [optional...]
     },
-    title: 'Chart Title'
-  })
-  .width(600)
-  .height(400)
-  .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+    title: 'Chart Title...'
+  };
+});
 
 chart.draw(data);
 ```
 
-Development
------------
+## Getting Started
+
+Add the following to your page:
+
+```html
+...
+<head>
+  <!-- ... -->
+  <link rel="stylesheet" type="text/css" href="css/d3.chart.multi.css">
+</head>
+<body>
+  <!-- ... -->
+  <script src="js/d3.js"></script>
+  <script src="js/d3.chart.js"></script>
+  <script src="js/underscore.js"></script>
+  <script src="js/d3.chart.multi.js"></script>
+</body>
+```
+
+## Development
+
 Install bower (if necessary) `npm install -g bower`
 
 1. Install components `npm install` and `bower install`
@@ -88,4 +95,4 @@ Release
 2. Build release with `grunt release`
 3. Commit files `git commit -am "v#.#.# Summary..."`
 4. Tag commit with version `git tag v#.#.#`
-5. Push changes to remote `git push origin master --follow-tags` (with Git v1.8.3 or above, otherwise `git push` then `git push --tags`)
+5. Push changes to remote `git push` and `git push --tags`
