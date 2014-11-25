@@ -355,6 +355,62 @@
   };
 
   /**
+    Determine if given data is likely series data
+  */
+  function isSeriesData(data) {
+    var first = _.first(data);
+    return first && _.isObject(first) && _.isArray(first.values);
+  }
+
+  /**
+    Get max for array/series by value di
+  */
+  function max(data, getValue) {
+    var getMax = function(data) {
+      return data && d3.extent(data, getValue)[1];
+    };
+
+    if (isSeriesData(data)) {
+      return _.reduce(data, function(memo, series, index) {
+        if (series && _.isArray(series.values)) {
+          var seriesMax = getMax(series.values);
+          return seriesMax > memo ? seriesMax : memo;
+        }
+        else {
+          return memo;
+        }
+      }, -Infinity);
+    }
+    else {
+      return getMax(data);
+    }
+  }
+
+  /**
+    Get min for array/series by value di
+  */
+  function min(data, getValue) {
+    var getMin = function(data) {
+      return data && d3.extent(data, getValue)[0];
+    };
+
+    if (isSeriesData(data)) {
+      return _.reduce(data, function(memo, series, index) {
+        if (series && _.isArray(series.values)) {
+          var seriesMin = getMin(series.values);
+          return seriesMin < memo ? seriesMin : memo;
+        }
+        else {
+          return memo;
+        }
+      }, Infinity);
+    }
+    else {
+      return getMin(data);
+    }
+  }
+
+  /**
     Create scale from options
     
     @example
@@ -410,10 +466,43 @@
         // (don't pass through type)
         if (key == 'range' || key == 'domain')
           scale[key](value);
-        else if (key != 'type')
+        else if (key != 'type' && key != 'data' && key != 'key')
           scale[key].apply(scale, value);  
       }
     });
+
+    if (!options.domain && options.data && options.key) {
+      var getValue = function(d, i) {
+        return d[options.key];
+      };
+
+      if (options.type == 'ordinal') {
+        // Extract unique values from series
+        var getValues = function(data) {
+          return _.map(data, getValue);
+        }
+
+        var allValues;
+        if (helpers.isSeriesData(options.data)) {
+          allValues = _.flatten(_.map(options.data, function(series) {
+            if (series && _.isArray(series.values)) {
+              return getValues(series.values);
+            }
+          }));
+        }
+        else {
+          allValues = getValues(options.data);
+        }
+
+        scale.domain(_.uniq(allValues));
+      }
+      else {
+        var min = helpers.min(options.data, getValue);
+        var max = helpers.max(options.data, getValue);
+
+        scale.domain([min, max]);
+      }      
+    }
 
     return scale;
   }
@@ -719,6 +808,9 @@
     dimensions: dimensions,
     transform: transform,
     translate: transform.translate,
+    isSeriesData: isSeriesData,
+    max: max,
+    min: min,
     createScaleFromOptions: createScaleFromOptions,
     stack: stack,
     style: style,

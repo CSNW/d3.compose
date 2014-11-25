@@ -22,19 +22,13 @@
     - tickPadding
     - tickFormat
   */
-  d3.chart('Component').extend('Axis', mixin(extensions.XYSeries, {
+  d3.chart('Component').extend('Axis', mixin(extensions.XY, {
     initialize: function() {
-      // Transfer generic scale options to specific scale for axis
-      this.on('change:scale', function() {
-        if (this.options().scale) {
-          var scale = this.isXAxis() ? 'xScale' : 'yScale';
-          this[scale](helpers.createScaleFromOptions(this.options().scale));
-        }
+      // Set scale range once chart has been rendered
+      // TODO Better event than change:data
+      this.on('change:data', function() {
+        this.setScaleRange(this.scale());
       }.bind(this));
-      this.on('change:options', function() {
-        this.trigger('change:scale');
-      }.bind(this));
-      this.trigger('change:scale');
 
       this.axis = d3.svg.axis();
       this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
@@ -64,6 +58,20 @@
         }
       });
     },
+
+    scale: property('scale', {
+      type: 'Function',
+      set: function(value) {
+        var scale = helpers.createScaleFromOptions(value);
+        this.setScaleRange(scale);
+
+        this.xScale(scale).yScale(scale);
+
+        return {
+          override: scale
+        };
+      }
+    }),
 
     position: property('position', {
       defaultValue: 'bottom',
@@ -130,6 +138,15 @@
     tickPadding: property('tickPadding', {type: 'Function'}),
     tickFormat: property('tickFormat', {type: 'Function'}),
 
+    setScaleRange: function(scale) {
+      if (this.orientation() == 'vertical') {
+        extensions.XY.setYScaleRange.call(this, scale);
+      }
+      else {
+        extensions.XY.setXScaleRange.call(this, scale);
+      }
+    },
+
     getLayout: function(data) {
       d3.chart('Component').prototype.getLayout.apply(this, arguments);
 
@@ -151,19 +168,9 @@
       return;
     },
 
-    isXAxis: function() {
-      return this.type() == 'x';
-    },
-    isYAxis: function() {
-      return this.type() == 'y';
-    },
-
     _setupAxis: function() {
-      // Get scale by orientation
-      var scale = this.isXAxis() ? this._xScale() : this._yScale();
-
       // Setup axis
-      this.axis.scale(scale);
+      this.axis.scale(this.scale());
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var arrayExtensions = ['tickValues'];
@@ -203,6 +210,15 @@
     AxisValues
     Axis component for (key,value) series data
   */
-  d3.chart('Axis').extend('AxisValues', extensions.ValuesSeries);
+  d3.chart('Axis').extend('AxisValues', mixin(extensions.Values, {
+    setScaleRange: function(scale) {
+      if (this.orientation() == 'vertical') {
+        extensions.Values.setYScaleRange.call(this, scale);
+      }
+      else {
+        extensions.Values.setXScaleRange.call(this, scale);
+      }
+    }
+  }));
   
 })(d3, d3.chart.helpers, d3.chart.extensions);

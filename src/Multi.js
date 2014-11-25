@@ -15,9 +15,9 @@
         var participation = data...;
         var results = data...;
         var scales = {
-          x: ...,
-          y: ...,
-          secondaryY: ...
+          x: {data: results or participation or join..., key: 'x'},
+          y: {data: participation, key: 'y'},
+          secondaryY: {data: results, key: 'y'}
         };
 
         return {

@@ -22,7 +22,10 @@ module.exports = function(grunt) {
     srcFiles: [
       'src/helpers.js',
       'src/extensions.js',
-      'src/base.js',
+      'src/Base.js',
+      'src/Chart.js',
+      'src/Container.js',
+      'src/Component.js',
       'src/charts/Labels.js',
       'src/charts/Bars.js',
       'src/charts/Line.js',

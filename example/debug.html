@@ -37,8 +37,7 @@
     </div>
     <div>
       Container: <span id="mouse-container"></span><br>
-      Chart: <span id="mouse-chart"></span><br>
-      Points: <span id="mouse-points"></span>
+      Chart: <span id="mouse-chart"></span>
     </div>
   </div>
 
@@ -247,24 +246,6 @@
       logMouse('container');
       logMouse('chart');
     });
-    // chart.on('chart:enter:mouse', function(coordinates) {
-    //   logMouse('chart', coordinates);
-    // });
-    // chart.on('chart:move:mouse', function(coordinates) {
-    //   logMouse('chart', coordinates);
-    // });
-    // chart.on('chart:leave:mouse', function() {
-    //   logMouse('chart');
-    // });
-    // chart.on('points:enter:mouse', function(points) {
-    //   logMouse('points', points);
-    // });
-    // chart.on('points:move:mouse', function(points) {
-    //   logMouse('points', points);
-    // });
-    // chart.on('points:leave:mouse', function() {
-    //   logMouse('points');
-    // });
 
     function logMouse(type, coordinates) {
       var $selector = $('#mouse-' + type);
