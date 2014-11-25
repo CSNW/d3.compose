@@ -16,9 +16,9 @@ var chart = d3.select('.chart')
   var input = _.filter(data, {key: 'input'});
   var output = _.filter(data, {key: 'output'});
   var scales = {
-    x: d3.helpers.scaleFromOptions({data: data, select: 'x'}),
-    y1: d3.helpers.scaleFromOptions({data: input, select: 'y'}),
-    y2: d3.helpers.scaleFromOptions({data: output, select: 'y'})
+    x: {data: data, select: 'x'},
+    y: {data: input, select: 'y'},
+    secondaryY: {data: output, select: 'y'}
   };
 
   // Setup configuration for drawing chart
@@ -41,12 +41,13 @@ var chart = d3.select('.chart')
         data: output,
 
         xScale: scales.x,
-        yScale: scales.y2
+        yScale: scales.secondaryY
       }
     },
     axes: {
       x: {scale: scales.x, title: '...', position: 'bottom'},
-      y: {scale: scales.y, title: '...', position: 'left'}
+      y: {scale: scales.y, title: '...', position: 'left'},
+      secondaryY: {scale: scales.secondaryY, title: '...', position: 'right'}
     },
     legend: {
       charts: ['line', 'bars'],

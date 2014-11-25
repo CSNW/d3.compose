@@ -130,19 +130,21 @@
     tickPadding: property('tickPadding', {type: 'Function'}),
     tickFormat: property('tickFormat', {type: 'Function'}),
 
-    layoutHeight: function() {
-      return this._labelOverhang().height;
-    },
-    layoutWidth: function() {
-      return this._labelOverhang().width;
-    },
-    layoutPosition: function() {
-      if (this.position() == 'x0')
-        return 'bottom';
-      else if (this.position() == 'y0')
-        return 'right';
-      else
-        return this.position();
+    getLayout: function(data) {
+      d3.chart('Component').prototype.getLayout.apply(this, arguments);
+
+      var labelOverhang = this._labelOverhang();
+      var position = this.position();
+      if (position == 'x0')
+        position = 'bottom';
+      else if (position == 'y0')
+        position = 'right';
+      
+      return {
+        position: position,
+        width: labelOverhang.width,
+        height: labelOverhang.height
+      };
     },
     setLayout: function(x, y, options) {
       // Axis is positioned with chartBase, so don't set layout

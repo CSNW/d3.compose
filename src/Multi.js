@@ -34,9 +34,6 @@
           title: 'd3.chart.multi'
         };
       })
-      .width(600)
-      .height(400)
-      .chartMargins({top: 10});
     ```
 
     @param {Object} options
@@ -264,14 +261,13 @@
         original: data,
         config: config.data
       });
-
-      this._full_draw = false;
     },
 
     redraw: function() {
       // Redraw chart with previously saved raw data / config
       if (this.rawData()) {
         if (this._full_draw) {
+          this._full_draw = false;
           this.draw(this.rawData().original);
         }
         else {
@@ -303,7 +299,8 @@
         axes: {},
         components: {},
         legend: false,
-        title: false
+        title: false,
+        options: {}
       });
 
       // Normalize legend and title config

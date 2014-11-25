@@ -177,13 +177,16 @@
           x: {scale: scales.x, position: 'top', title: 'Howdy'},
           y: {scale: scales.y, position: 'left'}
         },
-        title: {text: 'Howdy!', position: 'bottom'}
+        title: {text: 'Howdy!', position: 'bottom'},
+        options: {
+          twoStepDraw: true
+        }
       };
     };
 
     var chart = d3.select('#chart')
       .chart('Multi', config)
-      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+      .margins({top: 10, right: 10, bottom: 10, left: 10});
 
     chart.draw(data);
 
@@ -215,7 +218,10 @@
             y: {data: values}
           },
           legend: false,
-          title: {text: 'Howdy ' + count++ + '!', position: 'bottom'}
+          title: {text: 'Howdy ' + count++ + '!', position: 'bottom'},
+          options: {
+            twoStepDraw: true
+          }
         };
       });
     }
@@ -230,32 +236,35 @@
 
     // DEBUG
     chart.on('enter:mouse', function(coordinates) {
-      logMouse('container', coordinates);
+      logMouse('container', coordinates.container);
+      logMouse('chart', coordinates.chart);
     });
     chart.on('move:mouse', function(coordinates) {
-      logMouse('container', coordinates);
+      logMouse('container', coordinates.container);
+      logMouse('chart', coordinates.chart);
     });
     chart.on('leave:mouse', function() {
       logMouse('container');
-    });
-    chart.on('chart:enter:mouse', function(coordinates) {
-      logMouse('chart', coordinates);
-    });
-    chart.on('chart:move:mouse', function(coordinates) {
-      logMouse('chart', coordinates);
-    });
-    chart.on('chart:leave:mouse', function() {
       logMouse('chart');
     });
-    chart.on('points:enter:mouse', function(points) {
-      logMouse('points', points);
-    });
-    chart.on('points:move:mouse', function(points) {
-      logMouse('points', points);
-    });
-    chart.on('points:leave:mouse', function() {
-      logMouse('points');
-    });
+    // chart.on('chart:enter:mouse', function(coordinates) {
+    //   logMouse('chart', coordinates);
+    // });
+    // chart.on('chart:move:mouse', function(coordinates) {
+    //   logMouse('chart', coordinates);
+    // });
+    // chart.on('chart:leave:mouse', function() {
+    //   logMouse('chart');
+    // });
+    // chart.on('points:enter:mouse', function(points) {
+    //   logMouse('points', points);
+    // });
+    // chart.on('points:move:mouse', function(points) {
+    //   logMouse('points', points);
+    // });
+    // chart.on('points:leave:mouse', function() {
+    //   logMouse('points');
+    // });
 
     function logMouse(type, coordinates) {
       var $selector = $('#mouse-' + type);
