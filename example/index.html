@@ -113,31 +113,37 @@
       </script>
     </section>
     
-    <!-- <section class="example">
+    <section class="example">
       <h2>Lines</h2>
       <svg id="chart-2"></svg>
 
       <script type="text/javascript">
         var chart = d3.select('#chart-2')
-          .chart('Multi', {
-            type: 'XY',
-            charts: {
-              line: {type: 'Line', dataKey: 'lines', showLabels: false},
-              labels: {type: 'Labels', dataKey: 'labels', offset: 5}
-            },
-            axes: {
-              x: {scale: {domain: [2000, 2020]}, title: 'Year', tickFormat: d3.format('####')},
-              y: {title: 'Results'}
-            },
-            legend: {
-              display: 'right',
-              dataKey: 'lines'
-            },
-            title: 'Results by Year'
+          .chart('Multi', function(data) {
+            var scales = {
+              x: {domain: [2000, 2020]},
+              y: {data: data.lines, key: 'y'}
+            };
+
+            return {
+              charts: {
+                line: {type: 'Line', data: data.lines, xScale: scales.x, yScale: scales.y, labels: false},
+                labels: {type: 'Labels', data: data.labels, xScale: scales.x, yScale: scales.y, offset: 5}
+              },
+              axes: {
+                x: {position: 'bottom', scale: scales.x, title: 'Year', tickFormat: d3.format('####')},
+                y: {position: 'left', scale: scales.y, title: 'Results'}
+              },
+              legend: {
+                display: 'right',
+                data: data.lines
+              },
+              title: 'Results by Year'
+            };
           })
           .width(600)
           .height(400)
-          .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+          .margins({top: 10, right: 10, bottom: 10, left: 10});
 
         chart.draw(data['chart-2']);
       </script>
@@ -149,24 +155,29 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-3')
-          .chart('Multi', {
-            type: 'Values',
-            charts: {
-              bars: {
-                type: 'Bars', 
-                dataKey: 'bars', 
-                labels: {format: d3.format(',0d')}
-              }
-            },
-            axes: {
-              // x: false,
-              y: {title: 'Results', scale: {domain: [0, 35000]}}
-            },
-            title: 'Results'
+          .chart('Multi', function(data) {
+            var scales = {
+              x: {type: 'ordinal', data: data.bars, key: 'x'},
+              y: {data: data.bars, key: 'y'}
+            };
+
+            return {
+              charts: {
+                bars: {
+                  type: 'Bars', 
+                  data: data.bars, xScale: scales.x, yScale: scales.y,
+                  labels: {format: d3.format(',0d')}
+                }
+              },
+              axes: {
+                y: {position: 'left', scale: scales.y, title: 'Results'}
+              },
+              title: 'Results'
+            };
           })
           .width(600)
           .height(400)
-          .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+          .margins({top: 10, right: 10, bottom: 10, left: 10});
 
         chart.draw(data['chart-3']);
       </script>
@@ -178,28 +189,34 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-4')
-          .chart('Multi', {
-            type: 'Values',
-            invertedXY: true,
-            charts: {
-              stacked: {
-                type: 'StackedBars',
-                dataKey: 'stacked'
-              }
-            },
-            axes: {
-              x: false,
-              y: {dataKey: 'stacked', scale: {domain: [0, 200]}},
-              secondaryY: {dataKey: 'stacked', scale: {domain: [0, 100]}}
-            },
-            legend: {
-              margins: {left: 0.2}
-            },
-            title: 'Stacked Bars'
+          .chart('Multi', function(data) {
+            // TODO inverted XY
+            var scales = {
+              x: {type: 'ordinal', data: data.stacked, key: 'x'},
+              y: {domain: [0, 200]},
+              y2: {domain: [0, 100]}
+            };
+
+            return {
+              charts: {
+                stacked: {
+                  type: 'StackedBars',
+                  data: data.stacked, xScale: scales.x, yScale: scales.y
+                }
+              },
+              axes: {
+                y: {position: 'left', scale: scales.y},
+                y2: {position: 'right', scale: scales.y2}
+              },
+              legend: {
+                margins: {left: 0.2}
+              },
+              title: 'Stacked Bars'
+            };
           })
           .width(600)
           .height(200)
-          .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+          .margins({top: 10, right: 10, bottom: 10, left: 10});
 
         chart.draw({
           stacked: [
@@ -211,7 +228,7 @@
           ]
         })
       </script>
-    </section> -->
+    </section>
   </div>
 </body>
 </html>
