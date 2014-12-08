@@ -27,7 +27,10 @@
       // Set scale range once chart has been rendered
       // TODO Better event than change:data
       this.on('change:data', function() {
-        this.setScaleRange(this.scale());
+        var scale = this.scale();
+        if (scale) {
+          this.setScaleRange(scale);
+        }
       }.bind(this));
 
       this.axis = d3.svg.axis();
@@ -65,7 +68,12 @@
         var scale = helpers.createScaleFromOptions(value);
         this.setScaleRange(scale);
 
-        this.xScale(scale).yScale(scale);
+        if (this.orientation() == 'vertical') {
+          this.xScale(helpers.createScaleFromOptions()).yScale(scale);
+        }
+        else {
+          this.xScale(scale).yScale(helpers.createScaleFromOptions());
+        }
 
         return {
           override: scale
@@ -170,7 +178,12 @@
 
     _setupAxis: function() {
       // Setup axis
-      this.axis.scale(this.scale());
+      if (this.orientation() == 'vertical') {
+        this.axis.scale(this.yScale());
+      }
+      else {
+        this.axis.scale(this.xScale());
+      }
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var arrayExtensions = ['tickValues'];

@@ -45,58 +45,75 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-1')
-          .chart('Multi', {
-            type: 'Values',
-            charts: {
-              bars: {
-                type: 'Bars', 
-                dataKey: 'results', 
-                labels: {
-                  offset: 8,
-                  position: 'top|bottom',
-                  style: {
-                    'font-size': '14px'
-                  },
-                  format: d3.format(',0d')
+          .chart('Multi', function(data) {
+            var scales = {
+              x: {type: 'ordinal', domain: [2000, 2005, 2010, 2015, 2020]},
+              y: {domain: [0, 20000]},
+              y2: {domain: [0, 90]}
+            };
+
+            return {
+              charts: {
+                bars: {
+                  type: 'Bars', 
+                  data: data.results,
+                  xScale: scales.x,
+                  yScale: scales.y,
+
+                  labels: {
+                    offset: 8,
+                    position: 'top|bottom',
+                    style: {
+                      'font-size': '14px'
+                    },
+                    format: d3.format(',0d')
+                  }
+                },
+                line: {
+                  type: 'LineValues',
+                  data: data.input,
+                  xScale: scales.x,
+                  yScale: scales.y2,
+
+                  labels: {
+                    position: 'top'
+                  }
                 }
               },
-              line: {
-                type: 'Line',
-                dataKey: 'input',
-                labels: {
-                  position: 'top'
+              axes: {
+                x: {
+                  type: 'AxisValues',
+                  title: 'X Title',
+                  scale: scales.x,
+                  position: 'bottom'
+                },
+                y: {
+                  title: 'Y1 Title',
+                  scale: scales.y,
+                  position: 'left'
+                },
+                y2: {
+                  title: 'Y2 Title',
+                  scale: scales.y2,
+                  position: 'right'
                 }
-              }
-            },
-            axes: {
-              x: {
-                title: 'X Title'
               },
-              y: {
-                scale: {domain: [0, 20000]}, 
-                title: 'Y1 Title'
+              legend: {
+                type: 'InsetLegend',
+                position: {x: 10, y: 0}
               },
-              secondaryY: {
-                dataKey: 'input', 
-                scale: {domain: [0, 90]}, 
-                title: 'Y2 Title'
-              }
-            },
-            legend: {
-              type: 'Inset',
-              position: {x: 10, y: 0}
-            },
-            title: 'Chart Title'
+              title: 'Chart Title'
+            }
           })
           .width(600)
           .height(400)
-          .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+          .margins({top: 10, right: 10, bottom: 10, left: 10});
 
         chart.draw(data['chart-1']);
       </script>
     </section>
     
-    <section class="example">
+    <!-- <section class="example">
       <h2>Lines</h2>
       <svg id="chart-2"></svg>
 
@@ -194,7 +211,7 @@
           ]
         })
       </script>
-    </section>
+    </section> -->
   </div>
 </body>
 </html>

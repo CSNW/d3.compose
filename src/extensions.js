@@ -264,10 +264,10 @@
 
     // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
     layeredX: di(function(chart, d, i) {
-      return chart._xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
+      return chart.xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
     }),
     layeredWidth: di(function(chart, d, i) {
-      var rangeBand = chart._xScale().rangeBand();
+      var rangeBand = chart.xScale().rangeBand();
       return isFinite(rangeBand) ? rangeBand : 0;
     }),
 

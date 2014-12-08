@@ -463,7 +463,7 @@
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments
-        // (don't pass through type)
+        // (don't pass through type, data, or key)
         if (key == 'range' || key == 'domain')
           scale[key](value);
         else if (key != 'type' && key != 'data' && key != 'key')
@@ -483,7 +483,7 @@
         }
 
         var allValues;
-        if (helpers.isSeriesData(options.data)) {
+        if (isSeriesData(options.data)) {
           allValues = _.flatten(_.map(options.data, function(series) {
             if (series && _.isArray(series.values)) {
               return getValues(series.values);
@@ -497,10 +497,10 @@
         scale.domain(_.uniq(allValues));
       }
       else {
-        var min = helpers.min(options.data, getValue);
-        var max = helpers.max(options.data, getValue);
-
-        scale.domain([min, max]);
+        scale.domain([
+          min(options.data, getValue), 
+          max(options.data, getValue)
+        ]);
       }      
     }
 

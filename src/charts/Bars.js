@@ -27,44 +27,23 @@
           'enter': function() {
             var chart = this.chart();
 
-            if (!chart.invertedXY()) {
-              this
-                .attr('y', chart.y0)
-                .attr('height', 0);  
-            }
-            else {
-              this
-                .attr('x', chart.x0)
-                .attr('width', 0);
-            }
+            this
+              .attr('y', chart.y0)
+              .attr('height', 0);  
           },
           'merge': function() {
             var chart = this.chart();
 
-            if (!chart.invertedXY()) {
-              this
-                .attr('x', chart.barX)
-                .attr('width', chart.itemWidth);
-            }
-            else {
-              this
-                .attr('y', chart.barY)
-                .attr('height', chart.itemWidth);   
-            }
+            this
+              .attr('x', chart.barX)
+              .attr('width', chart.itemWidth);
           },
           'merge:transition': function() {
             var chart = this.chart();
 
-            if (!chart.invertedXY()) {
-              this
-                .attr('y', chart.barY)
-                .attr('height', chart.barHeight);
-            }
-            else {
-              this
-                .attr('x', chart.barX)
-                .attr('width', chart.barHeight);
-            }
+            this
+              .attr('y', chart.barY)
+              .attr('height', chart.barHeight);
           },
           'exit': function() {
             this.remove();
@@ -76,35 +55,17 @@
     displayAdjacent: property('displayAdjacent', {defaultValue: true}),
 
     barHeight: di(function(chart, d, i) {
-      if (chart.invertedXY()) {
-        return Math.abs(chart.x.call(this, d, i) - chart.x0.call(this, d, i));
-      }
-      else {
-        var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)); 
-        return height > 0 ? height - chart.barOffset() : 0;
-      }
+      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)); 
+      return height > 0 ? height - chart.barOffset() : 0;
     }),
     barX: di(function(chart, d, i) {
-      if (chart.invertedXY()) {
-        var x = chart.x.call(this, d, i);
-        var x0 = chart.x0();
-
-        return x < x0 ? x : x0 + chart.barOffset();
-      }
-      else {
-        return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
-      }
+      return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
     }),
     barY: di(function(chart, d, i) {
-      if (chart.invertedXY()) {
-        return chart.y.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
-      }
-      else {
-        var y = chart.y.call(this, d, i);
-        var y0 = chart.y0();
+      var y = chart.y.call(this, d, i);
+      var y0 = chart.y0();
 
-        return y < y0 ? y : y0 + chart.barOffset();
-      }
+      return y < y0 ? y : y0 + chart.barOffset();
     }),
     barClass: di(function(chart, d, i) {
       return 'chart-bar' + (d['class'] ? ' ' + d['class'] : '');
@@ -112,12 +73,12 @@
 
     barOffset: function barOffset() {
       if (!this.__axis) {
-        if (!this.invertedXY())
-          this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
-        else
-          this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.y"] .domain');
+        this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
       }
-      
+      if (!this.__axis) {
+        return 0;
+      }
+
       var axisThickness = this.__axis[0][0] && parseInt(this.__axis.style('stroke-width')) || 0;
       return axisThickness / 2;
     },
@@ -141,57 +102,29 @@
     },
 
     barHeight: di(function(chart, d, i) {
-      if (chart.invertedXY()) {
-        return Math.abs(chart.x.call(this, d, i) - chart.x0.call(this, d, i));
-      }
-      else {
-        var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
-        var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
-        return height > 0 ? height - offset : 0;
-      }
+      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+      var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
+      return height > 0 ? height - offset : 0;
     }),
     barX: di(function(chart, d, i) {
-      if (chart.invertedXY()) {
-        var x = chart.x.call(this, d, i);
-        var x0 = chart.x0();
-
-        // Only handle positive x-values
-        if (x < x0) return;
-
-        if (chart.barPositions.length <= i)
-          chart.barPositions.push(0);
-
-        var previous = chart.barPositions[i];
-        chart.barPositions[i] = previous + (x - x0);
-
-        var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
-        return previous + offset;
-      }
-      else {
-        return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
-      }
+      return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
     }),
     barY: di(function(chart, d, i) {
-      if (chart.invertedXY()) {
-        return chart.y.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
-      }
-      else {
-        var y = chart.y.call(this, d, i);
-        var y0 = chart.y0();
+      var y = chart.y.call(this, d, i);
+      var y0 = chart.y0();
 
-        // Only handle positive y-values
-        if (y > y0) return;
+      // Only handle positive y-values
+      if (y > y0) return;
 
-        if (chart.barPositions.length <= i)
-          chart.barPositions.push(0);
+      if (chart.barPositions.length <= i)
+        chart.barPositions.push(0);
 
-        var previous = chart.barPositions[i] || y0;
-        var newPosition = previous - (y0 - y);
+      var previous = chart.barPositions[i] || y0;
+      var newPosition = previous - (y0 - y);
 
-        chart.barPositions[i] = newPosition;
-        
-        return newPosition;
-      }
+      chart.barPositions[i] = newPosition;
+      
+      return newPosition;
     }),
 
     displayAdjacent: property('displayAdjacent', {defaultValue: false})

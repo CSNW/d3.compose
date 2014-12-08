@@ -61,12 +61,12 @@
     isLegend: true,
 
     transform: function(allData) {
-      var extractData = d3.chart('Multi').prototype.extractData;
+      var demux = d3.chart('Multi').prototype.demux;
       var data = _.reduce(this.options().charts, function(data, chart) {
         if (chart.excludeFromLegend)
           return data;
 
-        var chartData = _.compact(_.map(extractData(chart, allData), function(series, index) {
+        var chartData = _.compact(_.map(chart.data(), function(series, index) {
           if (series.excludeFromLegend) return;
           
           return {
