@@ -4,7 +4,7 @@
   var di = helpers.di;
 
   /**
-    Extensions for handling series data
+    mixins for handling series data
   */
   var Series = {
     isSeries: true,
@@ -74,7 +74,7 @@
   };
 
   /**
-    Extensions for handling XY data
+    mixins for handling XY data
 
     Properties:
     - xKey {String}
@@ -190,7 +190,7 @@
   var XYSeries = {};
 
   /**
-    Extensions for charts of centered key,value data (x: index, y: value, key)
+    mixins for charts of centered key,value data (x: index, y: value, key)
   
     Properties:
     - [itemPadding = 0.1] {Number} % padding between each item (for ValuesSeries, padding is just around group, not individual series items)
@@ -218,7 +218,7 @@
   };
 
   /**
-    Extensions for charts of centered key,value series data (x: index, y: value, key)
+    mixins for charts of centered key,value series data (x: index, y: value, key)
 
     Properties:
     - [displayAdjacent = false] {Boolean} Display series next to each other (default is stacked)
@@ -278,7 +278,7 @@
   };
 
   /**
-    Extensions for handling labels in charts
+    mixins for handling labels in charts
 
     Properties:
     - [labels] {Object}
@@ -431,7 +431,7 @@
   };
 
   /**
-    Extensions for handling labels in series charts
+    mixins for handling labels in series charts
 
     Dependencies: Labels
   */
@@ -474,8 +474,8 @@
     }
   };
 
-  // Expose extensions
-  d3.chart.extensions = _.extend(d3.chart.extensions || {}, {
+  // Expose mixins
+  d3.chart.mixins = _.extend(d3.chart.mixins || {}, {
     Series: Series,
     XY: XY,
     XYSeries: _.extend({}, Series, XY, XYSeries),

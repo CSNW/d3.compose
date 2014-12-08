@@ -1,4 +1,4 @@
-(function(d3, _, helpers, extensions) {
+(function(d3, _, helpers, mixins) {
 
   describe('base', function() {
     describe('Container', function() {
@@ -192,4 +192,4 @@
     });
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
+})(d3, _, d3.chart.helpers, d3.chart.mixins);

@@ -1,4 +1,4 @@
-(function(d3, helpers, extensions) {
+(function(d3, helpers, mixins) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -9,11 +9,13 @@
 
     Properties:
     - {String} [position = bottom] top, right, bottom, left, x0, y0
+      Note: for x0 and y0, both x and y scales are required,
+            so use `xScale` and `yScale` rather than `scale`
     - {x, y} [translation] of axis relative to chart bounds
     - {String} [orient = bottom] top, right, bottom, left
     - {String} [orientation = horizontal] horizontal, vertical
 
-    Available d3 Axis Extensions:
+    Available d3 Axis mixins:
     - ticks
     - tickValues
     - tickSize
@@ -22,7 +24,7 @@
     - tickPadding
     - tickFormat
   */
-  d3.chart('Component').extend('Axis', mixin(extensions.XY, {
+  d3.chart('Component').extend('Axis', mixin(mixins.XY, {
     initialize: function() {
       // Set scale range once chart has been rendered
       // TODO Better event than change:data
@@ -158,10 +160,10 @@
 
     setScaleRange: function(scale) {
       if (this.orientation() == 'vertical') {
-        extensions.XY.setYScaleRange.call(this, scale);
+        mixins.XY.setYScaleRange.call(this, scale);
       }
       else {
-        extensions.XY.setXScaleRange.call(this, scale);
+        mixins.XY.setXScaleRange.call(this, scale);
       }
     },
 
@@ -233,15 +235,15 @@
     AxisValues
     Axis component for (key,value) series data
   */
-  d3.chart('Axis').extend('AxisValues', mixin(extensions.Values, {
+  d3.chart('Axis').extend('AxisValues', mixin(mixins.Values, {
     setScaleRange: function(scale) {
       if (this.orientation() == 'vertical') {
-        extensions.Values.setYScaleRange.call(this, scale);
+        mixins.Values.setYScaleRange.call(this, scale);
       }
       else {
-        extensions.Values.setXScaleRange.call(this, scale);
+        mixins.Values.setXScaleRange.call(this, scale);
       }
     }
   }));
   
-})(d3, d3.chart.helpers, d3.chart.extensions);
+})(d3, d3.chart.helpers, d3.chart.mixins);

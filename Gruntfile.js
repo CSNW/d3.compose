@@ -21,7 +21,7 @@ module.exports = function(grunt) {
       ' */\n',
     srcFiles: [
       'src/helpers.js',
-      'src/extensions.js',
+      'src/mixins.js',
       'src/Base.js',
       'src/Chart.js',
       'src/Container.js',

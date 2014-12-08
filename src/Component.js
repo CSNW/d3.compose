@@ -1,4 +1,4 @@
-(function(d3, _, helpers, extensions) {
+(function(d3, _, helpers, mixins) {
   var property = helpers.property;
   
   /**
@@ -88,4 +88,4 @@
     }
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
+})(d3, _, d3.chart.helpers, d3.chart.mixins);

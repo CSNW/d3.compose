@@ -759,19 +759,19 @@
   }
 
   /**
-    Mixin extensions into prototype
+    Mixin mixins into prototype
 
     Designed specifically to work with d3-chart
     - transform is called from last to first
     - initialize is called from first to last
     - remaining are overriden from first to last  
 
-    @param {Array or Object...} extensions Array of extensions or separate extension arguments
+    @param {Array or Object...} mixins Array of mixins or separate extension arguments
     @return {Object}
   */
-  function mixin(extensions) {
-    extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
-    var mixed = _.extend.apply(this, [{}].concat(extensions));
+  function mixin(mixins) {
+    mixins = _.isArray(mixins) ? mixins : _.toArray(arguments);
+    var mixed = _.extend.apply(this, [{}].concat(mixins));
 
     // Don't mixin constructor with prototype
     delete mixed.constructor;
@@ -780,7 +780,7 @@
       mixed.initialize = function initialize() {
         var args = _.toArray(arguments);
 
-        _.each(extensions, function(extension) {
+        _.each(mixins, function(extension) {
           if (extension.initialize)
             extension.initialize.apply(this, args);
         }, this);
@@ -788,7 +788,7 @@
     }
     if (mixed.transform) {
       mixed.transform = function transform(data) {
-        return _.reduceRight(extensions, function(data, extension) {
+        return _.reduceRight(mixins, function(data, extension) {
           if (extension && extension.transform)
             return extension.transform.call(this, data);
           else

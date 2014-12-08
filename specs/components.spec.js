@@ -1,4 +1,4 @@
-(function(d3, _, extensions, helpers) {
+(function(d3, _, mixins, helpers) {
 
   describe('components', function() {
     var fixture, selection, Component, component, Chart, chart;
@@ -30,4 +30,4 @@
     });
   });
 
-})(d3, _, d3.chart.extensions, d3.chart.helpers);
+})(d3, _, d3.chart.mixins, d3.chart.helpers);

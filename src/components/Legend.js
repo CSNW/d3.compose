@@ -1,4 +1,4 @@
-(function(d3, helpers, extensions) {
+(function(d3, helpers, mixins) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -177,4 +177,4 @@
     layerType: 'chart'
   });
   
-})(d3, d3.chart.helpers, d3.chart.extensions);
+})(d3, d3.chart.helpers, d3.chart.mixins);

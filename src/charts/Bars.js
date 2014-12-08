@@ -1,4 +1,4 @@
-(function(d3, helpers, extensions) {
+(function(d3, helpers, mixins) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -7,7 +7,7 @@
     Bars
     Bar graph with centered key,value data and adjacent display for series
   */
-  d3.chart('SeriesChart').extend('Bars', mixin(extensions.ValuesSeries, extensions.LabelsSeries, {
+  d3.chart('SeriesChart').extend('Bars', mixin(mixins.ValuesSeries, mixins.LabelsSeries, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -130,4 +130,4 @@
     displayAdjacent: property('displayAdjacent', {defaultValue: false})
   });
 
-})(d3, d3.chart.helpers, d3.chart.extensions);
+})(d3, d3.chart.helpers, d3.chart.mixins);

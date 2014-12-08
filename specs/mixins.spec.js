@@ -1,6 +1,6 @@
-(function(d3, _, helpers, extensions) {
+(function(d3, _, helpers, mixins) {
   
-  describe('extensions', function() {
+  describe('mixins', function() {
     var Chart, chart, data, values, width, height, processed;
 
     // Process data to mimic actual data that is passed to (d, i) methods
@@ -43,7 +43,7 @@
         width: function() {
           return width;
         }
-      }).extend('Series', extensions.Series);
+      }).extend('Series', mixins.Series);
     });
 
     describe('Series', function() {
@@ -96,7 +96,7 @@
 
     describe('XY', function() {
       beforeEach(function() {
-        Chart = Chart.extend('XY', helpers.mixin(extensions.XYSeries));
+        Chart = Chart.extend('XY', helpers.mixin(mixins.XYSeries));
         chart = new Chart();
         chart.setScales();
       });
@@ -138,7 +138,7 @@
 
     describe('Values', function() {
       beforeEach(function() {
-        Chart = Chart.extend('Values', helpers.mixin(extensions.ValuesSeries));
+        Chart = Chart.extend('Values', helpers.mixin(mixins.ValuesSeries));
         data = values;
         width = 500;
 
@@ -178,4 +178,4 @@
     });
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.extensions);
+})(d3, _, d3.chart.helpers, d3.chart.mixins);
