@@ -38,6 +38,9 @@
 
       this.layer('Axis', this.axisLayer, {
         dataBind: function(data) {
+          // Setup axis (scale and properties)
+          this.chart()._setupAxis();
+
           // Force addition of just one axis with dummy data array
           // (Axis will be drawn using underlying chart scales)
           return this.selectAll('g')
@@ -47,16 +50,23 @@
           return this.append('g');
         },
         events: {
-          merge: function() {
-            var chart = this.chart();
-
-            // Setup axis (scale and properties)
-            chart._setupAxis();
-
+          'enter': function() {
             // Place and render axis
+            var chart = this.chart();
+            
             this
               .attr('transform', chart.translation())
               .call(chart.axis);
+          },
+          'update': function() {
+            this.attr('transform', this.chart().translation());
+          },
+          'update:transition': function() {
+            // Render axis (with transition)
+            this.call(this.chart().axis);
+          },
+          'exit': function() {
+            this.selectAll('g').remove();
           }
         }
       });
