@@ -160,7 +160,7 @@
             });
 
             if (!axisTitle) {
-              var Title = d3.chart(titleOptions.type)
+              var Title = d3.chart(titleOptions.type);
               title = new Title(this.componentLayer({zIndex: helpers.zIndex.title}), titleOptions);
 
               this.attachComponent(axisTitleId, title);
@@ -277,15 +277,21 @@
     },
 
     demux: function(name, data) {
-      var item, item_data;
-      if (item = this.chartsById[name]) {
-        if (item_data = data.config.charts[name]) {
+      var item_data;
+      var item = this.chartsById[name];
+      if (item) {
+        item_data = data.config.charts[name];
+        if (item_data) {
           return item_data;
         }
       }
-      else if (item = this.componentsById[name]) {
-        if (item_data = data.config.components[name]) {
-          return item_data;
+      else {
+        item = this.componentsById[name];
+        if (item) {
+          item_data = data.config.components[name];
+          if (item_data) {
+            return item_data;
+          }
         }
       }
 

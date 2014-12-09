@@ -98,24 +98,23 @@
       beforeEach(function() {
         Chart = Chart.extend('XY', helpers.mixin(mixins.XYSeries));
         chart = new Chart();
-        chart.setScales();
       });
 
       it('should set x,y-scale range by width/height', function() {
-        expect(chart._xScale().range()).toEqual([0, 600]);
-        expect(chart._yScale().range()).toEqual([400, 0]);
+        expect(chart.xScale().range()).toEqual([0, 600]);
+        expect(chart.yScale().range()).toEqual([400, 0]);
       });
 
       it('should only set x,y-scale domains if scales are not defined', function() {
-        expect(chart._xScale().domain()).toEqual([0, 12]);
-        expect(chart._yScale().domain()).toEqual([0, 12]);
+        expect(chart.xScale().domain()).toEqual([0, 12]);
+        expect(chart.yScale().domain()).toEqual([0, 12]);
 
         chart.xScale(d3.scale.linear().domain([0, 100]));
         chart.yScale(d3.scale.linear().domain([0, 100]));
         chart.setScales();
 
-        expect(chart._xScale().domain()).toEqual([0, 100]);
-        expect(chart._yScale().domain()).toEqual([0, 100]);        
+        expect(chart.xScale().domain()).toEqual([0, 100]);
+        expect(chart.yScale().domain()).toEqual([0, 100]);        
       });
 
       it('should return scaled x-value', function() {
@@ -154,7 +153,7 @@
       });
 
       it('should set x-scale to ordinal with x-values', function() {
-        expect(chart._xScale().domain()).toEqual(['A', 'B', 'C', 'D', 'E']);
+        expect(chart.xScale().domain()).toEqual(['A', 'B', 'C', 'D', 'E']);
       });
 
       it('should find centered x-value', function() {

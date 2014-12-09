@@ -101,6 +101,14 @@
         return {
           override: scale
         };
+      },
+      get: function(scale) {
+        if (!scale) {
+          scale = this.getDefaultXScale();
+          this.setXScaleRange(scale);
+        }
+
+        return scale;
       }
     }),
     yScale: property('yScale', {
@@ -112,6 +120,14 @@
         return {
           override: scale
         };
+      },
+      get: function(scale) {
+        if (!scale) {
+          scale = this.getDefaultYScale();
+          this.setYScaleRange(scale);
+        }
+ 
+        return scale;
       }
     }),
 
@@ -147,10 +163,8 @@
     initialize: function() {
       // Set scale range once chart has been rendered
       // TODO Better event than change:data
-      this.on('change:data', function() {
-        this.setXScaleRange(this.xScale());
-        this.setYScaleRange(this.yScale());
-      }.bind(this));
+      this.on('change:data', this.setScales.bind(this));
+      this.setScales();
     },
 
     x: di(function(chart, d, i) {
@@ -176,11 +190,29 @@
       return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i);
     }),
 
+    setScales: function() {
+      this.setXScaleRange(this.xScale());
+      this.setYScaleRange(this.yScale());
+    },
+
     setXScaleRange: function(xScale) {
       xScale.range([0, this.width()]);
     },
     setYScaleRange: function(yScale) {
       yScale.range([this.height(), 0]);
+    },
+
+    getDefaultXScale: function() {
+      return helpers.createScaleFromOptions({
+        data: this.data(),
+        key: this.xKey()
+      });
+    },
+    getDefaultYScale: function() {
+      return helpers.createScaleFromOptions({
+        data: this.data(),
+        key: this.yKey()
+      });
     }
   };
 
@@ -214,7 +246,15 @@
       else {
         XY.setXScaleRange.call(this, xScale);
       }
-    }
+    },
+
+    getDefaultXScale: function() {
+      return helpers.createScaleFromOptions({
+        type: 'ordinal',
+        data: this.data(),
+        key: this.xKey()
+      });
+    },
   };
 
   /**

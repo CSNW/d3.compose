@@ -480,7 +480,7 @@
         // Extract unique values from series
         var getValues = function(data) {
           return _.map(data, getValue);
-        }
+        };
 
         var allValues;
         if (isSeriesData(options.data)) {

@@ -47,11 +47,12 @@
             draw: spy
           });
           OverridenComponent = d3.chart('Component').extend('OverridenComponent', {
-            layoutWidth: function() {
-              return 60;
-            },
-            layoutHeight: function() {
-              return 70;
+            getLayout: function() {
+              return {
+                position: this.position(),
+                width: 60,
+                height: 70
+              };
             },
             initialize: function() {
               this.base.append('rect')
