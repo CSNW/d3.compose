@@ -196,14 +196,8 @@
     property.extend(instance, 'options', {b: 'two', c: 'three'});
     console.log(instance.options()); // -> {a: 1, b: 'two', c: 'three'}
     ```
-
-    Object:
-    - Extend
-
-    Array:
-    - Push
   */
-  // Object extensions: extend
+  // Object extensions
   _.each([
     'extend'
   ], function(options) {
@@ -226,7 +220,7 @@
     };
   });
 
-  // Array extensions: push, concat
+  // Array extensions
   _.each([
     'push',
     'pop',
@@ -361,6 +355,62 @@
   };
 
   /**
+    Determine if given data is likely series data
+  */
+  function isSeriesData(data) {
+    var first = _.first(data);
+    return first && _.isObject(first) && _.isArray(first.values);
+  }
+
+  /**
+    Get max for array/series by value di
+  */
+  function max(data, getValue) {
+    var getMax = function(data) {
+      return data && d3.extent(data, getValue)[1];
+    };
+
+    if (isSeriesData(data)) {
+      return _.reduce(data, function(memo, series, index) {
+        if (series && _.isArray(series.values)) {
+          var seriesMax = getMax(series.values);
+          return seriesMax > memo ? seriesMax : memo;
+        }
+        else {
+          return memo;
+        }
+      }, -Infinity);
+    }
+    else {
+      return getMax(data);
+    }
+  }
+
+  /**
+    Get min for array/series by value di
+  */
+  function min(data, getValue) {
+    var getMin = function(data) {
+      return data && d3.extent(data, getValue)[0];
+    };
+
+    if (isSeriesData(data)) {
+      return _.reduce(data, function(memo, series, index) {
+        if (series && _.isArray(series.values)) {
+          var seriesMin = getMin(series.values);
+          return seriesMin < memo ? seriesMin : memo;
+        }
+        else {
+          return memo;
+        }
+      }, Infinity);
+    }
+    else {
+      return getMin(data);
+    }
+  }
+
+  /**
     Create scale from options
     
     @example
@@ -413,13 +463,46 @@
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments
-        // (don't pass through type)
+        // (don't pass through type, data, or key)
         if (key == 'range' || key == 'domain')
           scale[key](value);
-        else if (key != 'type')
+        else if (key != 'type' && key != 'data' && key != 'key')
           scale[key].apply(scale, value);  
       }
     });
+
+    if (!options.domain && options.data && options.key) {
+      var getValue = function(d, i) {
+        return d[options.key];
+      };
+
+      if (options.type == 'ordinal') {
+        // Extract unique values from series
+        var getValues = function(data) {
+          return _.map(data, getValue);
+        };
+
+        var allValues;
+        if (isSeriesData(options.data)) {
+          allValues = _.flatten(_.map(options.data, function(series) {
+            if (series && _.isArray(series.values)) {
+              return getValues(series.values);
+            }
+          }));
+        }
+        else {
+          allValues = getValues(options.data);
+        }
+
+        scale.domain(_.uniq(allValues));
+      }
+      else {
+        scale.domain([
+          min(options.data, getValue), 
+          max(options.data, getValue)
+        ]);
+      }      
+    }
 
     return scale;
   }
@@ -676,19 +759,19 @@
   }
 
   /**
-    Mixin extensions into prototype
+    Mixin mixins into prototype
 
     Designed specifically to work with d3-chart
     - transform is called from last to first
     - initialize is called from first to last
     - remaining are overriden from first to last  
 
-    @param {Array or Object...} extensions Array of extensions or separate extension arguments
+    @param {Array or Object...} mixins Array of mixins or separate extension arguments
     @return {Object}
   */
-  function mixin(extensions) {
-    extensions = _.isArray(extensions) ? extensions : _.toArray(arguments);
-    var mixed = _.extend.apply(this, [{}].concat(extensions));
+  function mixin(mixins) {
+    mixins = _.isArray(mixins) ? mixins : _.toArray(arguments);
+    var mixed = _.extend.apply(this, [{}].concat(mixins));
 
     // Don't mixin constructor with prototype
     delete mixed.constructor;
@@ -697,7 +780,7 @@
       mixed.initialize = function initialize() {
         var args = _.toArray(arguments);
 
-        _.each(extensions, function(extension) {
+        _.each(mixins, function(extension) {
           if (extension.initialize)
             extension.initialize.apply(this, args);
         }, this);
@@ -705,7 +788,7 @@
     }
     if (mixed.transform) {
       mixed.transform = function transform(data) {
-        return _.reduceRight(extensions, function(data, extension) {
+        return _.reduceRight(mixins, function(data, extension) {
           if (extension && extension.transform)
             return extension.transform.call(this, data);
           else
@@ -725,6 +808,9 @@
     dimensions: dimensions,
     transform: transform,
     translate: transform.translate,
+    isSeriesData: isSeriesData,
+    max: max,
+    min: min,
     createScaleFromOptions: createScaleFromOptions,
     stack: stack,
     style: style,

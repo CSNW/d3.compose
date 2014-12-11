@@ -1,4 +1,4 @@
-(function(d3, helpers, extensions) {
+(function(d3, helpers, mixins) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -9,11 +9,13 @@
 
     Properties:
     - {String} [position = bottom] top, right, bottom, left, x0, y0
+      Note: for x0 and y0, both x and y scales are required,
+            so use `xScale` and `yScale` rather than `scale`
     - {x, y} [translation] of axis relative to chart bounds
     - {String} [orient = bottom] top, right, bottom, left
     - {String} [orientation = horizontal] horizontal, vertical
 
-    Available d3 Axis Extensions:
+    Available d3 Axis mixins:
     - ticks
     - tickValues
     - tickSize
@@ -22,53 +24,74 @@
     - tickPadding
     - tickFormat
   */
-  d3.chart('Component').extend('Axis', mixin(extensions.XYSeries, {
+  d3.chart('Component').extend('Axis', mixin(mixins.XY, {
     initialize: function() {
-      // Transfer generic scale options to specific scale for axis
-      this.on('change:scale', function() {
-        if (this.options().scale) {
-          var scale = this.isXAxis() ? 'xScale' : 'yScale';
-          this[scale](helpers.createScaleFromOptions(this.options().scale));
+      // Set scale range once chart has been rendered
+      // TODO Better event than change:data
+      this.on('change:data', function() {
+        var scale = this.scale();
+        if (scale) {
+          this.setScaleRange(scale);
         }
       }.bind(this));
-      this.on('change:options', function() {
-        this.trigger('change:scale');
-      }.bind(this));
-      this.trigger('change:scale');
 
       this.axis = d3.svg.axis();
       this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
 
-      if (this.options().display) {
-        this.layer('Axis', this.axisLayer, {
-          dataBind: function(data) {
-            // Force addition of just one axis with dummy data array
-            // (Axis will be drawn using underlying chart scales)
-            return this.selectAll('g')
-              .data([0]);
-          },
-          insert: function() {
-            return this.append('g');
-          },
-          events: {
-            merge: function() {
-              var chart = this.chart();
+      this.layer('Axis', this.axisLayer, {
+        dataBind: function(data) {
+          // Setup axis (scale and properties)
+          this.chart()._setupAxis();
 
-              // Setup axis (scale and properties)
-              chart._setupAxis();
-
-              // Place and render axis
-              this
-                .attr('transform', chart.translation())
-                .call(chart.axis);
-            }
+          // Force addition of just one axis with dummy data array
+          // (Axis will be drawn using underlying chart scales)
+          return this.selectAll('g')
+            .data([0]);
+        },
+        insert: function() {
+          return this.append('g');
+        },
+        events: {
+          'enter': function() {
+            // Place and render axis
+            var chart = this.chart();
+            
+            this
+              .attr('transform', chart.translation())
+              .call(chart.axis);
+          },
+          'update': function() {
+            this.attr('transform', this.chart().translation());
+          },
+          'update:transition': function() {
+            // Render axis (with transition)
+            this.call(this.chart().axis);
+          },
+          'exit': function() {
+            this.selectAll('g').remove();
           }
-        });
-      }
-      else {
-        this.skipLayout = true;
-      }
+        }
+      });
     },
+
+    scale: property('scale', {
+      type: 'Function',
+      set: function(value) {
+        var scale = helpers.createScaleFromOptions(value);
+        this.setScaleRange(scale);
+
+        if (this.orientation() == 'vertical') {
+          this.xScale(helpers.createScaleFromOptions()).yScale(scale);
+        }
+        else {
+          this.xScale(scale).yScale(helpers.createScaleFromOptions());
+        }
+
+        return {
+          override: scale
+        };
+      }
+    }),
 
     position: property('position', {
       defaultValue: 'bottom',
@@ -135,38 +158,44 @@
     tickPadding: property('tickPadding', {type: 'Function'}),
     tickFormat: property('tickFormat', {type: 'Function'}),
 
-    layoutHeight: function() {
-      return this._labelOverhang().height;
+    setScaleRange: function(scale) {
+      if (this.orientation() == 'vertical') {
+        mixins.XY.setYScaleRange.call(this, scale);
+      }
+      else {
+        mixins.XY.setXScaleRange.call(this, scale);
+      }
     },
-    layoutWidth: function() {
-      return this._labelOverhang().width;
-    },
-    layoutPosition: function() {
-      if (this.position() == 'x0')
-        return 'bottom';
-      else if (this.position() == 'y0')
-        return 'right';
-      else
-        return this.position();
+
+    getLayout: function(data) {
+      d3.chart('Component').prototype.getLayout.apply(this, arguments);
+
+      var labelOverhang = this._labelOverhang();
+      var position = this.position();
+      if (position == 'x0')
+        position = 'bottom';
+      else if (position == 'y0')
+        position = 'right';
+      
+      return {
+        position: position,
+        width: labelOverhang.width,
+        height: labelOverhang.height
+      };
     },
     setLayout: function(x, y, options) {
       // Axis is positioned with chartBase, so don't set layout
       return;
     },
 
-    isXAxis: function() {
-      return this.type() == 'x';
-    },
-    isYAxis: function() {
-      return this.type() == 'y';
-    },
-
     _setupAxis: function() {
-      // Get scale by orientation
-      var scale = this.isXAxis() ? this._xScale() : this._yScale();
-
       // Setup axis
-      this.axis.scale(scale);
+      if (this.orientation() == 'vertical') {
+        this.axis.scale(this.yScale());
+      }
+      else {
+        this.axis.scale(this.xScale());
+      }
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var arrayExtensions = ['tickValues'];
@@ -206,6 +235,15 @@
     AxisValues
     Axis component for (key,value) series data
   */
-  d3.chart('Axis').extend('AxisValues', extensions.ValuesSeries);
+  d3.chart('Axis').extend('AxisValues', mixin(mixins.Values, {
+    setScaleRange: function(scale) {
+      if (this.orientation() == 'vertical') {
+        mixins.Values.setYScaleRange.call(this, scale);
+      }
+      else {
+        mixins.Values.setXScaleRange.call(this, scale);
+      }
+    }
+  }));
   
-})(d3, d3.chart.helpers, d3.chart.extensions);
+})(d3, d3.chart.helpers, d3.chart.mixins);

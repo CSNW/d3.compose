@@ -37,8 +37,7 @@
     </div>
     <div>
       Container: <span id="mouse-container"></span><br>
-      Chart: <span id="mouse-chart"></span><br>
-      Points: <span id="mouse-points"></span>
+      Chart: <span id="mouse-chart"></span>
     </div>
   </div>
 
@@ -51,32 +50,8 @@
   <script type="text/javascript">
     d3.chart.helpers.log.enable = true;
 
-    // var config = {
-    //   type: 'Values',
-    //   charts: {
-    //     line: {type: 'Line', dataKey: 'increasing', labels: true},
-    //     bars: {type: 'Bars', dataKey: 'decreasing', labels: true},
-    //     labels: {type: 'Labels', handleCollisions: true}
-    //   },
-    //   axes: {
-    //     x: {scale: {type: 'ordinal', domain: [0, 10, 20, 30, 40, 50]}},
-    //     y: {scale: {domain: [0, 200]}},
-    //     secondaryY: {scale: {domain: [0, 1000]}, dataKey: 'increasing'}
-    //   }
-    // };
-    var config = {
-      type: 'XY',
-      charts: {
-        line: {type: 'Line', dataKey: 'increasing-dense', labels: true},
-        labels: {type: 'Labels', handleCollisions: true}
-      },
-      axes: {
-        x: {scale: {domain: [0, 50]}, position: 'top', title: 'Howdy'}
-      },
-      legend: false,
-      title: {text: 'Howdy!', position: 'bottom'}
-    };
-
+    // Data
+    // ---- //
     var highlight_class = 'highlight';
     var highlight_style = {fill: '#2ca02c'};
 
@@ -170,9 +145,44 @@
     data['decreasing-dense'][0].values[0]['class'] = highlight_class;
     data['decreasing-dense'][1].values[0]['labelStyle'] = highlight_style;
     
+    // Config
+    // ------ //
+    // var config = {
+    //   type: 'Values',
+    //   charts: {
+    //     line: {type: 'Line', dataKey: 'increasing', labels: true},
+    //     bars: {type: 'Bars', dataKey: 'decreasing', labels: true},
+    //     labels: {type: 'Labels', handleCollisions: true}
+    //   },
+    //   axes: {
+    //     x: {scale: {type: 'ordinal', domain: [0, 10, 20, 30, 40, 50]}},
+    //     y: {scale: {domain: [0, 200]}},
+    //     secondaryY: {scale: {domain: [0, 1000]}, dataKey: 'increasing'}
+    //   }
+    // };
+    var config = function(data) {
+      var values = data['increasing-dense'];
+      var scales = {
+        x: {domain: [0, 50]},
+        y: {domain: [0, 200]}
+      };
+
+      return {
+        charts: {
+          line: {type: 'Line', data: values, xScale: scales.x, yScale: scales.y, labels: true},
+          labels: {type: 'Labels', handleCollisions: true}
+        },
+        axes: {
+          x: {scale: scales.x, position: 'top', title: 'Howdy'},
+          y: {scale: scales.y, position: 'left'}
+        },
+        title: {text: 'Howdy!', position: 'bottom'}
+      };
+    };
+
     var chart = d3.select('#chart')
       .chart('Multi', config)
-      .chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+      .margins({top: 10, right: 10, bottom: 10, left: 10});
 
     chart.draw(data);
 
@@ -191,8 +201,22 @@
 
     var count = 1;
     function change() {
-      d3.chart.helpers.property.extend(chart, 'options', {title: {position: 'bottom', text: 'Howdy ' + count++ + '!'}});
-      // chart.draw(data, _.extend(chart.options(), {title: {position: 'bottom', text: 'Howdy ' + count++ + '!'}}));
+      chart.options(function(data) {
+        var values = data['increasing-dense'];
+
+        return {
+          charts: {
+            line: {type: 'Line', data: values, labels: true},
+            labels: {type: 'Labels', handleCollisions: true}
+          },
+          axes: {
+            x: {data: values, scale: {domain: [0, 50]}, position: 'top', title: 'Howdy'},
+            y: {data: values}
+          },
+          legend: false,
+          title: {text: 'Howdy ' + count++ + '!', position: 'bottom'}
+        };
+      });
     }
 
     function redraw() {
@@ -205,31 +229,16 @@
 
     // DEBUG
     chart.on('enter:mouse', function(coordinates) {
-      logMouse('container', coordinates);
+      logMouse('container', coordinates.container);
+      logMouse('chart', coordinates.chart);
     });
     chart.on('move:mouse', function(coordinates) {
-      logMouse('container', coordinates);
+      logMouse('container', coordinates.container);
+      logMouse('chart', coordinates.chart);
     });
     chart.on('leave:mouse', function() {
       logMouse('container');
-    });
-    chart.on('chart:enter:mouse', function(coordinates) {
-      logMouse('chart', coordinates);
-    });
-    chart.on('chart:move:mouse', function(coordinates) {
-      logMouse('chart', coordinates);
-    });
-    chart.on('chart:leave:mouse', function() {
       logMouse('chart');
-    });
-    chart.on('points:enter:mouse', function(points) {
-      logMouse('points', points);
-    });
-    chart.on('points:move:mouse', function(points) {
-      logMouse('points', points);
-    });
-    chart.on('points:leave:mouse', function() {
-      logMouse('points');
     });
 
     function logMouse(type, coordinates) {

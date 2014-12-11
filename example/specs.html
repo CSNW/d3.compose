@@ -57,17 +57,23 @@
       <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
         spec({
-          chart: {
-            type: 'XY',
-            charts: {
-              line: {type: 'Line', dataKey: 'values', labels: true}
-            },
-            axes: {
-              x: {title: 'X Axis'},
-              y: {title: 'Y Axis'}
-            },
-            title: {text: 'Chart Title', margins: {top: 1.0, bottom: 1.0}},
-            legend: {position: 'bottom'}
+          chart: function(data) {
+            var scales = {
+              x: {data: data.values, key: 'x'},
+              y: {data: data.values, key: 'y'}
+            };
+
+            return {
+              charts: {
+                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y, labels: true}
+              },
+              axes: {
+                x: {title: 'X Axis', scale: scales.x, position: 'bottom'},
+                y: {title: 'Y Axis', scale: scales.y, position: 'left'}
+              },
+              title: {text: 'Chart Title', margins: {top: 1.0, bottom: 1.0}},
+              legend: {position: 'bottom'}
+            };
           },
           data: 'spec-abc',
           run: function(options, chart) {
@@ -83,12 +89,22 @@
       <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
         spec({
-          chart: {
-            type: 'Values',
-            charts: {
-              bars: {type: 'Bars', dataKey: 'values'},
-              line: {type: 'Line', dataKey: 'values'}
-            }
+          chart: function(data) {
+            var scales = {
+              x: {type: 'ordinal', data: data.values, key: 'x'},
+              y: {data: data.values, key: 'y'}
+            };
+
+            return {
+              charts: {
+                bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
+                line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
+              },
+              axes: {
+                x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
+                y: {position: 'left', scale: scales.y}
+              }
+            };
           },
           data: 'spec-abc'
         });
@@ -101,15 +117,28 @@
       <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
         spec({
-          chart: {
-            type: 'XY',
-            charts: {
-              line: {type: 'Line', dataKey: 'values', style: {'stroke-width': '5px'}, labels: {style: {'font-weight': 'bold', 'font-size': '16px'}}},
-            },
-            axes: {
-              x: {position: 'y0'},
-              y: {position: 'x0', scale: {domain: [-5, 5]}}
-            }
+          chart: function(data) {
+            var scales = {
+              x: {data: data.values, key: 'x'},
+              y: {domain: [-5, 5]}
+            };
+
+            return {
+              charts: {
+                line: {
+                  type: 'Line', 
+                  data: data.values,
+                  xScale: scales.x,
+                  yScale: scales.y,
+                  style: {'stroke-width': '5px'}, 
+                  labels: {style: {'font-weight': 'bold', 'font-size': '16px'}}
+                },
+              },
+              axes: {
+                x: {position: 'y0', xScale: scales.x, yScale: scales.y},
+                y: {position: 'x0', xScale: scales.x, yScale: scales.y}
+              }
+            };
           },
           data: 'spec-overlap'
         });
@@ -124,15 +153,22 @@
       <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
         spec({
-          chart: {
-            type: 'XY',
-            charts: {
-              line: {type: 'Line', dataKey: 'values'}
-            },
-            axes: {
-              y: {scale: {domain: [20, 60]}}
-            },
-            title: 'Smooth'
+          chart: function(data) {
+            var scales = {
+              x: {data: data.values, key: 'x'},
+              y: {domain: [20, 60]}
+            };
+
+            return {
+              charts: {
+                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
+              },
+              axes: {
+                x: {position: 'bottom', scale: scales.x},
+                y: {position: 'left', scale: scales.y}
+              },
+              title: 'Smooth'
+            };
           },
           data: 'spec-smooth',
           run: function(options, chart) {
@@ -141,8 +177,8 @@
             chart.title('Not Smooth');
           },
           reset: function(options) {
-            
-          }
+          
+          } 
         });
       </script>
     </section>
@@ -153,14 +189,22 @@
       <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
         spec({
-          chart: {
-            type: 'XY',
-            charts: {
-              line: {type: 'Line', dataKey: 'values'}
-            },
-            axes: {
-              x: {ticks: 5}
-            }
+          chart: function(data) {
+            var scales = {
+              x: {data: data.values, key: 'x'},
+              y: {data: data.values, key: 'y'}
+            };
+
+            return {
+              type: 'XY',
+              charts: {
+                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
+              },
+              axes: {
+                x: {position: 'bottom', scale: scales.x, ticks: 5},
+                y: {position: 'left', scale: scales.y}
+              }
+            };
           },
           data: 'spec-abc'
         });
@@ -175,23 +219,38 @@
       <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
         spec({
-          chart: {
-            type: 'XY',
-            charts: {
-              line: {type: 'Line', dataKey: 'values'}
-            },
-            axes: {
-              x: {ticks: 5},
-            },
-            title: 'Before'
+          chart: function(data) {
+            var scales = {
+              x: {data: data.values, key: 'x'},
+              y: {data: data.values, key: 'y'}
+            }
+
+            return {
+              charts: {
+                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
+              },
+              axes: {
+                x: {position: 'bottom', scale: scales.x, ticks: 5},
+                y: {position: 'left', scale: scales.y}
+              },
+              title: 'Before'
+            };
           },
           data: 'spec-abc',
           run: function(options, chart) {
-            d3.chart.helpers.property.extend(chart, 'options', {
-              title: 'After',
-              axes: {
-                x: {ticks: 10, scale: {domain: [0, 200]}}
-              }
+            var previous = chart.options();
+
+            chart.options(function(data) {
+              var scales = {
+                x: {domain: [0, 200]}
+              };
+              var updated = previous.call(chart, data);
+
+              updated.title = 'After';
+              updated.charts.line.xScale = scales.x;
+              updated.axes.x = {position: 'bottom', scale: scales.x, ticks: 10};
+
+              return updated;
             });
           }
         });
@@ -206,15 +265,22 @@
       <div class="spec-chart" data-chart></div>
       <script type="text/javascript">
         spec({
-          chart: {
-            type: 'XY',
-            charts: {
-              line: {type: 'Line', dataKey: 'values'}
-            },
-            axes: {
-              x: {ticks: 5},
-            },
-            title: {dataKey: 'title'}
+          chart: function(data) {
+            var scales = {
+              x: {data: data.values, key: 'x'},
+              y: {data: data.values, key: 'y'}
+            };
+
+            return {
+              charts: {
+                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
+              },
+              axes: {
+                x: {position: 'bottom', scale: scales.x, ticks: 5},
+                y: {position: 'left', scale: scales.y}
+              },
+              title: {text: data.title}
+            };
           },
           data: 'spec-data-bound',
           run: function(options, chart) {
@@ -235,12 +301,22 @@
       <script type="text/javascript">
         spec({
           resizable: true,
-          chart: {
-            type: 'Values',
-            charts: {
-              bars: {type: 'Bars', dataKey: 'values'},
-              line: {type: 'Line', dataKey: 'values'}
-            }
+          chart: function(data) {
+            var scales = {
+              x: {type: 'ordinal', data: data.values, key: 'x'},
+              y: {data: data.values, key: 'y'}
+            };
+
+            return {
+              charts: {
+                bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
+                line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
+              },
+              axes: {
+                x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
+                y: {position: 'left', scale: scales.y}
+              }
+            };
           },
           data: 'spec-abc'
         });
@@ -255,12 +331,22 @@
         spec({
           resizable: true,
           margins: false,
-          chart: {
-            type: 'Values',
-            charts: {
-              bars: {type: 'Bars', dataKey: 'values'},
-              line: {type: 'Line', dataKey: 'values'}
-            }
+          chart: function(data) {
+            var scales = {
+              x: {type: 'ordinal', data: data.values, key: 'x'},
+              y: {data: data.values, key: 'y'}
+            };
+
+            return {
+              charts: {
+                bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
+                line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
+              },
+              axes: {
+                x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
+                y: {position: 'left', scale: scales.y}
+              }
+            };
           },
           data: 'spec-abc'
         });
@@ -293,7 +379,7 @@
           $(options.elements.chart).addClass('resizable');
 
         if (options.margins)
-          chart.chartMargins({top: 10, right: 10, bottom: 10, left: 10});
+          chart.margins({top: 10, right: 10, bottom: 10, left: 10});
 
         chart.draw(data[options.data]);
         charts.push(chart);

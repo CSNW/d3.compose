@@ -1,4 +1,4 @@
-(function(d3, helpers, extensions) {
+(function(d3, helpers, mixins) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -7,7 +7,7 @@
     Line
     (x,y) line graph
   */
-  d3.chart('SeriesChart').extend('Line', mixin(extensions.XYSeries, extensions.LabelsSeries, {
+  d3.chart('SeriesChart').extend('Line', mixin(mixins.XYSeries, mixins.LabelsSeries, {
     initialize: function() {
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
@@ -15,8 +15,8 @@
           var lines = {};
 
           // Add lines based on underlying series data
-          _.each(chart.data(), function(series) {
-            lines[series.seriesIndex] = chart.createLine(series);
+          _.each(chart.data(), function(series, index) {
+            lines[index] = chart.createLine(series);
           });
           chart.lines(lines);
 
@@ -72,6 +72,6 @@
     LineValues
     Line graph for centered key,value data
   */
-  d3.chart('Line').extend('LineValues', extensions.ValuesSeries);
+  d3.chart('Line').extend('LineValues', mixins.ValuesSeries);
 
-})(d3, d3.chart.helpers, d3.chart.extensions);
+})(d3, d3.chart.helpers, d3.chart.mixins);

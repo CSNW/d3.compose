@@ -9,7 +9,7 @@
   - legend
 */
 
-.chart {
+.chart-container {
   background-color: #eee;
   border: solid 1px #ddd;
 }

@@ -297,7 +297,7 @@
         });
       });
 
-      describe('extensions', function() {
+      describe('mixins', function() {
         beforeEach(function() {
           instance.obj = property('obj');
           instance.arr = property('arr');
