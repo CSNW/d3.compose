@@ -29,11 +29,15 @@
       // Set scale range once chart has been rendered
       // TODO Better event than change:data
       this.on('change:data', function() {
-        var scale = this.scale();
-        if (scale) {
-          this.setScaleRange(scale);
-        }
+        this._setupScale(this.scale());
       }.bind(this));
+
+      // Update scale if orientation may have changed
+      _.each(['change:position', 'change:orientation', 'change:orient'], function(eventName) {
+        this.on(eventName, function() {
+          this._setupScale(this.scale());
+        }.bind(this));
+      }, this);
 
       this.axis = d3.svg.axis();
       this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
@@ -78,14 +82,7 @@
       type: 'Function',
       set: function(value) {
         var scale = helpers.createScaleFromOptions(value);
-        this.setScaleRange(scale);
-
-        if (this.orientation() == 'vertical') {
-          this.xScale(helpers.createScaleFromOptions()).yScale(scale);
-        }
-        else {
-          this.xScale(scale).yScale(helpers.createScaleFromOptions());
-        }
+        this._setupScale(scale);
 
         return {
           override: scale
@@ -158,15 +155,6 @@
     tickPadding: property('tickPadding', {type: 'Function'}),
     tickFormat: property('tickFormat', {type: 'Function'}),
 
-    setScaleRange: function(scale) {
-      if (this.orientation() == 'vertical') {
-        mixins.XY.setYScaleRange.call(this, scale);
-      }
-      else {
-        mixins.XY.setXScaleRange.call(this, scale);
-      }
-    },
-
     getLayout: function(data) {
       d3.chart('Component').prototype.getLayout.apply(this, arguments);
 
@@ -188,14 +176,25 @@
       return;
     },
 
+    _setupScale: function(scale) {
+      if (scale) {
+        if (this.orientation() == 'vertical') {
+          mixins.XY.setYScaleRange.call(this, scale);
+          this.xScale(helpers.createScaleFromOptions()).yScale(scale);
+        }
+        else {
+          mixins.XY.setXScaleRange.call(this, scale);
+          this.xScale(scale).yScale(helpers.createScaleFromOptions());
+        }
+      }
+    },
+
     _setupAxis: function() {
       // Setup axis
-      if (this.orientation() == 'vertical') {
+      if (this.orientation() == 'vertical')
         this.axis.scale(this.yScale());
-      }
-      else {
+      else
         this.axis.scale(this.xScale());
-      }
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var arrayExtensions = ['tickValues'];
