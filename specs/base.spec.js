@@ -155,7 +155,7 @@
           spyOn(d3.chart().prototype, 'draw');
 
           container.draw([]);
-          expect(spy.calls.count()).toEqual(8);
+          expect(spy.calls.count()).toEqual(16);
           expect(chartSpy.calls.count()).toEqual(0);
         });
 

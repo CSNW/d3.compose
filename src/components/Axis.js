@@ -178,7 +178,7 @@
     layoutLayers: ['LayoutAxis'],
     getLayout: function(data) {
       // Make layout axis visible for width calculations in Firefox
-      this._layoutBase.attr('style', 'display: block;')
+      this._layoutBase.attr('style', 'display: block;');
 
       // Get label overhang to use as label width (after default layout/draw)
       var layout = d3.chart('Component').prototype.getLayout.apply(this, arguments);
