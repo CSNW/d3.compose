@@ -39,7 +39,7 @@
 
       this.axisBase = this.base.append('g').attr('class', 'chart-axis');
       this._layoutBase = this.base.append('g')
-        .attr('class', 'chart-layout')
+        .attr('class', 'chart-axis chart-layout')
         .attr('style', 'display: none;');
 
       this.layer('Axis', this.axisBase, {
@@ -177,10 +177,16 @@
 
     layoutLayers: ['LayoutAxis'],
     getLayout: function(data) {
-      // d3.chart('Component').prototype.getLayout.apply(this, arguments);
-      this._layoutDraw(data);
+      // Make layout axis visible for width calculations in Firefox
+      this._layoutBase.attr('style', 'display: block;')
 
+      // Get label overhang to use as label width (after default layout/draw)
+      var layout = d3.chart('Component').prototype.getLayout.apply(this, arguments);
       var labelOverhang = this._getLabelOverhang();
+
+      // Hide layout axis now that calculations are complete
+      this._layoutBase.attr('style', 'display: none;');
+
       var position = this.position();
       if (position == 'x0')
         position = 'bottom';
@@ -253,10 +259,7 @@
           // Ignore error
         }
       });
-      console.log('label overhang', {
-        width: _.max(overhangs.width),
-        height: _.max(overhangs.height)
-      });
+
       return {
         width: _.max(overhangs.width),
         height: _.max(overhangs.height)
