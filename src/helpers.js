@@ -149,6 +149,7 @@
           }
         }
 
+        getSet.previous = properties[name];
         properties[name] = value;
 
         if (_.isFunction(options.set)) {

@@ -26,22 +26,27 @@
   */
   d3.chart('Component').extend('Axis', mixin(mixins.XY, {
     initialize: function() {
-      // Set scale range once chart has been rendered
-      // TODO Better event than change:data
-      this.on('change:data', function() {
-        var scale = this.scale();
-        if (scale) {
-          this.setScaleRange(scale);
-        }
+      // Set scale once chart is ready to drawn
+      this.on('before:draw', function() {
+        this._setupScale(this.scale());
       }.bind(this));
 
+      // Create two axes (so that layout and transitions work)
+      // 1. Display and transitions
+      // 2. Layout (draw to get width, but separate so that transitions aren't affected)
       this.axis = d3.svg.axis();
-      this.axisLayer = this.base.append('g').attr('class', 'chart-axis');
+      this._layoutAxis = d3.svg.axis();
 
-      this.layer('Axis', this.axisLayer, {
+      this.axisBase = this.base.append('g').attr('class', 'chart-axis');
+      this._layoutBase = this.base.append('g')
+        .attr('class', 'chart-axis chart-layout')
+        .attr('style', 'display: none;');
+
+      this.layer('Axis', this.axisBase, {
         dataBind: function(data) {
           // Setup axis (scale and properties)
-          this.chart()._setupAxis();
+          var chart = this.chart();
+          chart._setupAxis(chart.axis);
 
           // Force addition of just one axis with dummy data array
           // (Axis will be drawn using underlying chart scales)
@@ -72,20 +77,32 @@
           }
         }
       });
+
+      this.layer('LayoutAxis', this._layoutBase, {
+        dataBind: function(data) {
+          var chart = this.chart();
+          chart._setupAxis(chart._layoutAxis);
+          return this.selectAll('g').data([0]);
+        },
+        insert: function() {
+          return this.append('g');
+        },
+        events: {
+          'merge': function() {
+            var chart = this.chart();
+            this
+              .attr('transform', chart.translation())
+              .call(chart.axis);
+          }
+        }
+      });
     },
 
     scale: property('scale', {
       type: 'Function',
       set: function(value) {
         var scale = helpers.createScaleFromOptions(value);
-        this.setScaleRange(scale);
-
-        if (this.orientation() == 'vertical') {
-          this.xScale(helpers.createScaleFromOptions()).yScale(scale);
-        }
-        else {
-          this.xScale(scale).yScale(helpers.createScaleFromOptions());
-        }
+        this._setupScale(scale);
 
         return {
           override: scale
@@ -158,19 +175,18 @@
     tickPadding: property('tickPadding', {type: 'Function'}),
     tickFormat: property('tickFormat', {type: 'Function'}),
 
-    setScaleRange: function(scale) {
-      if (this.orientation() == 'vertical') {
-        mixins.XY.setYScaleRange.call(this, scale);
-      }
-      else {
-        mixins.XY.setXScaleRange.call(this, scale);
-      }
-    },
-
+    layoutLayers: ['LayoutAxis'],
     getLayout: function(data) {
-      d3.chart('Component').prototype.getLayout.apply(this, arguments);
+      // Make layout axis visible for width calculations in Firefox
+      this._layoutBase.attr('style', 'display: block;')
 
-      var labelOverhang = this._labelOverhang();
+      // Get label overhang to use as label width (after default layout/draw)
+      var layout = d3.chart('Component').prototype.getLayout.apply(this, arguments);
+      var labelOverhang = this._getLabelOverhang();
+
+      // Hide layout axis now that calculations are complete
+      this._layoutBase.attr('style', 'display: none;');
+
       var position = this.position();
       if (position == 'x0')
         position = 'bottom';
@@ -188,14 +204,25 @@
       return;
     },
 
-    _setupAxis: function() {
+    _setupScale: function(scale) {
+      if (scale) {
+        if (this.orientation() == 'vertical') {
+          mixins.XY.setYScaleRange.call(this, scale);
+          this.xScale(helpers.createScaleFromOptions()).yScale(scale);
+        }
+        else {
+          mixins.XY.setXScaleRange.call(this, scale);
+          this.xScale(scale).yScale(helpers.createScaleFromOptions());
+        }
+      }
+    },
+
+    _setupAxis: function(axis) {
       // Setup axis
-      if (this.orientation() == 'vertical') {
+      if (this.orientation() == 'vertical')
         this.axis.scale(this.yScale());
-      }
-      else {
+      else
         this.axis.scale(this.xScale());
-      }
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var arrayExtensions = ['tickValues'];
@@ -205,23 +232,32 @@
           // If value is array, treat as arguments array
           // otherwise, pass in directly
           if (_.isArray(value) && !_.contains(arrayExtensions, key))
-            this.axis[key].apply(this.axis, value);
+            axis[key].apply(axis, value);
           else
-            this.axis[key](value);
+            axis[key](value);
         }
       }, this);
     },
 
-    _labelOverhang: function() {
+    _getLabelOverhang: function() {
       // TODO Look into overhang relative to chartBase (for x0, y0)
       var overhangs = {width: [0], height: [0]};
       var orientation = this.orientation();
 
-      this.axisLayer.selectAll('.tick').each(function() {
-        if (orientation == 'horizontal')
-          overhangs.height.push(this.getBBox().height);
-        else
-          overhangs.width.push(this.getBBox().width);
+      this._layoutBase.selectAll('.tick').each(function() {
+        try {
+          // There are cases where getBBox may throw 
+          // (e.g. not currently displayed in Firefox)
+          var bbox = this.getBBox();
+
+          if (orientation == 'horizontal')
+            overhangs.height.push(bbox.height);
+          else
+            overhangs.width.push(bbox.width);
+        }
+        catch (ex) {
+          // Ignore error
+        }
       });
 
       return {

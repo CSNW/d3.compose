@@ -105,6 +105,15 @@
         if (this[key] && this[key].isProperty && this[key].setFromOptions)
           this[key](value, {silent: true});
       }, this);
+    },
+
+    /**
+      Add events to draw: before:draw and draw
+    */
+    draw: function(data) {
+      this.trigger('before:draw', data);
+      d3.chart().prototype.draw.apply(this, arguments);
+      this.trigger('draw', data);
     }
   });
 

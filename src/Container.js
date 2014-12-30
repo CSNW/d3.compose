@@ -303,7 +303,6 @@
     },
 
     _positionComponents: function(layout) {
-      var margins = this.margins();
       var chart = this.chartPosition();
       var width = this.width();
       var height = this.height();
