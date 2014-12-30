@@ -38,6 +38,11 @@
             var chart = this.chart();
             var lines = chart.lines();
 
+            if (chart.delay())
+              this.delay(chart.delay());
+            if (chart.duration())
+              this.duration(chart.duration());
+
             this
               .attr('d', function(d, i) {
                 return lines[chart.seriesIndex.call(this, d, i)](chart.seriesValues.call(this, d, i));
@@ -48,6 +53,8 @@
       });
     },
     lines: property('lines', {defaultValue: {}}),
+    delay: property('delay'),
+    duration: property('duration'),
 
     createLine: function(series) {
       var line = d3.svg.line()

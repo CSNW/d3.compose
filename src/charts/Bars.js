@@ -41,6 +41,11 @@
           'merge:transition': function() {
             var chart = this.chart();
 
+            if (chart.delay())
+              this.delay(chart.delay());
+            if (chart.duration())
+              this.duration(chart.duration());
+
             this
               .attr('y', chart.barY)
               .attr('height', chart.barHeight);
@@ -51,6 +56,9 @@
         }
       });
     },
+    delay: property('delay'),
+    duration: property('duration'),
+
 
     displayAdjacent: property('displayAdjacent', {defaultValue: true}),
 
