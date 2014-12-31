@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.8.0
+/*! d3.chart.multi - v0.8.1
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -502,8 +502,11 @@
         scale.domain(_.uniq(allValues));
       }
       else {
+        // By default, domain starts at 0 unless min is less than 0
+        var minValue = min(options.data, getValue);
+
         scale.domain([
-          min(options.data, getValue), 
+          minValue < 0 ? minValue : 0, 
           max(options.data, getValue)
         ]);
       }      
@@ -2033,7 +2036,7 @@
         // Remove prototype chain and transform from context
         // and instead pass in transformed data (stored from _layoutDraw)
         var transformedData = this.data();
-        context = _.extend({}, this, {
+        context = _.extend(Object.create(d3.chart('Component').prototype), this, {
           transform: function(data) {
             return transformedData;
           }
@@ -2068,7 +2071,7 @@
       // perform transform by calling draw with all layers and attachments removed
       // with fake layer to capture transformed data
       var transformedData;
-      this.draw.call(_.extend({}, this, {
+      this.draw.call(_.extend(Object.create(d3.chart('Component').prototype), this, {
         _layers: {
           '_': {
             draw: function(data) {
@@ -3720,7 +3723,7 @@
             var Component = d3.chart(componentOptions.type);
             var base = Component.layerType == 'chart' ? this.chartLayer() : this.componentLayer();
 
-            component = new Component(layer, componentOptions);
+            component = new Component(base, componentOptions);
 
             this.attachComponent(componentId, component);
             this._components[componentId] = component;
