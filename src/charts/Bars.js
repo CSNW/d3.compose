@@ -45,6 +45,8 @@
               this.delay(chart.delay());
             if (chart.duration())
               this.duration(chart.duration());
+            if (chart.ease())
+              this.ease(chart.ease());
 
             this
               .attr('y', chart.barY)
@@ -56,15 +58,15 @@
         }
       });
     },
-    delay: property('delay'),
-    duration: property('duration'),
-
+    delay: property('delay', {type: 'Function'}),
+    duration: property('duration', {type: 'Function'}),
+    ease: property('ease', {type: 'Function'}),
 
     displayAdjacent: property('displayAdjacent', {defaultValue: true}),
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)); 
-      return height > 0 ? height - chart.barOffset() : 0;
+      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)) - chart.barOffset(); 
+      return height > 0 ? height : 0;
     }),
     barX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;

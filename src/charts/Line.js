@@ -42,6 +42,8 @@
               this.delay(chart.delay());
             if (chart.duration())
               this.duration(chart.duration());
+            if (chart.ease())
+              this.ease(chart.ease());
 
             this
               .attr('d', function(d, i) {
@@ -53,8 +55,9 @@
       });
     },
     lines: property('lines', {defaultValue: {}}),
-    delay: property('delay'),
-    duration: property('duration'),
+    delay: property('delay', {type: 'Function'}),
+    duration: property('duration', {type: 'Function'}),
+    ease: property('ease', {type: 'Function'}),
 
     createLine: function(series) {
       var line = d3.svg.line()

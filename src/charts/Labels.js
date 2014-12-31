@@ -30,6 +30,9 @@
           return this.chart().insertLabels(this);
         },
         events: {
+          'merge': function() {
+            this.attr('opacity', 0);
+          },
           'merge:transition': function() {
             var chart = this.chart();
 
@@ -52,6 +55,15 @@
             // 4. Layout labels
             chart.layoutLabels();
             helpers.log.timeEnd('Labels.draw');
+
+            if (chart.delay())
+              this.delay(chart.delay());
+            if (chart.duration())
+              this.duration(chart.duration());
+            if (chart.ease())
+              this.ease(chart.ease());
+
+            this.attr('opacity', 1);
           },
           'exit': function() {
             this.remove();
@@ -67,6 +79,9 @@
     excludeFromLegend: true,
     labels: property('labels', {defaultValue: []}),
     handleCollisions: property('handleCollisions', {defaultValue: true}),
+    delay: property('delay', {type: 'Function'}),
+    duration: property('duration', {type: 'Function'}),
+    ease: property('ease', {type: 'Function'}),
     
     format: property('format', {
       type: 'Function',

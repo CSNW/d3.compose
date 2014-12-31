@@ -70,7 +70,16 @@
           },
           'update:transition': function() {
             // Render axis (with transition)
-            this.call(this.chart().axis);
+            var chart = this.chart();
+
+            if (chart.delay())
+              this.delay(chart.delay());
+            if (chart.duration())
+              this.duration(chart.duration());
+            if (chart.ease())
+              this.ease(chart.ease());
+
+            this.call(chart.axis);
           },
           'exit': function() {
             this.selectAll('g').remove();
@@ -97,6 +106,9 @@
         }
       });
     },
+    duration: property('duration', {type: 'Function'}),
+    delay: property('delay', {type: 'Function'}),
+    ease: property('ease', {type: 'Function'}),
 
     scale: property('scale', {
       type: 'Function',
