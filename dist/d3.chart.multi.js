@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.8.1
+/*! d3.chart.multi - v0.8.2
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -2124,6 +2124,9 @@
           return this.chart().insertLabels(this);
         },
         events: {
+          'merge': function() {
+            this.attr('opacity', 0);
+          },
           'merge:transition': function() {
             var chart = this.chart();
 
@@ -2146,6 +2149,15 @@
             // 4. Layout labels
             chart.layoutLabels();
             helpers.log.timeEnd('Labels.draw');
+
+            if (chart.delay())
+              this.delay(chart.delay());
+            if (chart.duration())
+              this.duration(chart.duration());
+            if (chart.ease())
+              this.ease(chart.ease());
+
+            this.attr('opacity', 1);
           },
           'exit': function() {
             this.remove();
@@ -2161,6 +2173,9 @@
     excludeFromLegend: true,
     labels: property('labels', {defaultValue: []}),
     handleCollisions: property('handleCollisions', {defaultValue: true}),
+    delay: property('delay', {type: 'Function'}),
+    duration: property('duration', {type: 'Function'}),
+    ease: property('ease', {type: 'Function'}),
     
     format: property('format', {
       type: 'Function',
@@ -2771,6 +2786,8 @@
               this.delay(chart.delay());
             if (chart.duration())
               this.duration(chart.duration());
+            if (chart.ease())
+              this.ease(chart.ease());
 
             this
               .attr('y', chart.barY)
@@ -2782,15 +2799,15 @@
         }
       });
     },
-    delay: property('delay'),
-    duration: property('duration'),
-
+    delay: property('delay', {type: 'Function'}),
+    duration: property('duration', {type: 'Function'}),
+    ease: property('ease', {type: 'Function'}),
 
     displayAdjacent: property('displayAdjacent', {defaultValue: true}),
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)); 
-      return height > 0 ? height - chart.barOffset() : 0;
+      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)) - chart.barOffset(); 
+      return height > 0 ? height : 0;
     }),
     barX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
@@ -2910,6 +2927,8 @@
               this.delay(chart.delay());
             if (chart.duration())
               this.duration(chart.duration());
+            if (chart.ease())
+              this.ease(chart.ease());
 
             this
               .attr('d', function(d, i) {
@@ -2921,8 +2940,9 @@
       });
     },
     lines: property('lines', {defaultValue: {}}),
-    delay: property('delay'),
-    duration: property('duration'),
+    delay: property('delay', {type: 'Function'}),
+    duration: property('duration', {type: 'Function'}),
+    ease: property('ease', {type: 'Function'}),
 
     createLine: function(series) {
       var line = d3.svg.line()
@@ -3090,7 +3110,16 @@
           },
           'update:transition': function() {
             // Render axis (with transition)
-            this.call(this.chart().axis);
+            var chart = this.chart();
+
+            if (chart.delay())
+              this.delay(chart.delay());
+            if (chart.duration())
+              this.duration(chart.duration());
+            if (chart.ease())
+              this.ease(chart.ease());
+
+            this.call(chart.axis);
           },
           'exit': function() {
             this.selectAll('g').remove();
@@ -3117,6 +3146,9 @@
         }
       });
     },
+    duration: property('duration', {type: 'Function'}),
+    delay: property('delay', {type: 'Function'}),
+    ease: property('ease', {type: 'Function'}),
 
     scale: property('scale', {
       type: 'Function',
