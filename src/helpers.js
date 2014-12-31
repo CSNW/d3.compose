@@ -498,8 +498,11 @@
         scale.domain(_.uniq(allValues));
       }
       else {
+        // By default, domain starts at 0 unless min is less than 0
+        var minValue = min(options.data, getValue);
+
         scale.domain([
-          min(options.data, getValue), 
+          minValue < 0 ? minValue : 0, 
           max(options.data, getValue)
         ]);
       }      

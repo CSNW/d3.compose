@@ -236,7 +236,7 @@
             var Component = d3.chart(componentOptions.type);
             var base = Component.layerType == 'chart' ? this.chartLayer() : this.componentLayer();
 
-            component = new Component(layer, componentOptions);
+            component = new Component(base, componentOptions);
 
             this.attachComponent(componentId, component);
             this._components[componentId] = component;

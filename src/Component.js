@@ -101,7 +101,7 @@
         // Remove prototype chain and transform from context
         // and instead pass in transformed data (stored from _layoutDraw)
         var transformedData = this.data();
-        context = _.extend({}, this, {
+        context = _.extend(Object.create(d3.chart('Component').prototype), this, {
           transform: function(data) {
             return transformedData;
           }
@@ -136,7 +136,7 @@
       // perform transform by calling draw with all layers and attachments removed
       // with fake layer to capture transformed data
       var transformedData;
-      this.draw.call(_.extend({}, this, {
+      this.draw.call(_.extend(Object.create(d3.chart('Component').prototype), this, {
         _layers: {
           '_': {
             draw: function(data) {
