@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.8.2
+/*! d3.chart.multi - v0.8.3
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -996,10 +996,8 @@
     }),
 
     initialize: function() {
-      // Set scale range once chart has been rendered
-      // TODO Better event than change:data
-      this.on('change:data', this.setScales.bind(this));
-      this.setScales();
+      // Set scale ranges once chart is ready to be rendered
+      this.on('before:draw', this.setScales.bind(this));
     },
 
     x: di(function(chart, d, i) {
@@ -2000,15 +1998,22 @@
       (Override for more specific sizing in layout calculations)
 
       - skipLayout: Skip component during layout calculations and positioning
-      - layoutLayers: Use to specify array of specific layers to draw during layout
+      - prepareLayout: perform any layout preparation required (default is draw)
       - getLayout: return position, width, and height for layout
       - setLayout: use x, y, and options {height, width} for layout
     */
     skipLayout: false,
-    layoutLayers: undefined,
-    getLayout: function(data) {
-      this._layoutDraw(data);
 
+    prepareLayout: function(data) {
+      // Note: By default, components are double-drawn
+      //       this may cause issues with transitions
+      //       override prepareLayout to adjust this behavior
+      this.draw(data);
+    },
+
+    getLayout: function(data) {
+      this.prepareLayout(data);
+      
       var margins = this.margins();
       return {
         position: this.position(),
@@ -2026,67 +2031,6 @@
       this.base.attr('transform', helpers.transform.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
-    },
-
-    draw: function(data) {
-      // If data has been transformed, don't re-transform
-      var context = this;
-
-      if (this._transformed) {
-        // Remove prototype chain and transform from context
-        // and instead pass in transformed data (stored from _layoutDraw)
-        var transformedData = this.data();
-        context = _.extend(Object.create(d3.chart('Component').prototype), this, {
-          transform: function(data) {
-            return transformedData;
-          }
-        });
-
-        this._transformed = false;
-      }
-
-      return d3.chart('Base').prototype.draw.apply(context, arguments);
-    },
-
-    _layoutDraw: function(data) {
-      // Transform data for layout
-      // required for selective layers or all layers
-      // (retains transform so that it only happens once per layout + draw)
-      data = this._transform(data);
-
-      if (this.layoutLayers && this.layoutLayers.length) {
-        // If only certain layers are needed for layer,
-        // perform partial draw that only draws those layers
-        _.each(this.layoutLayers, function(layerName) {
-          this.layer(layerName).draw(data);
-        }, this);
-      }
-      else {
-        this.draw(data);
-      }
-    },
-
-    _transform: function(data) {
-      // Transform cascade is internal in d3.chart
-      // perform transform by calling draw with all layers and attachments removed
-      // with fake layer to capture transformed data
-      var transformedData;
-      this.draw.call(_.extend(Object.create(d3.chart('Component').prototype), this, {
-        _layers: {
-          '_': {
-            draw: function(data) {
-              // Store transformed data
-              transformedData = data;
-            }
-          }
-        },
-        _attached: {}
-      }), data);
-
-      // Save transformed state to skip in draw
-      this._transformed = true;
-
-      return transformedData;
     }
   });
 
@@ -3066,11 +3010,6 @@
   */
   d3.chart('Component').extend('Axis', mixin(mixins.XY, {
     initialize: function() {
-      // Set scale once chart is ready to drawn
-      this.on('before:draw', function() {
-        this._setupScale(this.scale());
-      }.bind(this));
-
       // Create two axes (so that layout and transitions work)
       // 1. Display and transitions
       // 2. Layout (draw to get width, but separate so that transitions aren't affected)
@@ -3114,8 +3053,15 @@
 
             if (chart.delay())
               this.delay(chart.delay());
-            if (chart.duration())
+            
+            if (chart._skip_transition) {
+              this.duration(0);
+              chart._skip_transition = undefined;
+            }
+            else if (chart.duration()) {
               this.duration(chart.duration());
+            }
+            
             if (chart.ease())
               this.ease(chart.ease());
 
@@ -3127,7 +3073,7 @@
         }
       });
 
-      this.layer('LayoutAxis', this._layoutBase, {
+      this.layer('_LayoutAxis', this._layoutBase, {
         dataBind: function(data) {
           var chart = this.chart();
           chart._setupAxis(chart._layoutAxis);
@@ -3154,7 +3100,13 @@
       type: 'Function',
       set: function(value) {
         var scale = helpers.createScaleFromOptions(value);
-        this._setupScale(scale);
+
+        if (this.orientation() == 'vertical') {
+          this.yScale(scale.copy());
+        }
+        else {
+          this.xScale(scale.copy());
+        }
 
         return {
           override: scale
@@ -3166,6 +3118,12 @@
       defaultValue: 'bottom',
       validate: function(value) {
         return _.contains(['top', 'right', 'bottom', 'left', 'x0', 'y0'], value);
+      },
+      set: function() {
+        // Update scale -> xScale/yScale when position changes
+        if (this.scale()) {
+          this.scale(this.scale());
+        }
       }
     }),
 
@@ -3215,6 +3173,12 @@
         };
 
         return byPosition[this.position()];
+      },
+      set: function() {
+        // Update scale -> xScale/yScale when orientation changes
+        if (this.scale()) {
+          this.scale(this.scale());
+        }
       }
     }),
     type: property('type'),
@@ -3227,17 +3191,38 @@
     tickPadding: property('tickPadding', {type: 'Function'}),
     tickFormat: property('tickFormat', {type: 'Function'}),
 
-    layoutLayers: ['LayoutAxis'],
     getLayout: function(data) {
-      // Make layout axis visible for width calculations in Firefox
+      // 1. Get previous values to restore after draw for proper transitions
+      var state = this.getState();
+      
+      // 2. Draw with current values
+      this.draw(data);
+
+      // 3. Calculate layout
+      // (make layout axis visible for width calculations in Firefox)
       this._layoutBase.attr('style', 'display: block;');
-
-      // Get label overhang to use as label width (after default layout/draw)
-      var layout = d3.chart('Component').prototype.getLayout.apply(this, arguments);
+      
       var labelOverhang = this._getLabelOverhang();
-
-      // Hide layout axis now that calculations are complete
+      
       this._layoutBase.attr('style', 'display: none;');
+
+      // 4. Draw with previous values
+      if (this._previous_raw_data) {
+        this.setState(_.extend(state.previous, {duration: 0}));
+        
+        this.draw(this._previous_raw_data);
+
+        // 5. Restore current values
+        this.setState(state.current);
+      }
+      else {
+        // Skip transition after layout
+        // (Can transition from unexpected state)
+        this._skip_transition = true;
+      }
+
+      // Store raw data for future layout
+      this._previous_raw_data = data;
 
       var position = this.position();
       if (position == 'x0')
@@ -3256,17 +3241,28 @@
       return;
     },
 
-    _setupScale: function(scale) {
-      if (scale) {
-        if (this.orientation() == 'vertical') {
-          mixins.XY.setYScaleRange.call(this, scale);
-          this.xScale(helpers.createScaleFromOptions()).yScale(scale);
+    getState: function() {
+      return {
+        previous: {
+          scale: this.scale.previous,
+          xScale: this.xScale.previous,
+          yScale: this.yScale.previous,
+          duration: this.duration.previous
+        },
+        current: {
+          scale: this.scale(),
+          xScale: this.xScale(),
+          yScale: this.yScale(),
+          duration: this.duration()
         }
-        else {
-          mixins.XY.setXScaleRange.call(this, scale);
-          this.xScale(scale).yScale(helpers.createScaleFromOptions());
-        }
-      }
+      };
+    },
+    setState: function(state) {
+      this
+        .xScale(state.xScale)
+        .yScale(state.yScale)
+        .scale(state.scale)
+        .duration(state.duration);
     },
 
     _setupAxis: function(axis) {
@@ -3323,16 +3319,7 @@
     AxisValues
     Axis component for (key,value) series data
   */
-  d3.chart('Axis').extend('AxisValues', mixin(mixins.Values, {
-    setScaleRange: function(scale) {
-      if (this.orientation() == 'vertical') {
-        mixins.Values.setYScaleRange.call(this, scale);
-      }
-      else {
-        mixins.Values.setXScaleRange.call(this, scale);
-      }
-    }
-  }));
+  d3.chart('Axis').extend('AxisValues', mixin(mixins.Values));
   
 })(d3, d3.chart.helpers, d3.chart.mixins);
 
