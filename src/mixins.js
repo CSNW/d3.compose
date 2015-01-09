@@ -161,10 +161,8 @@
     }),
 
     initialize: function() {
-      // Set scale range once chart has been rendered
-      // TODO Better event than change:data
-      this.on('change:data', this.setScales.bind(this));
-      this.setScales();
+      // Set scale ranges once chart is ready to be rendered
+      this.on('before:draw', this.setScales.bind(this));
     },
 
     x: di(function(chart, d, i) {

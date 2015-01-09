@@ -65,15 +65,22 @@
       (Override for more specific sizing in layout calculations)
 
       - skipLayout: Skip component during layout calculations and positioning
-      - layoutLayers: Use to specify array of specific layers to draw during layout
+      - prepareLayout: perform any layout preparation required (default is draw)
       - getLayout: return position, width, and height for layout
       - setLayout: use x, y, and options {height, width} for layout
     */
     skipLayout: false,
-    layoutLayers: undefined,
-    getLayout: function(data) {
-      this._layoutDraw(data);
 
+    prepareLayout: function(data) {
+      // Note: By default, components are double-drawn
+      //       this may cause issues with transitions
+      //       override prepareLayout to adjust this behavior
+      this.draw(data);
+    },
+
+    getLayout: function(data) {
+      this.prepareLayout(data);
+      
       var margins = this.margins();
       return {
         position: this.position(),
@@ -91,67 +98,6 @@
       this.base.attr('transform', helpers.transform.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
-    },
-
-    draw: function(data) {
-      // If data has been transformed, don't re-transform
-      var context = this;
-
-      if (this._transformed) {
-        // Remove prototype chain and transform from context
-        // and instead pass in transformed data (stored from _layoutDraw)
-        var transformedData = this.data();
-        context = _.extend(Object.create(d3.chart('Component').prototype), this, {
-          transform: function(data) {
-            return transformedData;
-          }
-        });
-
-        this._transformed = false;
-      }
-
-      return d3.chart('Base').prototype.draw.apply(context, arguments);
-    },
-
-    _layoutDraw: function(data) {
-      // Transform data for layout
-      // required for selective layers or all layers
-      // (retains transform so that it only happens once per layout + draw)
-      data = this._transform(data);
-
-      if (this.layoutLayers && this.layoutLayers.length) {
-        // If only certain layers are needed for layer,
-        // perform partial draw that only draws those layers
-        _.each(this.layoutLayers, function(layerName) {
-          this.layer(layerName).draw(data);
-        }, this);
-      }
-      else {
-        this.draw(data);
-      }
-    },
-
-    _transform: function(data) {
-      // Transform cascade is internal in d3.chart
-      // perform transform by calling draw with all layers and attachments removed
-      // with fake layer to capture transformed data
-      var transformedData;
-      this.draw.call(_.extend(Object.create(d3.chart('Component').prototype), this, {
-        _layers: {
-          '_': {
-            draw: function(data) {
-              // Store transformed data
-              transformedData = data;
-            }
-          }
-        },
-        _attached: {}
-      }), data);
-
-      // Save transformed state to skip in draw
-      this._transformed = true;
-
-      return transformedData;
     }
   });
 
