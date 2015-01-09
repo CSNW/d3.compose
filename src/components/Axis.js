@@ -303,10 +303,6 @@
       }, this);
     },
 
-    _layoutDraw: function(data) {
-      this.draw(data);
-    },
-
     _getLabelOverhang: function() {
       // TODO Look into overhang relative to chartBase (for x0, y0)
       var overhangs = {width: [0], height: [0]};
