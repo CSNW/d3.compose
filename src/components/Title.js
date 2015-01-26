@@ -17,7 +17,6 @@
 
       this.layer('Title', this.base.append('g').classed('chart-title', true), {
         dataBind: function(data) {
-          // TODO Look into databound titles
           return this.selectAll('text')
             .data([0]);
         },
@@ -30,7 +29,7 @@
             this
               .attr('transform', chart.transformation())
               .attr('style', chart.style())
-              .attr('alignment-baseline', 'middle')
+              // .attr('alignment-baseline', 'middle')
               .attr('text-anchor', 'middle')
               .attr('class', chart.options()['class'])
               .text(chart.text());
