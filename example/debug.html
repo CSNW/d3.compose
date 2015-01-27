@@ -166,11 +166,10 @@
         x: {domain: [0, 50]},
         y: {domain: [0, 200]}
       };
-
+      
       return {
         charts: {
           line: {type: 'Line', data: values, xScale: scales.x, yScale: scales.y, labels: true},
-          labels: {type: 'Labels', handleCollisions: true}
         },
         axes: {
           x: {scale: scales.x, position: 'top', title: 'Howdy'},
@@ -211,7 +210,6 @@
         return {
           charts: {
             line: {type: 'Line', data: values, xScale: scales.x, yScale: scales.y, labels: true},
-            labels: {type: 'Labels', handleCollisions: true}
           },
           axes: {
             x: {scale: scales.x, position: 'top', title: 'Howdy'},

@@ -7,7 +7,7 @@
     Line
     (x,y) line graph
   */
-  d3.chart('SeriesChart').extend('Line', mixin(mixins.XYSeries, mixins.LabelsSeries, {
+  d3.chart('SeriesChart').extend('Line', mixin(mixins.XYSeries, mixins.XYLabels, {
     initialize: function() {
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
@@ -53,6 +53,8 @@
           }
         }
       });
+
+      this.attachLabels();
     },
     lines: property('lines', {defaultValue: {}}),
     delay: property('delay', {type: 'Function'}),

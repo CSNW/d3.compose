@@ -63,6 +63,10 @@
           series.enter()
             .append('g')
             .attr('class', chart.seriesClass);
+          
+          series.exit()
+            .remove();
+          
           series.chart = function() { return chart; };
 
           return dataBind.call(series, chart.seriesValues);
@@ -87,6 +91,11 @@
     - yMax {Number}
   */
   var XY = {
+    initialize: function() {
+      // Set scale ranges once chart is ready to be rendered
+      this.on('before:draw', this.setScales.bind(this));
+    },
+    
     isXY: true,
 
     xKey: property('xKey', {defaultValue: 'x'}),
@@ -159,11 +168,6 @@
         return +valueOrDefault(value, max);
       }
     }),
-
-    initialize: function() {
-      // Set scale ranges once chart is ready to be rendered
-      this.on('before:draw', this.setScales.bind(this));
-    },
 
     x: di(function(chart, d, i) {
       return +chart.xScale()(chart.xValue.call(this, d, i));
