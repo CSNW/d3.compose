@@ -320,7 +320,7 @@
   };
 
   /**
-    mixins for handling labels in charts
+    mixin for handling labels in charts
 
     Properties:
     - [labels] {Object}
@@ -328,193 +328,35 @@
     - [labelPosition = 'top'] {String} Label position (top, right, bottom, left)
     - [labelOffset = 0] {Number|Object} Label offset (distance or {x, y})
   */
-  var Labels = {
-    labels: property('labels', {
-      defaultValue: {},
-      set: function(options) {
-        if (_.isBoolean(options))
-          options = {display: options};
-        else if (_.isString(options))
-          options = {display: options == 'display' || options == 'show'}; 
-        else if (options && _.isUndefined(options.display))
-          options.display = true;
+  var XYLabels = {
+    attachLabels: function() {
+      var options = this.labels();
+      var Labels = d3.chart(options.type);
+      var base = this.base.append('g').attr('class', 'chart-labels');
+      var labels = this._labels = new Labels(base, options);
 
-        _.each(options, function(value, key) {
-          // Capitalize and append "label" and then set option
-          var labelOption = 'label' + helpers.capitalize(key);
+      // Proxy x and y to parent chart
+      labels.x = this.x.bind(this);
+      labels.y = this.y.bind(this);
 
-          if (this[labelOption] && this[labelOption].isProperty && this[labelOption].setFromOptions)
-            this[labelOption](value, {silent: true});
-        }, this);
-      }
-    }),
-
-    labelDisplay: property('labelDisplay', {defaultValue: false}),
-    labelFormat: property('labelFormat', {
-      type: 'Function',
-      set: function(value) {
-        if (_.isString(value)) {
-          return {
-            override: d3.format(value)
-          };
-        }
-      }
-    }),
-    labelPosition: property('labelPosition', {
-      validate: function(value) {
-        return _.contains(['top', 'right', 'bottom', 'left'], value);
-      }
-    }),
-    labelOffset: property('labelOffset', {
-      get: function(offset) {
-        if (_.isNumber(offset)) {
-          offset = {
-            top: {x: 0, y: -offset},
-            right: {x: offset, y: 0},
-            bottom: {x: 0, y: offset},
-            left: {x: -offset, y: 0}
-          }[this.labelPosition()];
-
-          if (!offset) {
-            offset = {x: 0, y: 0};
-          }
-        }
-
-        return offset;
-      }
-    }),
-    labelPadding: property('labelPadding'),
-    labelAnchor: property('labelAnchor', {
-      defaultValue: function() {
-        var position = this.labelPosition();
-        if (!_.isUndefined(position)) {
-          if (position == 'right')
-            return 'start';
-          else if (position == 'left')
-            return 'end';
-          else
-            return 'middle';
-        }
-      },
-      validate: function(value) {
-        return _.contains(['start', 'middle', 'end'], value);
-      }
-    }),
-    labelAlignment: property('labelAlignment', {
-      defaultValue: function() {
-        var position = this.labelPosition();
-        if (!_.isUndefined(position)) {
-          var alignmentByPosition = {
-            'top': 'bottom',
-            'right': 'middle',
-            'bottom': 'top',
-            'left': 'middle'
-          };
-
-          return alignmentByPosition[position];
-        }        
-      },
-      validate: function(value) {
-        return _.contains(['top', 'middle', 'bottom'], value);
-      }
-    }),
-    labelStyle: property('labelStyle', {defaultValue: {}}),
-
-    labelText: di(function(chart, d, i) {
-      var value = chart.yValue.call(this, d, i);
-      return chart.labelFormat() ? chart.labelFormat()(value) : value;
-    }),
-
-    _getLabels: function() {
-      var labels = [];
-
-      if (this.labelDisplay()) {
-        labels.push({
-          // Leave series information blank (labels only)
-          labels: _.map(this.data(), function(point, index) {
-            return {
-              key: this.keyValue(point, index),
-              coordinates: {
-                x: this.x(point, index),
-                y: this.y(point, index)
-              },
-              text: this.labelText(point, index),
-              offset: this.labelOffset(),
-              padding: this.labelPadding(),
-              anchor: this.labelAnchor(),
-              alignment: this.labelAlignment(),
-              'class': point['class'],
-              style: _.extend({}, this.labelStyle(), point['labelStyle']),
-              values: point,
-              index: index,
-            };
-          }, this)
-        });
-      }      
-
-      return labels;
+      this.on('draw', function(data) {
+        labels.options(this.labels(), {silent: true});
+        labels.draw(options.data || data);
+      }.bind(this));
     },
 
-    _convertPointToLabel: function(point) {
-      return {
-        key: this.keyValue(point.values, point.index),
-        coordinates: point.coordinates,
-        text: this.labelText(point.values, point.index),
-        offset: this.labelOffset(),
-        padding: this.labelPadding(),
-        anchor: this.labelAnchor(),
-        alignment: this.labelAlignment(),
-        'class': point.values['class'],
-        style: _.extend({}, this.labelStyle(), point['labelStyle']),
-        values: point.values,
-        index: point.index
-      };
-    }
-  };
+    labels: property('labels', {
+      get: function(value) {
+        if (_.isBoolean(value))
+          value = {display: value};
 
-  /**
-    mixins for handling labels in series charts
-
-    Dependencies: Labels
-  */
-  var LabelsSeries = {
-    _getLabels: function() {
-      var seriesLabels = [];
-
-      if (this.labelDisplay()) {
-        seriesLabels = _.compact(_.map(this.data(), function(series, seriesIndex) {
-          if (series.excludeFromLabels) return;
-
-          return {
-            key: series.key,
-            name: series.name,
-            'class': series['class'],
-            index: seriesIndex,
-            labels: _.map(series.values, function(point, pointIndex) {
-              return {
-                key: this.keyValue.call({_parentData: series}, point, pointIndex),
-                coordinates: {
-                  x: this.x.call({_parentData: series}, point, pointIndex),
-                  y: this.y.call({_parentData: series}, point, pointIndex)
-                },
-                text: this.labelText.call({_parentData: series}, point, pointIndex),
-                offset: this.labelOffset(),
-                padding: this.labelPadding(),
-                anchor: this.labelAnchor(),
-                alignment: this.labelAlignment(),
-                'class': point['class'],
-                style: _.extend({}, this.labelStyle(), point['labelStyle']),
-                values: point,
-                index: pointIndex,
-              };
-            }, this)
-          };
-        }, this));
+        return _.defaults({}, value, {
+          display: true,
+          type: 'XYLabels'
+        });
       }
-      
-      return seriesLabels;
-    }
-  };
+    })
+  };  
 
   // Expose mixins
   d3.chart.mixins = _.extend(d3.chart.mixins || {}, {
@@ -523,8 +365,7 @@
     XYSeries: _.extend({}, Series, XY, XYSeries),
     Values: _.extend({}, XY, Values),
     ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries),
-    Labels: Labels,
-    LabelsSeries: _.extend({}, Labels, LabelsSeries)
+    XYLabels: XYLabels
   });
 
 })(d3, _, d3.chart.helpers);

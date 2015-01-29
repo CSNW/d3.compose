@@ -25,39 +25,6 @@
     -> direct for Labels chart, otherwise indirect
   */
 
-  // TODO Series will already be defined
-  var Series = mixins.Series;
-
-  mixins.XYLabels = {
-    attachLabels: function() {
-      var options = this.labels();
-      var Labels = d3.chart(options.type);
-      var base = this.base.append('g').attr('class', 'chart-labels');
-      var labels = this._labels = new Labels(base, options);
-
-      // Proxy x and y to parent chart
-      labels.x = this.x.bind(this);
-      labels.y = this.y.bind(this);
-
-      this.on('draw', function(data) {
-        labels.options(this.labels(), {silent: true});
-        labels.draw(options.data || data);
-      }.bind(this));
-    },
-
-    labels: property('labels', {
-      get: function(value) {
-        if (_.isBoolean(value))
-          value = {display: value};
-
-        return _.defaults({}, value, {
-          display: true,
-          type: 'XYLabels'
-        });
-      }
-    })
-  };
-
   /**
     Labels
 
