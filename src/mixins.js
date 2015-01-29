@@ -336,8 +336,8 @@
       var labels = this._labels = new Labels(base, options);
 
       // Proxy x and y to parent chart
-      labels.x = this.x.bind(this);
-      labels.y = this.y.bind(this);
+      labels.x = this.x;
+      labels.y = this.y;
 
       this.on('draw', function(data) {
         labels.options(this.labels(), {silent: true});
@@ -351,7 +351,7 @@
           value = {display: value};
 
         return _.defaults({}, value, {
-          display: true,
+          display: false,
           type: 'XYLabels'
         });
       }
