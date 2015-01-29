@@ -273,7 +273,7 @@
       this.attach(id, item);
 
       if (item && _.isFunction(item.trigger)) {
-        item.trigger('attached');
+        item.trigger('attach');
       }
     },
 
@@ -283,7 +283,7 @@
       delete this._attached[id];
 
       if (item && _.isFunction(item.trigger)) {
-        item.trigger('detached');
+        item.trigger('detach');
       }
     },
 

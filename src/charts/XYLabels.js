@@ -4,27 +4,6 @@
   var di = helpers.di;
   var translate = helpers.transform.translate;
 
-  /*
-    Direct options:
-    data
-    offset (per label or general?)
-    format
-    position
-    anchor (start, middle, end)
-    alignment (top, middle, bottom)
-    [padding]
-
-    Data options:
-    (x, y)
-    label
-    class
-
-    From parent:
-    delay, duration, ease
-    x, y (directly or indirectly?)
-    -> direct for Labels chart, otherwise indirect
-  */
-
   /**
     Labels
 
@@ -36,8 +15,17 @@
     - anchor (start, middle, end)
     - alignment (top, middle, bottom)
   */
-  d3.chart('Chart').extend('XYLabels', mixin(mixins.XYSeries, {
+  d3.chart('Chart').extend('XYLabels', mixin(mixins.XYSeries, mixins.XYHover, {
     initialize: function() {
+      // Proxy attach to parent for hover
+      var parent = this.options().parent;
+      if (parent) {
+        parent.on('attach', function() {
+          this.container = parent.container;
+          this.trigger('attach');
+        }.bind(this));
+      }
+
       this.seriesLayer('Labels', this.base, {
         dataBind: function(data) {
           return this.selectAll('g')
@@ -217,6 +205,52 @@
 
     transitionLabels: function(selection) {
       selection.attr('opacity', 1);
+    },
+
+    onMouseEnter: function(position) {
+      var points = this.getClosestPoints(position.chart);
+
+      this.removeHighlight();
+      _.each(points, function(series) {
+        if (series && series.length) {
+          var closest = series[0];
+        
+          if (closest.distance < 50) {
+            this.highlightLabel(closest);
+          }  
+        }
+      }, this);
+    },
+    onMouseMove: function(position) {
+      var points = this.getClosestPoints(position.chart);
+
+      this.removeHighlight();
+      _.each(points, function(series) {
+        if (series && series.length) {
+          var closest = series[0];
+        
+          if (closest.distance < 50) {
+            this.highlightLabel(closest);
+          }  
+        }
+      }, this);
+    },
+    onMouseLeave: function() {
+      this.removeHighlight();
+    },
+
+    highlightLabel: function(point) {
+      var label = this.base.selectAll('g.chart-series')
+        .selectAll('g')[point.j][point.i];
+
+      if (label)
+        d3.select(label).classed('highlight', true);
+    },
+    removeHighlight: function() {
+      this.base
+        .selectAll('g')
+        .selectAll('g')
+        .classed('highlight', false);
     }
   }));
 

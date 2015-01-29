@@ -321,16 +321,15 @@
 
   /**
     mixin for handling labels in charts
-
-    Properties:
-    - [labels] {Object}
-    - [labelFormat] {String|Function}
-    - [labelPosition = 'top'] {String} Label position (top, right, bottom, left)
-    - [labelOffset = 0] {Number|Object} Label offset (distance or {x, y})
+  
+    - attachLabels: call during chart initialization to add labels to chart
+    - labels: properties passed directly to labels chart
   */
   var XYLabels = {
     attachLabels: function() {
       var options = this.labels();
+      options.parent = this;
+
       var Labels = d3.chart(options.type);
       var base = this.base.append('g').attr('class', 'chart-labels');
       var labels = this._labels = new Labels(base, options);
@@ -356,7 +355,102 @@
         });
       }
     })
-  };  
+  };
+
+  var Hover = {
+    initialize: function() {
+      this.on('attach', function() {
+        if (this.container) {
+          this.container.on('enter:mouse', this.onMouseEnter.bind(this));
+          this.container.on('move:mouse', this.onMouseMove.bind(this));
+          this.container.on('leave:mouse', this.onMouseLeave.bind(this));
+        }
+      }.bind(this));
+    },
+
+    // Override with hover implementation
+    onMouseEnter: function(position) {},
+    onMouseMove: function(position) {},
+    onMouseLeave: function() {}
+  };
+
+  var XYHover = {
+    initialize: function() {
+      Hover.initialize.apply(this, arguments);
+      this.on('before:draw', function() {
+        // Reset points on draw
+        this._points = undefined;
+      });
+    },
+
+    getPoint: di(function(chart, d, i, j) {
+      return {
+        x: chart.x.call(this, d, i, j),
+        y: chart.y.call(this, d, i, j),
+        d: d, i: i, j: j
+      };
+    }),
+
+    getPoints: function() {
+      var data = this.data();
+      if (!this._points && data) {
+        if (helpers.isSeriesData(data)) {
+          // Get all points for each series
+          this._points = _.map(data, function(series, j) {
+            return getPointsForValues.call(this, series.values, j, {_parentData: series});
+          }, this);
+        }
+        else {
+          this._points = getPointsForValues.call(this, data, 0);
+        }
+      }
+
+      return this._points;
+
+      function getPointsForValues(values, seriesIndex, element) {
+        var points = _.map(values, function(d, i) {
+          return this.getPoint.call(element, d, i, seriesIndex);
+        }, this);
+
+        // Sort by x
+        points.sort(function(a, b) {
+          return a.x - b.x;
+        });
+
+        return points;
+      }
+    },
+
+    getClosestPoints: function(position) {
+      var points = this.getPoints();
+      var closest = [];
+
+      if (points.length && _.isArray(points[0])) {
+        // Series data
+        _.each(points, function(series) {
+          closest.push(sortByDistance(series, position));
+        });
+      }
+      else {
+        closest.push(sortByDistance(points, position));
+      }
+      
+      return closest;
+
+      function sortByDistance(values, position) {
+        var byDistance = _.map(values, function(point) {
+          point.distance = getDistance(point, position);
+          return point;
+        });
+
+        return _.sortBy(byDistance, 'distance'); 
+      }
+
+      function getDistance(a, b) {
+        return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+      }
+    }    
+  };
 
   // Expose mixins
   d3.chart.mixins = _.extend(d3.chart.mixins || {}, {
@@ -365,7 +459,9 @@
     XYSeries: _.extend({}, Series, XY, XYSeries),
     Values: _.extend({}, XY, Values),
     ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries),
-    XYLabels: XYLabels
+    XYLabels: XYLabels,
+    Hover: Hover,
+    XYHover: _.extend({}, Hover, XYHover)
   });
 
 })(d3, _, d3.chart.helpers);
