@@ -1,5 +1,194 @@
 ---
 layout: default
-title: Home
+title: Docs
 ---
-<h1>d3.chart.multi</h1>
+<div id="sidebar" class="interface">
+
+  <a class="toc_title" href="#">
+    d3.chart.multi <span class="version">({{ site.version }})</span>
+  </a>
+  <ul class="toc_section">
+    <li>&raquo; <a href="{{ site.github }}">GitHub Repository</a></li>
+  </ul>
+
+  <a class="toc_title" href="#introduction">
+    Introduction
+  </a>
+
+  <a class="toc_title" href="#">
+    TODO
+  </a>
+  <ul class="toc_section">
+    <li>– <a href="#">TODO</a></li>
+  </ul>
+
+  <!-- <a class="toc_title" href="#Events">
+    Events
+  </a>
+  <ul class="toc_section">
+    <li>– <a href="#Events-on">on</a></li>
+    <li>– <a href="#Events-off">off</a></li>
+    <li>– <a href="#Events-trigger">trigger</a></li>
+    <li>– <a href="#Events-once">once</a></li>
+    <li>– <a href="#Events-listenTo">listenTo</a></li>
+    <li>– <a href="#Events-stopListening">stopListening</a></li>
+    <li>– <a href="#Events-listenToOnce">listenToOnce</a></li>
+    <li>- <a href="#Events-catalog"><b>Catalog of Built-in Events</b></a></li>
+  </ul> -->
+
+  <a class="toc_title" href="#changelog">
+    Change Log
+  </a>
+
+</div>
+
+<div class="container">
+  <p>
+    About...
+  </p>
+
+  <h2 id="downloads">
+    Downloads &amp; Dependencies
+    <span style="padding-left: 7px; font-size:11px; font-weight: normal;" class="interface">(Right-click, and use "Save As")</span>
+  </h2>
+
+  <table>
+    <tr><td>Downloads...</td></tr>
+    <!-- <tr>
+      <td><a class="punch" href="backbone.js">Development Version (1.1.2)</a></td>
+      <td class="text"><i>60kb, Full source, tons of comments</i></td>
+    </tr>
+    <tr>
+      <td><a class="punch" href="backbone-min.js">Production Version (1.1.2)</a></td>
+      <td class="text" style="line-height: 16px;">
+        <i>6.5kb, Packed and gzipped</i><br />
+        <small>(<a href="backbone-min.map">Source Map</a>)</small>
+      </td>
+    </tr>
+    <tr>
+      <td><a class="punch" href="https://raw.github.com/jashkenas/backbone/master/backbone.js">Edge Version (master)</a></td>
+      <td>
+        <i>Unreleased, use at your own risk</i>
+        <a class="travis-badge" href="https://travis-ci.org/jashkenas/backbone">
+          <img src="https://travis-ci.org/jashkenas/backbone.png" />
+        </a>
+      </td>
+    </tr> -->
+  </table>
+
+  <p>
+    Dependencies...
+    <!-- Backbone's only hard dependency is
+    <a href="http://underscorejs.org/">Underscore.js</a> <small>( >= 1.5.0)</small>.
+    For RESTful persistence, history support via <a href="#Router">Backbone.Router</a>
+    and DOM manipulation with <a href="#View">Backbone.View</a>, include
+    <b><a href="http://jquery.com">jQuery</a></b>, and
+    <b><a href="https://github.com/douglascrockford/JSON-js">json2.js</a></b> for older
+    Internet Explorer support.
+    <i>(Mimics of the Underscore and jQuery APIs, such as
+    <a href="http://lodash.com">Lo-Dash</a> and
+    <a href="http://zeptojs.com">Zepto</a>, will
+    also tend to work, with varying degrees of compatibility.)</i> -->
+  </p>
+
+  <h2 id="introduction">Introduction</h2>
+
+  <p>
+    TODO
+  </p>
+
+  <h2>TODO</h2>
+  <!-- <h2 id="Events">Backbone.Events</h2>
+
+  <p>
+    <b>Events</b> is a module that can be mixed in to any object, giving the
+    object the ability to bind and trigger custom named events. Events do not
+    have to be declared before they are bound, and may take passed arguments.
+    For example:
+  </p>
+
+<pre class="runnable">
+var object = {};
+
+_.extend(object, Backbone.Events);
+
+object.on("alert", function(msg) {
+alert("Triggered " + msg);
+});
+
+object.trigger("alert", "an event");
+</pre>
+
+  <p>
+    For example, to make a handy event dispatcher that can coordinate events
+    among different areas of your application: <tt>var dispatcher = _.clone(Backbone.Events)</tt>
+  </p>
+
+  <p id="Events-on">
+    <b class="header">on</b><code>object.on(event, callback, [context])</code><span class="alias">Alias: bind</span>
+    <br />
+    Bind a <b>callback</b> function to an object. The callback will be invoked
+    whenever the <b>event</b> is fired.
+    If you have a large number of different events on a page, the convention is to use colons to
+    namespace them: <tt>"poll:start"</tt>, or <tt>"change:selection"</tt>.
+    The event string may also be a space-delimited list of several events...
+  </p>
+
+<pre>
+book.on("change:title change:author", ...);
+</pre>
+
+  <p>
+    To supply a <b>context</b> value for <tt>this</tt> when the callback is invoked,
+    pass the optional third argument: <tt>model.on('change', this.render, this)</tt>
+  </p>
+
+  <p>
+    Callbacks bound to the special
+    <tt>"all"</tt> event will be triggered when any event occurs, and are passed
+    the name of the event as the first argument. For example, to proxy all events
+    from one object to another:
+  </p>
+
+<pre>
+proxy.on("all", function(eventName) {
+object.trigger(eventName);
+});
+</pre>
+
+  <p>
+    All Backbone event methods also support an event map syntax, as an alternative
+    to positional arguments:
+  </p>
+
+<pre>
+book.on({
+"change:title": titleView.update,
+"change:author": authorPane.update,
+"destroy": bookView.remove
+});
+</pre> -->
+
+  <h2 id="changelog">Change Log</h2>
+
+  <!-- <b class="header">1.1.2</b> &mdash; <small><i>Feb. 20, 2014</i></small> 
+  &mdash; <a href="https://github.com/jashkenas/backbone/compare/1.1.1...1.1.2">Diff</a> 
+  &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/jashkenas/backbone/1.1.2/index.html">Docs</a>
+  <br />
+  <ul style="margin-top: 5px;">
+    <li>
+      Backbone no longer tries to require jQuery in Node/CommonJS environments, 
+      for better compatibility with folks using Browserify.
+      If you'd like to have Backbone use jQuery from Node, assign it like so:
+      <tt>Backbone.$ = require('jquery');</tt>
+    </li>
+    <li>
+      Bugfix for route parameters with newlines in them.
+    </li>
+  </ul> -->
+
+  <p>
+    Footer...
+  </p>
+
+</div>
