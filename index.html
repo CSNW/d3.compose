@@ -8,33 +8,154 @@ title: Docs
     d3.chart.multi <span class="version">({{ site.version }})</span>
   </a>
   <ul class="toc_section">
-    <li>&raquo; <a href="{{ site.github }}">GitHub Repository</a></li>
+    <li>&raquo; <a href="{{ site.github }}" target="_blank">GitHub Repository</a></li>
   </ul>
 
   <a class="toc_title" href="#introduction">
     Introduction
   </a>
 
-  <a class="toc_title" href="#">
-    TODO
+  <a class="toc_title" href="#/Multi/">
+    Multi
   </a>
   <ul class="toc_section">
-    <li>– <a href="#">TODO</a></li>
+    <li>– <a href="#/Multi/options">options</a></li>
+    <li>– <a href="#/Multi/draw">draw</a></li>
+    <li>– <a href="#/Multi/charts">charts</a></li>
+    <li>– <a href="#/Multi/components">components</a></li>
+    <li>– <a href="#/Multi/title">title</a></li>
+    <li>– <a href="#/Multi/axes">axes</a></li>
+    <li>– <a href="#/Multi/legend">legend</a></li>
+    <li>– <a href="#/Multi/margins">margins</a></li>
+    <li>– <a href="#/Multi/width">width</a></li>
+    <li>– <a href="#/Multi/height">height</a></li>
+    <li>– <a href="#/Multi/events">events</a></li>
   </ul>
 
-  <!-- <a class="toc_title" href="#Events">
-    Events
+  <a class="toc_title" href="#/Line/">
+    Line
   </a>
   <ul class="toc_section">
-    <li>– <a href="#Events-on">on</a></li>
-    <li>– <a href="#Events-off">off</a></li>
-    <li>– <a href="#Events-trigger">trigger</a></li>
-    <li>– <a href="#Events-once">once</a></li>
-    <li>– <a href="#Events-listenTo">listenTo</a></li>
-    <li>– <a href="#Events-stopListening">stopListening</a></li>
-    <li>– <a href="#Events-listenToOnce">listenToOnce</a></li>
-    <li>- <a href="#Events-catalog"><b>Catalog of Built-in Events</b></a></li>
-  </ul> -->
+    <li>- <a href="#/Line/data">data</a></li>
+    <li>- <a href="#/Line/transition">transition</a></li>
+    <li>- <a href="#/Line/XY">XY</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/Bars/">
+    Bars
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/Bars/data">data</a></li>
+    <li>- <a href="#/Bars/displayAdjacent">displayAdjacent</a></li>
+    <li>- <a href="#/Bars/itemPadding">itemPadding</a></li>
+    <li>- <a href="#/Bars/transition">transition</a></li>
+    <li>- <a href="#/Bars/XY">XY</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/Labels/">
+    Labels
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/Labels/labels">labels</a></li>
+    <li>- <a href="#/Labels/format">format</a></li>
+    <li>- <a href="#/Labels/position">position</a></li>
+    <li>- <a href="#/Labels/offset">offset</a></li>
+    <li>- <a href="#/Labels/padding">padding</a></li>
+    <li>- <a href="#/Labels/anchor">anchor</a></li>
+    <li>- <a href="#/Labels/alignment">alignment</a></li>
+    <li>- <a href="#/Labels/handleCollisions">handleCollisions</a></li>
+    <li>- <a href="#/Labels/transition">transition</a></li>
+    <li>- <a href="#/Labels/XY">XY</a></li>
+    <li>- <a href="#/Labels/extending">extending</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/Axis/">
+    Axis
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/Axis/data">data</a></li>
+    <li>- <a href="#/Axis/scale">scale</a></li>
+    <li>- <a href="#/Axis/position">position</a></li>
+    <li>- <a href="#/Axis/translation">translation</a></li>
+    <li>- <a href="#/Axis/orient">orient</a></li>
+    <li>- <a href="#/Axis/orientation">orientation</a></li>
+    <li>- <a href="#/Axis/axis">axis</a></li>
+    <li>- <a href="#/Axis/transition">transition</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/Legend/">
+    Legend
+  </a>
+
+  <a class="toc_title" href="#/Title/">
+    Title
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/Title/text">text</a></li>
+    <li>- <a href="#/Title/rotation">rotation</a></li>
+    <li>- <a href="#/Title/position">position</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/Chart/">
+    Chart
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/Chart/extending">extending</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/SeriesChart/">
+    SeriesChart
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/SeriesChart/extending">extending</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/Component/">
+    Component
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/Component/extending">extending</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/helpers/">
+    helpers
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/helpers/property">property</a></li>
+    <li>- <a href="#/helpers/property.extensions">property.extensions</a></li>
+    <li>- <a href="#/helpers/valueOrDefault">valueOrDefault</a></li>
+    <li>- <a href="#/helpers/dimensions">dimensions</a></li>
+    <li>- <a href="#/helpers/transform.translate">transform.translate</a></li>
+    <li>- <a href="#/helpers/transform.rotate">transform.rotate</a></li>
+    <li>- <a href="#/helpers/isSeriesData">isSeriesData</a></li>
+    <li>- <a href="#/helpers/max">max</a></li>
+    <li>- <a href="#/helpers/min">min</a></li>
+    <li>- <a href="#/helpers/createScaleFromOptions">createScaleFromOptions</a></li>
+    <li>- <a href="#/helpers/stack">stack</a></li>
+    <li>- <a href="#/helpers/style">style</a></li>
+    <li>- <a href="#/helpers/getValue">getValue</a></li>
+    <li>- <a href="#/helpers/capitalize">capitalize</a></li>
+    <li>- <a href="#/helpers/di">di</a></li>
+    <li>- <a href="#/helpers/bindDi">bindDi</a></li>
+    <li>- <a href="#/helpers/bindAllDi">bindAllDi</a></li>
+    <li>- <a href="#/helpers/log">log</a></li>
+    <li>- <a href="#/helpers/getParentData">getParentData</a></li>
+    <li>- <a href="#/helpers/resolveChart">resolveChart</a></li>
+    <li>- <a href="#/helpers/mixin">mixin</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/mixins/">
+    mixins
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/mixins/Series">Series</a></li>
+    <li>- <a href="#/mixins/XY">XY</a></li>
+    <li>- <a href="#/mixins/XYSeries">XYSeries</a></li>
+    <li>- <a href="#/mixins/Values">Values</a></li>
+    <li>- <a href="#/mixins/ValuesSeries">ValuesSeries</a></li>
+    <li>- <a href="#/mixins/Labels">Labels</a></li>
+    <li>- <a href="#/mixins/LabelsSeries">LabelsSeries</a></li>
+  </ul>
 
   <a class="toc_title" href="#changelog">
     Change Log
@@ -54,138 +175,483 @@ title: Docs
 
   <table>
     <tr><td>Downloads...</td></tr>
-    <!-- <tr>
-      <td><a class="punch" href="backbone.js">Development Version (1.1.2)</a></td>
-      <td class="text"><i>60kb, Full source, tons of comments</i></td>
+    <tr>
+      <td><a class="punch" href="d3.chart.multi.js">Development Version ({{ site.version }})</a></td>
+      <td class="text"><i>112kb, Full source with tons of comments</i></td>
     </tr>
     <tr>
-      <td><a class="punch" href="backbone-min.js">Production Version (1.1.2)</a></td>
+      <td><a class="punch" href="d3.chart.multi.min.js">Production Version ({{ site.version }})</a></td>
       <td class="text" style="line-height: 16px;">
-        <i>6.5kb, Packed and gzipped</i><br />
-        <small>(<a href="backbone-min.map">Source Map</a>)</small>
+        <i>11.7kb, Packed and gzipped</i><br>
+        <small>(<a href="d3.chart.multi.min.map">Source Map</a>)</small>
       </td>
     </tr>
     <tr>
-      <td><a class="punch" href="https://raw.github.com/jashkenas/backbone/master/backbone.js">Edge Version (master)</a></td>
+      <td><a class="punch" href="https://raw.github.com/CSNW/d3.chart.multi/master/dist/d3.chart.multi.js">Edge Version (master)</a></td>
       <td>
         <i>Unreleased, use at your own risk</i>
+        <!-- TODO
         <a class="travis-badge" href="https://travis-ci.org/jashkenas/backbone">
           <img src="https://travis-ci.org/jashkenas/backbone.png" />
         </a>
+        -->
       </td>
-    </tr> -->
+    </tr>
   </table>
 
   <p>
-    Dependencies...
-    <!-- Backbone's only hard dependency is
-    <a href="http://underscorejs.org/">Underscore.js</a> <small>( >= 1.5.0)</small>.
-    For RESTful persistence, history support via <a href="#Router">Backbone.Router</a>
-    and DOM manipulation with <a href="#View">Backbone.View</a>, include
-    <b><a href="http://jquery.com">jQuery</a></b>, and
-    <b><a href="https://github.com/douglascrockford/JSON-js">json2.js</a></b> for older
-    Internet Explorer support.
-    <i>(Mimics of the Underscore and jQuery APIs, such as
-    <a href="http://lodash.com">Lo-Dash</a> and
-    <a href="http://zeptojs.com">Zepto</a>, will
-    also tend to work, with varying degrees of compatibility.)</i> -->
+    d3.chart.multi depends on the following libraries:
+
+    <ul>
+      {% for dependency in site.dependencies %}
+        <li><a href="{{ dependency.link }}" target="_blank">{{ dependency.name }}</a> <small>({{ dependency.version }})</small></li>
+      {% endfor %}
+    </ul>
   </p>
+
+  <!-- 
+    Introduction
+    ============
+  -->
 
   <h2 id="introduction">Introduction</h2>
 
   <p>
-    TODO
+    d3.chart.multi introduction...
   </p>
 
-  <h2>TODO</h2>
-  <!-- <h2 id="Events">Backbone.Events</h2>
+  <!-- 
+    Multi
+    =====
+  -->
+
+  <h2 id="/Multi/">Multi</h2>
 
   <p>
-    <b>Events</b> is a module that can be mixed in to any object, giving the
-    object the ability to bind and trigger custom named events. Events do not
-    have to be declared before they are bound, and may take passed arguments.
-    For example:
+    Intro...
   </p>
 
-<pre class="runnable">
-var object = {};
+  <p id="/Multi/options">
+    <b class="header">options</b><code>chart.options()</code>
+  </p>
 
-_.extend(object, Backbone.Events);
+  <p id="/Multi/draw">
+    <b class="header">draw</b><code>chart.draw([data])</code>
+  </p>
 
-object.on("alert", function(msg) {
-alert("Triggered " + msg);
-});
+  <p id="/Multi/charts">
+    <b class="header">charts</b><code>chart.charts([values])</code>
+  </p>
 
-object.trigger("alert", "an event");
-</pre>
+  <p id="/Multi/components">
+    <b class="header">components</b><code>chart.components([values])</code>
+  </p>
+
+  <p id="/Multi/title">
+    <b class="header">title</b><code>chart.title([value])</code>
+  </p>
+
+  <p id="/Multi/axes">
+    <b class="header">axes</b><code>chart.axes([values])</code>
+  </p>
+
+  <p id="/Multi/legend">
+    <b class="header">legend</b><code>chart.legend([value])</code>
+  </p>
+
+  <p id="/Multi/margins">
+    <b class="header">margins</b><code>chart.margins([values])</code>
+  </p>
+
+  <p id="/Multi/width">
+    <b class="header">width</b><code>chart.width([value])</code>
+  </p>
+
+  <p id="/Multi/height">
+    <b class="header">height</b><code>chart.height([value])</code>
+  </p>
+
+  <p id="/Multi/events">
+    <b class="header">events</b>
+  </p>
+
+  <!-- 
+    Line
+    ====
+  -->
+
+  <h2 id="/Line/">Line</h2>
 
   <p>
-    For example, to make a handy event dispatcher that can coordinate events
-    among different areas of your application: <tt>var dispatcher = _.clone(Backbone.Events)</tt>
+    Intro...
   </p>
 
-  <p id="Events-on">
-    <b class="header">on</b><code>object.on(event, callback, [context])</code><span class="alias">Alias: bind</span>
-    <br />
-    Bind a <b>callback</b> function to an object. The callback will be invoked
-    whenever the <b>event</b> is fired.
-    If you have a large number of different events on a page, the convention is to use colons to
-    namespace them: <tt>"poll:start"</tt>, or <tt>"change:selection"</tt>.
-    The event string may also be a space-delimited list of several events...
+  <p id="/Line/data">
+    <b class="header">data</b><code>line.data([values])</code>
   </p>
 
-<pre>
-book.on("change:title change:author", ...);
-</pre>
+  <p id="/Line/transition">
+    <b class="header">transition</b>
+  </p>
+
+  <p id="/Line/XY">
+    <b class="header">XY</b>
+  </p>
+
+  <!-- 
+    Bars
+    ====
+  -->
+
+  <h2 id="/Bars/">Bars</h2>
 
   <p>
-    To supply a <b>context</b> value for <tt>this</tt> when the callback is invoked,
-    pass the optional third argument: <tt>model.on('change', this.render, this)</tt>
+    Intro...
   </p>
+
+  <p id="/Bars/data">
+    <b class="header">data</b><code>bars.data([values])</code>
+  </p>
+
+  <p id="/Bars/displayAdjacent">
+    <b class="header">displayAdjacent</b><code>bars.displayAdjacent([value])</code>
+  </p>
+
+  <p id="/Bars/itemPadding">
+    <b class="header">itemPadding</b><code>bars.itemPadding([value])</code>
+  </p>
+
+  <p id="/Bars/transition">
+    <b class="header">transition</b>
+  </p>
+
+  <p id="/Bars/XY">
+    <b class="header">XY</b>
+  </p>
+
+  <!-- 
+    Labels
+    ======
+  -->
+
+  <h2 id="/Labels/">Labels</h2>
 
   <p>
-    Callbacks bound to the special
-    <tt>"all"</tt> event will be triggered when any event occurs, and are passed
-    the name of the event as the first argument. For example, to proxy all events
-    from one object to another:
+    Intro...
   </p>
 
-<pre>
-proxy.on("all", function(eventName) {
-object.trigger(eventName);
-});
-</pre>
+  <p id="/Labels/labels">
+    <b class="header">labels</b><code>labels.labels([values])</code>
+  </p>
+
+  <p id="/Labels/format">
+    <b class="header">format</b><code>labels.format([value])</code>
+  </p>
+
+  <p id="/Labels/position">
+    <b class="header">position</b><code>labels.position([value])</code>
+  </p>
+
+  <p id="/Labels/offset">
+    <b class="header">offset</b><code>labels.offset([value])</code>
+  </p>
+
+  <p id="/Labels/padding">
+    <b class="header">padding</b><code>labels.padding([value])</code>
+  </p>
+
+  <p id="/Labels/anchor">
+    <b class="header">anchor</b><code>labels.anchor([value])</code>
+  </p>
+
+  <p id="/Labels/alignment">
+    <b class="header">alignment</b><code>labels.alignment([value])</code>
+  </p>
+
+  <p id="/Labels/handleCollisions">
+    <b class="header">handleCollisions</b><code>labels.handleCollisions([value])</code>
+  </p>
+
+  <p id="/Labels/transition">
+    <b class="header">transition</b>
+  </p>
+
+  <p id="/Labels/XY">
+    <b class="header">XY</b>
+  </p>
+
+  <p id="/Labels/extending">
+    <b class="header">extending</b>
+  </p>
+
+  <!-- 
+    Axis
+    ====
+  -->
+
+  <h2 id="/Axis/">Axis</h2>
 
   <p>
-    All Backbone event methods also support an event map syntax, as an alternative
-    to positional arguments:
+    Intro...
   </p>
 
-<pre>
-book.on({
-"change:title": titleView.update,
-"change:author": authorPane.update,
-"destroy": bookView.remove
-});
-</pre> -->
+  <p id="/Axis/data">
+    <b class="header">data</b><code>axis.data([values])</code>
+  </p>
+
+  <p id="/Axis/scale">
+    <b class="header">scale</b><code>axis.scale([value])</code>
+  </p>
+
+  <p id="/Axis/position">
+    <b class="header">position</b><code>axis.position([value])</code>
+  </p>
+
+  <p id="/Axis/translation">
+    <b class="header">translation</b><code>axis.translation([value])</code>
+  </p>
+
+  <p id="/Axis/orient">
+    <b class="header">orient</b><code>axis.orient([value])</code>
+  </p>
+
+  <p id="/Axis/orientation">
+    <b class="header">orientation</b><code>axis.orientation([value])</code>
+  </p>
+
+  <p id="/Axis/axis">
+    <b class="header">axis</b>
+  </p>
+
+  <p id="/Axis/transition">
+    <b class="header">transition</b>
+  </p>
+
+  <!-- 
+    Legend
+    ======
+  -->
+
+  <h2 id="/Legend/">Legend</h2>
+
+  <p>
+    Intro...
+  </p>
+
+  <!-- 
+    Title
+    =====
+  -->
+
+  <h2 id="/Title/">Title</h2>
+
+  <p>
+    Intro...
+  </p>
+
+  <p id="/Title/text">
+    <b class="header">text</b><code>title.text([value])</code>
+  </p>
+
+  <p id="/Title/rotation">
+    <b class="header">rotation</b><code>title.rotation([value])</code>
+  </p>
+
+  <p id="/Title/position">
+    <b class="header">position</b><code>title.position([value])</code>
+  </p>
+
+  <!-- 
+    Chart
+    =====
+  -->
+
+  <h2 id="/Chart/">Chart</h2>
+
+  <p>
+    Intro...
+  </p>
+
+  <p id="/Chart/extending">
+    <b class="header">extending</b>
+  </p>
+
+  <!-- 
+    SeriesChart
+    ===========
+  -->
+
+  <h2 id="/SeriesChart/">SeriesChart</h2>
+
+  <p>
+    Intro...
+  </p>
+
+  <p id="/SeriesChart/extending">
+    <b class="header">extending</b>
+  </p>
+
+  <!-- 
+    Component
+    =========
+  -->
+
+  <h2 id="/Component/">Component</h2>
+
+  <p>
+    Intro...
+  </p>
+
+  <p id="/Component/extending">
+    <b class="header">extending</b>
+  </p>
+
+  <!-- 
+    helpers
+    =======
+  -->
+
+  <h2 id="/helpers/">helpers</h2>
+
+  <p>
+    Intro...
+  </p>
+
+  <p id="/helpers/property">
+    <b class="header">property</b><code>helpers.property()</code>
+  </p>
+
+  <p id="/helpers/property.extensions">
+    <b class="header">property.extensions</b>
+  </p>
+
+  <p id="/helpers/valueOrDefault">
+    <b class="header">valueOrDefault</b><code>helpers.valueOrDefault()</code>
+  </p>
+
+  <p id="/helpers/dimensions">
+    <b class="header">dimensions</b><code>helpers.dimensions()</code>
+  </p>
+
+  <p id="/helpers/transform.translate">
+    <b class="header">transform.translate</b><code>helpers.transform.translate()</code>
+  </p>
+
+  <p id="/helpers/transform.rotate">
+    <b class="header">transform.rotate</b><code>helpers.transform.rotate()</code>
+  </p>
+
+  <p id="/helpers/isSeriesData">
+    <b class="header">isSeriesData</b><code>helpers.isSeriesData()</code>
+  </p>
+
+  <p id="/helpers/max">
+    <b class="header">max</b><code>helpers.max()</code>
+  </p>
+
+  <p id="/helpers/min">
+    <b class="header">min</b><code>helpers.min()</code>
+  </p>
+
+  <p id="/helpers/createScaleFromOptions">
+    <b class="header">createScaleFromOptions</b><code>helpers.createScaleFromOptions()</code>
+  </p>
+
+  <p id="/helpers/stack">
+    <b class="header">stack</b><code>helpers.stack()</code>
+  </p>
+
+  <p id="/helpers/style">
+    <b class="header">style</b><code>helpers.style()</code>
+  </p>
+
+  <p id="/helpers/getValue">
+    <b class="header">getValue</b><code>helpers.getValue()</code>
+  </p>
+
+  <p id="/helpers/capitalize">
+    <b class="header">capitalize</b><code>helpers.capitalize()</code>
+  </p>
+
+  <p id="/helpers/di">
+    <b class="header">di</b><code>helpers.di()</code>
+  </p>
+
+  <p id="/helpers/bindDi">
+    <b class="header">bindDi</b><code>helpers.bindDi()</code>
+  </p>
+
+  <p id="/helpers/bindAllDi">
+    <b class="header">bindAllDi</b><code>helpers.bindAllDi()</code>
+  </p>
+
+  <p id="/helpers/log">
+    <b class="header">log</b><code>helpers.log()</code>
+  </p>
+
+  <p id="/helpers/getParentData">
+    <b class="header">getParentData</b><code>helpers.getParentData()</code>
+  </p>
+
+  <p id="/helpers/resolveChart">
+    <b class="header">resolveChart</b><code>helpers.resolveChart()</code>
+  </p>
+
+  <p id="/helpers/mixin">
+    <b class="header">mixin</b><code>helpers.mixin()</code>
+  </p>
+
+  <!-- 
+    mixins
+    ======
+  -->
+
+  <h2 id="/mixins/">mixins</h2>
+
+  <p>
+    Intro...
+  </p>
+
+  <p id="/mixins/Series">
+    <b class="header">Series</b>
+  </p>
+
+  <p id="/mixins/XY">
+    <b class="header">XY</b>
+  </p>
+
+  <p id="/mixins/XYSeries">
+    <b class="header">XYSeries</b>
+  </p>
+
+  <p id="/mixins/Values">
+    <b class="header">Values</b>
+  </p>
+
+  <p id="/mixins/ValuesSeries">
+    <b class="header">ValuesSeries</b>
+  </p>
+
+  <p id="/mixins/Labels">
+    <b class="header">Labels</b>
+  </p>
+
+  <p id="/mixins/LabelsSeries">
+    <b class="header">LabelsSeries</b>
+  </p>
+
+  <!-- 
+    Changelog
+    =========
+  -->
 
   <h2 id="changelog">Change Log</h2>
 
-  <!-- <b class="header">1.1.2</b> &mdash; <small><i>Feb. 20, 2014</i></small> 
-  &mdash; <a href="https://github.com/jashkenas/backbone/compare/1.1.1...1.1.2">Diff</a> 
-  &mdash; <a href="http://htmlpreview.github.com/?https://raw.github.com/jashkenas/backbone/1.1.2/index.html">Docs</a>
-  <br />
+  <b class="header">0.8.3</b> &mdash; <small><i>(Date)</i></small>
+  <br>
   <ul style="margin-top: 5px;">
-    <li>
-      Backbone no longer tries to require jQuery in Node/CommonJS environments, 
-      for better compatibility with folks using Browserify.
-      If you'd like to have Backbone use jQuery from Node, assign it like so:
-      <tt>Backbone.$ = require('jquery');</tt>
-    </li>
-    <li>
-      Bugfix for route parameters with newlines in them.
-    </li>
-  </ul> -->
+    <li>Changes...</li>
+  </ul>
 
   <p>
     Footer...
