@@ -2,6 +2,7 @@
 layout: default
 title: Docs
 ---
+
 <div id="sidebar" class="interface">
 
   <a class="toc_title" href="#">
@@ -37,9 +38,14 @@ title: Docs
   </a>
   <ul class="toc_section">
     <li>- <a href="#/Line/data">data</a></li>
+    <li>- <a href="#/Line/labels">labels</a></li>
     <li>- <a href="#/Line/transition">transition</a></li>
     <li>- <a href="#/Line/XY">XY</a></li>
   </ul>
+
+  <a class="toc_title" href="#/LineValues/">
+    LineValues
+  </a>
 
   <a class="toc_title" href="#/Bars/">
     Bars
@@ -48,32 +54,32 @@ title: Docs
     <li>- <a href="#/Bars/data">data</a></li>
     <li>- <a href="#/Bars/displayAdjacent">displayAdjacent</a></li>
     <li>- <a href="#/Bars/itemPadding">itemPadding</a></li>
+    <li>- <a href="#/Bars/labels">labels</a></li>
     <li>- <a href="#/Bars/transition">transition</a></li>
-    <li>- <a href="#/Bars/XY">XY</a></li>
+    <li>- <a href="#/Bars/Values">Values</a></li>
   </ul>
 
-  <a class="toc_title" href="#/Labels/">
-    Labels
+  <a class="toc_title" href="#/XYLabels/">
+    XYLabels
   </a>
   <ul class="toc_section">
-    <li>- <a href="#/Labels/labels">labels</a></li>
-    <li>- <a href="#/Labels/format">format</a></li>
-    <li>- <a href="#/Labels/position">position</a></li>
-    <li>- <a href="#/Labels/offset">offset</a></li>
-    <li>- <a href="#/Labels/padding">padding</a></li>
-    <li>- <a href="#/Labels/anchor">anchor</a></li>
-    <li>- <a href="#/Labels/alignment">alignment</a></li>
-    <li>- <a href="#/Labels/handleCollisions">handleCollisions</a></li>
-    <li>- <a href="#/Labels/transition">transition</a></li>
-    <li>- <a href="#/Labels/XY">XY</a></li>
-    <li>- <a href="#/Labels/extending">extending</a></li>
+    <li>- <a href="#/XYLabels/labels">labels</a></li>
+    <li>- <a href="#/XYLabels/format">format</a></li>
+    <li>- <a href="#/XYLabels/position">position</a></li>
+    <li>- <a href="#/XYLabels/offset">offset</a></li>
+    <li>- <a href="#/XYLabels/padding">padding</a></li>
+    <li>- <a href="#/XYLabels/anchor">anchor</a></li>
+    <li>- <a href="#/XYLabels/alignment">alignment</a></li>
+    <li>- <a href="#/XYLabels/handleCollisions">handleCollisions</a></li>
+    <li>- <a href="#/XYLabels/transition">transition</a></li>
+    <li>- <a href="#/XYLabels/XY">XY</a></li>
+    <li>- <a href="#/XYLabels/extending">extending</a></li>
   </ul>
 
   <a class="toc_title" href="#/Axis/">
     Axis
   </a>
   <ul class="toc_section">
-    <li>- <a href="#/Axis/data">data</a></li>
     <li>- <a href="#/Axis/scale">scale</a></li>
     <li>- <a href="#/Axis/position">position</a></li>
     <li>- <a href="#/Axis/translation">translation</a></li>
@@ -153,8 +159,8 @@ title: Docs
     <li>- <a href="#/mixins/XYSeries">XYSeries</a></li>
     <li>- <a href="#/mixins/Values">Values</a></li>
     <li>- <a href="#/mixins/ValuesSeries">ValuesSeries</a></li>
-    <li>- <a href="#/mixins/Labels">Labels</a></li>
-    <li>- <a href="#/mixins/LabelsSeries">LabelsSeries</a></li>
+    <li>- <a href="#/mixins/XYLabels">Labels</a></li>
+    <li>- <a href="#/mixins/XYLabelsSeries">LabelsSeries</a></li>
   </ul>
 
   <a class="toc_title" href="#changelog">
@@ -232,48 +238,128 @@ title: Docs
   </p>
 
   <p id="/Multi/options">
-    <b class="header">options</b><code>chart.options()</code>
+    <b class="header">options</b><code>chart.options([options])</code><br>
+
+    Get/set the options the chart. Can be an <tt>Object</tt> or a <tt>Function</tt> that returns an <tt>Object</tt>. All properties listed below are available as options (charts, components, etc.) and the given values are passed to the matching property. <tt>options</tt> are generally set when creating chart with <tt>d3.select('...').chart('Multi', options)</tt>. Example:
   </p>
 
+<pre>// Get
+chart.options();
+
+// Set (Object)
+chart.options({
+  charts: {/*... */},
+  axes: {/* ... */}
+});
+
+// Set (Function, takes in data and returns object)
+chart.options(function(data) {
+  // Handle data...
+
+  return {
+    charts: {/*... */},
+    axes: {/* ... */}
+  };
+});
+</pre>
+
   <p id="/Multi/draw">
-    <b class="header">draw</b><code>chart.draw([data])</code>
+    <b class="header">draw</b><code>chart.draw([data])</code><br>
+
+    Draw the chart with the given data. <tt>data</tt> is passed to <tt>options</tt> function and child charts and components.
   </p>
 
   <p id="/Multi/charts">
-    <b class="header">charts</b><code>chart.charts([values])</code>
+    <b class="header">charts</b><code>chart.charts([values])</code><br>
+
+    Chart options used for composing charts. 
+    Each chart should use a unique key so that updates are passed to the correct chart.
+    The <tt>type</tt> option should be a registered <tt>d3.chart</tt>.
   </p>
+
+<pre>chart.charts({
+  input: {type: 'Line', /* options to pass to Line chart */},
+  output: {type: 'Bars', /* options to pass to Bars chart */}
+});
+</pre>
 
   <p id="/Multi/components">
-    <b class="header">components</b><code>chart.components([values])</code>
+    <b class="header">components</b><code>chart.components([values])</code><br>
+
+    Component options used for composing and laying out components.
+    Each component should use a unique key so that updates are passed to the correct component.
+    The <tt>type</tt> option should be a registered <tt>d3.chart</tt> component and all other options are passed to the component.
   </p>
+
+<pre>chart.components({
+  xAxis: {type: 'Axis', /* options to pass to Axis */},
+  legend: {type: 'Legend', /* options to pass to Legend */}
+});
+</pre>
 
   <p id="/Multi/title">
-    <b class="header">title</b><code>chart.title([value])</code>
+    <b class="header">title</b><code>chart.title([value])</code><br>
+
+    Value / options to use for main title component for chart.
   </p>
+
+<pre>chart.title('Title (Top)');
+chart.title({text: 'Title with options', position: 'bottom'});
+</pre>
 
   <p id="/Multi/axes">
-    <b class="header">axes</b><code>chart.axes([values])</code>
+    <b class="header">axes</b><code>chart.axes([values])</code><br>
+
+    Axis options used for creating and laying out axes.
+    Each axis should use a unique key so that updates are passed to the correct axis.
+    The <tt>type</tt> option should be a registered <tt>d3.chart</tt> axis (optional, <tt>Axis</tt> be default) and all other options are passed to the axis.
+    The <tt>title</tt> option creates a separate title component with the given value / options (using the axis <tt>position</tt> by default).
   </p>
 
+<pre>chart.axes({
+  x: {/* options to pass to Axis */},
+  y: {type: 'ValueAxis', /* options to pass to ValueAxis */},
+  y2: {position: 'right', title: {text: 'y2', rotation: 0}, /* ... */}
+});
+</pre>
+
   <p id="/Multi/legend">
-    <b class="header">legend</b><code>chart.legend([value])</code>
+    <b class="header">legend</b><code>chart.legend([value])</code><br>
+
+    Options to pass to legend or <tt>true</tt> to use default legend.
   </p>
 
   <p id="/Multi/margins">
-    <b class="header">margins</b><code>chart.margins([values])</code>
+    <b class="header">margins</b><code>chart.margins([values])</code><br>
+
+    Set the top, right, bottom, and left margin between the chart layers and the surrounding components.
   </p>
 
+<pre>chart.margins({top: 10, right: 0, bottom: 0, left: 10});</pre>
+
   <p id="/Multi/width">
-    <b class="header">width</b><code>chart.width([value])</code>
+    <b class="header">width</b><code>chart.width([value])</code><br>
+
+    Get or explicitly set the chart width.
   </p>
 
   <p id="/Multi/height">
-    <b class="header">height</b><code>chart.height([value])</code>
+    <b class="header">height</b><code>chart.height([value])</code><br>
+
+    Get or explicitly set the the chart height.
   </p>
 
   <p id="/Multi/events">
     <b class="header">events</b>
+
+    <tt>on</tt>, <tt>off</tt>, and <tt>trigger</tt> can be used to work with chart events. Available events:
   </p>
+
+  <ul class="small">
+    <li><b>enter:mouse</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse enters chart</li>
+    <li><b>move:mouse</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse moves within chart</li>
+    <li><b>leave:mouse</b> &mdash; when mouse leaves chart</li>
+  </ul>
 
   <!-- 
     Line
@@ -287,16 +373,67 @@ title: Docs
   </p>
 
   <p id="/Line/data">
-    <b class="header">data</b><code>line.data([values])</code>
+    <b class="header">data</b><code>line.data([values])</code><br>
+
+    Array or Series of <tt>{x, y}</tt> data for line.
   </p>
 
+<pre>line.data([
+  {x: 0, y: 10},
+  /* ... */
+]);
+
+line.data([
+  {key: 'series-a', values: [{x, 0, y: 10}]},
+  {key: 'series-b', values: [{x: 0, y: -10}]}
+]);
+</pre>
+
+  <p id="/Line/labels">
+    <b class="header">labels</b><code>line.labels([options])</code><br>
+
+    Add labels to chart with given options (Use <tt>true</tt> to add labels with default options).
+  </p>
+
+<pre>// Default labels
+line.labels(true);
+
+// Labels with options
+line.labels({/* options to pass to XYLabels */})
+
+</pre>
+
   <p id="/Line/transition">
-    <b class="header">transition</b>
+    <b class="header">transition</b><br>
+
+    <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the line transitions as data updates.
   </p>
 
   <p id="/Line/XY">
-    <b class="header">XY</b>
+    <b class="header">XY</b><br>
+
+    Standard XY properties are available: <tt>xKey</tt>, <tt>yKey</tt>, <tt>xScale</tt>, <tt>yScale</tt>, <tt>xMin</tt>, <tt>xMax</tt>, <tt>yMin</tt>, <tt>yMax</tt>.
+    See the <a href="#/mixins/XY">XY Mixin</a> for details.
   </p>
+
+  <!-- 
+    Bars
+    ====
+  -->
+
+  <h2 id="/LineValues/">LineValues</h2>
+
+  <p>
+    <tt>LineValues</tt> is a <tt>Line</tt> variant for Values data.
+  </p>
+
+<pre>line.data([10, 20, 30]);
+line.data([{y: 10}, /* ... */]);
+line.data([
+  {key: 'series-a', values: [{key: 'a', y: 10}]},
+  {key: 'series-b', values: [{key: 'a', y: -10}]}
+]);
+</pre>
 
   <!-- 
     Bars
@@ -310,78 +447,155 @@ title: Docs
   </p>
 
   <p id="/Bars/data">
-    <b class="header">data</b><code>bars.data([values])</code>
+    <b class="header">data</b><code>bars.data([values])</code><br>
+
+    Array or Series of Values data for bars.
   </p>
+
+<pre>bars.data([10, 20, 30]);
+bars.data([{y: 10}, /* ... */]);
+bars.data([
+  {key: 'series-a', values: [{key: 'a', y: 10}]},
+  {key: 'series-b', values: [{key: 'a', y: -10}]}
+]);
+</pre>
 
   <p id="/Bars/displayAdjacent">
-    <b class="header">displayAdjacent</b><code>bars.displayAdjacent([value])</code>
+    <b class="header">displayAdjacent</b><code>bars.displayAdjacent([value])</code><br>
+
+    For Series data, display bars at same index/key/x next to each other (rather than on top of). Default is <tt>true</tt>.
   </p>
+
+  <!-- TODO example -->
 
   <p id="/Bars/itemPadding">
-    <b class="header">itemPadding</b><code>bars.itemPadding([value])</code>
+    <b class="header">itemPadding</b><code>bars.itemPadding([value])</code><br>
+
+    Adjust the padding (in percentage) between bars at different index/key/x.
   </p>
+
+<pre>bars.itemPadding(0.10);
+// 10% of bar width as padding between bars
+</pre>
+  
+  <p id="/Bars/labels">
+    <b class="header">labels</b><code>bars.labels([options])</code><br>
+
+    Add labels to chart with given options (Use <tt>true</tt> to add labels with default options).
+  </p>
+
+<pre>// Default labels
+bars.labels(true);
+
+// Labels with options
+bars.labels({/* options to pass to XYLabels */})
+
+</pre>
 
   <p id="/Bars/transition">
-    <b class="header">transition</b>
+    <b class="header">transition</b><br>
+
+    <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the bar transitions as data updates.
   </p>
 
-  <p id="/Bars/XY">
-    <b class="header">XY</b>
+  <p id="/Bars/Values">
+    <b class="header">Values</b><br>
+
+    Standard Values properties are available: <tt>xKey</tt>, <tt>yKey</tt>, <tt>xScale</tt>, <tt>yScale</tt>, <tt>xMin</tt>, <tt>xMax</tt>, <tt>yMin</tt>, <tt>yMax</tt>.
+    See the <a href="#/mixins/XY">XY Mixin</a> for details.
   </p>
 
   <!-- 
-    Labels
+    XYLabels
     ======
   -->
 
-  <h2 id="/Labels/">Labels</h2>
+  <h2 id="/XYLabels/">XYLabels</h2>
 
   <p>
     Intro...
   </p>
 
-  <p id="/Labels/labels">
-    <b class="header">labels</b><code>labels.labels([values])</code>
+  <p id="/XYLabels/labels">
+    <b class="header">labels</b><code>xylabels.labels([values])</code><br>
+
+    Explicitly set label values (otherwise, they are drawn from parent chart's data).
+    Use <tt>label</tt> in data to explicitly set label, otherwise y-value with <tt>format</tt> is used.
   </p>
 
-  <p id="/Labels/format">
-    <b class="header">format</b><code>labels.format([value])</code>
+<pre>xylabels.labels([
+  {x: 0, y: 10, label: '10 items'}
+]);
+
+xylabels.labels([
+  {key: 'series-a', values: [{x: 0, y: 10}]},
+  {key: 'series-b', values: [{x: 0, y: -10}]}
+])
+</pre>
+
+  <p id="/XYLabels/format">
+    <b class="header">format</b><code>xylabels.format([value])</code><br>
+
+    Format y-values using <a href="https://github.com/mbostock/d3/wiki/Formatting" target="_blank">d3.format</a>.
+    Can use <tt>d3.format</tt> directly or string, which will be passed to <tt>d3.format</tt>.
   </p>
 
-  <p id="/Labels/position">
-    <b class="header">position</b><code>labels.position([value])</code>
+<pre>// The following are equivalent
+labels.format('0,000');
+labels.format(d3.format('0,000'));
+</pre>
+
+  <p id="/XYLabels/position">
+    <b class="header">position</b><code>xylabels.position([value])</code><br>
+
+    How to position label relative to point. Valid values: "top", "right", "bottom", "left".
   </p>
 
-  <p id="/Labels/offset">
-    <b class="header">offset</b><code>labels.offset([value])</code>
+  <p id="/XYLabels/offset">
+    <b class="header">offset</b><code>xylabels.offset([value])</code><br>
+
+    Distance to offset label from point. Can be value or <tt>{x, y}</tt>.
   </p>
 
-  <p id="/Labels/padding">
-    <b class="header">padding</b><code>labels.padding([value])</code>
+  <p id="/XYLabels/padding">
+    <b class="header">padding</b><code>xylabels.padding([value])</code><br>
+
+    Padding between label text and background.
   </p>
 
-  <p id="/Labels/anchor">
-    <b class="header">anchor</b><code>labels.anchor([value])</code>
+  <p id="/XYLabels/anchor">
+    <b class="header">anchor</b><code>xylabels.anchor([value])</code><br>
+
+    Horizontal text anchor for label (default set based on <tt>position</tt>). Valid values: "start", "middle", "end".
   </p>
 
-  <p id="/Labels/alignment">
-    <b class="header">alignment</b><code>labels.alignment([value])</code>
+  <p id="/XYLabels/alignment">
+    <b class="header">alignment</b><code>xylabels.alignment([value])</code><br>
+
+    Vertical alignment for label (default set based on <tt>position</tt>). Valid values: "top", "middle", "bottom".
   </p>
 
-  <p id="/Labels/handleCollisions">
-    <b class="header">handleCollisions</b><code>labels.handleCollisions([value])</code>
+  <p id="/XYLabels/handleCollisions">
+    <b class="header">handleCollisions</b><code>xylabels.handleCollisions([value])</code><br>
+
+    Handle collisions between labels of different series (default is <tt>true</tt>).
   </p>
 
-  <p id="/Labels/transition">
-    <b class="header">transition</b>
+  <p id="/XYLabels/transition">
+    <b class="header">transition</b><br>
+
+    <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the label transitions as data updates.
   </p>
 
-  <p id="/Labels/XY">
-    <b class="header">XY</b>
+  <p id="/XYLabels/XY">
+    <b class="header">XY</b><br>
+
+    Standard XY properties are available: <tt>xKey</tt>, <tt>yKey</tt>, <tt>xScale</tt>, <tt>yScale</tt>, <tt>xMin</tt>, <tt>xMax</tt>, <tt>yMin</tt>, <tt>yMax</tt>.
+    See the <a href="#/mixins/XY">XY Mixin</a> for details.
   </p>
 
-  <p id="/Labels/extending">
-    <b class="header">extending</b>
+  <p id="/XYLabels/extending">
+    <b class="header">extending</b><br>
   </p>
 
   <!-- 
@@ -395,36 +609,57 @@ title: Docs
     Intro...
   </p>
 
-  <p id="/Axis/data">
-    <b class="header">data</b><code>axis.data([values])</code>
+  <p id="/Axis/scale">
+    <b class="header">scale</b><code>axis.scale([value])</code><br>
+
+    Set scale for axis. If <tt>xScale</tt> and/or <tt>yScale</tt> are given, <tt>scale</tt> is set automatically based on <tt>position</tt>.
+    Can be <tt>d3.scale</tt> instance or scale options.
   </p>
 
-  <p id="/Axis/scale">
-    <b class="header">scale</b><code>axis.scale([value])</code>
-  </p>
+<pre>axis.scale({data: /* ... */, key: 'x'});
+axis.scale(d3.scale()/* ... */);
+
+axis.xScale(/* ... */);
+axis.yScale(/* ... */);
+axis.position('bottom');
+
+// axis.scale -> axis.xScale by default
+</pre>
 
   <p id="/Axis/position">
-    <b class="header">position</b><code>axis.position([value])</code>
+    <b class="header">position</b><code>axis.position([value])</code><br>
+
+    How to position axis relative to chart. Valid values: "top", "right", "bottom", "left", "x0", "y0".
   </p>
 
   <p id="/Axis/translation">
-    <b class="header">translation</b><code>axis.translation([value])</code>
+    <b class="header">translation</b><code>axis.translation([value])</code><br>
+
+    Used internally with <tt>x0</tt> and <tt>y0</tt> positioning, <tt>translation</tt> is used to set <tt>{x, y}</tt> distance from edge of chart.
   </p>
 
   <p id="/Axis/orient">
-    <b class="header">orient</b><code>axis.orient([value])</code>
+    <b class="header">orient</b><code>axis.orient([value])</code><br>
+
+    Set where labels are positioned relative to axis (default set based on <tt>position</tt>). Valid values: "top", "right", "bottom", "left".
   </p>
 
   <p id="/Axis/orientation">
-    <b class="header">orientation</b><code>axis.orientation([value])</code>
+    <b class="header">orientation</b><code>axis.orientation([value])</code><br>
+
+    Set axis vertical/horizontal orientation (default set based on <tt>position</tt>). Valid values: "vertical", "horizontal".
   </p>
 
   <p id="/Axis/axis">
-    <b class="header">axis</b>
+    <b class="header">axis</b><br>
+
+    The following <tt>d3.axis</tt> properties are available: <tt>ticks</tt>, <tt>tickValues</tt>, <tt>tickSize</tt>, <tt>innerTickSize</tt>, <tt>outerTickSize</tt>, <tt>tickPadding</tt>, and <tt>tickFormat</tt>.
   </p>
 
   <p id="/Axis/transition">
-    <b class="header">transition</b>
+    <b class="header">transition</b><br>
+
+    <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the axis transitions as data updates.
   </p>
 
   <!-- 
@@ -450,15 +685,19 @@ title: Docs
   </p>
 
   <p id="/Title/text">
-    <b class="header">text</b><code>title.text([value])</code>
+    <b class="header">text</b><code>title.text([value])</code><br>
   </p>
 
   <p id="/Title/rotation">
-    <b class="header">rotation</b><code>title.rotation([value])</code>
+    <b class="header">rotation</b><code>title.rotation([value])</code><br>
+
+    Rotate the title by the given number of degrees. Default is <tt>90</tt> when <tt>position = "right"</tt>, <tt>-90</tt> for <tt>"left"</tt>, and <tt>0</tt> otherwise.
   </p>
 
   <p id="/Title/position">
-    <b class="header">position</b><code>title.position([value])</code>
+    <b class="header">position</b><code>title.position([value])</code><br>
+
+    How to position axis relative to chart. Valid values: "top", "right", "bottom", "left".
   </p>
 
   <!-- 
@@ -473,7 +712,7 @@ title: Docs
   </p>
 
   <p id="/Chart/extending">
-    <b class="header">extending</b>
+    <b class="header">extending</b><br>
   </p>
 
   <!-- 
@@ -488,7 +727,7 @@ title: Docs
   </p>
 
   <p id="/SeriesChart/extending">
-    <b class="header">extending</b>
+    <b class="header">extending</b><br>
   </p>
 
   <!-- 
@@ -503,7 +742,7 @@ title: Docs
   </p>
 
   <p id="/Component/extending">
-    <b class="header">extending</b>
+    <b class="header">extending</b><br>
   </p>
 
   <!-- 
@@ -518,87 +757,87 @@ title: Docs
   </p>
 
   <p id="/helpers/property">
-    <b class="header">property</b><code>helpers.property()</code>
+    <b class="header">property</b><code>helpers.property()</code><br>
   </p>
 
   <p id="/helpers/property.extensions">
-    <b class="header">property.extensions</b>
+    <b class="header">property.extensions</b><br>
   </p>
 
   <p id="/helpers/valueOrDefault">
-    <b class="header">valueOrDefault</b><code>helpers.valueOrDefault()</code>
+    <b class="header">valueOrDefault</b><code>helpers.valueOrDefault()</code><br>
   </p>
 
   <p id="/helpers/dimensions">
-    <b class="header">dimensions</b><code>helpers.dimensions()</code>
+    <b class="header">dimensions</b><code>helpers.dimensions()</code><br>
   </p>
 
   <p id="/helpers/transform.translate">
-    <b class="header">transform.translate</b><code>helpers.transform.translate()</code>
+    <b class="header">transform.translate</b><code>helpers.transform.translate()</code><br>
   </p>
 
   <p id="/helpers/transform.rotate">
-    <b class="header">transform.rotate</b><code>helpers.transform.rotate()</code>
+    <b class="header">transform.rotate</b><code>helpers.transform.rotate()</code><br>
   </p>
 
   <p id="/helpers/isSeriesData">
-    <b class="header">isSeriesData</b><code>helpers.isSeriesData()</code>
+    <b class="header">isSeriesData</b><code>helpers.isSeriesData()</code><br>
   </p>
 
   <p id="/helpers/max">
-    <b class="header">max</b><code>helpers.max()</code>
+    <b class="header">max</b><code>helpers.max()</code><br>
   </p>
 
   <p id="/helpers/min">
-    <b class="header">min</b><code>helpers.min()</code>
+    <b class="header">min</b><code>helpers.min()</code><br>
   </p>
 
   <p id="/helpers/createScaleFromOptions">
-    <b class="header">createScaleFromOptions</b><code>helpers.createScaleFromOptions()</code>
+    <b class="header">createScaleFromOptions</b><code>helpers.createScaleFromOptions()</code><br>
   </p>
 
   <p id="/helpers/stack">
-    <b class="header">stack</b><code>helpers.stack()</code>
+    <b class="header">stack</b><code>helpers.stack()</code><br>
   </p>
 
   <p id="/helpers/style">
-    <b class="header">style</b><code>helpers.style()</code>
+    <b class="header">style</b><code>helpers.style()</code><br>
   </p>
 
   <p id="/helpers/getValue">
-    <b class="header">getValue</b><code>helpers.getValue()</code>
+    <b class="header">getValue</b><code>helpers.getValue()</code><br>
   </p>
 
   <p id="/helpers/capitalize">
-    <b class="header">capitalize</b><code>helpers.capitalize()</code>
+    <b class="header">capitalize</b><code>helpers.capitalize()</code><br>
   </p>
 
   <p id="/helpers/di">
-    <b class="header">di</b><code>helpers.di()</code>
+    <b class="header">di</b><code>helpers.di()</code><br>
   </p>
 
   <p id="/helpers/bindDi">
-    <b class="header">bindDi</b><code>helpers.bindDi()</code>
+    <b class="header">bindDi</b><code>helpers.bindDi()</code><br>
   </p>
 
   <p id="/helpers/bindAllDi">
-    <b class="header">bindAllDi</b><code>helpers.bindAllDi()</code>
+    <b class="header">bindAllDi</b><code>helpers.bindAllDi()</code><br>
   </p>
 
   <p id="/helpers/log">
-    <b class="header">log</b><code>helpers.log()</code>
+    <b class="header">log</b><code>helpers.log()</code><br>
   </p>
 
   <p id="/helpers/getParentData">
-    <b class="header">getParentData</b><code>helpers.getParentData()</code>
+    <b class="header">getParentData</b><code>helpers.getParentData()</code><br>
   </p>
 
   <p id="/helpers/resolveChart">
-    <b class="header">resolveChart</b><code>helpers.resolveChart()</code>
+    <b class="header">resolveChart</b><code>helpers.resolveChart()</code><br>
   </p>
 
   <p id="/helpers/mixin">
-    <b class="header">mixin</b><code>helpers.mixin()</code>
+    <b class="header">mixin</b><code>helpers.mixin()</code><br>
   </p>
 
   <!-- 
@@ -613,31 +852,31 @@ title: Docs
   </p>
 
   <p id="/mixins/Series">
-    <b class="header">Series</b>
+    <b class="header">Series</b><br>
   </p>
 
   <p id="/mixins/XY">
-    <b class="header">XY</b>
+    <b class="header">XY</b><br>
   </p>
 
   <p id="/mixins/XYSeries">
-    <b class="header">XYSeries</b>
+    <b class="header">XYSeries</b><br>
   </p>
 
   <p id="/mixins/Values">
-    <b class="header">Values</b>
+    <b class="header">Values</b><br>
   </p>
 
   <p id="/mixins/ValuesSeries">
-    <b class="header">ValuesSeries</b>
+    <b class="header">ValuesSeries</b><br>
   </p>
 
-  <p id="/mixins/Labels">
-    <b class="header">Labels</b>
+  <p id="/mixins/XYLabels">
+    <b class="header">Labels</b><br>
   </p>
 
-  <p id="/mixins/LabelsSeries">
-    <b class="header">LabelsSeries</b>
+  <p id="/mixins/XYLabelsSeries">
+    <b class="header">LabelsSeries</b><br>
   </p>
 
   <!-- 
