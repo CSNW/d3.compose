@@ -63,6 +63,10 @@
           series.enter()
             .append('g')
             .attr('class', chart.seriesClass);
+          
+          series.exit()
+            .remove();
+          
           series.chart = function() { return chart; };
 
           return dataBind.call(series, chart.seriesValues);
@@ -87,6 +91,11 @@
     - yMax {Number}
   */
   var XY = {
+    initialize: function() {
+      // Set scale ranges once chart is ready to be rendered
+      this.on('before:draw', this.setScales.bind(this));
+    },
+    
     isXY: true,
 
     xKey: property('xKey', {defaultValue: 'x'}),
@@ -159,11 +168,6 @@
         return +valueOrDefault(value, max);
       }
     }),
-
-    initialize: function() {
-      // Set scale ranges once chart is ready to be rendered
-      this.on('before:draw', this.setScales.bind(this));
-    },
 
     x: di(function(chart, d, i) {
       return +chart.xScale()(chart.xValue.call(this, d, i));
@@ -316,200 +320,136 @@
   };
 
   /**
-    mixins for handling labels in charts
-
-    Properties:
-    - [labels] {Object}
-    - [labelFormat] {String|Function}
-    - [labelPosition = 'top'] {String} Label position (top, right, bottom, left)
-    - [labelOffset = 0] {Number|Object} Label offset (distance or {x, y})
+    mixin for handling labels in charts
+  
+    - attachLabels: call during chart initialization to add labels to chart
+    - labels: properties passed directly to labels chart
   */
-  var Labels = {
-    labels: property('labels', {
-      defaultValue: {},
-      set: function(options) {
-        if (_.isBoolean(options))
-          options = {display: options};
-        else if (_.isString(options))
-          options = {display: options == 'display' || options == 'show'}; 
-        else if (options && _.isUndefined(options.display))
-          options.display = true;
+  var XYLabels = {
+    attachLabels: function() {
+      var options = this.labels();
+      options.parent = this;
 
-        _.each(options, function(value, key) {
-          // Capitalize and append "label" and then set option
-          var labelOption = 'label' + helpers.capitalize(key);
+      var Labels = d3.chart(options.type);
+      var base = this.base.append('g').attr('class', 'chart-labels');
+      var labels = this._labels = new Labels(base, options);
 
-          if (this[labelOption] && this[labelOption].isProperty && this[labelOption].setFromOptions)
-            this[labelOption](value, {silent: true});
-        }, this);
-      }
-    }),
+      // Proxy x and y to parent chart
+      labels.x = this.x;
+      labels.y = this.y;
 
-    labelDisplay: property('labelDisplay', {defaultValue: false}),
-    labelFormat: property('labelFormat', {
-      type: 'Function',
-      set: function(value) {
-        if (_.isString(value)) {
-          return {
-            override: d3.format(value)
-          };
-        }
-      }
-    }),
-    labelPosition: property('labelPosition', {
-      validate: function(value) {
-        return _.contains(['top', 'right', 'bottom', 'left'], value);
-      }
-    }),
-    labelOffset: property('labelOffset', {
-      get: function(offset) {
-        if (_.isNumber(offset)) {
-          offset = {
-            top: {x: 0, y: -offset},
-            right: {x: offset, y: 0},
-            bottom: {x: 0, y: offset},
-            left: {x: -offset, y: 0}
-          }[this.labelPosition()];
-
-          if (!offset) {
-            offset = {x: 0, y: 0};
-          }
-        }
-
-        return offset;
-      }
-    }),
-    labelPadding: property('labelPadding'),
-    labelAnchor: property('labelAnchor', {
-      defaultValue: function() {
-        var position = this.labelPosition();
-        if (!_.isUndefined(position)) {
-          if (position == 'right')
-            return 'start';
-          else if (position == 'left')
-            return 'end';
-          else
-            return 'middle';
-        }
-      },
-      validate: function(value) {
-        return _.contains(['start', 'middle', 'end'], value);
-      }
-    }),
-    labelAlignment: property('labelAlignment', {
-      defaultValue: function() {
-        var position = this.labelPosition();
-        if (!_.isUndefined(position)) {
-          var alignmentByPosition = {
-            'top': 'bottom',
-            'right': 'middle',
-            'bottom': 'top',
-            'left': 'middle'
-          };
-
-          return alignmentByPosition[position];
-        }        
-      },
-      validate: function(value) {
-        return _.contains(['top', 'middle', 'bottom'], value);
-      }
-    }),
-    labelStyle: property('labelStyle', {defaultValue: {}}),
-
-    labelText: di(function(chart, d, i) {
-      var value = chart.yValue.call(this, d, i);
-      return chart.labelFormat() ? chart.labelFormat()(value) : value;
-    }),
-
-    _getLabels: function() {
-      var labels = [];
-
-      if (this.labelDisplay()) {
-        labels.push({
-          // Leave series information blank (labels only)
-          labels: _.map(this.data(), function(point, index) {
-            return {
-              key: this.keyValue(point, index),
-              coordinates: {
-                x: this.x(point, index),
-                y: this.y(point, index)
-              },
-              text: this.labelText(point, index),
-              offset: this.labelOffset(),
-              padding: this.labelPadding(),
-              anchor: this.labelAnchor(),
-              alignment: this.labelAlignment(),
-              'class': point['class'],
-              style: _.extend({}, this.labelStyle(), point['labelStyle']),
-              values: point,
-              index: index,
-            };
-          }, this)
-        });
-      }      
-
-      return labels;
+      this.on('draw', function(data) {
+        labels.options(this.labels(), {silent: true});
+        labels.draw(options.data || data);
+      }.bind(this));
     },
 
-    _convertPointToLabel: function(point) {
-      return {
-        key: this.keyValue(point.values, point.index),
-        coordinates: point.coordinates,
-        text: this.labelText(point.values, point.index),
-        offset: this.labelOffset(),
-        padding: this.labelPadding(),
-        anchor: this.labelAnchor(),
-        alignment: this.labelAlignment(),
-        'class': point.values['class'],
-        style: _.extend({}, this.labelStyle(), point['labelStyle']),
-        values: point.values,
-        index: point.index
-      };
-    }
+    labels: property('labels', {
+      get: function(value) {
+        if (_.isBoolean(value))
+          value = {display: value};
+
+        return _.defaults({}, value, {
+          display: false,
+          type: 'XYLabels'
+        });
+      }
+    })
   };
 
-  /**
-    mixins for handling labels in series charts
+  var Hover = {
+    initialize: function() {
+      this.on('attach', function() {
+        if (this.container) {
+          this.container.on('enter:mouse', this.onMouseEnter.bind(this));
+          this.container.on('move:mouse', this.onMouseMove.bind(this));
+          this.container.on('leave:mouse', this.onMouseLeave.bind(this));
+        }
+      }.bind(this));
+    },
 
-    Dependencies: Labels
-  */
-  var LabelsSeries = {
-    _getLabels: function() {
-      var seriesLabels = [];
+    // Override with hover implementation
+    onMouseEnter: function(position) {},
+    onMouseMove: function(position) {},
+    onMouseLeave: function() {}
+  };
 
-      if (this.labelDisplay()) {
-        seriesLabels = _.compact(_.map(this.data(), function(series, seriesIndex) {
-          if (series.excludeFromLabels) return;
+  var XYHover = {
+    initialize: function() {
+      Hover.initialize.apply(this, arguments);
+      this.on('before:draw', function() {
+        // Reset points on draw
+        this._points = undefined;
+      });
+    },
 
-          return {
-            key: series.key,
-            name: series.name,
-            'class': series['class'],
-            index: seriesIndex,
-            labels: _.map(series.values, function(point, pointIndex) {
-              return {
-                key: this.keyValue.call({_parentData: series}, point, pointIndex),
-                coordinates: {
-                  x: this.x.call({_parentData: series}, point, pointIndex),
-                  y: this.y.call({_parentData: series}, point, pointIndex)
-                },
-                text: this.labelText.call({_parentData: series}, point, pointIndex),
-                offset: this.labelOffset(),
-                padding: this.labelPadding(),
-                anchor: this.labelAnchor(),
-                alignment: this.labelAlignment(),
-                'class': point['class'],
-                style: _.extend({}, this.labelStyle(), point['labelStyle']),
-                values: point,
-                index: pointIndex,
-              };
-            }, this)
-          };
-        }, this));
+    getPoint: di(function(chart, d, i, j) {
+      return {
+        x: chart.x.call(this, d, i, j),
+        y: chart.y.call(this, d, i, j),
+        d: d, i: i, j: j
+      };
+    }),
+
+    getPoints: function() {
+      var data = this.data();
+      if (!this._points && data) {
+        if (helpers.isSeriesData(data)) {
+          // Get all points for each series
+          this._points = _.map(data, function(series, j) {
+            return getPointsForValues.call(this, series.values, j, {_parentData: series});
+          }, this);
+        }
+        else {
+          this._points = getPointsForValues.call(this, data, 0);
+        }
+      }
+
+      return this._points;
+
+      function getPointsForValues(values, seriesIndex, element) {
+        var points = _.map(values, function(d, i) {
+          return this.getPoint.call(element, d, i, seriesIndex);
+        }, this);
+
+        // Sort by x
+        points.sort(function(a, b) {
+          return a.x - b.x;
+        });
+
+        return points;
+      }
+    },
+
+    getClosestPoints: function(position) {
+      var points = this.getPoints();
+      var closest = [];
+
+      if (points.length && _.isArray(points[0])) {
+        // Series data
+        _.each(points, function(series) {
+          closest.push(sortByDistance(series, position));
+        });
+      }
+      else {
+        closest.push(sortByDistance(points, position));
       }
       
-      return seriesLabels;
-    }
+      return closest;
+
+      function sortByDistance(values, position) {
+        var byDistance = _.map(values, function(point) {
+          point.distance = getDistance(point, position);
+          return point;
+        });
+
+        return _.sortBy(byDistance, 'distance'); 
+      }
+
+      function getDistance(a, b) {
+        return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+      }
+    }    
   };
 
   // Expose mixins
@@ -519,8 +459,9 @@
     XYSeries: _.extend({}, Series, XY, XYSeries),
     Values: _.extend({}, XY, Values),
     ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries),
-    Labels: Labels,
-    LabelsSeries: _.extend({}, Labels, LabelsSeries)
+    XYLabels: XYLabels,
+    Hover: Hover,
+    XYHover: _.extend({}, Hover, XYHover)
   });
 
 })(d3, _, d3.chart.helpers);

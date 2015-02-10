@@ -70,7 +70,7 @@
 
     title: property('title', {
       set: function(options, previous, setOptions) {
-        var silent = setOptions && setOptions.silent
+        var silent = setOptions && setOptions.silent;
 
         // Remove title if no options are given
         if (!options || _.isEmpty(options)) {

@@ -27,6 +27,7 @@ module.exports = function(grunt) {
       'src/Container.js',
       'src/Component.js',
       'src/charts/Labels.js',
+      'src/charts/XYLabels.js',
       'src/charts/Bars.js',
       'src/charts/Line.js',
       'src/components/Title.js',
