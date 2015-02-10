@@ -1,4 +1,4 @@
-(function(d3, _, helpers, mixins) {
+(function(d3, _, helpers) {
   var property = helpers.property;
   
   /**
@@ -29,9 +29,12 @@
       @param {Object} value
     */
     options: property('options', {
-      defaultValue: {},
+      default_value: {},
       set: function(options) {
-        this.setFromOptions(options);
+        _.each(options, function(value, key) {
+          if (this[key] && this[key].is_property && this[key].set_from_options)
+            this[key](value);
+        }, this);
       }
     }),
 
@@ -69,16 +72,6 @@
     },
 
     /**
-      Set any properties from options
-    */
-    setFromOptions: function(options) {
-      _.each(options, function(value, key) {
-        if (this[key] && this[key].isProperty && this[key].setFromOptions)
-          this[key](value, {silent: true});
-      }, this);
-    },
-
-    /**
       Add events to draw: before:draw and draw
     */
     draw: function(data) {
@@ -88,4 +81,4 @@
     }
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3, _, d3.chart.helpers);

@@ -18,7 +18,7 @@
 
       it('should use default values', function() {
         instance.message = property('message', {
-          defaultValue: 'Howdy!'
+          default_value: 'Howdy!'
         });
 
         expect(instance.message()).toEqual('Howdy!');
@@ -30,13 +30,13 @@
         expect(instance.message()).toEqual('Howdy!');
       });
 
-      it('should expose defaultValue on property', function() {
+      it('should expose default_value on property', function() {
         instance.message = property('message', {
-          defaultValue: 'Howdy!'
+          default_value: 'Howdy!'
         });
 
-        expect(instance.message.defaultValue).toEqual('Howdy!');
-        instance.message.defaultValue = 'Goodbye!';
+        expect(instance.message.default_value).toEqual('Howdy!');
+        instance.message.default_value = 'Goodbye!';
         expect(instance.message()).toEqual('Goodbye!');
       });
 
@@ -58,16 +58,16 @@
         expect(instance.message()).toEqual('Howdy from Chart');
       });
 
-      it('should store set values on object at propKey', function() {
-        instance.message = property('message', {propKey: 'properties'});
+      it('should store set values on object at prop_key', function() {
+        instance.message = property('message', {prop_key: 'properties'});
         instance.message('Howdy!');
         expect(instance.properties.message).toEqual('Howdy!');
       });
 
-      it('should expose isProperty and setFromOptions on property', function() {
-        instance.message = property('message', {setFromOptions: false});
-        expect(instance.message.isProperty).toEqual(true);
-        expect(instance.message.setFromOptions).toEqual(false);
+      it('should expose is_property and set_from_options on property', function() {
+        instance.message = property('message', {set_from_options: false});
+        expect(instance.message.is_property).toEqual(true);
+        expect(instance.message.set_from_options).toEqual(false);
       });
 
       describe('get()', function() {
@@ -200,7 +200,7 @@
 
         it('should trigger change (if changed)', function() {
           instance.message = property('message', {
-            defaultValue: 'Hello'
+            default_value: 'Hello'
           });
           instance.trigger = jasmine.createSpy();
 
@@ -385,7 +385,7 @@
       });
 
       it('should expose isDi property', function() {
-        expect(wrapped._isDi).toEqual(true);
+        expect(wrapped._is_di).toEqual(true);
       });
 
       it('should pass in chart instance to bound di', function() {

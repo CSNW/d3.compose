@@ -1,5 +1,4 @@
-(function(d3, helpers, mixins) {
-  var mixin = helpers.mixin;
+(function(d3, helpers) {
   var property = helpers.property;
   var di = helpers.di;
 
@@ -11,6 +10,7 @@
       this.legend = this.base.append('g')
         .classed('chart-legend', true);
 
+      // TODO Move display check to Multi.js
       if (this.options().display) {
         this.layer('Legend', this.legend, {
           dataBind: function(data) {
@@ -43,36 +43,35 @@
                 .attr('alignment-baseline', 'before-edge');
 
               // Position groups after positioning everything inside
-              var directionByPosition = {
+              var direction_by_position = {
                 top: 'horizontal',
                 right: 'vertical',
                 bottom: 'horizontal',
                 left: 'vertical'
               };
-              this.call(stack.bind(this, {direction: directionByPosition[chart.position()], origin: 'top', padding: 5}));
+              this.call(stack.bind(this, {direction: direction_by_position[chart.position()], origin: 'top', padding: 5}));
             }
           }
         });
       }
       else {
-        this.skipLayout = true;
+        this.skip_layout = true;
       }
     },
-    isLegend: true,
 
     transform: function(allData) {
       var demux = d3.chart('Multi').prototype.demux;
       var data = _.reduce(this.options().charts, function(data, chart) {
-        if (chart.excludeFromLegend)
+        if (chart.exclude_from_legend)
           return data;
 
         var chartData = _.compact(_.map(chart.data(), function(series, index) {
-          if (series.excludeFromLegend) return;
+          if (series.exclude_from_legend) return;
           
           return {
             chart: chart,
             series: series,
-            seriesIndex: index
+            series_index: index
           };
         }));
 
@@ -92,7 +91,7 @@
       return 'chart-legend-group';
     }),
     dataSeriesClass: di(function(chart, d, i) {
-      return 'chart-series chart-index-' + (d.seriesIndex || 0);
+      return 'chart-series chart-index-' + (d.series_index || 0);
     }),
     dataClass: di(function(chart, d, i) {
       var classes = [chart.dataSeriesClass.call(this, d, i)];
@@ -132,9 +131,8 @@
       }
 
       // Style inserted element
-      if (inserted && _.isFunction(inserted.attr)) {
+      if (inserted && _.isFunction(inserted.attr))
         inserted.attr('style', chart.dataStyle.call(this, d, i));
-      }
     })
   });
   
@@ -150,11 +148,12 @@
       this._positionLegend();
     },
 
+    // TODO switch to translation
     position: property('position', {
-      defaultValue: {x: 10, y: 10},
+      default_value: {x: 10, y: 10},
       set: function(value, previous) {
         value = (value && _.isObject(value)) ? value : {};
-        value = _.defaults(value, previous || {}, {x: 0, y: 0});
+        _.defaults(value, previous || {}, {x: 0, y: 0});
 
         return {
           override: value,
@@ -164,7 +163,7 @@
         };
       }
     }),
-    skipLayout: true,
+    skip_layout: true,
 
     _positionLegend: function() {
       if (this.legend) {
@@ -173,8 +172,7 @@
       }
     }
   }, {
-    // @static
-    layerType: 'chart'
+    layer_type: 'chart'
   });
 
   /**
@@ -238,4 +236,4 @@
     }
   }
   
-})(d3, d3.chart.helpers, d3.chart.mixins);
+})(d3, d3.chart.helpers);

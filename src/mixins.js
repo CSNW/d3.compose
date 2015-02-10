@@ -94,8 +94,8 @@
       this.on('before:draw', this.setScales.bind(this));
     },
 
-    xKey: property('xKey', {defaultValue: 'x'}),
-    yKey: property('yKey', {defaultValue: 'y'}),
+    xKey: property('xKey', {default_value: 'x'}),
+    yKey: property('yKey', {default_value: 'y'}),
 
     xScale: property('xScale', {
       type: 'Function',
@@ -193,11 +193,11 @@
       this.setYScaleRange(this.yScale());
     },
 
-    setXScaleRange: function(xScale) {
-      xScale.range([0, this.width()]);
+    setXScaleRange: function(x_scale) {
+      x_scale.range([0, this.width()]);
     },
-    setYScaleRange: function(yScale) {
-      yScale.range([this.height(), 0]);
+    setYScaleRange: function(y_scale) {
+      y_scale.range([this.height(), 0]);
     },
 
     getDefaultXScale: function() {
@@ -245,10 +245,10 @@
 
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
-    itemPadding: property('itemPadding', {defaultValue: 0.1}),
+    itemPadding: property('itemPadding', {default_value: 0.1}),
 
     // If series data, display points at same index for different series adjacent
-    displayAdjacent: property('displayAdjacent', {defaultValue: false}),
+    displayAdjacent: property('displayAdjacent', {default_value: false}),
 
     // determine centered-x based on series display type (adjacent or layered)
     x: di(function(chart, d, i) {
@@ -257,17 +257,17 @@
 
     // AdjacentX/Width is used in cases where series are presented next to each other at each value
     adjacentX: di(function(chart, d, i) {
-      var adjacentWidth = chart.adjacentWidth.call(this, d, i);
-      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
-      var seriesIndex = chart.seriesIndex ? chart.seriesIndex.call(this, d, i) : 1;
+      var adjacent_width = chart.adjacentWidth.call(this, d, i);
+      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacent_width / 2;
+      var series_index = chart.seriesIndex ? chart.seriesIndex.call(this, d, i) : 1;
       
-      return left + adjacentWidth * seriesIndex;
+      return left + adjacent_width * series_index;
     }),
     adjacentWidth: di(function(chart, d, i) {
-      var seriesCount = chart.seriesCount ? chart.seriesCount.call(this) : 1;
+      var series_count = chart.seriesCount ? chart.seriesCount.call(this) : 1;
 
-      if (seriesCount > 0)
-        return chart.layeredWidth.call(this, d, i) / seriesCount;
+      if (series_count > 0)
+        return chart.layeredWidth.call(this, d, i) / series_count;
       else
         return 0;
     }),
@@ -277,8 +277,8 @@
       return chart.xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
     }),
     layeredWidth: di(function(chart, d, i) {
-      var rangeBand = chart.xScale().rangeBand();
-      return isFinite(rangeBand) ? rangeBand : 0;
+      var range_band = chart.xScale().rangeBand();
+      return isFinite(range_band) ? range_band : 0;
     }),
 
     // determine item width based on series display type (adjacent or layered)
@@ -286,16 +286,16 @@
       return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
     }),
 
-    setXScaleRange: function(xScale) {
-      if (_.isFunction(xScale.rangeBands)) {
-        xScale.rangeBands(
+    setXScaleRange: function(x_scale) {
+      if (_.isFunction(x_scale.rangeBands)) {
+        x_scale.rangeBands(
           [0, this.width()], 
           this.itemPadding(), 
           this.itemPadding() / 2
         );
       }
       else {
-        XY.setXScaleRange.call(this, xScale);
+        XY.setXScaleRange.call(this, x_scale);
       }
     },
 
@@ -328,7 +328,7 @@
       labels.y = this.y;
 
       this.on('draw', function(data) {
-        labels.options(this.labels(), {silent: true});
+        labels.options(this.labels());
         labels.draw(options.data || data);
       }.bind(this));
     },
@@ -386,7 +386,7 @@
         if (helpers.isSeriesData(data)) {
           // Get all points for each series
           this._points = _.map(data, function(series, j) {
-            return getPointsForValues.call(this, series.values, j, {_parentData: series});
+            return getPointsForValues.call(this, series.values, j, {_parent_data: series});
           }, this);
         }
         else {

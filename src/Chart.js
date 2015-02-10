@@ -1,5 +1,4 @@
-(function(d3, _, helpers, mixins) {
-  var property = helpers.property;
+(function(d3) {
   
   /**
     Chart
@@ -11,4 +10,4 @@
     }
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3);

@@ -21,7 +21,7 @@
         charts[0] = new Chart(container.chartLayer());
         container.attachChart('chart1', charts[0]);
 
-        expect(container.chartsById['chart1']).toBe(charts[0]);
+        expect(container.charts_by_id['chart1']).toBe(charts[0]);
         expect(container._attached['chart1']).toBe(charts[0]);
       });
 
@@ -29,7 +29,7 @@
         components[0] = new Component(container.componentLayer());
         container.attachComponent('component1', components[0]);
         
-        expect(container.componentsById['component1']).toBe(components[0]);
+        expect(container.components_by_id['component1']).toBe(components[0]);
         expect(container._attached['component1']).toBe(components[0]);
       });
 
@@ -64,14 +64,14 @@
 
           // Create and attach components
           components = [
-            new Component(container.componentLayer({zIndex: 101}), {position: 'top'}),
-            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'top'}),
-            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'right'}),
-            new Component(container.componentLayer({zIndex: 100}), {position: 'right'}),
-            new Component(container.componentLayer({zIndex: 1}), {position: 'bottom'}),
-            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'bottom'}),
-            new OverridenComponent(container.componentLayer({zIndex: 50}), {position: 'left'}),
-            new Component(container.componentLayer({zIndex: 200}), {position: 'left'})
+            new Component(container.componentLayer({z_index: 101}), {position: 'top'}),
+            new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'top'}),
+            new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'right'}),
+            new Component(container.componentLayer({z_index: 100}), {position: 'right'}),
+            new Component(container.componentLayer({z_index: 1}), {position: 'bottom'}),
+            new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'bottom'}),
+            new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'left'}),
+            new Component(container.componentLayer({z_index: 200}), {position: 'left'})
           ];
           _.each(components, function(component, index) {
             container.attachComponent('component-' + (index + 1), component);
@@ -169,15 +169,15 @@
 
         it('should set "z-index" with layering on draw', function() {
           var expected = [
-            {'class': 'chart-component-layer', id: 'component-5', zIndex: 1},
-            {'class': 'chart-component-layer', id: 'component-2', zIndex: 50},
-            {'class': 'chart-component-layer', id: 'component-3', zIndex: 50},
-            {'class': 'chart-component-layer', id: 'component-6', zIndex: 50},
-            {'class': 'chart-component-layer', id: 'component-7', zIndex: 50},
-            {'class': 'chart-component-layer', id: 'component-4', zIndex: 100},
-            {'class': 'chart-layer', id: 'chart-1', zIndex: 100},
-            {'class': 'chart-component-layer', id: 'component-1', zIndex: 101},
-            {'class': 'chart-component-layer', id: 'component-8', zIndex: 200}
+            {'class': 'chart-component-layer', id: 'component-5', z_index: 1},
+            {'class': 'chart-component-layer', id: 'component-2', z_index: 50},
+            {'class': 'chart-component-layer', id: 'component-3', z_index: 50},
+            {'class': 'chart-component-layer', id: 'component-6', z_index: 50},
+            {'class': 'chart-component-layer', id: 'component-7', z_index: 50},
+            {'class': 'chart-component-layer', id: 'component-4', z_index: 100},
+            {'class': 'chart-layer', id: 'chart-1', z_index: 100},
+            {'class': 'chart-component-layer', id: 'component-1', z_index: 101},
+            {'class': 'chart-component-layer', id: 'component-8', z_index: 200}
           ];
 
           container.draw([]);
@@ -186,7 +186,7 @@
             var selection = d3.select(this);
             expect(selection.classed(expected[i]['class'])).toEqual(true);
             expect(selection.attr('data-id')).toEqual(expected[i].id);
-            expect(+selection.attr('data-zIndex')).toEqual(expected[i].zIndex);
+            expect(+selection.attr('data-zIndex')).toEqual(expected[i].z_index);
           });
         });
       });

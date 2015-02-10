@@ -3,7 +3,7 @@
   /**
     Setup global z-index values
   */
-  var zIndex = {
+  var z_index = {
     component: 50,
     axis: 51,
     title: 52,
@@ -32,7 +32,7 @@
     // --------
     // Default values:
     obj.advanced = property('advanced', {
-      defaultValue: 'Howdy!'
+      default_value: 'Howdy!'
     });
   
     console.log(obj.advanced()); // -> 'Howdy!'
@@ -77,7 +77,7 @@
 
     @param {String} name of stored property
     @param {Object} options
-    - defaultValue: default value for property (when set value is undefined)
+    - default_value: default value for property (when set value is undefined)
     - get: function(value) {return ...} getter, where value is the stored value, return desired value
     - set: function(value, previous) {return {override, after}} 
       - return override to set stored value and after() to run after set
@@ -86,7 +86,7 @@
       - 'Array' gets array extensions: push(...)
       - 'Function' don't evaluate in get/set
     - context: {Object} [this] context to evaluate get/set/after functions
-    - propKey: {String} ['__properties'] underlying key on object to store properties on
+    - prop_key: {String} ['__properties'] underlying key on object to store properties on
 
     @return {Function}
     - (): get
@@ -94,10 +94,10 @@
   */ 
   function property(name, options) {
     options = options || {};
-    var propKey = options.propKey || '__properties';
+    var prop_key = options.prop_key || '__properties';
 
     var getSet = function(value) {
-      var properties = this[propKey] = this[propKey] || {};
+      var properties = this[prop_key] = this[prop_key] || {};
       var existing = properties[name];
       var context = valueOrDefault(getSet.context, this);
       
@@ -107,7 +107,7 @@
         return get.call(this);
 
       function get() {
-        var value = valueOrDefault(properties[name], getSet.defaultValue);
+        var value = valueOrDefault(properties[name], getSet.default_value);
 
         // Unwrap value if its type is not a function
         if (_.isFunction(value) && options.type != 'Function')
@@ -144,23 +144,23 @@
     };
 
     // For checking if function is a property
-    getSet.isProperty = true;
-    getSet.setFromOptions = valueOrDefault(options.setFromOptions, true);
-    getSet.defaultValue = options.defaultValue;
+    getSet.is_property = true;
+    getSet.set_from_options = valueOrDefault(options.set_from_options, true);
+    getSet.default_value = options.default_value;
     getSet.context = options.context;
 
     return getSet;
   }
 
   /**
-    If value isn't undefined, return value, otherwise use defaultValue
+    If value isn't undefined, return value, otherwise use default_value
   
     @param {Varies} [value]
-    @param {Varies} defaultValue
+    @param {Varies} default_value
     @return {Varies}
   */
-  function valueOrDefault(value, defaultValue) {
-    return !_.isUndefined(value) ? value : defaultValue;
+  function valueOrDefault(value, default_value) {
+    return !_.isUndefined(value) ? value : default_value;
   }
 
   /**
@@ -172,20 +172,20 @@
   */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
-    var isSVG = element ? element.nodeName == 'svg' : false;
+    var is_SVG = element ? element.nodeName == 'svg' : false;
 
     // Firefox throws error when calling getBBox when svg hasn't been displayed
     // ignore error and set to empty
-    var boundingBox;
+    var bounding_box;
     try {
-      boundingBox = element && typeof element.getBBox == 'function' && element.getBBox();
+      bounding_box = element && typeof element.getBBox == 'function' && element.getBBox();
     }
     catch(ex) {}
 
-    if (!boundingBox)
-      boundingBox = {width: 0, height: 0};
+    if (!bounding_box)
+      bounding_box = {width: 0, height: 0};
 
-    var clientDimensions = {
+    var client_dimensions = {
       width: (element && element.clientWidth) || 0, 
       height: (element && element.clientHeight) || 0
     };
@@ -194,26 +194,26 @@
     //        calculate from css
     //        http://stackoverflow.com/questions/13122790/how-to-get-svg-element-dimensions-in-firefox
     //        Note: This makes assumptions about the box model in use and that width/height are not percent values
-    if (element && isSVG && (!element.clientWidth || !element.clientHeight) && window && window.getComputedStyle) {
+    if (element && is_SVG && (!element.clientWidth || !element.clientHeight) && window && window.getComputedStyle) {
       var styles = window.getComputedStyle(element);
-      clientDimensions.height = parseFloat(styles['height']) - parseFloat(styles['borderTopWidth']) - parseFloat(styles['borderBottomWidth']);
-      clientDimensions.width = parseFloat(styles['width']) - parseFloat(styles['borderLeftWidth']) - parseFloat(styles['borderRightWidth']);
+      client_dimensions.height = parseFloat(styles['height']) - parseFloat(styles['borderTopWidth']) - parseFloat(styles['borderBottomWidth']);
+      client_dimensions.width = parseFloat(styles['width']) - parseFloat(styles['borderLeftWidth']) - parseFloat(styles['borderRightWidth']);
     }
 
-    var attrDimensions = {width: 0, height: 0};
+    var attr_dimensions = {width: 0, height: 0};
     if (selection) {
-      attrDimensions = {
+      attr_dimensions = {
         width: selection.attr('width') || 0,
         height: selection.attr('height') || 0
       };
     }
 
     // Size set by css -> client (only valid for svg and some other elements)
-    // Size set by svg -> attr override or boundingBox
+    // Size set by svg -> attr override or bounding_box
     // -> Take maximum
     return {
-      width: _.max([clientDimensions.width, attrDimensions.width || boundingBox.width]) || 0,
-      height: _.max([clientDimensions.height, attrDimensions.height || boundingBox.height]) || 0
+      width: _.max([client_dimensions.width, attr_dimensions.width || bounding_box.width]) || 0,
+      height: _.max([client_dimensions.height, attr_dimensions.height || bounding_box.height]) || 0
     };
   }
 
@@ -273,8 +273,8 @@
     if (isSeriesData(data)) {
       return _.reduce(data, function(memo, series, index) {
         if (series && _.isArray(series.values)) {
-          var seriesMax = getMax(series.values);
-          return seriesMax > memo ? seriesMax : memo;
+          var series_max = getMax(series.values);
+          return series_max > memo ? series_max : memo;
         }
         else {
           return memo;
@@ -297,8 +297,8 @@
     if (isSeriesData(data)) {
       return _.reduce(data, function(memo, series, index) {
         if (series && _.isArray(series.values)) {
-          var seriesMin = getMin(series.values);
-          return seriesMin < memo ? seriesMin : memo;
+          var series_min = getMin(series.values);
+          return series_min < memo ? series_min : memo;
         }
         else {
           return memo;
@@ -382,26 +382,26 @@
           return _.map(data, getValue);
         };
 
-        var allValues;
+        var all_values;
         if (isSeriesData(options.data)) {
-          allValues = _.flatten(_.map(options.data, function(series) {
+          all_values = _.flatten(_.map(options.data, function(series) {
             if (series && _.isArray(series.values)) {
               return getValues(series.values);
             }
           }));
         }
         else {
-          allValues = getValues(options.data);
+          all_values = getValues(options.data);
         }
 
-        scale.domain(_.uniq(allValues));
+        scale.domain(_.uniq(all_values));
       }
       else {
         // By default, domain starts at 0 unless min is less than 0
-        var minValue = min(options.data, getValue);
+        var min_value = min(options.data, getValue);
 
         scale.domain([
-          minValue < 0 ? minValue : 0, 
+          min_value < 0 ? min_value : 0, 
           max(options.data, getValue)
         ]);
       }      
@@ -420,7 +420,8 @@
     @return {String}
   */
   function style(styles) {
-    if (!styles) return '';
+    if (!styles)
+      return '';
 
     styles = _.map(styles, function(value, key) {
       return key + ': ' + value;
@@ -461,7 +462,7 @@
     var wrapped = function wrapped(d, i, j) {
       return callback.call(this, undefined, d, i, j);
     };
-    wrapped._isDi = true;
+    wrapped._is_di = true;
     wrapped.original = callback;
 
     return wrapped;
@@ -476,7 +477,7 @@
   // Bind all di-functions found in chart
   function bindAllDi(chart) {
     for (var key in chart) {
-      if (chart[key] && chart[key]._isDi)
+      if (chart[key] && chart[key]._is_di)
         chart[key] = bindDi(chart[key], chart);
     }
   }
@@ -490,8 +491,8 @@
   */
   function getParentData(element) {
     // @internal Shortcut if element + parentData needs to be mocked
-    if (element._parentData)
-      return element._parentData;
+    if (element._parent_data)
+      return element._parent_data;
 
     var parent = element && element.parentNode;
     if (parent) {
@@ -544,7 +545,7 @@
 
   // Add helpers to d3.chart (static)
   d3.chart.helpers = _.extend({}, d3.chart.helpers, {
-    zIndex: zIndex,
+    z_index: z_index,
     property: property,
     valueOrDefault: valueOrDefault,
     dimensions: dimensions,

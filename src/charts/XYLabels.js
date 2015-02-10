@@ -2,7 +2,6 @@
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
-  var translate = helpers.translate;
 
   /**
     Labels
@@ -62,9 +61,8 @@
     },
 
     transform: function(data) {
-      if (!helpers.isSeriesData(data)) {
+      if (!helpers.isSeriesData(data))
         data = [{key: 'labels', name: 'Labels', values: data}];
-      }
 
       // TODO Use ticks / domain from xScale
       // ticks = scale.ticks ? scale.ticks.apply(scale, [10]) : scale.domain()
@@ -83,14 +81,14 @@
     }),
 
     position: property('position', {
-      defaultValue: 'top',
+      default_value: 'top',
       validate: function(value) {
         return _.contains(['top', 'right', 'bottom', 'left'], value);
       }
     }),
 
     offset: property('offset', {
-      defaultValue: {x: 0, y: 0},
+      default_value: {x: 0, y: 0},
       set: function(offset) {
         if (_.isNumber(offset)) {
           offset = {
@@ -100,9 +98,8 @@
             left: {x: -offset, y: 0}
           }[this.position()];
 
-          if (!offset) {
+          if (!offset)
             offset = {x: 0, y: 0};
-          }
 
           return {
             override: offset
@@ -111,10 +108,10 @@
       }
     }),
 
-    padding: property('padding', {defaultValue: 2}),
+    padding: property('padding', {default_value: 2}),
 
     anchor: property('anchor', {
-      defaultValue: function() {
+      default_value: function() {
         return {
           'top': 'middle',
           'right': 'start',
@@ -128,7 +125,7 @@
     }),
 
     alignment: property('labelAlignment', {
-      defaultValue: function() {
+      default_value: function() {
         return {
           'top': 'bottom',
           'right': 'middle',
@@ -146,7 +143,7 @@
     ease: property('ease', {type: 'Function'}),
 
     labelText: di(function(chart, d, i) {
-      var value = !_.isUndefined(d.label) ? d.label : chart.yValue.call(this, d, i);
+      var value = helpers.valueOrDefault(d.label, chart.yValue.call(this, d, i));
       var format = chart.format();
 
       return format ? format(value) : value;
@@ -211,9 +208,8 @@
         if (series && series.length) {
           var closest = series[0];
         
-          if (closest.distance < 50) {
-            this.highlightLabel(closest);
-          }  
+          if (closest.distance < 50)
+            this.highlightLabel(closest); 
         }
       }, this);
     },
@@ -225,9 +221,8 @@
         if (series && series.length) {
           var closest = series[0];
         
-          if (closest.distance < 50) {
+          if (closest.distance < 50)
             this.highlightLabel(closest);
-          }  
         }
       }, this);
     },
@@ -272,13 +267,13 @@
   }
 
   function calculateLayout(chart, options, label) {
-    var textBounds = label.text.element.getBBox();
+    var text_bounds = label.text.element.getBBox();
 
     // Need to adjust text for line-height
-    var textYAdjustment = 0;
+    var text_y_adjustment = 0;
     try {
       var style = window.getComputedStyle(label.text.element);
-      textYAdjustment = -(parseInt(style['line-height']) - parseInt(style['font-size'])) / 2;
+      text_y_adjustment = -(parseInt(style['line-height']) - parseInt(style['font-size'])) / 2;
     }
     catch (ex) {}
 
@@ -286,8 +281,8 @@
     var layout = label.bg.layout = {
       x: options.offset.x,
       y: options.offset.y,
-      width: textBounds.width + 2*options.padding,
-      height: textBounds.height + 2*options.padding
+      width: text_bounds.width + 2*options.padding,
+      height: text_bounds.height + 2*options.padding
     };
 
     // Set width / height of label
@@ -306,8 +301,8 @@
 
     // Center text in background
     label.text.layout = {
-      x: layout.x + (layout.width / 2) - (textBounds.width / 2),
-      y: layout.y + (layout.height / 2) - (textBounds.height / 2) + textBounds.height + textYAdjustment
+      x: layout.x + (layout.width / 2) - (text_bounds.width / 2),
+      y: layout.y + (layout.height / 2) - (text_bounds.height / 2) + text_bounds.height + text_y_adjustment
     };
   }
 
@@ -328,12 +323,12 @@
       var a = getEdges(labelA);
       var b = getEdges(labelB);
 
-      var containedLR = (b.left < a.left && b.right > a.right);
-      var containerTB = (b.bottom < a.bottom && b.top > a.top);
-      var overlapLR = (b.left >= a.left && b.left < a.right) || (b.right > a.left && b.right <= a.right) || containedLR;
-      var overlapTB = (b.top >= a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom <= a.bottom) || containerTB;
+      var contained_LR = (b.left < a.left && b.right > a.right);
+      var contained_TB = (b.bottom < a.bottom && b.top > a.top);
+      var overlap_LR = (b.left >= a.left && b.left < a.right) || (b.right > a.left && b.right <= a.right) || contained_LR;
+      var overlap_TB = (b.top >= a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom <= a.bottom) || contained_TB;
 
-      return overlapLR && overlapTB;
+      return overlap_LR && overlap_TB;
 
       function getEdges(label) {
         return {
@@ -407,16 +402,16 @@
 
   function setLayout(chart, label) {
     label.bg.selection
-      .attr('transform', translate(label.bg.layout.x, label.bg.layout.y))
+      .attr('transform', helpers.translate(label.bg.layout.x, label.bg.layout.y))
       .attr('width', label.bg.layout.width)
       .attr('height', label.bg.layout.height);
 
     label.text.selection
-      .attr('transform', translate(label.text.layout.x, label.text.layout.y));
+      .attr('transform', helpers.translate(label.text.layout.x, label.text.layout.y));
 
     // Position label and set opacity to fade-in
     label.selection
-      .attr('transform', translate(label.x, label.y))
+      .attr('transform', helpers.translate(label.x, label.y))
       .attr('opacity', 0);
   }
 
