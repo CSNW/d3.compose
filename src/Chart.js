@@ -10,6 +10,5 @@
       this.options(options || {});
     }
   });
-  d3.chart('Chart').extend('SeriesChart', mixins.Series);
 
 })(d3, _, d3.chart.helpers, d3.chart.mixins);

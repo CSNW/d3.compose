@@ -15,7 +15,7 @@
     - anchor (start, middle, end)
     - alignment (top, middle, bottom)
   */
-  d3.chart('Chart').extend('XYLabels', mixin(mixins.XYSeries, mixins.XYHover, {
+  d3.chart('Chart').extend('XYLabels', mixin(mixins.Series, mixins.XY, mixins.XYHover, {
     initialize: function() {
       // Proxy attach to parent for hover
       var parent = this.options().parent;

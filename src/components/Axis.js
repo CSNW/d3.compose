@@ -335,6 +335,6 @@
     AxisValues
     Axis component for (key,value) series data
   */
-  d3.chart('Axis').extend('AxisValues', mixin(mixins.Values));
+  d3.chart('Axis').extend('AxisValues', mixin(mixins.XYValues));
   
 })(d3, d3.chart.helpers, d3.chart.mixins);

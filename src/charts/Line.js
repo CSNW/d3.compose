@@ -7,7 +7,7 @@
     Line
     (x,y) line graph
   */
-  d3.chart('SeriesChart').extend('Line', mixin(mixins.XYSeries, mixins.XYLabels, {
+  d3.chart('Chart').extend('Line', mixin(mixins.Series, mixins.XY, mixins.XYLabels, {
     initialize: function() {
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
@@ -84,6 +84,6 @@
     LineValues
     Line graph for centered key,value data
   */
-  d3.chart('Line').extend('LineValues', mixins.ValuesSeries);
+  d3.chart('Line').extend('LineValues', mixins.XYValues);
 
 })(d3, d3.chart.helpers, d3.chart.mixins);

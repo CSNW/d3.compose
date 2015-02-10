@@ -7,8 +7,6 @@
     mixins for handling series data
   */
   var Series = {
-    isSeries: true,
-
     seriesKey: di(function(chart, d, i) {
       return d.key;
     }),
@@ -95,8 +93,6 @@
       // Set scale ranges once chart is ready to be rendered
       this.on('before:draw', this.setScales.bind(this));
     },
-    
-    isXY: true,
 
     xKey: property('xKey', {defaultValue: 'x'}),
     yKey: property('yKey', {defaultValue: 'y'}),
@@ -219,23 +215,76 @@
   };
 
   /**
-    TODO Remove
-  */
-  var XYSeries = {};
-
-  /**
     mixins for charts of centered key,value data (x: index, y: value, key)
   
     Properties:
     - [itemPadding = 0.1] {Number} % padding between each item (for ValuesSeries, padding is just around group, not individual series items)
     Dependencies: XY
   */
-  var Values = {
-    isValues: true,
+  var XYValues = _.extend({}, XY, {
+    transform: function(data) {
+      // Transform series data from values to x,y
+      if (helpers.isSeriesData(data)) {
+        _.each(data, function(series) {
+          series.values = _.map(series.values, normalizeData);
+        }, this);
+      }
+      else {
+        data = _.map(data, normalizeData);
+      }
+
+      return data;
+
+      function normalizeData(point, index) {
+        point = _.isObject(point) ? point : {y: point};
+        point.x = valueOrDefault(point.x, point.key);
+
+        return point;
+      }
+    },
 
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
     itemPadding: property('itemPadding', {defaultValue: 0.1}),
+
+    // If series data, display points at same index for different series adjacent
+    displayAdjacent: property('displayAdjacent', {defaultValue: false}),
+
+    // determine centered-x based on series display type (adjacent or layered)
+    x: di(function(chart, d, i) {
+      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
+    }),
+
+    // AdjacentX/Width is used in cases where series are presented next to each other at each value
+    adjacentX: di(function(chart, d, i) {
+      var adjacentWidth = chart.adjacentWidth.call(this, d, i);
+      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
+      var seriesIndex = chart.seriesIndex ? chart.seriesIndex.call(this, d, i) : 1;
+      
+      return left + adjacentWidth * seriesIndex;
+    }),
+    adjacentWidth: di(function(chart, d, i) {
+      var seriesCount = chart.seriesCount ? chart.seriesCount.call(this) : 1;
+
+      if (seriesCount > 0)
+        return chart.layeredWidth.call(this, d, i) / seriesCount;
+      else
+        return 0;
+    }),
+
+    // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
+    layeredX: di(function(chart, d, i) {
+      return chart.xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
+    }),
+    layeredWidth: di(function(chart, d, i) {
+      var rangeBand = chart.xScale().rangeBand();
+      return isFinite(rangeBand) ? rangeBand : 0;
+    }),
+
+    // determine item width based on series display type (adjacent or layered)
+    itemWidth: di(function(chart, d, i) {
+      return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
+    }),
 
     setXScaleRange: function(xScale) {
       if (_.isFunction(xScale.rangeBands)) {
@@ -256,68 +305,8 @@
         data: this.data(),
         key: this.xKey()
       });
-    },
-  };
-
-  /**
-    mixins for charts of centered key,value series data (x: index, y: value, key)
-
-    Properties:
-    - [displayAdjacent = false] {Boolean} Display series next to each other (default is stacked)
-    Dependencies: Series, XY, XYSeries, Values
-  */
-  var ValuesSeries = {
-    displayAdjacent: property('displayAdjacent', {defaultValue: false}),
-
-    transform: function(data) {
-      // Transform series data from values to x,y
-      _.each(data, function(series) {
-        series.values = _.map(series.values, function(item, index) {
-          item = _.isObject(item) ? item : {y: item};
-          item.x = valueOrDefault(item.x, item.key);
-
-          return item;
-        }, this);
-      }, this);
-
-      return data;
-    },
-
-    // determine centered-x based on series display type (adjacent or layered)
-    x: di(function(chart, d, i) {
-      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
-    }),
-
-    // AdjacentX/Width is used in cases where series are presented next to each other at each value
-    adjacentX: di(function(chart, d, i) {
-      var adjacentWidth = chart.adjacentWidth.call(this, d, i);
-      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
-      
-      return left + adjacentWidth * chart.seriesIndex.call(this, d, i) || 0;
-    }),
-    adjacentWidth: di(function(chart, d, i) {
-      var seriesCount = chart.seriesCount.call(this);
-
-      if (seriesCount > 0)
-        return chart.layeredWidth.call(this, d, i) / seriesCount;
-      else
-        return 0;
-    }),
-
-    // LayeredX/Width is used in cases where sereis are presented on top of each other at each value
-    layeredX: di(function(chart, d, i) {
-      return chart.xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
-    }),
-    layeredWidth: di(function(chart, d, i) {
-      var rangeBand = chart.xScale().rangeBand();
-      return isFinite(rangeBand) ? rangeBand : 0;
-    }),
-
-    // determine item width based on series display type (adjacent or layered)
-    itemWidth: di(function(chart, d, i) {
-      return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
-    })
-  };
+    }
+  });
 
   /**
     mixin for handling labels in charts
@@ -374,7 +363,7 @@
     onMouseLeave: function() {}
   };
 
-  var XYHover = {
+  var XYHover = _.extend({}, Hover, {
     initialize: function() {
       Hover.initialize.apply(this, arguments);
       this.on('before:draw', function() {
@@ -450,18 +439,16 @@
         return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
       }
     }    
-  };
+  });
 
   // Expose mixins
   d3.chart.mixins = _.extend(d3.chart.mixins || {}, {
     Series: Series,
     XY: XY,
-    XYSeries: _.extend({}, Series, XY, XYSeries),
-    Values: _.extend({}, XY, Values),
-    ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries),
+    XYValues: XYValues,
     XYLabels: XYLabels,
     Hover: Hover,
-    XYHover: _.extend({}, Hover, XYHover)
+    XYHover: XYHover
   });
 
 })(d3, _, d3.chart.helpers);
