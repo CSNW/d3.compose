@@ -145,13 +145,13 @@
         var min = helpers.min(this.data(), this.xValue);
 
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return +valueOrDefault(value, (min < 0 ? min : 0));
+        return parseFloat(valueOrDefault(value, (min < 0 ? min : 0)));
       }
     }),
     xMax: property('xMax', {
       get: function(value) {
         var max = helpers.max(this.data(), this.xValue);
-        return +valueOrDefault(value, max);
+        return parseFloat(valueOrDefault(value, max));
       }
     }),
     yMin: property('yMin', {
@@ -159,27 +159,27 @@
         var min = helpers.min(this.data(), this.yValue);
 
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return +valueOrDefault(value, (min < 0 ? min : 0));
+        return parseFloat(valueOrDefault(value, (min < 0 ? min : 0)));
       }
     }),
     yMax: property('yMax', {
       get: function(value) {
         var max = helpers.max(this.data(), this.yValue);
-        return +valueOrDefault(value, max);
+        return parseFloat(valueOrDefault(value, max));
       }
     }),
 
     x: di(function(chart, d, i) {
-      return +chart.xScale()(chart.xValue.call(this, d, i));
+      return parseFloat(chart.xScale()(chart.xValue.call(this, d, i)));
     }),
     y: di(function(chart, d, i) {
-      return +chart.yScale()(chart.yValue.call(this, d, i));
+      return parseFloat(chart.yScale()(chart.yValue.call(this, d, i)));
     }),
     x0: di(function(chart, d, i) {
-      return +chart.xScale()(0);
+      return parseFloat(chart.xScale()(0));
     }),
     y0: di(function(chart, d, i) {
-      return +chart.yScale()(0);
+      return parseFloat(chart.yScale()(0));
     }),
 
     xValue: di(function(chart, d, i) {

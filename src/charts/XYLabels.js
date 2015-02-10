@@ -2,7 +2,7 @@
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
-  var translate = helpers.transform.translate;
+  var translate = helpers.translate;
 
   /**
     Labels
@@ -165,8 +165,6 @@
 
     mergeLabels: function(selection) {
       var chart = this;
-
-      helpers.log.time('Labels.draw');
       
       selection.selectAll('text')
         .text(this.labelText);
@@ -199,8 +197,6 @@
           setLayout(chart, label);
         });
       });
-
-      helpers.log.timeEnd('Labels.draw');
     },
 
     transitionLabels: function(selection) {

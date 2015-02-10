@@ -120,7 +120,7 @@
           */
         });
 
-        var translate = helpers.transform.translate;
+        var translate = helpers.translate;
 
         it('should layout "top" components by offset and position', function() {
           expect(components[0].base.attr('transform')).toEqual(translate(110, 70));

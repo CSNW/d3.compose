@@ -94,7 +94,7 @@
     */
     setLayout: function(x, y, options) {
       var margins = this.margins();
-      this.base.attr('transform', helpers.transform.translate(x + margins.left, y + margins.top));
+      this.base.attr('transform', helpers.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
     }

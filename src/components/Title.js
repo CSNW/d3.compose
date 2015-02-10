@@ -53,8 +53,8 @@
     }),
 
     transformation: function() {
-      var translate = helpers.transform.translate(this.width() / 2, this.height() / 2);
-      var rotate = helpers.transform.rotate(this.rotation());
+      var translate = helpers.translate(this.width() / 2, this.height() / 2);
+      var rotate = helpers.rotate(this.rotation());
 
       return translate + rotate;
     },

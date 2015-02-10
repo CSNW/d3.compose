@@ -103,9 +103,6 @@
     }),
 
     draw: function(data) {
-      helpers.log('draw', data);
-      helpers.log.time('Base#draw');
-
       // Explicitly set width and height of container
       // (if width/height > 0)
       this.base
@@ -113,14 +110,10 @@
         .attr('height', this.height() || null);
 
       // Pre-draw for accurate dimensions for layout
-      helpers.log.time('Base#draw.layout');
       this.layout(data);
-      helpers.log.timeEnd('Base#draw.layout');
 
       // Full draw now that everything has been laid out
       d3.chart().prototype.draw.call(this, data);
-
-      helpers.log.timeEnd('Base#draw');
     },
 
     /**
@@ -129,7 +122,6 @@
     redraw: function() {
       // Using previously saved rawData, redraw chart      
       if (this.rawData()) {
-        helpers.log('redraw');
         this.draw(this.rawData());
       }
     },
@@ -296,7 +288,7 @@
       var position = this.chartPosition();
       
       this.base.selectAll('.chart-layer')
-        .attr('transform', helpers.transform.translate(position.left, position.top))
+        .attr('transform', helpers.translate(position.left, position.top))
         .attr('width', position.width)
         .attr('height', position.height);
     },
@@ -348,7 +340,7 @@
 
       // Sort by z-index
       elements = _.sortBy(elements, function(element) {
-        return +d3.select(element).attr('data-zIndex') || 0;
+        return parseInt(d3.select(element).attr('data-zIndex')) || 0;
       });
 
       // Move layers to z-index order
