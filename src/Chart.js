@@ -1,4 +1,4 @@
-(function(d3) {
+(function(d3, helpers) {
   
   /**
     Chart
@@ -8,6 +8,8 @@
     initialize: function(options) {
       this.options(options || {});
     }
+  }, {
+    z_index: helpers.z_index.chart
   });
 
-})(d3);
+})(d3, d3.chart.helpers);

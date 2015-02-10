@@ -243,7 +243,9 @@
         .selectAll('g')
         .classed('highlight', false);
     }
-  }));
+  }), {
+    z_index: helpers.z_index.labels
+  });
 
   function prepareLabel(chart, element, d, i, j) {
     var selection = d3.select(element);

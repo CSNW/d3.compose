@@ -57,6 +57,8 @@
 
       return translate + ' ' + rotate;
     },
+  }, {
+    z_index: helpers.z_index.title
   });
   
 })(d3, d3.chart.helpers, d3.chart.mixins);

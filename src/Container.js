@@ -211,8 +211,9 @@
     },
 
     attachHoverListeners: function() {
-      var inside;
       var trigger = this.trigger.bind(this);
+      var chartPosition = this.chartPosition.bind(this);
+      var inside, chart_position;
       
       var throttledMouseMove = _.throttle(function(coordinates) {
         if (inside)
@@ -221,20 +222,20 @@
 
       this.base.on('mouseenter', function() {
         inside = true;
-        trigger('enter:mouse', translateToXY(d3.mouse(this)));
+        chart_position = chartPosition();
+        trigger('enter:mouse', translateToXY(d3.mouse(this), chart_position));
       });
       this.base.on('mousemove', function() {
-        throttledMouseMove(translateToXY(d3.mouse(this)));
+        throttledMouseMove(translateToXY(d3.mouse(this), chart_position));
       });
       this.base.on('mouseleave', function() {
         inside = false;
         trigger('leave:mouse');
       });
 
-      var translateToXY = function(coordinates) {
+      function translateToXY(coordinates, chart_position) {
         var x = coordinates[0];
         var y = coordinates[1];
-        var chart_position = this.chartPosition();
         var chart_x = x - chart_position.left;
         var chart_y = y - chart_position.top;
         
@@ -253,7 +254,7 @@
           container: {x: x, y: y},
           chart: {x: chart_x, y: chart_y}
         };
-      }.bind(this);
+      };
     },
 
     _attach: function(id, item) {

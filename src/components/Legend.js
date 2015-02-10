@@ -134,6 +134,8 @@
       if (inserted && _.isFunction(inserted.attr))
         inserted.attr('style', chart.dataStyle.call(this, d, i));
     })
+  }, {
+    z_index: helpers.z_index.legend
   });
   
   /**

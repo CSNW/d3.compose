@@ -40,9 +40,9 @@
   */
   d3.chart('Container').extend('Multi', {
     initialize: function() {
-      // Internal storage of axes and components
-      this._axes = {};
+      // Internal storage of components and axes
       this._components = {};
+      this._axes = {};
     },
 
     options: property('options', {
@@ -65,7 +65,8 @@
       set: function(options, previous) {
         // Remove title if no options are given
         if (!options || _.isEmpty(options)) {
-          return this.detachComponent('title');
+          this.detachComponent('title');
+          return;
         }
 
         // Title may be set directly
@@ -75,16 +76,7 @@
         // Load defaults
         options = _.defaults({}, options, d3.chart('Multi').defaults.title);
 
-        var title = this.components_by_id['title'];
-        if (!title) {
-          var Title = d3.chart(options.type);
-          title = new Title(this.componentLayer({z_index: helpers.z_index.title}), options);
-
-          this.attachComponent('title', title);
-        }
-        else {
-          title.options(options);
-        }
+        this.attachComponents({title: options});
       }
     }),
 
@@ -118,130 +110,55 @@
     }),
 
     axes: property('axes', {
-      set: function(axes, previous) {
-        axes = axes || {};
-        
-        // Find axes to remove
-        var remove_ids = _.difference(_.keys(this._axes), _.keys(axes));
-        _.each(remove_ids, function(remove_id) {
-          this.detachComponent('axis.' + remove_id);
-          this.detachComponent('axis_title.' + remove_id);
-          delete this._axes[remove_id];
-        }, this);
+      set: function(axes) {
+        // Prepare axis and title options
+        var components = {};
+        _.each(axes || {}, function(options, id) {
+          options = _.defaults({}, options, d3.chart('Multi').defaults.axes);
+          components['axis.' + id] = options
 
-        // Create or update axes
-        _.each(axes, function(axis_options, axis_id) {
-          var axis = this._axes[axis_id];
-          axis_options = _.defaults({}, axis_options, d3.chart('Multi').defaults.axes);
-
-          if (!axis) {
-            var Axis = d3.chart(axis_options.type);
-            axis = new Axis(this.chartLayer({z_index: helpers.z_index.axis}), axis_options);
-            
-            this.attachComponent('axis.' + axis_id, axis);
-            this._axes[axis_id] = axis;
-          }
-          else {
-            axis.options(axis_options);
-          }
-
-          var axis_title_id = 'axis_title.' + axis_id;
-          var axis_title = this.components_by_id[axis_title_id];
-          if (axis_options.title) {
-            var title_options = _.isString(axis_options.title) ? {text: axis_options.title} : axis_options.title;
+          if (options.title) {
+            var title_options = _.isString(options.title) ? {text: options.title} : options.title;
             title_options = _.defaults({}, title_options, {
               type: 'Title',
-              position: axis_options.position,
+              position: options.position,
               'class': 'chart-title-axis'
             });
 
-            if (!axis_title) {
-              var Title = d3.chart(title_options.type);
-              title = new Title(this.componentLayer({z_index: helpers.z_index.title}), title_options);
-
-              this.attachComponent(axis_title_id, title);
-            }
-            else {
-              title.options(title_options);
-            }
+            components['axis_title.' + id] = title_options;
           }
-          else if (axis_title) {
-            this.detachComponent(axis_title_id);
-          }
-        }, this);   
+        });
+        
+        this.attachComponents(components, this._axes);
       },
       default_value: {}
     }),
 
     legend: property('legend', {
-      set: function(options, previous) {
+      set: function(options) {
         if (!options || options === false || options.display === false) {
-          return this.detachComponent('legend');
+          this.detachComponent('legend');
+          return;
         }
-
-        if (options === true)
-          options = {display: true};
         
         options = _.defaults({}, options, d3.chart('Multi').defaults.legend);
 
         // Load charts
         if (options.charts) {
-          options.charts = _.map(options.charts, function(chartId) {
-            return this.charts_by_id[chartId];
+          options.charts = _.map(options.charts, function(chart_id) {
+            return this.charts_by_id[chart_id];
           }, this);
         }
 
-        // If switching legend types, remove existing for clean slate
-        if (previous && previous.type != options.type) {
-          this.detachComponent('legend');
-        }
-
-        var legend = this.components_by_id['legend'];
-        if (!legend) {
-          var Legend = d3.chart(options.type);
-
-          // TODO Make this happen within component
-          var layer_options = {z_index: helpers.z_index.legend};
-          var base = Legend.layerType == 'chart' ? this.chartLayer(layer_options) : this.componentLayer(layer_options);
-
-          legend = new Legend(base, options);
-
-          this.attachComponent('legend', legend);
-        }
-        else {
-          legend.options(options);
-        }
+        this.attachComponents({legend: options});
       }
     }),
 
     components: property('components', {
-      set: function(components, previous) {
-        components = components || {};
-
-        var remove_ids = _.difference(_.keys(this._components), _.keys(components));
-        _.each(remove_ids, function(remove_id) {
-          this.detachComponent(remove_id);
-          delete this._components[remove_id];
-        }, this);
-
-        _.each(components, function(component_options, component_id) {
-          var component = this.components_by_id[component_id];
-          component_options = _.defaults({}, component_options);
-
-          if (!component) {
-            var Component = d3.chart(component_options.type);
-            var base = Component.layerType == 'chart' ? this.chartLayer() : this.componentLayer();
-
-            component = new Component(base, component_options);
-
-            this.attachComponent(component_id, component);
-            this._components[component_id] = component;
-          }
-          else {
-            component.options(component_options);
-          }
-        }, this);
-      }
+      set: function(components) {
+        this.attachComponents(components, this._components);
+      },
+      default_value: {}
     }),
   
     draw: function(data) {
@@ -284,6 +201,44 @@
 
       // If no item data is found, use original data
       return data.original;
+    },
+
+    attachComponents: function(components, reference) {
+      if (reference) {
+        var remove_ids = _.difference(_.keys(reference), _.keys(components));
+        _.each(remove_ids, function(remove_id) {
+          this.detachComponent(remove_id);
+          delete reference[remove_id];
+        }, this);  
+      }
+
+      _.each(components, function(options, id) {
+        var component = this.components_by_id[id];
+
+        // If component type has change, detach and recreate
+        if (component && component.type != options.type) {
+          this.detachComponent(componentId);
+          component = undefined;
+        }
+
+        if (!component) {
+          var Component = d3.chart(options.type);
+
+          var layer_options = {z_index: helpers.valueOrDefault(Component.z_index, helpers.z_index.component)};
+          var base = Component.layer_type == 'chart' ? this.chartLayer(layer_options) : this.componentLayer(layer_options);
+
+          component = new Component(base, options);
+          component.type = options.type;
+
+          this.attachComponent(id, component);
+
+          if (reference)
+            reference[id] = component;
+        }
+        else {
+          component.options(options);
+        }
+      }, this);
     },
 
     _prepareConfig: function(data) {

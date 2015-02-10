@@ -321,7 +321,10 @@
         height: _.max(overhangs.height)
       };
     }
-  }));
+  }), {
+    layer_type: 'chart',
+    z_index: helpers.z_index.axis
+  });
   
   /**
     AxisValues
