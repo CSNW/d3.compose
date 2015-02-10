@@ -8,7 +8,6 @@
   d3.chart('Base').extend('Chart', {
     initialize: function(options) {
       this.options(options || {});
-      this.redrawFor('options');
     }
   });
   d3.chart('Chart').extend('SeriesChart', mixins.Series);

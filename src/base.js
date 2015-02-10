@@ -58,35 +58,6 @@
     },
 
     /**
-      Trigger redraw on property changes
-
-      @example
-      ```js
-      this.redrawFor('title', 'style')
-      // -> on change:title, redraw()
-      ```
-
-      @param {String...} properties
-    */
-    redrawFor: function(property) {
-      var properties = _.toArray(arguments);
-      var events = _.map(properties, function(property) {
-        return 'change:' + property;
-      });
-
-      // d3.chart doesn't handle events with spaces, register individual handlers
-      _.each(events, function(event) {
-        this.on(event, function() {
-          helpers.log('redrawFor', event);
-          if (_.isFunction(this.redraw))
-            this.redraw();
-          else if (this.container && _.isFunction(this.container.redraw))
-            this.container.redraw();
-        });
-      }, this);
-    },
-
-    /**
       Base is last transform to be called,
       so stored data has been fully transformed
     */

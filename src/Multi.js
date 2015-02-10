@@ -40,11 +40,6 @@
   */
   d3.chart('Container').extend('Multi', {
     initialize: function() {
-      this.redrawFor('title', 'charts', 'axes', 'components', 'legend');
-      
-      // When "options" changes, a full redraw is required to setup config
-      this._full_redraw = false;
-
       // Internal storage of axes and components
       this._axes = {};
       this._components = {};
@@ -54,8 +49,6 @@
       defaultValue: function(data) { return {}; },
       type: 'Function',
       set: function(options) {
-        this._full_redraw = true;
-
         // If options is plain object,
         // return from generic options function
         if (!_.isFunction(options)) {
@@ -69,9 +62,7 @@
     }),
 
     title: property('title', {
-      set: function(options, previous, setOptions) {
-        var silent = setOptions && setOptions.silent;
-
+      set: function(options, previous) {
         // Remove title if no options are given
         if (!options || _.isEmpty(options)) {
           return this.detachComponent('title');
@@ -92,15 +83,14 @@
           this.attachComponent('title', title);
         }
         else {
-          title.options(options, {silent: silent});
+          title.options(options);
         }
       }
     }),
 
     charts: property('charts', {
-      set: function(charts, previous, setOptions) {
+      set: function(charts, previous) {
         charts = charts || {};
-        var silent = setOptions && setOptions.silent;
         
         // Find charts to remove
         var removeIds = _.difference(_.keys(this.chartsById), _.keys(charts));
@@ -120,7 +110,7 @@
             this.attachChart(chartId, chart);
           }
           else {
-            chart.options(chartOptions, {silent: silent});
+            chart.options(chartOptions);
           }
         }, this);
       },
@@ -128,9 +118,8 @@
     }),
 
     axes: property('axes', {
-      set: function(axes, previous, setOptions) {
+      set: function(axes, previous) {
         axes = axes || {};
-        var silent = setOptions && setOptions.silent;
         
         // Find axes to remove
         var removeIds = _.difference(_.keys(this._axes), _.keys(axes));
@@ -153,7 +142,7 @@
             this._axes[axisId] = axis;
           }
           else {
-            axis.options(axisOptions, {silent: silent});
+            axis.options(axisOptions);
           }
 
           var axisTitleId = 'axis_title.' + axisId;
@@ -173,7 +162,7 @@
               this.attachComponent(axisTitleId, title);
             }
             else {
-              title.options(titleOptions, {silent: silent});
+              title.options(titleOptions);
             }
           }
           else if (axisTitle) {
@@ -185,9 +174,7 @@
     }),
 
     legend: property('legend', {
-      set: function(options, previous, setOptions) {
-        var silent = setOptions && setOptions.silent;
-
+      set: function(options, previous) {
         if (!options || options === false || options.display === false) {
           return this.detachComponent('legend');
         }
@@ -222,15 +209,14 @@
           this.attachComponent('legend', legend);
         }
         else {
-          legend.options(options, {silent: silent});
+          legend.options(options);
         }
       }
     }),
 
     components: property('components', {
-      set: function(components, previous, setOptions) {
+      set: function(components, previous) {
         components = components || {};
-        var silent = setOptions && setOptions.silent;
 
         var removeIds = _.difference(_.keys(this._components), _.keys(components));
         _.each(removeIds, function(removeId) {
@@ -252,7 +238,7 @@
             this._components[componentId] = component;
           }
           else {
-            component.options(componentOptions, {silent: silent});
+            component.options(componentOptions);
           }
         }, this);
       }
@@ -261,11 +247,11 @@
     draw: function(data) {
       var config = this._prepareConfig(data);
 
-      this.axes(config.axes, {silent: true});
-      this.charts(config.charts, {silent: true});
-      this.components(config.components, {silent: true});
-      this.legend(config.legend, {silent: true});
-      this.title(config.title, {silent: true});  
+      this.axes(config.axes);
+      this.charts(config.charts);
+      this.components(config.components);
+      this.legend(config.legend);
+      this.title(config.title);
 
       d3.chart('Container').prototype.draw.call(this, {
         original: data,
@@ -274,15 +260,9 @@
     },
 
     redraw: function() {
-      // Redraw chart with previously saved raw data / config
+      // Redraw chart with previously saved raw data
       if (this.rawData()) {
-        if (this._full_redraw) {
-          this._full_redraw = false;
-          this.draw(this.rawData().original);
-        }
-        else {
-          d3.chart('Container').prototype.draw.call(this, this.rawData());
-        }
+        this.draw(this.rawData().original);
       }
     },
 

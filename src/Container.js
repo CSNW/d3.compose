@@ -27,7 +27,6 @@
       this.base.classed('chart-container', true);
 
       this.options(options || {});
-      this.redrawFor('options');
 
       this.on('change:dimensions', this.redraw);
       this.attachHoverListeners();

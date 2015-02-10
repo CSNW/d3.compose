@@ -13,8 +13,6 @@
   */
   d3.chart('Component').extend('Title', {
     initialize: function() {
-      this.redrawFor('title', 'rotation');
-
       this.layer('Title', this.base.append('g').classed('chart-title', true), {
         dataBind: function(data) {
           return this.selectAll('text')

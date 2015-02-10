@@ -25,7 +25,6 @@
   d3.chart('Base').extend('Component', {
     initialize: function(options) {
       this.options(options || {});
-      this.redrawFor('options');
     },
 
     position: property('position', {
