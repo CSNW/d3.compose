@@ -258,15 +258,15 @@
         expect(width()).toEqual(20);
         expect(height()).toEqual(20);
 
-        selection.append('rect').attr('width', 50).attr('height', 100);
-        expect(width()).toEqual(50);
-        expect(height()).toEqual(100);
-
-        selection.attr('width', 600).attr('height', 300);
+        selection
+          .attr('style', '')
+          .attr('width', 600)
+          .attr('height', 300);
         expect(width()).toEqual(600);
         expect(height()).toEqual(300);
 
-        selection.attr('style', 'width: 800px; height: 400px');
+        selection
+          .attr('style', 'width: 800px; height: 400px');
         expect(width()).toEqual(800);
         expect(height()).toEqual(400);
       });

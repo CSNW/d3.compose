@@ -67,8 +67,8 @@
           right: 0,
           bottom: 0,
           left: 0,
-          width: this.width(),
-          height: this.height()
+          width: this._width(),
+          height: this._height()
         };
       },
       set: function(values) {
@@ -78,8 +78,8 @@
             right: 0, 
             bottom: 0, 
             left: 0,
-            width: this.width() - values.right - values.left,
-            height: this.height() - values.bottom - values.top
+            width: this._width() - values.right - values.left,
+            height: this._height() - values.bottom - values.top
           })
         };
       }
@@ -88,20 +88,11 @@
     /**
       Get/set overall width/height of Container
     */
-    width: property('width', {
-      default_value: function() {
-        return d3.chart('Base').prototype.width.call(this);
-      },
-    }),
-    height: property('height', {
-      default_value: function() {
-        return d3.chart('Base').prototype.height.call(this);
-      },
-    }),
+    width: property('width'),
+    height: property('height'),
 
     draw: function(data) {
-      // Explicitly set width and height of container
-      // (if width/height > 0)
+      // Explicitly set width and height of container if width/height > 0
       this.base
         .attr('width', this.width() || null)
         .attr('height', this.height() || null);
@@ -254,7 +245,7 @@
           container: {x: x, y: y},
           chart: {x: chart_x, y: chart_y}
         };
-      };
+      }
     },
 
     _attach: function(id, item) {
@@ -294,8 +285,8 @@
 
     _positionComponents: function(layout) {
       var chart = this.chartPosition();
-      var width = this.width();
-      var height = this.height();
+      var width = this._width();
+      var height = this._height();
       
       _.reduce(layout.top, function(previous, part, index, parts) {
         var y = previous - part.offset;

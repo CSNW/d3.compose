@@ -174,47 +174,54 @@
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
     var is_SVG = element ? element.nodeName == 'svg' : false;
 
-    // Firefox throws error when calling getBBox when svg hasn't been displayed
-    // ignore error and set to empty
-    var bounding_box;
-    try {
-      bounding_box = element && typeof element.getBBox == 'function' && element.getBBox();
-    }
-    catch(ex) {}
-
-    if (!bounding_box)
-      bounding_box = {width: 0, height: 0};
-
-    var client_dimensions = {
-      width: (element && element.clientWidth) || 0, 
-      height: (element && element.clientHeight) || 0
+    // 1. Get width/height set via css (only valid for svg and some other elements)
+    var client = {
+      width: element && element.clientWidth, 
+      height: element && element.clientHeight
     };
 
     // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
     //        calculate from css
     //        http://stackoverflow.com/questions/13122790/how-to-get-svg-element-dimensions-in-firefox
     //        Note: This makes assumptions about the box model in use and that width/height are not percent values
-    if (element && is_SVG && (!element.clientWidth || !element.clientHeight) && window && window.getComputedStyle) {
+    if (is_SVG && (!element.clientWidth || !element.clientHeight) && typeof window !== 'undefined' && window.getComputedStyle) {
       var styles = window.getComputedStyle(element);
-      client_dimensions.height = parseFloat(styles['height']) - parseFloat(styles['borderTopWidth']) - parseFloat(styles['borderBottomWidth']);
-      client_dimensions.width = parseFloat(styles['width']) - parseFloat(styles['borderLeftWidth']) - parseFloat(styles['borderRightWidth']);
+      client.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
+      client.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
     }
 
-    var attr_dimensions = {width: 0, height: 0};
-    if (selection) {
-      attr_dimensions = {
-        width: selection.attr('width') || 0,
-        height: selection.attr('height') || 0
+    if (client.width && client.height)
+      return client;
+
+    // 2. Get width/height set via attribute
+    var attr = {
+      width: selection && selection.attr && parseFloat(selection.attr('width')),
+      height: selection && selection.attr && parseFloat(selection.attr('height'))
+    };
+    
+    if (is_SVG) {
+      return {
+        width: client.width != null ? client.width : attr.width || 0,
+        height: client.height != null ? client.height : attr.height || 0
       };
     }
+    else {
+      // Firefox throws error when calling getBBox when svg hasn't been displayed
+      // ignore error and set to empty
+      var bbox = {width: 0, height: 0};
+      try {
+        bbox = element && typeof element.getBBox == 'function' && element.getBBox();
+      }
+      catch(ex) {}
 
-    // Size set by css -> client (only valid for svg and some other elements)
-    // Size set by svg -> attr override or bounding_box
-    // -> Take maximum
-    return {
-      width: _.max([client_dimensions.width, attr_dimensions.width || bounding_box.width]) || 0,
-      height: _.max([client_dimensions.height, attr_dimensions.height || bounding_box.height]) || 0
-    };
+      // Size set by css -> client (only valid for svg and some other elements)
+      // Size set by svg -> attr override or bounding_box
+      // -> Take maximum
+      return {
+        width: _.max([client.width, attr.width || bbox.width]) || 0,
+        height: _.max([client.height, attr.height || bbox.height]) || 0
+      };
+    }
   }
 
   /**

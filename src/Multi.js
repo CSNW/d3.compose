@@ -115,7 +115,7 @@
         var components = {};
         _.each(axes || {}, function(options, id) {
           options = _.defaults({}, options, d3.chart('Multi').defaults.axes);
-          components['axis.' + id] = options
+          components['axis.' + id] = options;
 
           if (options.title) {
             var title_options = _.isString(options.title) ? {text: options.title} : options.title;
