@@ -40,6 +40,9 @@
   */
   d3.chart('Container').extend('Multi', {
     initialize: function() {
+      // When "options" changes, a full redraw is required to setup config
+      this._full_redraw = false;
+
       // Internal storage of components and axes
       this._components = {};
       this._axes = {};
@@ -49,6 +52,8 @@
       default_value: function(data) { return {}; },
       type: 'Function',
       set: function(options) {
+        this._full_redraw = true;
+
         // If options is plain object,
         // return from generic options function
         if (!_.isFunction(options)) {
@@ -177,9 +182,16 @@
     },
 
     redraw: function() {
-      // Redraw chart with previously saved raw data
-      if (this.rawData())
-        this.draw(this.rawData().original);
+      // Redraw chart with previously saved raw data / config
+      if (this.rawData()) {
+        if (this._full_redraw) {
+          this._full_redraw = false;
+          this.draw(this.rawData().original);
+        }
+        else {
+          d3.chart('Container').prototype.draw.call(this, this.rawData());
+        }
+      }  
     },
 
     demux: function(name, data) {

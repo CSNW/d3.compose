@@ -198,25 +198,27 @@
 
     var count = 1;
     function change() {
-      chart.options(function(data) {
-        var values = data['increasing-dense'];
-        var scales = {
-          x: {domain: [0, 50]},
-          y: {domain: [0, 200 + 5 * count]}
-        };
+      chart
+        .options(function(data) {
+          var values = data['increasing-dense'];
+          var scales = {
+            x: {domain: [0, 50]},
+            y: {domain: [0, 200 + 5 * count]}
+          };
 
-        return {
-          charts: {
-            line: {type: 'Line', data: values, xScale: scales.x, yScale: scales.y, labels: true},
-          },
-          axes: {
-            x: {scale: scales.x, position: 'top', title: 'Howdy'},
-            y: {scale: scales.y, position: 'left'}
-          },
-          legend: false,
-          title: {text: 'Howdy ' + count++ + '!', position: 'bottom'}
-        };
-      });
+          return {
+            charts: {
+              line: {type: 'Line', data: values, xScale: scales.x, yScale: scales.y, labels: true},
+            },
+            axes: {
+              x: {scale: scales.x, position: 'top', title: 'Howdy'},
+              y: {scale: scales.y, position: 'left'}
+            },
+            legend: false,
+            title: {text: 'Howdy ' + count++ + '!', position: 'bottom'}
+          };
+        })
+        .redraw();
     }
 
     function redraw() {
