@@ -1,5 +1,4 @@
-(function(d3, _, helpers, mixins) {
-  var property = helpers.property;
+(function(d3, helpers) {
   
   /**
     Chart
@@ -8,9 +7,9 @@
   d3.chart('Base').extend('Chart', {
     initialize: function(options) {
       this.options(options || {});
-      this.redrawFor('options');
     }
+  }, {
+    z_index: helpers.z_index.chart
   });
-  d3.chart('Chart').extend('SeriesChart', mixins.Series);
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3, d3.chart.helpers);

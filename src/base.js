@@ -1,4 +1,4 @@
-(function(d3, _, helpers, mixins) {
+(function(d3, _, helpers) {
   var property = helpers.property;
   
   /**
@@ -29,9 +29,12 @@
       @param {Object} value
     */
     options: property('options', {
-      defaultValue: {},
+      default_value: {},
       set: function(options) {
-        this.setFromOptions(options);
+        _.each(options, function(value, key) {
+          if (this[key] && this[key].is_property && this[key].set_from_options)
+            this[key](value);
+        }, this);
       }
     }),
 
@@ -58,35 +61,6 @@
     },
 
     /**
-      Trigger redraw on property changes
-
-      @example
-      ```js
-      this.redrawFor('title', 'style')
-      // -> on change:title, redraw()
-      ```
-
-      @param {String...} properties
-    */
-    redrawFor: function(property) {
-      var properties = _.toArray(arguments);
-      var events = _.map(properties, function(property) {
-        return 'change:' + property;
-      });
-
-      // d3.chart doesn't handle events with spaces, register individual handlers
-      _.each(events, function(event) {
-        this.on(event, function() {
-          helpers.log('redrawFor', event);
-          if (_.isFunction(this.redraw))
-            this.redraw();
-          else if (this.container && _.isFunction(this.container.redraw))
-            this.container.redraw();
-        });
-      }, this);
-    },
-
-    /**
       Base is last transform to be called,
       so stored data has been fully transformed
     */
@@ -95,16 +69,6 @@
 
       this.data(data);
       return data;
-    },
-
-    /**
-      Set any properties from options
-    */
-    setFromOptions: function(options) {
-      _.each(options, function(value, key) {
-        if (this[key] && this[key].isProperty && this[key].setFromOptions)
-          this[key](value, {silent: true});
-      }, this);
     },
 
     /**
@@ -117,4 +81,4 @@
     }
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3, _, d3.chart.helpers);

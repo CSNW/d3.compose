@@ -1,4 +1,4 @@
-(function(d3, _, helpers, mixins) {
+(function(d3, _, helpers) {
   var property = helpers.property;
   
   /**
@@ -16,7 +16,7 @@
       - left {Number} % of width
 
     Customization
-    - skipLayout: Don't use this component type during layout (e.g. inset within chart)
+    - skip_layout: Don't use this component type during layout (e.g. inset within chart)
     - layoutWidth: Adjust with more precise sizing calculations
     - layoutHeight: Adjust with more precise sizing calculations
     - layoutPosition: Adjust layout positioning
@@ -25,22 +25,21 @@
   d3.chart('Base').extend('Component', {
     initialize: function(options) {
       this.options(options || {});
-      this.redrawFor('options');
     },
 
     position: property('position', {
-      defaultValue: 'top',
+      default_value: 'top',
       validate: function(value) {
         return _.contains(['top', 'right', 'bottom', 'left'], value);
       }
     }),
     width: property('width', {
-      defaultValue: function() {
+      default_value: function() {
         return helpers.dimensions(this.base).width;
       }
     }),
     height: property('height', {
-      defaultValue: function() {
+      default_value: function() {
         return helpers.dimensions(this.base).height;
       }
     }),
@@ -64,12 +63,12 @@
       Height/width/position to use in layout calculations
       (Override for more specific sizing in layout calculations)
 
-      - skipLayout: Skip component during layout calculations and positioning
+      - skip_layout: Skip component during layout calculations and positioning
       - prepareLayout: perform any layout preparation required (default is draw)
       - getLayout: return position, width, and height for layout
       - setLayout: use x, y, and options {height, width} for layout
     */
-    skipLayout: false,
+    skip_layout: false,
 
     prepareLayout: function(data) {
       // Note: By default, components are double-drawn
@@ -95,10 +94,10 @@
     */
     setLayout: function(x, y, options) {
       var margins = this.margins();
-      this.base.attr('transform', helpers.transform.translate(x + margins.left, y + margins.top));
+      this.base.attr('transform', helpers.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
     }
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3, _, d3.chart.helpers);

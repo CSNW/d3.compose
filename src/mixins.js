@@ -7,8 +7,6 @@
     mixins for handling series data
   */
   var Series = {
-    isSeries: true,
-
     seriesKey: di(function(chart, d, i) {
       return d.key;
     }),
@@ -95,11 +93,9 @@
       // Set scale ranges once chart is ready to be rendered
       this.on('before:draw', this.setScales.bind(this));
     },
-    
-    isXY: true,
 
-    xKey: property('xKey', {defaultValue: 'x'}),
-    yKey: property('yKey', {defaultValue: 'y'}),
+    xKey: property('xKey', {default_value: 'x'}),
+    yKey: property('yKey', {default_value: 'y'}),
 
     xScale: property('xScale', {
       type: 'Function',
@@ -145,13 +141,13 @@
         var min = helpers.min(this.data(), this.xValue);
 
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return +valueOrDefault(value, (min < 0 ? min : 0));
+        return parseFloat(valueOrDefault(value, (min < 0 ? min : 0)));
       }
     }),
     xMax: property('xMax', {
       get: function(value) {
         var max = helpers.max(this.data(), this.xValue);
-        return +valueOrDefault(value, max);
+        return parseFloat(valueOrDefault(value, max));
       }
     }),
     yMin: property('yMin', {
@@ -159,27 +155,27 @@
         var min = helpers.min(this.data(), this.yValue);
 
         // Default behavior: if min is less than zero, use min, otherwise use 0
-        return +valueOrDefault(value, (min < 0 ? min : 0));
+        return parseFloat(valueOrDefault(value, (min < 0 ? min : 0)));
       }
     }),
     yMax: property('yMax', {
       get: function(value) {
         var max = helpers.max(this.data(), this.yValue);
-        return +valueOrDefault(value, max);
+        return parseFloat(valueOrDefault(value, max));
       }
     }),
 
     x: di(function(chart, d, i) {
-      return +chart.xScale()(chart.xValue.call(this, d, i));
+      return parseFloat(chart.xScale()(chart.xValue.call(this, d, i)));
     }),
     y: di(function(chart, d, i) {
-      return +chart.yScale()(chart.yValue.call(this, d, i));
+      return parseFloat(chart.yScale()(chart.yValue.call(this, d, i)));
     }),
     x0: di(function(chart, d, i) {
-      return +chart.xScale()(0);
+      return parseFloat(chart.xScale()(0));
     }),
     y0: di(function(chart, d, i) {
-      return +chart.yScale()(0);
+      return parseFloat(chart.yScale()(0));
     }),
 
     xValue: di(function(chart, d, i) {
@@ -197,11 +193,11 @@
       this.setYScaleRange(this.yScale());
     },
 
-    setXScaleRange: function(xScale) {
-      xScale.range([0, this.width()]);
+    setXScaleRange: function(x_scale) {
+      x_scale.range([0, this.width()]);
     },
-    setYScaleRange: function(yScale) {
-      yScale.range([this.height(), 0]);
+    setYScaleRange: function(y_scale) {
+      y_scale.range([this.height(), 0]);
     },
 
     getDefaultXScale: function() {
@@ -219,69 +215,40 @@
   };
 
   /**
-    TODO Remove
-  */
-  var XYSeries = {};
-
-  /**
     mixins for charts of centered key,value data (x: index, y: value, key)
   
     Properties:
     - [itemPadding = 0.1] {Number} % padding between each item (for ValuesSeries, padding is just around group, not individual series items)
     Dependencies: XY
   */
-  var Values = {
-    isValues: true,
+  var XYValues = _.extend({}, XY, {
+    transform: function(data) {
+      // Transform series data from values to x,y
+      if (helpers.isSeriesData(data)) {
+        _.each(data, function(series) {
+          series.values = _.map(series.values, normalizeData);
+        }, this);
+      }
+      else {
+        data = _.map(data, normalizeData);
+      }
+
+      return data;
+
+      function normalizeData(point, index) {
+        point = _.isObject(point) ? point : {y: point};
+        point.x = valueOrDefault(point.x, point.key);
+
+        return point;
+      }
+    },
 
     // Define % padding between each item
     // (If series is displayed adjacent, padding is just around group, not individual series)
-    itemPadding: property('itemPadding', {defaultValue: 0.1}),
+    itemPadding: property('itemPadding', {default_value: 0.1}),
 
-    setXScaleRange: function(xScale) {
-      if (_.isFunction(xScale.rangeBands)) {
-        xScale.rangeBands(
-          [0, this.width()], 
-          this.itemPadding(), 
-          this.itemPadding() / 2
-        );
-      }
-      else {
-        XY.setXScaleRange.call(this, xScale);
-      }
-    },
-
-    getDefaultXScale: function() {
-      return helpers.createScaleFromOptions({
-        type: 'ordinal',
-        data: this.data(),
-        key: this.xKey()
-      });
-    },
-  };
-
-  /**
-    mixins for charts of centered key,value series data (x: index, y: value, key)
-
-    Properties:
-    - [displayAdjacent = false] {Boolean} Display series next to each other (default is stacked)
-    Dependencies: Series, XY, XYSeries, Values
-  */
-  var ValuesSeries = {
-    displayAdjacent: property('displayAdjacent', {defaultValue: false}),
-
-    transform: function(data) {
-      // Transform series data from values to x,y
-      _.each(data, function(series) {
-        series.values = _.map(series.values, function(item, index) {
-          item = _.isObject(item) ? item : {y: item};
-          item.x = valueOrDefault(item.x, item.key);
-
-          return item;
-        }, this);
-      }, this);
-
-      return data;
-    },
+    // If series data, display points at same index for different series adjacent
+    displayAdjacent: property('displayAdjacent', {default_value: false}),
 
     // determine centered-x based on series display type (adjacent or layered)
     x: di(function(chart, d, i) {
@@ -290,16 +257,17 @@
 
     // AdjacentX/Width is used in cases where series are presented next to each other at each value
     adjacentX: di(function(chart, d, i) {
-      var adjacentWidth = chart.adjacentWidth.call(this, d, i);
-      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacentWidth / 2;
+      var adjacent_width = chart.adjacentWidth.call(this, d, i);
+      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacent_width / 2;
+      var series_index = chart.seriesIndex ? chart.seriesIndex.call(this, d, i) : 1;
       
-      return left + adjacentWidth * chart.seriesIndex.call(this, d, i) || 0;
+      return left + adjacent_width * series_index;
     }),
     adjacentWidth: di(function(chart, d, i) {
-      var seriesCount = chart.seriesCount.call(this);
+      var series_count = chart.seriesCount ? chart.seriesCount.call(this) : 1;
 
-      if (seriesCount > 0)
-        return chart.layeredWidth.call(this, d, i) / seriesCount;
+      if (series_count > 0)
+        return chart.layeredWidth.call(this, d, i) / series_count;
       else
         return 0;
     }),
@@ -309,15 +277,36 @@
       return chart.xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
     }),
     layeredWidth: di(function(chart, d, i) {
-      var rangeBand = chart.xScale().rangeBand();
-      return isFinite(rangeBand) ? rangeBand : 0;
+      var range_band = chart.xScale().rangeBand();
+      return isFinite(range_band) ? range_band : 0;
     }),
 
     // determine item width based on series display type (adjacent or layered)
     itemWidth: di(function(chart, d, i) {
       return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
-    })
-  };
+    }),
+
+    setXScaleRange: function(x_scale) {
+      if (_.isFunction(x_scale.rangeBands)) {
+        x_scale.rangeBands(
+          [0, this.width()], 
+          this.itemPadding(), 
+          this.itemPadding() / 2
+        );
+      }
+      else {
+        XY.setXScaleRange.call(this, x_scale);
+      }
+    },
+
+    getDefaultXScale: function() {
+      return helpers.createScaleFromOptions({
+        type: 'ordinal',
+        data: this.data(),
+        key: this.xKey()
+      });
+    }
+  });
 
   /**
     mixin for handling labels in charts
@@ -339,7 +328,7 @@
       labels.y = this.y;
 
       this.on('draw', function(data) {
-        labels.options(this.labels(), {silent: true});
+        labels.options(this.labels());
         labels.draw(options.data || data);
       }.bind(this));
     },
@@ -374,7 +363,7 @@
     onMouseLeave: function() {}
   };
 
-  var XYHover = {
+  var XYHover = _.extend({}, Hover, {
     initialize: function() {
       Hover.initialize.apply(this, arguments);
       this.on('before:draw', function() {
@@ -397,7 +386,7 @@
         if (helpers.isSeriesData(data)) {
           // Get all points for each series
           this._points = _.map(data, function(series, j) {
-            return getPointsForValues.call(this, series.values, j, {_parentData: series});
+            return getPointsForValues.call(this, series.values, j, {_parent_data: series});
           }, this);
         }
         else {
@@ -450,18 +439,16 @@
         return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
       }
     }    
-  };
+  });
 
   // Expose mixins
   d3.chart.mixins = _.extend(d3.chart.mixins || {}, {
     Series: Series,
     XY: XY,
-    XYSeries: _.extend({}, Series, XY, XYSeries),
-    Values: _.extend({}, XY, Values),
-    ValuesSeries: _.extend({}, Series, XY, XYSeries, Values, ValuesSeries),
+    XYValues: XYValues,
     XYLabels: XYLabels,
     Hover: Hover,
-    XYHover: _.extend({}, Hover, XYHover)
+    XYHover: XYHover
   });
 
 })(d3, _, d3.chart.helpers);

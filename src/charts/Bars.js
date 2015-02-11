@@ -7,7 +7,7 @@
     Bars
     Bar graph with centered key,value data and adjacent display for series
   */
-  d3.chart('SeriesChart').extend('Bars', mixin(mixins.ValuesSeries, mixins.XYLabels, {
+  d3.chart('Chart').extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -64,7 +64,7 @@
     duration: property('duration', {type: 'Function'}),
     ease: property('ease', {type: 'Function'}),
 
-    displayAdjacent: property('displayAdjacent', {defaultValue: true}),
+    displayAdjacent: property('displayAdjacent', {default_value: true}),
 
     barHeight: di(function(chart, d, i) {
       var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)) - chart.barOffset(); 
@@ -109,7 +109,7 @@
   d3.chart('Bars').extend('StackedBars', {
     transform: function(data) {
       // Re-initialize bar positions each time data changes
-      this.barPositions = [];
+      this.bar_positions = [];
       return data;
     },
 
@@ -128,18 +128,18 @@
       // Only handle positive y-values
       if (y > y0) return;
 
-      if (chart.barPositions.length <= i)
-        chart.barPositions.push(0);
+      if (chart.bar_positions.length <= i)
+        chart.bar_positions.push(0);
 
-      var previous = chart.barPositions[i] || y0;
-      var newPosition = previous - (y0 - y);
+      var previous = chart.bar_positions[i] || y0;
+      var new_position = previous - (y0 - y);
 
-      chart.barPositions[i] = newPosition;
+      chart.bar_positions[i] = new_position;
       
-      return newPosition;
+      return new_position;
     }),
 
-    displayAdjacent: property('displayAdjacent', {defaultValue: false})
+    displayAdjacent: property('displayAdjacent', {default_value: false})
   });
 
 })(d3, d3.chart.helpers, d3.chart.mixins);

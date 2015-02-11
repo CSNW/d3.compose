@@ -1,5 +1,4 @@
-(function(d3, helpers, mixins) {
-  var mixin = helpers.mixin;
+(function(d3, helpers) {
   var property = helpers.property;
   var di = helpers.di;
 
@@ -11,6 +10,7 @@
       this.legend = this.base.append('g')
         .classed('chart-legend', true);
 
+      // TODO Move display check to Multi.js
       if (this.options().display) {
         this.layer('Legend', this.legend, {
           dataBind: function(data) {
@@ -43,36 +43,35 @@
                 .attr('alignment-baseline', 'before-edge');
 
               // Position groups after positioning everything inside
-              var directionByPosition = {
+              var direction_by_position = {
                 top: 'horizontal',
                 right: 'vertical',
                 bottom: 'horizontal',
                 left: 'vertical'
               };
-              this.call(helpers.stack.bind(this, {direction: directionByPosition[chart.position()], origin: 'top', padding: 5}));
+              this.call(stack.bind(this, {direction: direction_by_position[chart.position()], origin: 'top', padding: 5}));
             }
           }
         });
       }
       else {
-        this.skipLayout = true;
+        this.skip_layout = true;
       }
     },
-    isLegend: true,
 
     transform: function(allData) {
       var demux = d3.chart('Multi').prototype.demux;
       var data = _.reduce(this.options().charts, function(data, chart) {
-        if (chart.excludeFromLegend)
+        if (chart.exclude_from_legend)
           return data;
 
         var chartData = _.compact(_.map(chart.data(), function(series, index) {
-          if (series.excludeFromLegend) return;
+          if (series.exclude_from_legend) return;
           
           return {
             chart: chart,
             series: series,
-            seriesIndex: index
+            series_index: index
           };
         }));
 
@@ -92,7 +91,7 @@
       return 'chart-legend-group';
     }),
     dataSeriesClass: di(function(chart, d, i) {
-      return 'chart-series chart-index-' + (d.seriesIndex || 0);
+      return 'chart-series chart-index-' + (d.series_index || 0);
     }),
     dataClass: di(function(chart, d, i) {
       var classes = [chart.dataSeriesClass.call(this, d, i)];
@@ -132,10 +131,11 @@
       }
 
       // Style inserted element
-      if (inserted && _.isFunction(inserted.attr)) {
+      if (inserted && _.isFunction(inserted.attr))
         inserted.attr('style', chart.dataStyle.call(this, d, i));
-      }
     })
+  }, {
+    z_index: helpers.z_index.legend
   });
   
   /**
@@ -150,11 +150,12 @@
       this._positionLegend();
     },
 
+    // TODO switch to translation
     position: property('position', {
-      defaultValue: {x: 10, y: 10},
+      default_value: {x: 10, y: 10},
       set: function(value, previous) {
         value = (value && _.isObject(value)) ? value : {};
-        value = _.defaults(value, previous || {}, {x: 0, y: 0});
+        _.defaults(value, previous || {}, {x: 0, y: 0});
 
         return {
           override: value,
@@ -164,7 +165,7 @@
         };
       }
     }),
-    skipLayout: true,
+    skip_layout: true,
 
     _positionLegend: function() {
       if (this.legend) {
@@ -173,8 +174,68 @@
       }
     }
   }, {
-    // @static
-    layerType: 'chart'
+    layer_type: 'chart'
   });
+
+  /**
+    Stack given array of elements using options
+
+    @example
+    this.call(helpers.stack)
+    this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
   
-})(d3, d3.chart.helpers, d3.chart.mixins);
+    @param {Object} [options]
+    - {String} [direction=vertical] vertical or horizontal
+    - {String} [origin=top] top/bottom for vertical and left/right for horizontal
+  */
+  function stack(options, elements) {
+    if (options && !elements) {
+      elements = options;
+      options = {
+        direction: 'vertical',
+        origin: 'top',
+        padding: 0
+      };
+    }
+
+    function padding(d, i) {
+      return i > 0 && options.padding ? options.padding : 0;
+    }
+
+    if (elements && elements.attr) {
+      var previous = 0;
+      elements
+        .attr('transform', function(d, i) {
+          var dimensions = this.getBBox();
+          var x = 0;
+          var y = 0;
+
+          if (options.direction == 'horizontal') {
+            if (!(options.origin == 'left' || options.origin == 'right'))
+              options.origin = 'left';
+
+            if (options.origin == 'left')
+              x = previous + padding(d, i);
+            else
+              x = previous + dimensions.width + padding(d, i);
+
+            previous = previous + dimensions.width + padding(d, i);
+          }
+          else {
+            if (!(options.origin == 'top' || options.origin == 'bottom'))
+              options.origin = 'top';
+
+            if (options.origin == 'top')
+              y = previous + padding(d, i);
+            else
+              y = previous + dimensions.height + padding(d, i);
+
+            previous = previous + dimensions.height + padding(d, i);
+          }
+
+          return transform.translate(x, y);
+        });
+    }
+  }
+  
+})(d3, d3.chart.helpers);

@@ -18,7 +18,7 @@
 
       it('should use default values', function() {
         instance.message = property('message', {
-          defaultValue: 'Howdy!'
+          default_value: 'Howdy!'
         });
 
         expect(instance.message()).toEqual('Howdy!');
@@ -30,13 +30,13 @@
         expect(instance.message()).toEqual('Howdy!');
       });
 
-      it('should expose defaultValue on property', function() {
+      it('should expose default_value on property', function() {
         instance.message = property('message', {
-          defaultValue: 'Howdy!'
+          default_value: 'Howdy!'
         });
 
-        expect(instance.message.defaultValue).toEqual('Howdy!');
-        instance.message.defaultValue = 'Goodbye!';
+        expect(instance.message.default_value).toEqual('Howdy!');
+        instance.message.default_value = 'Goodbye!';
         expect(instance.message()).toEqual('Goodbye!');
       });
 
@@ -58,16 +58,16 @@
         expect(instance.message()).toEqual('Howdy from Chart');
       });
 
-      it('should store set values on object at propKey', function() {
-        instance.message = property('message', {propKey: 'properties'});
+      it('should store set values on object at prop_key', function() {
+        instance.message = property('message', {prop_key: 'properties'});
         instance.message('Howdy!');
         expect(instance.properties.message).toEqual('Howdy!');
       });
 
-      it('should expose isProperty and setFromOptions on property', function() {
-        instance.message = property('message', {setFromOptions: false});
-        expect(instance.message.isProperty).toEqual(true);
-        expect(instance.message.setFromOptions).toEqual(false);
+      it('should expose is_property and set_from_options on property', function() {
+        instance.message = property('message', {set_from_options: false});
+        expect(instance.message.is_property).toEqual(true);
+        expect(instance.message.set_from_options).toEqual(false);
       });
 
       describe('get()', function() {
@@ -200,7 +200,7 @@
 
         it('should trigger change (if changed)', function() {
           instance.message = property('message', {
-            defaultValue: 'Hello'
+            default_value: 'Hello'
           });
           instance.trigger = jasmine.createSpy();
 
@@ -222,151 +222,18 @@
           expect(instance.trigger.calls.count()).toEqual(6);
         });
 
-        it('should not trigger change if silent', function() {
-          instance.message = property('message', {
-            defaultValue: 'Hello'
-          });
-          instance.trigger = jasmine.createSpy();
-
-          instance.message('Hello', {silent: true});
-          expect(instance.trigger.calls.count()).toEqual(0);
-
-          instance.message('Howdy', {silent: true});
-          expect(instance.trigger.calls.count()).toEqual(0);
-
-          instance.message('Howdy', {silent: true});
-          expect(instance.trigger.calls.count()).toEqual(0);
-
-          instance.message({key: 'value', complex: [1,2,3]}, {silent: true});
-          instance.message({key: 'value', complex: [1,2,3]}, {silent: true});
-          expect(instance.trigger.calls.count()).toEqual(0);
-        });
-
-        it('should use changed from set response', function() {
-          instance.message = property('message', {
-            set: function() {
-              return {
-                changed: true
-              };
-            }
-          });
-          instance.trigger = jasmine.createSpy();
-
-          instance.message('Matches', {silent: true});
-          expect(instance.trigger.calls.count()).toEqual(0);
-
-          instance.message('Matches');
-          expect(instance.trigger.calls.count()).toEqual(2);
-        });
-
         describe('validate', function() {
-          var spy;
           beforeEach(function() {
-            spy = jasmine.createSpy('set');
             instance.message = property('message', {
               validate: function(value) {
                 return value != 'INVALID';
-              },
-              set: spy,
-              defaultValue: 'Default'
+              }
             });
           });
 
-          it('should reset to previous value when invalid and not call set', function() {
-            instance.message('Valid');
-            expect(spy.calls.argsFor(0)).toEqual(['Valid', undefined, {}]);
-
-            instance.message('INVALID');
-            expect(instance.message()).toEqual('Valid');
-            expect(spy.calls.count()).toEqual(1);
+          it('should throw for invalid value', function() {
+            expect(function() { instance.message('INVALID'); }).toThrow();
           });
-
-          it('should reset to default value if no previous value when invalid', function() {
-            instance.message('INVALID');
-            expect(spy.calls.argsFor(0)).toEqual(['Default', undefined, {}]);
-            expect(instance.message()).toEqual('Default');
-          });
-
-          it('should trigger invalid event', function() {
-            instance.trigger = jasmine.createSpy();
-            instance.message('INVALID');
-
-            expect(instance.trigger).toHaveBeenCalled();
-            expect(instance.trigger).toHaveBeenCalledWith('invalid:message', 'INVALID');
-          });
-        });
-      });
-
-      describe('mixins', function() {
-        beforeEach(function() {
-          instance.obj = property('obj');
-          instance.arr = property('arr');
-
-          instance.obj({a: 1, b: 2});
-          instance.arr([1, 2, 3]);
-
-          instance.trigger = jasmine.createSpy();
-        });
-
-        it('should extend', function() {
-          property.extend(instance, 'obj', {b: 'two', c: 'three'});
-          expect(instance.obj()).toEqual({a: 1, b: 'two', c: 'three'});
-          expect(instance.trigger).toHaveBeenCalled();
-        });
-
-        it('should push', function() {
-          property.push(instance, 'arr', 4);
-          var result = property.push(instance, 'arr', 5);
-          expect(instance.arr()).toEqual([1, 2, 3, 4, 5]);
-          expect(result).toEqual(5);
-          expect(instance.trigger.calls.count()).toEqual(4);
-        });
-
-        it('should concat', function() {
-          property.concat(instance, 'arr', [4, 5]);
-          expect(instance.arr()).toEqual([1, 2, 3, 4, 5]);
-          expect(instance.trigger).toHaveBeenCalled();
-        });
-
-        it('should splice', function() {
-          var result = property.splice(instance, 'arr', 1, 1, 4);
-          expect(instance.arr()).toEqual([1, 4, 3]);
-          expect(result).toEqual([2]);
-          expect(instance.trigger).toHaveBeenCalled();
-        });
-
-        it('should pop', function() {
-          var result = property.pop(instance, 'arr');
-          expect(instance.arr()).toEqual([1, 2]);
-          expect(result).toEqual(3);
-          expect(instance.trigger).toHaveBeenCalled();
-        });
-
-        it('should shift', function() {
-          var result = property.shift(instance, 'arr');
-          expect(instance.arr()).toEqual([2, 3]);
-          expect(result).toEqual(1);
-          expect(instance.trigger).toHaveBeenCalled();
-        });
-
-        it('should unshift', function() {
-          var result = property.unshift(instance, 'arr', 0);
-          expect(instance.arr()).toEqual([0, 1, 2, 3]);
-          expect(result).toEqual(4);
-          expect(instance.trigger).toHaveBeenCalled();
-        });
-
-        it('should reverse', function() {
-          property.reverse(instance, 'arr');
-          expect(instance.arr()).toEqual([3, 2, 1]);
-          expect(instance.trigger).toHaveBeenCalled();
-        });
-
-        it('should sort', function() {
-          instance.arr(['b', 'd', 'c', 'a']);
-          property.sort(instance, 'arr');
-          expect(instance.arr()).toEqual(['a', 'b', 'c', 'd']);
-          expect(instance.trigger.calls.count()).toEqual(4);
         });
       });
     });
@@ -391,15 +258,15 @@
         expect(width()).toEqual(20);
         expect(height()).toEqual(20);
 
-        selection.append('rect').attr('width', 50).attr('height', 100);
-        expect(width()).toEqual(50);
-        expect(height()).toEqual(100);
-
-        selection.attr('width', 600).attr('height', 300);
+        selection
+          .attr('style', '')
+          .attr('width', 600)
+          .attr('height', 300);
         expect(width()).toEqual(600);
         expect(height()).toEqual(300);
 
-        selection.attr('style', 'width: 800px; height: 400px');
+        selection
+          .attr('style', 'width: 800px; height: 400px');
         expect(width()).toEqual(800);
         expect(height()).toEqual(400);
       });
@@ -408,26 +275,26 @@
     describe('transform', function() {
       describe('translate', function() {
         it('should create from separate arguments or object', function() {
-          expect(helpers.transform.translate(10, 15)).toEqual('translate(10, 15)');
-          expect(helpers.transform.translate({x: 12, y: 17})).toEqual('translate(12, 17)');
+          expect(helpers.translate(10, 15)).toEqual('translate(10, 15)');
+          expect(helpers.translate({x: 12, y: 17})).toEqual('translate(12, 17)');
         });
 
         it('should default to (0, 0)', function() {
-          expect(helpers.transform.translate()).toEqual('translate(0, 0)');
-          expect(helpers.transform.translate(10)).toEqual('translate(10, 0)');
-          expect(helpers.transform.translate({y: 10})).toEqual('translate(0, 10)');
+          expect(helpers.translate()).toEqual('translate(0, 0)');
+          expect(helpers.translate(10)).toEqual('translate(10, 0)');
+          expect(helpers.translate({y: 10})).toEqual('translate(0, 10)');
         });
       });
 
       describe('rotate', function() {
         it('should create rotation without center (default to 0)', function() {
-          expect(helpers.transform.rotate(10)).toEqual('rotate(10)');
-          expect(helpers.transform.rotate()).toEqual('rotate(0)');
+          expect(helpers.rotate(10)).toEqual('rotate(10)');
+          expect(helpers.rotate()).toEqual('rotate(0)');
         });
 
         it('should create rotation with center (default to 0,0)', function() {
-          expect(helpers.transform.rotate(10, {x: 5, y: 6})).toEqual('rotate(10 5,6)');
-          expect(helpers.transform.rotate(10, {z: 5, r: 10})).toEqual('rotate(10 0,0)');
+          expect(helpers.rotate(10, {x: 5, y: 6})).toEqual('rotate(10 5,6)');
+          expect(helpers.rotate(10, {z: 5, r: 10})).toEqual('rotate(10 0,0)');
         });
       });
     });
@@ -493,19 +360,6 @@
       });
     });
 
-    describe('getValue', function() {
-      it('should get search for keys in objects, finding first key in first object', function() {
-        var obj1 = {a: 'b', c: 'd'};
-        var obj2 = {c: 4, e: 6, g: null};
-
-        expect(helpers.getValue(['a', 'b'], obj1, obj2)).toEqual('b');
-        expect(helpers.getValue(['b', 'c'], obj1, obj2)).toEqual('d');
-        expect(helpers.getValue(['e', 'f'], obj1, obj2)).toEqual(6);
-        expect(helpers.getValue('g', obj2)).toEqual(null);
-        expect(helpers.getValue(['y', 'z'], obj1, obj2)).toEqual(undefined);
-      });
-    });
-
     describe('di', function() {
       var wrapped, spy, instance;
       beforeEach(function() {
@@ -531,7 +385,7 @@
       });
 
       it('should expose isDi property', function() {
-        expect(wrapped._isDi).toEqual(true);
+        expect(wrapped._is_di).toEqual(true);
       });
 
       it('should pass in chart instance to bound di', function() {
@@ -553,41 +407,6 @@
         spyOn(d3, 'select').and.callFake(function(element) { return element; });
 
         expect(helpers.getParentData(element)).toEqual([1,2,3]);
-      });
-    });
-
-    describe('resolveChart', function() {
-      d3.chart('TEST-AxisSpecial', {});
-      
-      // chart type - type - component
-      // 1. Values - Line - Chart -> LineValues
-      // 2. XY - Line - Chart -> Line
-      // 3. XY - Special - Axis -> AxisSpecial
-      // 4. Values - Inset - Legend -> InsetLegend
-      // 5. Values - Unknown - Axis -> AxisValues
-
-      it('should find by type + chart type first', function() {
-        expect(helpers.resolveChart('Line', 'Chart', 'Values')).toBe(d3.chart('LineValues'));
-      });
-
-      it('should then find by type', function() {
-        expect(helpers.resolveChart('Line', 'Chart', 'XY')).toBe(d3.chart('Line'));
-      });
-
-      it('should then find by type + component', function() {
-        expect(helpers.resolveChart('Special', 'TEST-Axis', 'XY')).toBe(d3.chart('TEST-AxisSpecial'));
-      });
-
-      it('should then find by component + type', function() {
-        expect(helpers.resolveChart('Inset', 'Legend', 'Values')).toBe(d3.chart('InsetLegend'));
-      });
-
-      it('should then find by chart type + component', function() {
-        expect(helpers.resolveChart('Unknown', 'Axis', 'Values')).toBe(d3.chart('AxisValues'));
-      });
-
-      it('should throw if not chart is found', function() {
-        expect(helpers.resolveChart).toThrow();
       });
     });
   });

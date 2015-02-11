@@ -13,8 +13,6 @@
   */
   d3.chart('Component').extend('Title', {
     initialize: function() {
-      this.redrawFor('title', 'rotation');
-
       this.layer('Title', this.base.append('g').classed('chart-title', true), {
         dataBind: function(data) {
           return this.selectAll('text')
@@ -29,7 +27,6 @@
             this
               .attr('transform', chart.transformation())
               .attr('style', chart.style())
-              // .attr('alignment-baseline', 'middle')
               .attr('text-anchor', 'middle')
               .attr('class', chart.options()['class'])
               .text(chart.text());
@@ -44,22 +41,24 @@
       }
     }),
     rotation: property('rotation', {
-      defaultValue: function() {
-        var rotateByPosition = {
+      default_value: function() {
+        var rotate_by_position = {
           right: 90,
           left: -90
         };
 
-        return rotateByPosition[this.position()] || 0;
+        return rotate_by_position[this.position()] || 0;
       }
     }),
 
     transformation: function() {
-      var translate = helpers.transform.translate(this.width() / 2, this.height() / 2);
-      var rotate = helpers.transform.rotate(this.rotation());
+      var translate = helpers.translate(this.width() / 2, this.height() / 2);
+      var rotate = helpers.rotate(this.rotation());
 
-      return translate + rotate;
+      return translate + ' ' + rotate;
     },
+  }, {
+    z_index: helpers.z_index.title
   });
   
 })(d3, d3.chart.helpers, d3.chart.mixins);

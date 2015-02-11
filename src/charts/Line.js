@@ -7,18 +7,17 @@
     Line
     (x,y) line graph
   */
-  d3.chart('SeriesChart').extend('Line', mixin(mixins.XYSeries, mixins.XYLabels, {
+  d3.chart('Chart').extend('Line', mixin(mixins.Series, mixins.XY, mixins.XYLabels, {
     initialize: function() {
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
           var chart = this.chart();
-          var lines = {};
+          var lines = chart.lines = [];
 
           // Add lines based on underlying series data
           _.each(chart.data(), function(series, index) {
             lines[index] = chart.createLine(series);
           });
-          chart.lines(lines);
 
           // Rather than use provided series data
           return this.selectAll('path')
@@ -36,7 +35,7 @@
         events: {
           'merge:transition': function() {
             var chart = this.chart();
-            var lines = chart.lines();
+            var lines = chart.lines;
 
             if (chart.delay())
               this.delay(chart.delay());
@@ -56,7 +55,9 @@
 
       this.attachLabels();
     },
-    lines: property('lines', {defaultValue: {}}),
+    
+    interpolate: property('interpolate'),
+
     delay: property('delay', {type: 'Function'}),
     duration: property('duration', {type: 'Function'}),
     ease: property('ease', {type: 'Function'}),
@@ -66,7 +67,7 @@
         .x(this.x)
         .y(this.y);
 
-      var interpolate = series.interpolate || this.options().interpolate;
+      var interpolate = series.interpolate || this.interpolate();
       if (interpolate)
         line.interpolate(interpolate);
 
@@ -84,6 +85,6 @@
     LineValues
     Line graph for centered key,value data
   */
-  d3.chart('Line').extend('LineValues', mixins.ValuesSeries);
+  d3.chart('Line').extend('LineValues', mixins.XYValues);
 
 })(d3, d3.chart.helpers, d3.chart.mixins);

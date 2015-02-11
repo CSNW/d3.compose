@@ -30,14 +30,14 @@
       // 1. Display and transitions
       // 2. Layout (draw to get width, but separate so that transitions aren't affected)
       this.axis = d3.svg.axis();
-      this._layoutAxis = d3.svg.axis();
+      this._layout_axis = d3.svg.axis();
 
-      this.axisBase = this.base.append('g').attr('class', 'chart-axis');
-      this._layoutBase = this.base.append('g')
+      this.axis_base = this.base.append('g').attr('class', 'chart-axis');
+      this._layout_base = this.base.append('g')
         .attr('class', 'chart-axis chart-layout')
         .attr('style', 'display: none;');
 
-      this.layer('Axis', this.axisBase, {
+      this.layer('Axis', this.axis_base, {
         dataBind: function(data) {
           // Setup axis (scale and properties)
           var chart = this.chart();
@@ -89,10 +89,10 @@
         }
       });
 
-      this.layer('_LayoutAxis', this._layoutBase, {
+      this.layer('_LayoutAxis', this._layout_base, {
         dataBind: function(data) {
           var chart = this.chart();
-          chart._setupAxis(chart._layoutAxis);
+          chart._setupAxis(chart._layout_axis);
           return this.selectAll('g').data([0]);
         },
         insert: function() {
@@ -117,12 +117,10 @@
       set: function(value) {
         var scale = helpers.createScaleFromOptions(value);
 
-        if (this.orientation() == 'vertical') {
+        if (this.orientation() == 'vertical')
           this.yScale(scale.copy());
-        }
-        else {
+        else
           this.xScale(scale.copy());
-        }
 
         return {
           override: scale
@@ -131,30 +129,27 @@
     }),
 
     position: property('position', {
-      defaultValue: 'bottom',
+      default_value: 'bottom',
       validate: function(value) {
         return _.contains(['top', 'right', 'bottom', 'left', 'x0', 'y0'], value);
       },
       set: function() {
         // Update scale -> xScale/yScale when position changes
-        if (this.scale()) {
+        if (this.scale())
           this.scale(this.scale());
-        }
       }
     }),
 
     translation: property('translation', {
-      defaultValue: function() {
-        var translationByPosition = {
+      default_value: function() {
+        return {
           top: {x: 0, y: 0},
           right: {x: this.width(), y: 0},
           bottom: {x: 0, y: this.height()},
           left: {x: 0, y: 0},
           x0: {x: this.x0(), y: 0},
           y0: {x: 0, y: this.y0()}
-        };
-        
-        return translationByPosition[this.position()];
+        }[this.position()];
       },
       get: function(value) {
         return helpers.translate(value);
@@ -162,7 +157,7 @@
     }),
 
     orient: property('orient', {
-      defaultValue: function() {
+      default_value: function() {
         var orient = this.position();
         
         if (orient == 'x0')
@@ -178,23 +173,20 @@
       validate: function(value) {
         return _.contains(['horizontal', 'vertical'], value);
       },
-      defaultValue: function() {
-        var byPosition = {
+      default_value: function() {
+        return {
           top: 'horizontal',
           right: 'vertical',
           bottom: 'horizontal',
           left: 'vertical',
           x0: 'vertical',
           y0: 'horizontal'
-        };
-
-        return byPosition[this.position()];
+        }[this.position()];
       },
       set: function() {
         // Update scale -> xScale/yScale when orientation changes
-        if (this.scale()) {
+        if (this.scale())
           this.scale(this.scale());
-        }
       }
     }),
     type: property('type'),
@@ -216,11 +208,11 @@
 
       // 3. Calculate layout
       // (make layout axis visible for width calculations in Firefox)
-      this._layoutBase.attr('style', 'display: block;');
+      this._layout_base.attr('style', 'display: block;');
       
-      var labelOverhang = this._getLabelOverhang();
+      var label_overhang = this._getLabelOverhang();
       
-      this._layoutBase.attr('style', 'display: none;');
+      this._layout_base.attr('style', 'display: none;');
 
       // 4. Draw with previous values
       if (this._previous_raw_data) {
@@ -248,8 +240,8 @@
       
       return {
         position: position,
-        width: labelOverhang.width,
-        height: labelOverhang.height
+        width: label_overhang.width,
+        height: label_overhang.height
       };
     },
     setLayout: function(x, y, options) {
@@ -289,13 +281,13 @@
         this.axis.scale(this.xScale());
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
-      var arrayExtensions = ['tickValues'];
+      var array_extensions = ['tickValues'];
       _.each(extensions, function(key) {
         var value = this[key] && this[key]();
         if (!_.isUndefined(value)) {
           // If value is array, treat as arguments array
           // otherwise, pass in directly
-          if (_.isArray(value) && !_.contains(arrayExtensions, key))
+          if (_.isArray(value) && !_.contains(array_extensions, key))
             axis[key].apply(axis, value);
           else
             axis[key](value);
@@ -308,7 +300,7 @@
       var overhangs = {width: [0], height: [0]};
       var orientation = this.orientation();
 
-      this._layoutBase.selectAll('.tick').each(function() {
+      this._layout_base.selectAll('.tick').each(function() {
         try {
           // There are cases where getBBox may throw 
           // (e.g. not currently displayed in Firefox)
@@ -329,12 +321,15 @@
         height: _.max(overhangs.height)
       };
     }
-  }));
+  }), {
+    layer_type: 'chart',
+    z_index: helpers.z_index.axis
+  });
   
   /**
     AxisValues
     Axis component for (key,value) series data
   */
-  d3.chart('Axis').extend('AxisValues', mixin(mixins.Values));
+  d3.chart('Axis').extend('AxisValues', mixin(mixins.XYValues));
   
 })(d3, d3.chart.helpers, d3.chart.mixins);
