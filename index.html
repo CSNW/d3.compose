@@ -128,25 +128,19 @@ title: Docs
   </a>
   <ul class="toc_section">
     <li>- <a href="#/helpers/property">property</a></li>
-    <li>- <a href="#/helpers/property.extensions">property.extensions</a></li>
     <li>- <a href="#/helpers/valueOrDefault">valueOrDefault</a></li>
     <li>- <a href="#/helpers/dimensions">dimensions</a></li>
-    <li>- <a href="#/helpers/transform.translate">transform.translate</a></li>
-    <li>- <a href="#/helpers/transform.rotate">transform.rotate</a></li>
+    <li>- <a href="#/helpers/translate">translate</a></li>
+    <li>- <a href="#/helpers/rotate">rotate</a></li>
     <li>- <a href="#/helpers/isSeriesData">isSeriesData</a></li>
     <li>- <a href="#/helpers/max">max</a></li>
     <li>- <a href="#/helpers/min">min</a></li>
     <li>- <a href="#/helpers/createScaleFromOptions">createScaleFromOptions</a></li>
-    <li>- <a href="#/helpers/stack">stack</a></li>
     <li>- <a href="#/helpers/style">style</a></li>
-    <li>- <a href="#/helpers/getValue">getValue</a></li>
-    <li>- <a href="#/helpers/capitalize">capitalize</a></li>
     <li>- <a href="#/helpers/di">di</a></li>
     <li>- <a href="#/helpers/bindDi">bindDi</a></li>
     <li>- <a href="#/helpers/bindAllDi">bindAllDi</a></li>
-    <li>- <a href="#/helpers/log">log</a></li>
     <li>- <a href="#/helpers/getParentData">getParentData</a></li>
-    <li>- <a href="#/helpers/resolveChart">resolveChart</a></li>
     <li>- <a href="#/helpers/mixin">mixin</a></li>
   </ul>
 
@@ -156,11 +150,10 @@ title: Docs
   <ul class="toc_section">
     <li>- <a href="#/mixins/Series">Series</a></li>
     <li>- <a href="#/mixins/XY">XY</a></li>
-    <li>- <a href="#/mixins/XYSeries">XYSeries</a></li>
-    <li>- <a href="#/mixins/Values">Values</a></li>
-    <li>- <a href="#/mixins/ValuesSeries">ValuesSeries</a></li>
+    <li>- <a href="#/mixins/XYValues">XYValues</a></li>
     <li>- <a href="#/mixins/XYLabels">Labels</a></li>
-    <li>- <a href="#/mixins/XYLabelsSeries">LabelsSeries</a></li>
+    <li>- <a href="#/mixins/Hover">Hover</a></li>
+    <li>- <a href="#/mixins/XYHover">XYHover</a></li>
   </ul>
 
   <a class="toc_title" href="#changelog">
@@ -757,88 +750,162 @@ axis.position('bottom');
   </p>
 
   <p id="/helpers/property">
-    <b class="header">property</b><code>helpers.property()</code><br>
+    <b class="header">property</b><code>helpers.property(name, [options])</code><br>
+
+    Used throughout d3.chart.multi, <tt>property</tt> is used to create an get/set property. 
+    Created properties are called with no arguments for <tt>get</tt> and called with value for <tt>set</tt>.
+    <br>
+    Options:
   </p>
 
-  <p id="/helpers/property.extensions">
-    <b class="header">property.extensions</b><br>
-  </p>
+  <ul class="small">
+    <li><b>get</b> (stored) &mdash; (Optional) getter function</li>
+    <li><b>set</b> (value, previous) &mdash; (Optional) setter function. To override stored value, return <tt>{override: ...}</tt>. To run code after the value has been stored, return <tt>{after: fn}</tt></li>
+    <li><b>default_value</b> &mdash; Set the default value or function that returns default value</li>
+    <li><b>type</b> &mdash; Set as <tt>"Function"</tt> if stored value is a function that should not be evaluated on <tt>get</tt></li>
+  </ul>
 
   <p id="/helpers/valueOrDefault">
-    <b class="header">valueOrDefault</b><code>helpers.valueOrDefault()</code><br>
+    <b class="header">valueOrDefault</b><code>helpers.valueOrDefault(value, default)</code><br>
+
+    If given value is not undefined, return given value, otherwise return default.
   </p>
+
+<pre>helpers.valueOrDefault(undefined, 4); // -> 4
+helpers.valueOrDefault(2, 4); // -> 2
+helpers.valueOrDefault(null, 10); // -> null
+</pre>
 
   <p id="/helpers/dimensions">
-    <b class="header">dimensions</b><code>helpers.dimensions()</code><br>
+    <b class="header">dimensions</b><code>helpers.dimensions(element|selector)</code><br>
+
+    Return the width and height of the given element or selector.
   </p>
 
-  <p id="/helpers/transform.translate">
-    <b class="header">transform.translate</b><code>helpers.transform.translate()</code><br>
+  <p id="/helpers/translate">
+    <b class="header">translate</b><code>helpers.translate(x, y)</code><br>
+
+    Get formatted translate transform (<tt>translate(x, y)</tt>)
   </p>
 
-  <p id="/helpers/transform.rotate">
-    <b class="header">transform.rotate</b><code>helpers.transform.rotate()</code><br>
+  <p id="/helpers/rotate">
+    <b class="header">rotate</b><code>helpers.rotate(degress, center)</code><br>
+
+    Get formatted rotate transform, with optional <tt>{x, y}</tt> center (<tt>rotate(degrees x,y)</tt>)
   </p>
 
   <p id="/helpers/isSeriesData">
-    <b class="header">isSeriesData</b><code>helpers.isSeriesData()</code><br>
+    <b class="header">isSeriesData</b><code>helpers.isSeriesData(data)</code><br>
+
+    Check if the given data is series data.
   </p>
+
+<pre>helpers.isSeriesData([1, 2, 3]); // -> false
+helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
+</pre>
 
   <p id="/helpers/max">
-    <b class="header">max</b><code>helpers.max()</code><br>
+    <b class="header">max</b><code>helpers.max(data, getValue)</code><br>
+
+    Find the max in the given data, using the <tt>getValue</tt> accessor to get the value at each point.
   </p>
+
+<pre>helpers.max([
+  {x: 0, y: 0}, 
+  {x: 5, y: 20}, 
+  {x: 10, y: 10}
+], function(d, i) {
+  return d.y;
+}); // -> 20
+</pre>
 
   <p id="/helpers/min">
-    <b class="header">min</b><code>helpers.min()</code><br>
+    <b class="header">min</b><code>helpers.min(data, getValue)</code><br>
+
+    Find the min in the given data, using the <tt>getValue</tt> accessor to get the value at each point.
   </p>
+
+<pre>helpers.min([
+  {x: 0, y: 0}, 
+  {x: 5, y: 20}, 
+  {x: 10, y: 10}
+], function(d, i) {
+  return d.x;
+}); // -> 0
+</pre>
 
   <p id="/helpers/createScaleFromOptions">
-    <b class="header">createScaleFromOptions</b><code>helpers.createScaleFromOptions()</code><br>
+    <b class="header">createScaleFromOptions</b><code>helpers.createScaleFromOptions(options)</code><br>
+
+    Create <tt>d3.scale</tt> from the given options. If a <tt>d3.scale</tt> instance is given, it is passed through. 
+    <br>
+    Options:
   </p>
 
-  <p id="/helpers/stack">
-    <b class="header">stack</b><code>helpers.stack()</code><br>
-  </p>
+  <ul class="small">
+    <li><b>type</b> &mdash; (Default: linear) Available options: "linear", "time", and all d3.scale[type...]</li>
+    <li><b>...</b> &mdash; All scale options (e.g. range, domain, rangeBands, etc.)</li>
+    <li><b>data</b> &mdash; Data for automatically setting domain (requires "key" option)</li>
+    <li><b>key</b> &mdash; Key for getting value from data</li>
+  </ul>
 
   <p id="/helpers/style">
-    <b class="header">style</b><code>helpers.style()</code><br>
+    <b class="header">style</b><code>helpers.style(styles)</code><br>
+
+    Convert object containing styles into inline style string.
   </p>
 
-  <p id="/helpers/getValue">
-    <b class="header">getValue</b><code>helpers.getValue()</code><br>
-  </p>
-
-  <p id="/helpers/capitalize">
-    <b class="header">capitalize</b><code>helpers.capitalize()</code><br>
-  </p>
+<pre>helpers.style({fill: 'blue', 'stroke-width': '2px'});
+// -> fill: blue; stroke-width: 2px
+</pre>
 
   <p id="/helpers/di">
-    <b class="header">di</b><code>helpers.di()</code><br>
+    <b class="header">di</b><code>helpers.di(callback)</code><br>
+
+    Create a "di" function that gets parent chart injected.
+    Inside "di" functions, d3 sets the element to "this" and there is no good way
+    to access both the parent chart and the element.
   </p>
 
+<pre>x: di(function(chart, d, i) {
+  // "this" is the element
+
+  // to call other di function with di:
+  var other = chart.otherDi.call(this, d, i);
+});
+</pre>
+
   <p id="/helpers/bindDi">
-    <b class="header">bindDi</b><code>helpers.bindDi()</code><br>
+    <b class="header">bindDi</b><code>helpers.bindDi(di, chart)</code><br>
+
+    Bind given di function (from <tt>helpers.di</tt>) to given chart.
   </p>
 
   <p id="/helpers/bindAllDi">
-    <b class="header">bindAllDi</b><code>helpers.bindAllDi()</code><br>
-  </p>
+    <b class="header">bindAllDi</b><code>helpers.bindAllDi(chart)</code><br>
 
-  <p id="/helpers/log">
-    <b class="header">log</b><code>helpers.log()</code><br>
+    Bind all di functions attached to given chart (from prototype or instance).
   </p>
 
   <p id="/helpers/getParentData">
-    <b class="header">getParentData</b><code>helpers.getParentData()</code><br>
-  </p>
+    <b class="header">getParentData</b><code>helpers.getParentData(element)</code><br>
 
-  <p id="/helpers/resolveChart">
-    <b class="header">resolveChart</b><code>helpers.resolveChart()</code><br>
+    Get parent data for given element. Useful for getting series from data point.
   </p>
 
   <p id="/helpers/mixin">
     <b class="header">mixin</b><code>helpers.mixin()</code><br>
+
+    Combine mixins / prototypes into single prototype for chart.
   </p>
+
+<pre>d3.chart('Chart').extend('HasMixins', helpers.mixin(
+  mixins.XY, 
+  somePrototype, {
+    // ...
+  }
+));
+</pre>
 
   <!-- 
     mixins
@@ -859,24 +926,20 @@ axis.position('bottom');
     <b class="header">XY</b><br>
   </p>
 
-  <p id="/mixins/XYSeries">
-    <b class="header">XYSeries</b><br>
-  </p>
-
-  <p id="/mixins/Values">
-    <b class="header">Values</b><br>
-  </p>
-
-  <p id="/mixins/ValuesSeries">
-    <b class="header">ValuesSeries</b><br>
+  <p id="/mixins/XYValues">
+    <b class="header">XYValues</b><br>
   </p>
 
   <p id="/mixins/XYLabels">
-    <b class="header">Labels</b><br>
+    <b class="header">XYLabels</b><br>
   </p>
 
-  <p id="/mixins/XYLabelsSeries">
-    <b class="header">LabelsSeries</b><br>
+  <p id="/mixins/Hover">
+    <b class="header">Hover</b><br>
+  </p>
+
+  <p id="/mixins/XYHover">
+    <b class="header">XYHover</b><br>
   </p>
 
   <!-- 
