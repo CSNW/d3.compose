@@ -92,6 +92,9 @@ title: Docs
   <a class="toc_title" href="#/Legend/">
     Legend
   </a>
+  <ul class="toc_section">
+    <li>- <a href="#/Legend/charts">charts</a></li>
+  </ul>
 
   <a class="toc_title" href="#/Title/">
     Title
@@ -114,6 +117,10 @@ title: Docs
   </a>
   <ul class="toc_section">
     <li>- <a href="#/Component/extending">extending</a></li>
+    <li>- <a href="#/Component/prepareLayout">prepareLayout</a></li>
+    <li>- <a href="#/Component/getLayout">getLayout</a></li>
+    <li>- <a href="#/Component/setLayout">setLayout</a></li>
+    <li>- <a href="#/Component/skip_layout">skip_layout</a></li>
   </ul>
 
   <a class="toc_title" href="#/helpers/">
@@ -220,8 +227,47 @@ title: Docs
   <h2 id="/Multi/">Multi</h2>
 
   <p>
-    Intro...
+    <tt>d3.chart('Multi')</tt> allows charts and components to be composed into a rich charts. Using the <tt>options</tt> property, 
+    charts and components can be bound to data and customized with options to create intricate and dynamic charts.
   </p>
+
+<pre>d3.select('#chart')
+  .chart('Multi', function(data) {
+    // Compose charts, components, axes, legend, title into single chart
+
+    // Work with given data
+    var scales = {
+      x: {data: data.input, key: 'x'},
+      y: {data: data.input, key: 'y'},
+      y2: {data: data.output, key: 'y'}
+    };
+
+    return {
+      charts: {
+        // Create Line and Bars charts with given options
+        input: {
+          type: 'Line', 
+          data: data.input, 
+          xScale: scales.x, 
+          yScale: scales.y
+        },
+        output: {
+          type: 'Bars', 
+          data: data.output, 
+          xScale: scales.x, 
+          yScale: scales.y2
+        }
+      },
+      axes: {
+        // Create axes with given options
+        x: {scale: scales.x, position: 'bottom'},
+        y: {scale: scales.y, position: 'left', title: 'y1'},
+        y2: {scale: scales.y2, position: 'right', title: 'y2'}
+      },
+      title: 'Input vs. Output'
+    };
+  });
+</pre>
 
   <p id="/Multi/options">
     <b class="header">options</b><code>chart.options([options])</code><br>
@@ -355,8 +401,25 @@ chart.title({text: 'Title with options', position: 'bottom'});
   <h2 id="/Line/">Line</h2>
 
   <p>
-    Intro...
+    The Line chart (<tt>d3.chart('Line')</tt>) is an XY chart that can take single or series data.
   </p>
+
+<pre>// Use within d3.chart('Multi')
+d3.select('#chart')
+  .chart('Multi', function(data) {
+    return {
+      charts: {
+        a: {
+          type: 'Line', 
+          data: ..., 
+          xScale: ..., 
+          yScale: ..., 
+          other options...
+        }
+      }
+    };
+  });
+</pre>
 
   <p id="/Line/data">
     <b class="header">data</b><code>line.data([values])</code><br>
@@ -429,8 +492,25 @@ line.data([
   <h2 id="/Bars/">Bars</h2>
 
   <p>
-    Intro...
+    The Bars chart (<tt>d3.chart('Bars')</tt>) is an XYValues chart that can take single or series values data.
   </p>
+
+<pre>// Use within d3.chart('Multi')
+d3.select('#chart')
+  .chart('Multi', function(data) {
+    return {
+      charts: {
+        a: {
+          type: 'Bars', 
+          data: ..., 
+          xScale: ..., 
+          yScale: ..., 
+          other options...
+        }
+      }
+    };
+  });
+</pre>
 
   <p id="/Bars/data">
     <b class="header">data</b><code>bars.data([values])</code><br>
@@ -451,8 +531,6 @@ bars.data([
 
     For Series data, display bars at same index/key/x next to each other (rather than on top of). Default is <tt>true</tt>.
   </p>
-
-  <!-- TODO example -->
 
   <p id="/Bars/itemPadding">
     <b class="header">itemPadding</b><code>bars.itemPadding([value])</code><br>
@@ -499,8 +577,23 @@ bars.labels({/* options to pass to XYLabels */})
   <h2 id="/XYLabels/">XYLabels</h2>
 
   <p>
-    Intro...
+    Display labels for XY data (can be used standalone or within chart).
   </p>
+
+<pre>// Use within d3.chart('Multi')
+d3.select('#chart')
+  .chart('Multi', function(data) {
+    return {
+      charts: {
+        // Enable labels within chart (true or options)
+        a: {type: 'Line', ..., labels: true}
+
+        // Add labels directly
+        labels: {type: 'XYLabels', labels: ..., xScale: ..., yScale: ...}
+      }
+    };
+  });
+</pre>
 
   <p id="/XYLabels/labels">
     <b class="header">labels</b><code>xylabels.labels([values])</code><br>
@@ -580,10 +673,6 @@ labels.format(d3.format('0,000'));
     See the <a href="#/mixins/XY">XY Mixin</a> for details.
   </p>
 
-  <p id="/XYLabels/extending">
-    <b class="header">extending</b><br>
-  </p>
-
   <!-- 
     Axis
     ====
@@ -592,8 +681,25 @@ labels.format(d3.format('0,000'));
   <h2 id="/Axis/">Axis</h2>
 
   <p>
-    Intro...
+    Wrapper for <tt>d3.axis</tt> for adding axis component to charts (use <tt>AxisValues</tt> for XYValues data).
   </p>
+
+<pre>// Use within d3.chart('Multi')
+d3.select('#chart')
+  .chart('Multi', function(data) {
+    return {
+      // Add using axes helper
+      axes: {
+        x: {scale: ..., position: ...}
+      },
+
+      // Or with components
+      components: {
+        y_axis: {type: 'Axis', ...}
+      }
+    };
+  });
+</pre>
 
   <p id="/Axis/scale">
     <b class="header">scale</b><code>axis.scale([value])</code><br>
@@ -656,7 +762,13 @@ axis.position('bottom');
   <h2 id="/Legend/">Legend</h2>
 
   <p>
-    Intro...
+    Create legend for chart(s) using series information. Can automatically generate legend for <tt>d3.chart('Multi')</tt>
+  </p>
+
+  <p id="/Legend/charts/">
+    <b class="header">charts</b><code>legend.charts([charts])</code><br>
+
+    When used in conjunction with <tt>d3.chart('Multi')</tt> a subset of charts can be used to generate the legend by passing in an array of the chart keys that should be included in the legend. 
   </p>
 
   <!-- 
@@ -667,7 +779,7 @@ axis.position('bottom');
   <h2 id="/Title/">Title</h2>
 
   <p>
-    Intro...
+    Add a title to charts/components.
   </p>
 
   <p id="/Title/text">
@@ -795,7 +907,8 @@ axis.position('bottom');
     // (the following is the default implementation)
 
     var margins = this.margins();
-    this.base.attr('transform', helpers.translate(x + margins.left, y + margins.top));
+    this.base
+      .attr('transform', helpers.translate(x + margins.left, y + margins.top));
     this.width(options && options.width);
     this.height(options && options.height);
   }
@@ -816,7 +929,9 @@ axis.position('bottom');
   <h2 id="/helpers/">helpers</h2>
 
   <p>
-    Intro...
+    helpers (exposed as d3.chart.helpers) includes general purpose helpers that are used throughout d3.chart.multi.
+    Includes convenience functions for creating charts (<tt>property</tt>, <tt>di</tt>, and <tt>mixin</tt>), 
+    helpful calculations (<tt>dimensions</tt>, <tt>max</tt>, and <tt>min</tt>), and other common behavior.
   </p>
 
   <p id="/helpers/property">
