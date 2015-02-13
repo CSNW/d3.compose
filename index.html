@@ -144,16 +144,82 @@ title: Docs
     <li>- <a href="#/helpers/mixin">mixin</a></li>
   </ul>
 
-  <a class="toc_title" href="#/mixins/">
-    mixins
+  <a class="toc_title" href="#/mixins/Series">
+    Series
   </a>
   <ul class="toc_section">
-    <li>- <a href="#/mixins/Series">Series</a></li>
-    <li>- <a href="#/mixins/XY">XY</a></li>
-    <li>- <a href="#/mixins/XYValues">XYValues</a></li>
-    <li>- <a href="#/mixins/XYLabels">Labels</a></li>
-    <li>- <a href="#/mixins/Hover">Hover</a></li>
-    <li>- <a href="#/mixins/XYHover">XYHover</a></li>
+    <li>- <a href="#/mixins/Series/seriesKey">seriesKey</a></li>
+    <li>- <a href="#/mixins/Series/seriesValues">seriesValues</a></li>
+    <li>- <a href="#/mixins/Series/seriesClass">seriesClass</a></li>
+    <li>- <a href="#/mixins/Series/seriesIndex">seriesIndex</a></li>
+    <li>- <a href="#/mixins/Series/seriesCount">seriesCount</a></li>
+    <li>- <a href="#/mixins/Series/seriesData">seriesData</a></li>
+    <li>- <a href="#/mixins/Series/itemStyle">itemStyle</a></li>
+    <li>- <a href="#/mixins/Series/seriesLayer">seriesLayer</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/mixins/XY">
+    XY
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/mixins/XY/xKey">xKey</a></li>
+    <li>- <a href="#/mixins/XY/yKey">yKey</a></li>
+    <li>- <a href="#/mixins/XY/xScale">xScale</a></li>
+    <li>- <a href="#/mixins/XY/yScale">yScale</a></li>
+    <li>- <a href="#/mixins/XY/xMin">xMin</a></li>
+    <li>- <a href="#/mixins/XY/xMax">xMax</a></li>
+    <li>- <a href="#/mixins/XY/yMin">yMin</a></li>
+    <li>- <a href="#/mixins/XY/yMax">yMax</a></li>
+    <li>- <a href="#/mixins/XY/x">x</a></li>
+    <li>- <a href="#/mixins/XY/y">y</a></li>
+    <li>- <a href="#/mixins/XY/x0">x0</a></li>
+    <li>- <a href="#/mixins/XY/y0">y0</a></li>
+    <li>- <a href="#/mixins/XY/xValue">xValue</a></li>
+    <li>- <a href="#/mixins/XY/yValue">yValue</a></li>
+    <li>- <a href="#/mixins/XY/keyValue">keyValue</a></li>
+    <li>- <a href="#/mixins/XY/setXScaleRange">setXScaleRange</a></li>
+    <li>- <a href="#/mixins/XY/setYScaleRange">setYScaleRange</a></li>
+    <li>- <a href="#/mixins/XY/getDefaultXScale">getDefaultXScale</a></li>
+    <li>- <a href="#/mixins/XY/getDefaultYScale">getDefaultYScale</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/mixins/XYValues">
+    XYValues
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/mixins/XYValues/itemPadding">itemPadding</a></li>
+    <li>- <a href="#/mixins/XYValues/displayAdjacent">displayAdjacent</a></li>
+    <li>- <a href="#/mixins/XYValues/adjacentX">adjacentX</a></li>
+    <li>- <a href="#/mixins/XYValues/adjacentWidth">adjacentWidth</a></li>
+    <li>- <a href="#/mixins/XYValues/layeredX">layeredX</a></li>
+    <li>- <a href="#/mixins/XYValues/layeredWidth">layeredWidth</a></li>
+    <li>- <a href="#/mixins/XYValues/itemWidth">itemWidth</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/mixins/XYLabels">
+    XYLabels
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/mixins/XYLabels/attachLabels">attachLabels</a></li>
+    <li>- <a href="#/mixins/XYLabels/labels">labels</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/mixins/Hover">
+    Hover
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/mixins/Hover/onMouseEnter">onMouseEnter</a></li>
+    <li>- <a href="#/mixins/Hover/onMouseMove">onMouseMove</a></li>
+    <li>- <a href="#/mixins/Hover/onMouseLeave">onMouseLeave</a></li>
+  </ul>
+
+  <a class="toc_title" href="#/mixins/XYHover">
+    XYHover
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/mixins/XYHover/getPoint">getPoint</a></li>
+    <li>- <a href="#/mixins/XYHover/getPoints">getPoints</a></li>
+    <li>- <a href="#/mixins/XYHover/getClosestPoints">getClosestPoints</a></li>
   </ul>
 
   <a class="toc_title" href="#changelog">
@@ -1093,38 +1159,237 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 </pre>
 
   <!-- 
-    mixins
+    Series
     ======
   -->
 
-  <h2 id="/mixins/">mixins</h2>
+  <h2 id="/mixins/Series">Series</h2>
 
   <p>
-    Intro...
+    The Series mixin includes helpers for handling series data.
   </p>
 
-  <p id="/mixins/Series">
-    <b class="header">Series</b><br>
+  <p id="/mixins/Series/seriesKey">
+    <b class="header">seriesKey</b><code></code><br>
   </p>
 
-  <p id="/mixins/XY">
-    <b class="header">XY</b><br>
+  <p id="/mixins/Series/seriesValues">
+    <b class="header">seriesValues</b><code></code><br>
   </p>
 
-  <p id="/mixins/XYValues">
-    <b class="header">XYValues</b><br>
+  <p id="/mixins/Series/seriesClass">
+    <b class="header">seriesClass</b><code></code><br>
   </p>
 
-  <p id="/mixins/XYLabels">
-    <b class="header">XYLabels</b><br>
+  <p id="/mixins/Series/seriesIndex">
+    <b class="header">seriesIndex</b><code></code><br>
   </p>
 
-  <p id="/mixins/Hover">
-    <b class="header">Hover</b><br>
+  <p id="/mixins/Series/seriesCount">
+    <b class="header">seriesCount</b><code></code><br>
   </p>
 
-  <p id="/mixins/XYHover">
-    <b class="header">XYHover</b><br>
+  <p id="/mixins/Series/seriesData">
+    <b class="header">seriesData</b><code></code><br>
+  </p>
+
+  <p id="/mixins/Series/itemStyle">
+    <b class="header">itemStyle</b><code></code><br>
+  </p>
+
+  <p id="/mixins/Series/seriesLayer">
+    <b class="header">seriesLayer</b><code>seriesLayer(name selection, options)</code><br>
+  </p>
+
+  <!-- 
+    XY
+    ======
+  -->
+
+  <h2 id="/mixins/XY">XY</h2>
+
+  <p>
+    The XY mixin includes helpers for handling XY array and series data.
+  </p>
+
+  <p id="/mixins/XY/xKey">
+    <b class="header">xKey</b><code>xKey([key])</code><br>
+  </p>
+
+  <p id="/mixins/XY/yKey">
+    <b class="header">yKey</b><code>yKey([key])</code><br>
+  </p>
+
+  <p id="/mixins/XY/xScale">
+    <b class="header">xScale</b><code>xScale([scale|options])</code><br>
+  </p>
+
+  <p id="/mixins/XY/yScale">
+    <b class="header">yScale</b><code>yScale([scale|options])</code><br>
+  </p>
+
+  <p id="/mixins/XY/xMin">
+    <b class="header">xMin</b><code>xMin([value])</code><br>
+  </p>
+
+  <p id="/mixins/XY/xMax">
+    <b class="header">xMax</b><code>xMax([value])</code><br>
+  </p>
+
+  <p id="/mixins/XY/yMin">
+    <b class="header">yMin</b><code>yMin([value])</code><br>
+  </p>
+
+  <p id="/mixins/XY/yMax">
+    <b class="header">yMax</b><code>yMax([value])</code><br>
+  </p>
+
+  <p id="/mixins/XY/x">
+    <b class="header">x</b><br>
+  </p>
+
+  <p id="/mixins/XY/y">
+    <b class="header">y</b><br>
+  </p>
+
+  <p id="/mixins/XY/x0">
+    <b class="header">x0</b><br>
+  </p>
+
+  <p id="/mixins/XY/y0">
+    <b class="header">y0</b><br>
+  </p>
+
+  <p id="/mixins/XY/xValue">
+    <b class="header">xValue</b><br>
+  </p>
+
+  <p id="/mixins/XY/yValue">
+    <b class="header">yValue</b><br>
+  </p>
+
+  <p id="/mixins/XY/keyValue">
+    <b class="header">keyValue</b><br>
+  </p>
+
+  <p id="/mixins/XY/setXScaleRange">
+    <b class="header">setXScaleRange</b><code>setXScaleRange(x_scale)</code><br>
+  </p>
+
+  <p id="/mixins/XY/setYScaleRange">
+    <b class="header">setYScaleRange</b><code>setYScaleRange(y_scale)</code><br>
+  </p>
+
+  <p id="/mixins/XY/getDefaultXScale">
+    <b class="header">getDefaultXScale</b><code>getDefaultXScale()</code><br>
+  </p>
+
+  <p id="/mixins/XY/getDefaultYScale">
+    <b class="header">getDefaultYScale</b><code>getDefaultYScale()</code><br>
+  </p>
+
+  <!-- 
+    XYValues
+    ======
+  -->
+
+  <h2 id="/mixins/XYValues">XYValues</h2>
+
+  <p>
+    The XYValues mixin extends the XY mixin with additional helpers for handling XY values array and series data.
+  </p>
+
+  <p id="/mixins/XYValues/itemPadding">
+    <b class="header">itemPadding</b><code>itemPadding([value])</code><br>
+  </p>
+
+  <p id="/mixins/XYValues/displayAdjacent">
+    <b class="header">displayAdjacent</b><code>displayAdjacent([value])</code><br>
+  </p>
+
+  <p id="/mixins/XYValues/adjacentX">
+    <b class="header">adjacentX</b><br>
+  </p>
+
+  <p id="/mixins/XYValues/adjacentWidth">
+    <b class="header">adjacentWidth</b><br>
+  </p>
+
+  <p id="/mixins/XYValues/layeredX">
+    <b class="header">layeredX</b><br>
+  </p>
+
+  <p id="/mixins/XYValues/layeredWidth">
+    <b class="header">layeredWidth</b><br>
+  </p>
+
+  <p id="/mixins/XYValues/itemWidth">
+    <b class="header">itemWidth</b><br>
+  </p>
+
+  <!-- 
+    XYLabels
+    ======
+  -->
+
+  <h2 id="/mixins/XYLabels">XYLabels</h2>
+
+  <p>
+    The XYLabels mixin includes helpers for adding labels to an XY chart.
+  </p>
+
+  <p id="/mixins/XYLabels/attachLabels">
+    <b class="header">attachLabels</b><code>attachLabels()</code><br>
+  </p>
+
+  <p id="/mixins/XYLabels/labels">
+    <b class="header">labels</b><code>labels([options])</code><br>
+  </p>
+
+  <!-- 
+    Hover
+    ======
+  -->
+
+  <h2 id="/mixins/Hover">Hover</h2>
+
+  <p>
+    The Hover mixin includes helpers for listening for and handling mouse events.
+  </p>
+
+  <p id="/mixins/Hover/onMouseEnter">
+    <b class="header">onMouseEnter</b><code>onMouseEnter(position)</code><br>
+  </p>
+
+  <p id="/mixins/Hover/onMouseMove">
+    <b class="header">onMouseMove</b><code>onMouseMove(position)</code><br>
+  </p>
+
+  <p id="/mixins/Hover/onMouseLeave">
+    <b class="header">onMouseLeave</b><code>onMouseLeave()</code><br>
+  </p>
+
+  <!-- 
+    XYHover
+    ======
+  -->
+
+  <h2 id="/mixins/XYHover">XYHover</h2>
+
+  <p>
+    The XYHover mixin extends the Hover mixin with helpers specific to XY charts.
+  </p>
+
+  <p id="/mixins/XYHover/getPoint">
+    <b class="header">getPoint</b><br>
+  </p>
+
+  <p id="/mixins/XYHover/getPoints">
+    <b class="header">getPoints</b><code>getPoints()</code><br>
+  </p>
+
+  <p id="/mixins/XYHover/getClosestPoints">
+    <b class="header">getClosestPoints</b><code>getClosestPoints()</code><br>
   </p>
 
   <!-- 
@@ -1134,10 +1399,14 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 
   <h2 id="changelog">Change Log</h2>
 
-  <b class="header">0.8.3</b> &mdash; <small><i>(Date)</i></small>
+  <b class="header">0.9.0</b> &mdash; <small><i>(Feb. 11, 2015)</i></small>
   <br>
   <ul style="margin-top: 5px;">
-    <li>Changes...</li>
+    <li>Dramatic labels simplification</li>
+    <li>Add XYLabels, Hover, and XYHover mixins</li>
+    <li>Remove / simplify helpers (Removed getValue, capitalize, resolveChart, stack, log and simplified property, transform, and others)</li>
+    <li>Simplify mixins: Combine XY/Values series into main XY and Values mixins</li>
+    <li>General cleanup and normalize coding style</li>
   </ul>
 
   <p>
