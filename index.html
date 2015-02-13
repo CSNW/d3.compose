@@ -1171,35 +1171,99 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 
   <p id="/mixins/Series/seriesKey">
     <b class="header">seriesKey</b><code></code><br>
+
+    "di" function for getting the series' key.
   </p>
 
   <p id="/mixins/Series/seriesValues">
     <b class="header">seriesValues</b><code></code><br>
+
+    "di" function for getting the series' values.
   </p>
 
   <p id="/mixins/Series/seriesClass">
     <b class="header">seriesClass</b><code></code><br>
+
+    "di" function for getting the series' class.
   </p>
 
   <p id="/mixins/Series/seriesIndex">
     <b class="header">seriesIndex</b><code></code><br>
+
+    "di" function for getting the series' index.
   </p>
 
   <p id="/mixins/Series/seriesCount">
     <b class="header">seriesCount</b><code></code><br>
+
+    "di" function for getting the number of series.
   </p>
 
   <p id="/mixins/Series/seriesData">
     <b class="header">seriesData</b><code></code><br>
+
+    "di" function for getting the overall series data for child element.
   </p>
 
   <p id="/mixins/Series/itemStyle">
     <b class="header">itemStyle</b><code></code><br>
+
+    "di" function that includes that combines the data item's style with the series and chart styles.
   </p>
+
+<pre>var data = [
+  {
+    key: 'series-1',
+    style: {fill: 'green', stroke: 'green'},
+    values: [
+      {
+        x: 0,
+        y: 10,
+        style: {stroke: 'yellow'}
+      }
+    ]
+  }
+];
+
+chart.style({fill: 'blue', 'opacity': 0.8});
+
+// itemStyle -> 'opacity: 0.8; fill: green; stroke: yellow'
+</pre>
 
   <p id="/mixins/Series/seriesLayer">
     <b class="header">seriesLayer</b><code>seriesLayer(name selection, options)</code><br>
+
+    Extension of <tt>chart.layer</tt> from d3.chart that creates parent layer for series and creates given layer for each series item.
   </p>
+
+<pre>d3.chart('Chart').extend('Bars', helpers.mixin(mixins.Series, {
+  initialize: function() {
+    this.seriesLayer('Bars', this.base, {
+      // Creates series items groups on this.base
+      // and calls the following for each series item
+
+      dataBind: function(data) {
+        // data = [1, 2, 3]
+        //        [4, 5, 6]
+      },
+
+      insert: function() {
+        // Same as chart.layer
+      },
+
+      events: {
+        // Same as chart.layer
+      }
+    })
+  }
+}));
+
+// ...
+chart.draw([
+  {key: 'series-1', values: [1, 2, 3]},
+  {key: 'series-2', values: [4, 5, 6]}
+]);
+</pre>
 
   <!-- 
     XY
@@ -1214,78 +1278,116 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 
   <p id="/mixins/XY/xKey">
     <b class="header">xKey</b><code>xKey([key])</code><br>
+
+    Get/set the key used to get x-values from the data (default is "x").
   </p>
 
   <p id="/mixins/XY/yKey">
     <b class="header">yKey</b><code>yKey([key])</code><br>
+
+    Get/set the key used to get y-values from the data (default is "y").
   </p>
 
   <p id="/mixins/XY/xScale">
     <b class="header">xScale</b><code>xScale([scale|options])</code><br>
+
+    Get/set the x-scale for the data. Can be <tt>d3.scale</tt> or options that are passed to <tt>helpers.createScaleFromOptions</tt>. Range for scale is set automatically from the chart dimensions with <tt>setXScaleRange</tt>
   </p>
 
   <p id="/mixins/XY/yScale">
     <b class="header">yScale</b><code>yScale([scale|options])</code><br>
+
+    Get/set the y-scale for the data. Can be <tt>d3.scale</tt> or options that are passed to <tt>helpers.createScaleFromOptions</tt>. Range for scale is set automatically from the chart dimensions with <tt>setYScaleRange</tt>
   </p>
 
   <p id="/mixins/XY/xMin">
     <b class="header">xMin</b><code>xMin([value])</code><br>
+
+    Get/set the minimum x-value.
   </p>
 
   <p id="/mixins/XY/xMax">
     <b class="header">xMax</b><code>xMax([value])</code><br>
+
+    Get/set the maximum x-value;
   </p>
 
   <p id="/mixins/XY/yMin">
     <b class="header">yMin</b><code>yMin([value])</code><br>
+
+    Get/set the minimum y-value.
   </p>
 
   <p id="/mixins/XY/yMax">
     <b class="header">yMax</b><code>yMax([value])</code><br>
+
+    Get/set the maximum y-value.
   </p>
 
   <p id="/mixins/XY/x">
     <b class="header">x</b><br>
+
+    "di" for getting x-value for charting (uses <tt>xValue</tt> to extract from data and passes through <tt>xScale</tt> for scaling).
   </p>
 
   <p id="/mixins/XY/y">
     <b class="header">y</b><br>
+
+    "di" for getting y-value for charting (uses <tt>yValue</tt> to extract from data and passes through <tt>yScale</tt> for scaling).
   </p>
 
   <p id="/mixins/XY/x0">
     <b class="header">x0</b><br>
+
+    "di" for getting x-value at x = 0 for charting (uses <tt>xValue</tt> to extract from data and passes through <tt>xScale</tt> for scaling).
   </p>
 
   <p id="/mixins/XY/y0">
     <b class="header">y0</b><br>
+
+    "di" for getting y-value at y = 0 for charting (uses <tt>yValue</tt> to extract from data and passes through <tt>yScale</tt> for scaling).
   </p>
 
   <p id="/mixins/XY/xValue">
     <b class="header">xValue</b><br>
+
+    "di" for extracting x-value from data (by <tt>xKey</tt>).
   </p>
 
   <p id="/mixins/XY/yValue">
     <b class="header">yValue</b><br>
+
+    "di" for extracting y-value from data (by <tt>yKey</tt>).
   </p>
 
   <p id="/mixins/XY/keyValue">
     <b class="header">keyValue</b><br>
+
+    "di" for extracting key from data (uses "key" if present in data or <tt>xValue</tt>).
   </p>
 
   <p id="/mixins/XY/setXScaleRange">
     <b class="header">setXScaleRange</b><code>setXScaleRange(x_scale)</code><br>
+
+    Used to set the x-scale range for default and defined <tt>xScale</tt>. By default, uses chart width, but can be overriden for custom functionality.
   </p>
 
   <p id="/mixins/XY/setYScaleRange">
     <b class="header">setYScaleRange</b><code>setYScaleRange(y_scale)</code><br>
+
+    Used to set the y-scale range for default and defined <tt>yScale</tt>. By default, uses chart height, but can be overriden for custom functionality.
   </p>
 
   <p id="/mixins/XY/getDefaultXScale">
     <b class="header">getDefaultXScale</b><code>getDefaultXScale()</code><br>
+
+    If no <tt>xScale</tt> is given, this method is used to create a default x-scale. Useful to override default scale options to match the chart options (e.g. scale type: ordinal).
   </p>
 
   <p id="/mixins/XY/getDefaultYScale">
     <b class="header">getDefaultYScale</b><code>getDefaultYScale()</code><br>
+
+    If no <tt>yScale</tt> is given, this method is used to create a default y-scale.
   </p>
 
   <!-- 
@@ -1301,30 +1403,44 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 
   <p id="/mixins/XYValues/itemPadding">
     <b class="header">itemPadding</b><code>itemPadding([value])</code><br>
+
+    Get/set the padding (in percentage) between items at different index/key/x.
   </p>
 
   <p id="/mixins/XYValues/displayAdjacent">
     <b class="header">displayAdjacent</b><code>displayAdjacent([value])</code><br>
+
+    By default, items at the same index/key/x are displayed with the same x-coordinate ("layered"). Enable <tt>displayAdjacent</tt> to display the items next to each other.
   </p>
 
   <p id="/mixins/XYValues/adjacentX">
     <b class="header">adjacentX</b><br>
+
+    "di" for getting x-coordinate of adjacently placed item.
   </p>
 
   <p id="/mixins/XYValues/adjacentWidth">
     <b class="header">adjacentWidth</b><br>
+
+    "di" for getting width of adjacently placed item.
   </p>
 
   <p id="/mixins/XYValues/layeredX">
     <b class="header">layeredX</b><br>
+
+    "di" for getting x-coordinate of layered item.
   </p>
 
   <p id="/mixins/XYValues/layeredWidth">
     <b class="header">layeredWidth</b><br>
+
+    "di" for getting width of layered item.
   </p>
 
   <p id="/mixins/XYValues/itemWidth">
     <b class="header">itemWidth</b><br>
+
+    Get the width of the item (<tt>layeredWidth</tt> by default, <tt>adjacentWidth</tt> if <tt>displayAdjacent</tt> is enabled).
   </p>
 
   <!-- 
@@ -1340,10 +1456,14 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 
   <p id="/mixins/XYLabels/attachLabels">
     <b class="header">attachLabels</b><code>attachLabels()</code><br>
+
+    Call <tt>attachLabels</tt> in the chart's initialize method to add a labels layer.
   </p>
 
   <p id="/mixins/XYLabels/labels">
     <b class="header">labels</b><code>labels([options])</code><br>
+
+    Get/set options that are passed to labels. Use <tt>type</tt> to set the type of labels chart to add ("XYLabels" is default).
   </p>
 
   <!-- 
@@ -1359,14 +1479,20 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 
   <p id="/mixins/Hover/onMouseEnter">
     <b class="header">onMouseEnter</b><code>onMouseEnter(position)</code><br>
+
+    Called when mouse enters containing chart (<tt>position = {container: {x, y}, chart: {x, y}}</tt>).
   </p>
 
   <p id="/mixins/Hover/onMouseMove">
     <b class="header">onMouseMove</b><code>onMouseMove(position)</code><br>
+
+    Called when mouse moves within containing chart (<tt>position = {container: {x, y}, chart: {x, y}}</tt>).
   </p>
 
   <p id="/mixins/Hover/onMouseLeave">
     <b class="header">onMouseLeave</b><code>onMouseLeave()</code><br>
+
+    Called when mouse leaves the containing chart.
   </p>
 
   <!-- 
@@ -1382,14 +1508,20 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 
   <p id="/mixins/XYHover/getPoint">
     <b class="header">getPoint</b><br>
+
+    "di" for getting the getting point information (<tt>{x, y, d, i, j}</tt>) for given element.
   </p>
 
   <p id="/mixins/XYHover/getPoints">
     <b class="header">getPoints</b><code>getPoints()</code><br>
+
+    Get all point information (<tt>{x, y, d, i j}</tt>) for chart's data.
   </p>
 
   <p id="/mixins/XYHover/getClosestPoints">
-    <b class="header">getClosestPoints</b><code>getClosestPoints()</code><br>
+    <b class="header">getClosestPoints</b><code>getClosestPoints(position)</code><br>
+
+    Get point information (<tt>{x, y, d, i j}</tt>) for point of each series that is closest to given position (<tt>{x, y}</tt>).
   </p>
 
   <!-- 
