@@ -109,13 +109,6 @@ title: Docs
     <li>- <a href="#/Chart/extending">extending</a></li>
   </ul>
 
-  <a class="toc_title" href="#/SeriesChart/">
-    SeriesChart
-  </a>
-  <ul class="toc_section">
-    <li>- <a href="#/SeriesChart/extending">extending</a></li>
-  </ul>
-
   <a class="toc_title" href="#/Component/">
     Component
   </a>
@@ -701,27 +694,35 @@ axis.position('bottom');
   <h2 id="/Chart/">Chart</h2>
 
   <p>
-    Intro...
+    d3.chart.multi can use charts created using standard d3.chart or charts extended from <tt>d3.chart('Chart')</tt> that includes some convenience helpers.
+    <tt>d3.chart('Chart')</tt> includes helpers for <tt>options</tt>, <tt>data</tt>, and <tt>width/height</tt>.
   </p>
 
   <p id="/Chart/extending">
     <b class="header">extending</b><br>
+
+    To take advantage of di-binding (automatically injects chart into di methods) and automatically setting properties from options,
+    use <tt>helpers.di</tt> and <tt>helpers.property</tt> when setting up your chart.
   </p>
 
-  <!-- 
-    SeriesChart
-    ===========
-  -->
+<pre>d3.chart('Chart').extend('Pie', {
+  initialize: function() {
+    // same as d3.chart
+  },
+  transform: function(data) {
+    // same as d3.chart
+  },
 
-  <h2 id="/SeriesChart/">SeriesChart</h2>
+  color: helpers.di(function(chart, d, i) {
+    // "di" function with parent chart injected ("this" = element)
+  }),
 
-  <p>
-    Intro...
-  </p>
-
-  <p id="/SeriesChart/extending">
-    <b class="header">extending</b><br>
-  </p>
+  centered: helpers.property('centered', {
+    default_value: true
+    // can be automatically set from options object
+  })
+});
+</pre>
 
   <!-- 
     Component
@@ -731,11 +732,80 @@ axis.position('bottom');
   <h2 id="/Component/">Component</h2>
 
   <p>
-    Intro...
+    <tt>d3.chart('Component')</tt> contains many helpers and required methods for creating a component for d3.chart.multi. 
+    Components are position around the chart ("top", "right", "bottom", "left") and include layout calculations for properly laying out components.
   </p>
 
   <p id="/Component/extending">
     <b class="header">extending</b><br>
+
+    <tt>d3.chart('Component')</tt> includes intelligent defaults and there are no required overrides when using it.
+    To adjust layout calculation use: <tt>prepareLayout</tt>, <tt>getLayout</tt>, and/or <tt>setLayout</tt>.
+  </p>
+
+  <p id="/Component/prepareLayout">
+    <b class="header">prepareLayout</b><code>prepareLayout(data)</code><br>
+
+    Override this function in the component's prototype to skip pre-draw or use a different preparation.
+  </p>
+
+<pre>d3.chart('Component').extend('Custom', {
+  prepareLayout: function(data) {
+    // draw is normally called here 
+    // so that getLayout has real dimensions
+
+    // -> custom preparation
+  }
+});
+</pre>
+
+  <p id="/Component/getLayout">
+    <b class="header">getLayout</b><code>getLayout(data) {position, width, height}</code><br>
+
+    By default, calls <tt>prepareLayout</tt> and then calculates the component's position, width, and height.
+    Override this function to customize the calculations for position/width/height.
+    The return must be an object with position, width, and height set.
+  </p>
+
+<pre>d3.chart('Component').extend('Custom', {
+  getLayout: function(data) {
+    // Perform custom calculations...
+    var calculated_width, calculated_height;
+
+    // Must return position, width, and height
+    return {
+      position: this.position(),
+      width: calculated_width,
+      height: calculated_height
+    };
+  }
+});
+</pre>
+
+  <p id="/Component/setLayout">
+    <b class="header">setLayout</b><code>setLayout(x, y, options)</code><br>
+
+    Called by the containing chart, the x, y are the laid out position of the top-left corner of the component.
+    <tt>options</tt> includes either height for components positioned left/right or width for top/bottom.
+  </p>
+
+<pre>d3.chart('Component').extend('Custom', {
+  setLayout: function(x, y, options) {
+    // options includes height or width
+    // (the following is the default implementation)
+
+    var margins = this.margins();
+    this.base.attr('transform', helpers.translate(x + margins.left, y + margins.top));
+    this.width(options && options.width);
+    this.height(options && options.height);
+  }
+});
+</pre>
+
+  <p id="/Component/skip_layout">
+    <b class="header">skip_layout</b><br>
+
+    Set <tt>skip_layout</tt> to <tt>false</tt> on the component's prototype / instance to skip that component in layout calculations.
   </p>
 
   <!-- 
