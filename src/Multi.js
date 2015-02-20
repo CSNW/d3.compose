@@ -535,11 +535,11 @@
     // Extract layout from components
     _extractLayout: function(data) {
       var overall_layout = {top: [], right: [], bottom: [], left: []};
-      utils.each(this.components(), function(component) {
+      utils.each(this.components(), function(component, id) {
         if (component.skip_layout)
           return;
 
-        var layout = component.getLayout(data);
+        var layout = component.getLayout(this.demux(id, data));
         var position = layout && layout.position;
 
         if (!utils.contains(['top', 'right', 'bottom', 'left'], position))
@@ -549,7 +549,7 @@
           offset: position == 'top' || position == 'bottom' ? layout.height : layout.width,
           component: component
         });
-      });
+      }, this);
       
       return overall_layout;
     }
