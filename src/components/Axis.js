@@ -323,7 +323,7 @@
     }
   }), {
     layer_type: 'chart',
-    z_index: helpers.z_index.axis
+    z_index: 60
   });
   
   /**

@@ -244,7 +244,7 @@
         .classed('highlight', false);
     }
   }), {
-    z_index: helpers.z_index.labels
+    z_index: 150
   });
 
   function prepareLabel(chart, element, d, i, j) {

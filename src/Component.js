@@ -102,7 +102,7 @@
       this.width(options && options.width);
     }
   }, {
-    z_index: helpers.z_index.component
+    z_index: 50
   });
 
 })(d3, _, d3.chart.helpers);
