@@ -40,12 +40,6 @@
   */
   d3.chart('Base').extend('Multi', {
     initialize: function(options) {
-      // When "options" changes, a full redraw is required to setup config
-      this._full_redraw = false;
-
-      this.charts_by_id = {};
-      this.components_by_id = {};
-
       // Overriding transform in init jumps it to the top of the transform cascade
       // Therefore, data coming in hasn't been transformed and is raw
       // (Save raw data for redraw)
@@ -54,8 +48,10 @@
         return data;
       };
 
-      this.options(options || {});
-      this.base.classed('chart-container', true);
+      if (options)
+        this.options(options);
+
+      this.base.classed('chart-multi', true);
       this.attachHoverListeners();
     },
 
@@ -63,7 +59,7 @@
       default_value: function(data) { return {}; },
       type: 'Function',
       set: function(options) {
-        this._full_redraw = true;
+        this._config = null;
 
         // If options is plain object,
         // return from generic options function
@@ -93,12 +89,7 @@
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
       set: function(values) {
         return {
-          override: _.defaults({}, values, {
-            top: 0, 
-            right: 0, 
-            bottom: 0, 
-            left: 0
-          })
+          override: _.defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
         };
       }
     }),
@@ -109,27 +100,17 @@
       @param {Object} value {top, right, bottom, left}
     */
     chartPosition: property('chartPosition', {
-      default_value: function() {
-        return {
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          width: this._width(),
-          height: this._height()
-        };
-      },
+      default_value: {top: 0, right: 0, bottom: 0, left: 0},
       set: function(values) {
         return {
-          override: _.defaults({}, values, {
-            top: 0, 
-            right: 0, 
-            bottom: 0, 
-            left: 0,
-            width: this._width() - values.right - values.left,
-            height: this._height() - values.bottom - values.top
-          })
+          override: _.defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
         };
+      },
+      get: function(values) {
+        values.width = this._width() - values.right - values.left;
+        values.height = this._height() - values.bottom - values.top;
+
+        return values;
       }
     }),
 
@@ -139,17 +120,30 @@
     width: property('width'),
     height: property('height'),
 
+    _width: function() {
+      var width = this.width();
+      return width != null ? width : d3.chart('Base').prototype.width.call(this);
+    },
+    _height: function() {
+      var height = this.height();
+      return height != null ? height : d3.chart('Base').prototype.height.call(this);
+    },
+
     charts: property('charts', {
-      set: function(charts, previous) {
+      set: function(chart_options, charts) {
+        chart_options = chart_options || {};
         charts = charts || {};
         
         // Remove charts that are no longer needed
-        var remove_ids = _.difference(_.keys(this.charts_by_id), _.keys(charts));
-        _.each(remove_ids, this.detachChart, this);
+        var remove_ids = _.difference(_.keys(charts), _.keys(chart_options));
+        _.each(remove_ids, function(remove_id) {
+          this.detach(remove_id, charts[remove_id]);
+          delete charts[remove_id];
+        }, this);
 
         // Create or update charts
-        _.each(charts, function(options, id) {
-          var chart = this.charts_by_id[id];
+        _.each(chart_options, function(options, id) {
+          var chart = charts[id];
 
           // If chart type has changed, detach and re-create
           if (chart && chart.type != options.type) {
@@ -168,27 +162,37 @@
             chart = new Chart(base, options);
             chart.type = options.type;
 
-            this.attachChart(id, chart);
+            this.attach(id, chart);
+            charts[id] = chart;
           }
           else {
             chart.options(options);
           }
         }, this);
+
+        // Store actual charts rather than options
+        return {
+          override: charts
+        };
       },
       default_value: {}
     }),
 
     components: property('components', {
-      set: function(components) {
+      set: function(component_options, components) {
+        component_options = component_options || {};
         components = components || {};
 
         // Remove components that are no longer needed
-        var remove_ids = _.difference(_.keys(this.components_by_id), _.keys(components));
-        _.each(remove_ids, this.detachComponent, this);
+        var remove_ids = _.difference(_.keys(components), _.keys(component_options));
+        _.each(remove_ids, function(remove_id) {
+          this.detach(remove_id, components[remove_id]);
+          delete components[remove_id];
+        }, this);
 
         // Create or update components
-        _.each(components, function(options, id) {
-          var component = this.components_by_id[id];
+        _.each(component_options, function(options, id) {
+          var component = components[id];
 
           // If component type has change, detach and recreate
           if (component && component.type != options.type) {
@@ -208,77 +212,67 @@
             component = new Component(base, options);
             component.type = options.type;
 
-            this.attachComponent(id, component);
+            this.attach(id, component);
+            components[id] = component;
           }
           else {
             component.options(options);
           }
         }, this);
+
+        // Store actual components rather than options
+        return {
+          override: components
+        };
       },
       default_value: {}
     }),
   
     draw: function(data) {
-      var config = this._prepareConfig(data);
+      if (!this._config) {
+        data = data.original || data;
+        this._config = this._prepareConfig(data);
 
-      this.charts(config.charts);
-      this.components(config.components);
+        // Set charts and components from config
+        _.each(this._config, function(value, key) {
+          if (this[key] && this[key].is_property && this[key].set_from_options)
+            this[key](value);
+        }, this);
+      }
 
+      // Add config data
       data = {
         original: data,
-        config: config.data
+        config: this._config.data
       };
 
-      // Explicitly set width and height of container if width/height > 0
+      // Explicitly set width and height of container if width/height is defined
       this.base
         .attr('width', this.width() || null)
         .attr('height', this.height() || null);
 
-      // Pre-draw for accurate dimensions for layout
+      // Layout components
       this.layout(data);
 
       // Full draw now that everything has been laid out
       d3.chart().prototype.draw.call(this, data);
-
-      // d3.chart('Container').prototype.draw.call(this, {
-      //   original: data,
-      //   config: config.data
-      // });
     },
 
     redraw: function() {
-      // Redraw chart with previously saved raw data / config
-      if (this.rawData()) {
-        if (this._full_redraw) {
-          this._full_redraw = false;
-          this.draw(this.rawData().original);
-        }
-        else {
-          this.draw(this.rawData());
-          // d3.chart('Container').prototype.draw.call(this, this.rawData());
-        }
-      }  
+      if (this.rawData())
+        this.draw(this.rawData().original);
     },
 
     demux: function(name, data) {
-      var item_data;
-      var item = this.charts_by_id[name];
-      if (item) {
-        item_data = data.config.charts[name];
-        if (item_data)
-          return item_data;
-      }
-      else {
-        item = this.components_by_id[name];
-        if (item) {
-          item_data = data.config.components[name];
-          if (item_data)
-            return item_data;
-        }
-      }
+      if (!data.config || !data.original)
+        return data;
 
-      // If no item data is found, use original data
-      return data.original;
+      if (this.charts()[name] && data.config.charts[name])
+        return data.config.charts[name];
+      else if (this.components()[name] && data.config.components[name])
+        return data.config.components[name];
+      else
+        return data.original;
     },
 
     /**
@@ -311,39 +305,6 @@
       return this.base.append('g')
         .attr('class', 'chart-component-layer')
         .attr('data-zIndex', options.z_index);
-    },
-
-    attachChart: function(id, chart) {
-      this._attach(id, chart);
-      this.charts_by_id[id] = chart;
-    },
-
-    detachChart: function(id) {
-      var chart = this.charts_by_id[id];
-      if (!chart) return;
-
-      this._detach(id, chart);
-      delete this.charts_by_id[id];
-    },
-
-    attachComponent: function(id, component) {
-      this._attach(id, component);
-      this.components_by_id[id] = component;
-    },
-
-    detachComponent: function(id) {
-      var component = this.components_by_id[id];
-      if (!component) return;
-
-      this._detach(id, component);
-      delete this.components_by_id[id];
-    },
-
-    _width: function() {
-      return helpers.valueOrDefault(this.width(), d3.chart('Base').prototype.width.call(this));
-    },
-    _height: function() {
-      return helpers.valueOrDefault(this.height(), d3.chart('Base').prototype.height.call(this));
     },
 
     /**
@@ -457,18 +418,18 @@
       return config;
     },
 
-    _attach: function(id, item) {
+    attach: function(id, item) {
       item.id = id;
       item.base.attr('data-id', id);
       item.container = this;
 
-      this.attach(id, item);
+      d3.chart('Base').prototype.attach.call(this, id, item);
 
       if (item && _.isFunction(item.trigger))
         item.trigger('attach');
     },
 
-    _detach: function(id, item) {
+    detach: function(id, item) {
       item.base.remove();
 
       delete this._attached[id];
@@ -551,7 +512,7 @@
     // Extract layout from components
     _extractLayout: function(data) {
       var overall_layout = {top: [], right: [], bottom: [], left: []};
-      _.each(this.components_by_id, function(component) {
+      _.each(this.components(), function(component) {
         if (component.skip_layout)
           return;
 
