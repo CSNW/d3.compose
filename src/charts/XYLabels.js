@@ -28,7 +28,7 @@
       this.seriesLayer('Labels', this.base, {
         dataBind: function(data) {
           return this.selectAll('g')
-            .data(data, chart.keyValue);
+            .data(data, this.chart().keyValue);
         },
         insert: function() {
           var chart = this.chart();
