@@ -23,6 +23,12 @@ title: Docs
   <a class="toc_title" href="#examples">
     Examples
   </a>
+  <ul class="toc_section">
+    <li>– <a href="#/examples/line">Line</a></li>
+    <li>– <a href="#/examples/line-bar-values">Line-Bar Values</a></li>
+    <li>– <a href="#/examples/custom-chart">Custom Chart</a></li>
+    <li>– <a href="#/examples/custom-component">Custom Component</a></li>
+  </ul>
 
   <a class="toc_title" href="#/Multi/">
     Multi
@@ -301,7 +307,8 @@ title: Docs
     Add d3.chart.multi and its dependencies to your page:
   </p>
 
-{% highlight html %}<!doctype html>
+{% highlight html %}
+<!doctype html>
 <html>
   <head>
     <!-- ... -->
@@ -326,7 +333,7 @@ title: Docs
 
   <h2 id="examples">Examples</h2>
 
-  <h3>Line</h3>
+  <h3 id="/examples/line">Line</h3>
   
   <p>
     To get started with d3.chart.multi, use <tt>d3.select('...').chart('Multi')</tt> and pass in a options function that takes in the data to be drawn and returns options for the charts and components to be drawn. The below example takes in series data, creates options for scales that are shared between charts and components, sets options for a Line chart, and sets options for axes and title components.
@@ -384,7 +391,7 @@ example_1.draw([
 
   <div class="example-chart" id="js-example-1"></div>
 
-  <h3>Line-Bar Values</h3>
+  <h3 id="/examples/line-bar-values">Line-Bar Values</h3>
   
   <p>
     The next example demonstrates how easy it is to compose are chart out of multiple child charts. Each chart layer is aligned and all components are laid out around the chart layer. This chart uses <tt>XYValues</tt> to center the value at each x-value/key/index and that needs to be specified for the axes with <tt>type: 'AxisValues'</tt>.
@@ -447,7 +454,7 @@ example_2.draw({
 
   <div class="example-chart" id="js-example-2"></div>
 
-  <h3>Custom Chart</h3>
+  <h3 id="/examples/custom-chart">Custom Chart</h3>
 
   <p>
     d3.chart.multi makes it straightforward to create reusable charts with a common <tt>Chart</tt> base to extend from and helpers and mixins for common functionality.
@@ -524,7 +531,7 @@ example_3.draw([
 
   <div class="example-chart" id="js-example-3"></div>
 
-  <h3>Custom Component</h3>
+  <h3 id="/examples/custom-component">Custom Component</h3>
 
   <p>
     In addition to custom charts, d3.chart.multi allows you to make custom components with a common <tt>Component</tt> base that includes layout helpers.
