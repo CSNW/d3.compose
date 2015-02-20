@@ -93,6 +93,9 @@
       (Override for elements placed within chart)
     */
     setLayout: function(x, y, options) {
+      // TODO margins depends on height/width
+      //      -> setting them changes margins and would change layout calcs
+      //      => switch to pixel margins to match rest of d3.chart.multi
       var margins = this.margins();
       this.base.attr('transform', helpers.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
