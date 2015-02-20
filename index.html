@@ -16,6 +16,14 @@ title: Docs
     Introduction
   </a>
 
+  <a class="toc_title" href="#usage">
+    Usage
+  </a>
+
+  <a class="toc_title" href="#example">
+    Example
+  </a>
+
   <a class="toc_title" href="#/Multi/">
     Multi
   </a>
@@ -229,8 +237,11 @@ title: Docs
 </div>
 
 <div class="container">
+  <h1>d3.chart.multi</h1>
+
   <p>
-    About...
+    d3.chart.multi adds advanced chart layout and composition to d3 and d3.chart.
+    Create rich, data-bound charts by composing charts (like Line and Bars) and components (like Axis, Title, and Legend).
   </p>
 
   <h2 id="downloads">
@@ -239,7 +250,6 @@ title: Docs
   </h2>
 
   <table>
-    <tr><td>Downloads...</td></tr>
     <tr>
       <td><a class="punch" href="d3.chart.multi.js">Development Version ({{ site.version }})</a></td>
       <td class="text"><i>112kb, Full source with tons of comments</i></td>
@@ -268,9 +278,9 @@ title: Docs
     d3.chart.multi depends on the following libraries:
 
     <ul>
-      {% for dependency in site.dependencies %}
-        <li><a href="{{ dependency.link }}" target="_blank">{{ dependency.name }}</a> <small>({{ dependency.version }})</small></li>
-      {% endfor %}
+      <li><a href="http://d3js.org/" target="_blank">D3.js</a> <small>(>= 3.0.0)</small></li>
+      <li><a href="http://misoproject.com/d3-chart/" target="_blank">d3.chart</a> <small>(>= 0.2.0)</small></li>
+      <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a> <small>(>= 1.5.0)</small></li>
     </ul>
   </p>
 
@@ -282,8 +292,79 @@ title: Docs
   <h2 id="introduction">Introduction</h2>
 
   <p>
-    d3.chart.multi introduction...
+    When creating complex charts with D3.js and d3.chart, laying out and sizing parts of the chart is often a manual process and creating composable and reusable components becomes very difficult. d3.chart.multi creates a standard base that charts and components are built on top of that automatically handles layout and sizing and can be composed and layered to created rich, data-bound charts.
   </p>
+
+  <h2 id="usage">Usage</h2>
+
+  <p>
+    Add d3.chart.multi and its dependencies to your page:
+  </p>
+
+{% highlight html %}<!doctype html>
+<html>
+  <head>
+    <!-- ... -->
+
+    <link rel="stylesheet" type="text/css" href="d3.chart.multi.base.css">
+  </head>
+  <body>
+    <div id="chart"></div>
+
+    <script src="d3.js"></script>
+    <script src="d3.chart.js"></script>
+    <script src="underscore.js"></script>
+
+    <script src="d3.chart.multi.js"></script>
+
+    <script>
+      <!-- Your code -->
+    </script>
+  </body>
+</html>
+{% endhighlight %}
+
+  <h2 id="example">Example</h2>
+
+  <h3>Line</h3>
+  
+  <p>
+
+  </p>
+
+{% highlight js %}
+
+{% endhighlight %}
+
+  <h3>Line-Bar Values</h3>
+  
+  <p>
+
+  </p>
+
+{% highlight js %}
+
+{% endhighlight %}
+
+  <h3>Custom Chart</h3>
+
+  <p>
+
+  </p>
+
+{% highlight js %}
+
+{% endhighlight %}
+
+  <h3>Custom Component</h3>
+
+  <p>
+
+  </p>
+
+{% highlight js %}
+
+{% endhighlight %}
 
   <!-- 
     Multi
@@ -297,7 +378,8 @@ title: Docs
     charts and components can be bound to data and customized with options to create intricate and dynamic charts.
   </p>
 
-<pre>d3.select('#chart')
+{% highlight js %}
+d3.select('#chart')
   .chart('Multi', function(data) {
     // Compose charts, components, axes, legend, title into single chart
 
@@ -333,7 +415,7 @@ title: Docs
       title: 'Input vs. Output'
     };
   });
-</pre>
+{% endhighlight %}
 
   <p id="/Multi/options">
     <b class="header">options</b><code>chart.options([options])</code><br>
@@ -341,7 +423,8 @@ title: Docs
     Get/set the options the chart. Can be an <tt>Object</tt> or a <tt>Function</tt> that returns an <tt>Object</tt>. All properties listed below are available as options (charts, components, etc.) and the given values are passed to the matching property. <tt>options</tt> are generally set when creating chart with <tt>d3.select('...').chart('Multi', options)</tt>. Example:
   </p>
 
-<pre>// Get
+{% highlight js %}
+// Get
 chart.options();
 
 // Set (Object)
@@ -359,7 +442,7 @@ chart.options(function(data) {
     axes: {/* ... */}
   };
 });
-</pre>
+{% endhighlight %}
 
   <p id="/Multi/draw">
     <b class="header">draw</b><code>chart.draw([data])</code><br>
@@ -375,11 +458,12 @@ chart.options(function(data) {
     The <tt>type</tt> option should be a registered <tt>d3.chart</tt>.
   </p>
 
-<pre>chart.charts({
+{% highlight js %}
+chart.charts({
   input: {type: 'Line', /* options to pass to Line chart */},
   output: {type: 'Bars', /* options to pass to Bars chart */}
 });
-</pre>
+{% endhighlight %}
 
   <p id="/Multi/components">
     <b class="header">components</b><code>chart.components([values])</code><br>
@@ -389,11 +473,12 @@ chart.options(function(data) {
     The <tt>type</tt> option should be a registered <tt>d3.chart</tt> component and all other options are passed to the component.
   </p>
 
-<pre>chart.components({
+{% highlight js %}
+chart.components({
   xAxis: {type: 'Axis', /* options to pass to Axis */},
   legend: {type: 'Legend', /* options to pass to Legend */}
 });
-</pre>
+{% endhighlight %}
 
   <p id="/Multi/title">
     <b class="header">title</b><code>chart.title([value])</code><br>
@@ -401,9 +486,10 @@ chart.options(function(data) {
     Value / options to use for main title component for chart.
   </p>
 
-<pre>chart.title('Title (Top)');
+{% highlight js %}
+chart.title('Title (Top)');
 chart.title({text: 'Title with options', position: 'bottom'});
-</pre>
+{% endhighlight %}
 
   <p id="/Multi/axes">
     <b class="header">axes</b><code>chart.axes([values])</code><br>
@@ -414,12 +500,13 @@ chart.title({text: 'Title with options', position: 'bottom'});
     The <tt>title</tt> option creates a separate title component with the given value / options (using the axis <tt>position</tt> by default).
   </p>
 
-<pre>chart.axes({
+{% highlight js %}
+chart.axes({
   x: {/* options to pass to Axis */},
   y: {type: 'ValueAxis', /* options to pass to ValueAxis */},
   y2: {position: 'right', title: {text: 'y2', rotation: 0}, /* ... */}
 });
-</pre>
+{% endhighlight %}
 
   <p id="/Multi/legend">
     <b class="header">legend</b><code>chart.legend([value])</code><br>
@@ -433,7 +520,8 @@ chart.title({text: 'Title with options', position: 'bottom'});
     Set the top, right, bottom, and left margin between the chart layers and the surrounding components.
   </p>
 
-<pre>chart.margins({top: 10, right: 0, bottom: 0, left: 10});</pre>
+{% highlight js %}
+chart.margins({top: 10, right: 0, bottom: 0, left: 10});{% endhighlight %}
 
   <p id="/Multi/width">
     <b class="header">width</b><code>chart.width([value])</code><br>
@@ -470,7 +558,8 @@ chart.title({text: 'Title with options', position: 'bottom'});
     The Line chart (<tt>d3.chart('Line')</tt>) is an XY chart that can take single or series data.
   </p>
 
-<pre>// Use within d3.chart('Multi')
+{% highlight js %}
+// Use within d3.chart('Multi')
 d3.select('#chart')
   .chart('Multi', function(data) {
     return {
@@ -485,7 +574,7 @@ d3.select('#chart')
       }
     };
   });
-</pre>
+{% endhighlight %}
 
   <p id="/Line/data">
     <b class="header">data</b><code>line.data([values])</code><br>
@@ -493,7 +582,8 @@ d3.select('#chart')
     Array or Series of <tt>{x, y}</tt> data for line.
   </p>
 
-<pre>line.data([
+{% highlight js %}
+line.data([
   {x: 0, y: 10},
   /* ... */
 ]);
@@ -502,7 +592,7 @@ line.data([
   {key: 'series-a', values: [{x, 0, y: 10}]},
   {key: 'series-b', values: [{x: 0, y: -10}]}
 ]);
-</pre>
+{% endhighlight %}
 
   <p id="/Line/labels">
     <b class="header">labels</b><code>line.labels([options])</code><br>
@@ -510,13 +600,13 @@ line.data([
     Add labels to chart with given options (Use <tt>true</tt> to add labels with default options).
   </p>
 
-<pre>// Default labels
+{% highlight js %}
+// Default labels
 line.labels(true);
 
 // Labels with options
 line.labels({/* options to pass to XYLabels */})
-
-</pre>
+{% endhighlight %}
 
   <p id="/Line/transition">
     <b class="header">transition</b><br>
@@ -542,13 +632,14 @@ line.labels({/* options to pass to XYLabels */})
     <tt>LineValues</tt> is a <tt>Line</tt> variant for Values data.
   </p>
 
-<pre>line.data([10, 20, 30]);
+{% highlight js %}
+line.data([10, 20, 30]);
 line.data([{y: 10}, /* ... */]);
 line.data([
   {key: 'series-a', values: [{key: 'a', y: 10}]},
   {key: 'series-b', values: [{key: 'a', y: -10}]}
 ]);
-</pre>
+{% endhighlight %}
 
   <!-- 
     Bars
@@ -561,7 +652,8 @@ line.data([
     The Bars chart (<tt>d3.chart('Bars')</tt>) is an XYValues chart that can take single or series values data.
   </p>
 
-<pre>// Use within d3.chart('Multi')
+{% highlight js %}
+// Use within d3.chart('Multi')
 d3.select('#chart')
   .chart('Multi', function(data) {
     return {
@@ -576,7 +668,7 @@ d3.select('#chart')
       }
     };
   });
-</pre>
+{% endhighlight %}
 
   <p id="/Bars/data">
     <b class="header">data</b><code>bars.data([values])</code><br>
@@ -584,13 +676,14 @@ d3.select('#chart')
     Array or Series of Values data for bars.
   </p>
 
-<pre>bars.data([10, 20, 30]);
+{% highlight js %}
+bars.data([10, 20, 30]);
 bars.data([{y: 10}, /* ... */]);
 bars.data([
   {key: 'series-a', values: [{key: 'a', y: 10}]},
   {key: 'series-b', values: [{key: 'a', y: -10}]}
 ]);
-</pre>
+{% endhighlight %}
 
   <p id="/Bars/displayAdjacent">
     <b class="header">displayAdjacent</b><code>bars.displayAdjacent([value])</code><br>
@@ -604,9 +697,10 @@ bars.data([
     Adjust the padding (in percentage) between bars at different index/key/x.
   </p>
 
-<pre>bars.itemPadding(0.10);
+{% highlight js %}
+bars.itemPadding(0.10);
 // 10% of bar width as padding between bars
-</pre>
+{% endhighlight %}
   
   <p id="/Bars/labels">
     <b class="header">labels</b><code>bars.labels([options])</code><br>
@@ -614,13 +708,14 @@ bars.data([
     Add labels to chart with given options (Use <tt>true</tt> to add labels with default options).
   </p>
 
-<pre>// Default labels
+{% highlight js %}
+// Default labels
 bars.labels(true);
 
 // Labels with options
 bars.labels({/* options to pass to XYLabels */})
 
-</pre>
+{% endhighlight %}
 
   <p id="/Bars/transition">
     <b class="header">transition</b><br>
@@ -646,7 +741,8 @@ bars.labels({/* options to pass to XYLabels */})
     Display labels for XY data (can be used standalone or within chart).
   </p>
 
-<pre>// Use within d3.chart('Multi')
+{% highlight js %}
+// Use within d3.chart('Multi')
 d3.select('#chart')
   .chart('Multi', function(data) {
     return {
@@ -659,7 +755,7 @@ d3.select('#chart')
       }
     };
   });
-</pre>
+{% endhighlight %}
 
   <p id="/XYLabels/labels">
     <b class="header">labels</b><code>xylabels.labels([values])</code><br>
@@ -668,7 +764,8 @@ d3.select('#chart')
     Use <tt>label</tt> in data to explicitly set label, otherwise y-value with <tt>format</tt> is used.
   </p>
 
-<pre>xylabels.labels([
+{% highlight js %}
+xylabels.labels([
   {x: 0, y: 10, label: '10 items'}
 ]);
 
@@ -676,7 +773,7 @@ xylabels.labels([
   {key: 'series-a', values: [{x: 0, y: 10}]},
   {key: 'series-b', values: [{x: 0, y: -10}]}
 ])
-</pre>
+{% endhighlight %}
 
   <p id="/XYLabels/format">
     <b class="header">format</b><code>xylabels.format([value])</code><br>
@@ -685,10 +782,11 @@ xylabels.labels([
     Can use <tt>d3.format</tt> directly or string, which will be passed to <tt>d3.format</tt>.
   </p>
 
-<pre>// The following are equivalent
+{% highlight js %}
+// The following are equivalent
 labels.format('0,000');
 labels.format(d3.format('0,000'));
-</pre>
+{% endhighlight %}
 
   <p id="/XYLabels/position">
     <b class="header">position</b><code>xylabels.position([value])</code><br>
@@ -750,7 +848,8 @@ labels.format(d3.format('0,000'));
     Wrapper for <tt>d3.axis</tt> for adding axis component to charts (use <tt>AxisValues</tt> for XYValues data).
   </p>
 
-<pre>// Use within d3.chart('Multi')
+{% highlight js %}
+// Use within d3.chart('Multi')
 d3.select('#chart')
   .chart('Multi', function(data) {
     return {
@@ -765,7 +864,7 @@ d3.select('#chart')
       }
     };
   });
-</pre>
+{% endhighlight %}
 
   <p id="/Axis/scale">
     <b class="header">scale</b><code>axis.scale([value])</code><br>
@@ -774,7 +873,8 @@ d3.select('#chart')
     Can be <tt>d3.scale</tt> instance or scale options.
   </p>
 
-<pre>axis.scale({data: /* ... */, key: 'x'});
+{% highlight js %}
+axis.scale({data: /* ... */, key: 'x'});
 axis.scale(d3.scale()/* ... */);
 
 axis.xScale(/* ... */);
@@ -782,7 +882,7 @@ axis.yScale(/* ... */);
 axis.position('bottom');
 
 // axis.scale -> axis.xScale by default
-</pre>
+{% endhighlight %}
 
   <p id="/Axis/position">
     <b class="header">position</b><code>axis.position([value])</code><br>
@@ -883,7 +983,8 @@ axis.position('bottom');
     use <tt>helpers.di</tt> and <tt>helpers.property</tt> when setting up your chart.
   </p>
 
-<pre>d3.chart('Chart').extend('Pie', {
+{% highlight js %}
+d3.chart('Chart').extend('Pie', {
   initialize: function() {
     // same as d3.chart
   },
@@ -900,7 +1001,7 @@ axis.position('bottom');
     // can be automatically set from options object
   })
 });
-</pre>
+{% endhighlight %}
 
   <!-- 
     Component
@@ -927,7 +1028,8 @@ axis.position('bottom');
     Override this function in the component's prototype to skip pre-draw or use a different preparation.
   </p>
 
-<pre>d3.chart('Component').extend('Custom', {
+{% highlight js %}
+d3.chart('Component').extend('Custom', {
   prepareLayout: function(data) {
     // draw is normally called here 
     // so that getLayout has real dimensions
@@ -935,7 +1037,7 @@ axis.position('bottom');
     // -> custom preparation
   }
 });
-</pre>
+{% endhighlight %}
 
   <p id="/Component/getLayout">
     <b class="header">getLayout</b><code>getLayout(data) {position, width, height}</code><br>
@@ -945,7 +1047,8 @@ axis.position('bottom');
     The return must be an object with position, width, and height set.
   </p>
 
-<pre>d3.chart('Component').extend('Custom', {
+{% highlight js %}
+d3.chart('Component').extend('Custom', {
   getLayout: function(data) {
     // Perform custom calculations...
     var calculated_width, calculated_height;
@@ -958,7 +1061,7 @@ axis.position('bottom');
     };
   }
 });
-</pre>
+{% endhighlight %}
 
   <p id="/Component/setLayout">
     <b class="header">setLayout</b><code>setLayout(x, y, options)</code><br>
@@ -967,7 +1070,8 @@ axis.position('bottom');
     <tt>options</tt> includes either height for components positioned left/right or width for top/bottom.
   </p>
 
-<pre>d3.chart('Component').extend('Custom', {
+{% highlight js %}
+d3.chart('Component').extend('Custom', {
   setLayout: function(x, y, options) {
     // options includes height or width
     // (the following is the default implementation)
@@ -979,7 +1083,7 @@ axis.position('bottom');
     this.height(options && options.height);
   }
 });
-</pre>
+{% endhighlight %}
 
   <p id="/Component/skip_layout">
     <b class="header">skip_layout</b><br>
@@ -1022,10 +1126,11 @@ axis.position('bottom');
     If given value is not undefined, return given value, otherwise return default.
   </p>
 
-<pre>helpers.valueOrDefault(undefined, 4); // -> 4
+{% highlight js %}
+helpers.valueOrDefault(undefined, 4); // -> 4
 helpers.valueOrDefault(2, 4); // -> 2
 helpers.valueOrDefault(null, 10); // -> null
-</pre>
+{% endhighlight %}
 
   <p id="/helpers/dimensions">
     <b class="header">dimensions</b><code>helpers.dimensions(element|selector)</code><br>
@@ -1051,9 +1156,10 @@ helpers.valueOrDefault(null, 10); // -> null
     Check if the given data is series data.
   </p>
 
-<pre>helpers.isSeriesData([1, 2, 3]); // -> false
+{% highlight js %}
+helpers.isSeriesData([1, 2, 3]); // -> false
 helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
-</pre>
+{% endhighlight %}
 
   <p id="/helpers/max">
     <b class="header">max</b><code>helpers.max(data, getValue)</code><br>
@@ -1061,14 +1167,15 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
     Find the max in the given data, using the <tt>getValue</tt> accessor to get the value at each point.
   </p>
 
-<pre>helpers.max([
+{% highlight js %}
+helpers.max([
   {x: 0, y: 0}, 
   {x: 5, y: 20}, 
   {x: 10, y: 10}
 ], function(d, i) {
   return d.y;
 }); // -> 20
-</pre>
+{% endhighlight %}
 
   <p id="/helpers/min">
     <b class="header">min</b><code>helpers.min(data, getValue)</code><br>
@@ -1076,14 +1183,15 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
     Find the min in the given data, using the <tt>getValue</tt> accessor to get the value at each point.
   </p>
 
-<pre>helpers.min([
+{% highlight js %}
+helpers.min([
   {x: 0, y: 0}, 
   {x: 5, y: 20}, 
   {x: 10, y: 10}
 ], function(d, i) {
   return d.x;
 }); // -> 0
-</pre>
+{% endhighlight %}
 
   <p id="/helpers/createScaleFromOptions">
     <b class="header">createScaleFromOptions</b><code>helpers.createScaleFromOptions(options)</code><br>
@@ -1106,9 +1214,10 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
     Convert object containing styles into inline style string.
   </p>
 
-<pre>helpers.style({fill: 'blue', 'stroke-width': '2px'});
+{% highlight js %}
+helpers.style({fill: 'blue', 'stroke-width': '2px'});
 // -> fill: blue; stroke-width: 2px
-</pre>
+{% endhighlight %}
 
   <p id="/helpers/di">
     <b class="header">di</b><code>helpers.di(callback)</code><br>
@@ -1118,13 +1227,14 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
     to access both the parent chart and the element.
   </p>
 
-<pre>x: di(function(chart, d, i) {
+{% highlight js %}
+x: di(function(chart, d, i) {
   // "this" is the element
 
   // to call other di function with di:
   var other = chart.otherDi.call(this, d, i);
 });
-</pre>
+{% endhighlight %}
 
   <p id="/helpers/bindDi">
     <b class="header">bindDi</b><code>helpers.bindDi(di, chart)</code><br>
@@ -1150,13 +1260,14 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
     Combine mixins / prototypes into single prototype for chart.
   </p>
 
-<pre>d3.chart('Chart').extend('HasMixins', helpers.mixin(
+{% highlight js %}
+d3.chart('Chart').extend('HasMixins', helpers.mixin(
   mixins.XY, 
   somePrototype, {
     // ...
   }
 ));
-</pre>
+{% endhighlight %}
 
   <!-- 
     Series
@@ -1211,7 +1322,8 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
     "di" function that includes that combines the data item's style with the series and chart styles.
   </p>
 
-<pre>var data = [
+{% highlight js %}
+var data = [
   {
     key: 'series-1',
     style: {fill: 'green', stroke: 'green'},
@@ -1228,7 +1340,7 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 chart.style({fill: 'blue', 'opacity': 0.8});
 
 // itemStyle -> 'opacity: 0.8; fill: green; stroke: yellow'
-</pre>
+{% endhighlight %}
 
   <p id="/mixins/Series/seriesLayer">
     <b class="header">seriesLayer</b><code>seriesLayer(name selection, options)</code><br>
@@ -1236,7 +1348,8 @@ chart.style({fill: 'blue', 'opacity': 0.8});
     Extension of <tt>chart.layer</tt> from d3.chart that creates parent layer for series and creates given layer for each series item.
   </p>
 
-<pre>d3.chart('Chart').extend('Bars', helpers.mixin(mixins.Series, {
+{% highlight js %}
+d3.chart('Chart').extend('Bars', helpers.mixin(mixins.Series, {
   initialize: function() {
     this.seriesLayer('Bars', this.base, {
       // Creates series items groups on this.base
@@ -1263,7 +1376,7 @@ chart.draw([
   {key: 'series-1', values: [1, 2, 3]},
   {key: 'series-2', values: [4, 5, 6]}
 ]);
-</pre>
+{% endhighlight %}
 
   <!-- 
     XY
