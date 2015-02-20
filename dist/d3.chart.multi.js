@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.9.0
+/*! d3.chart.multi - v0.9.1
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -1630,7 +1630,7 @@
       this.seriesLayer('Labels', this.base, {
         dataBind: function(data) {
           return this.selectAll('g')
-            .data(data, chart.keyValue);
+            .data(data, this.chart().keyValue);
         },
         insert: function() {
           var chart = this.chart();
