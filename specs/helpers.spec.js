@@ -272,30 +272,28 @@
       });
     });
 
-    describe('transform', function() {
-      describe('translate', function() {
-        it('should create from separate arguments or object', function() {
-          expect(helpers.translate(10, 15)).toEqual('translate(10, 15)');
-          expect(helpers.translate({x: 12, y: 17})).toEqual('translate(12, 17)');
-        });
-
-        it('should default to (0, 0)', function() {
-          expect(helpers.translate()).toEqual('translate(0, 0)');
-          expect(helpers.translate(10)).toEqual('translate(10, 0)');
-          expect(helpers.translate({y: 10})).toEqual('translate(0, 10)');
-        });
+    describe('translate', function() {
+      it('should create from separate arguments or object', function() {
+        expect(helpers.translate(10, 15)).toEqual('translate(10, 15)');
+        expect(helpers.translate({x: 12, y: 17})).toEqual('translate(12, 17)');
       });
 
-      describe('rotate', function() {
-        it('should create rotation without center (default to 0)', function() {
-          expect(helpers.rotate(10)).toEqual('rotate(10)');
-          expect(helpers.rotate()).toEqual('rotate(0)');
-        });
+      it('should default to (0, 0)', function() {
+        expect(helpers.translate()).toEqual('translate(0, 0)');
+        expect(helpers.translate(10)).toEqual('translate(10, 0)');
+        expect(helpers.translate({y: 10})).toEqual('translate(0, 10)');
+      });
+    });
 
-        it('should create rotation with center (default to 0,0)', function() {
-          expect(helpers.rotate(10, {x: 5, y: 6})).toEqual('rotate(10 5,6)');
-          expect(helpers.rotate(10, {z: 5, r: 10})).toEqual('rotate(10 0,0)');
-        });
+    describe('rotate', function() {
+      it('should create rotation without center (default to 0)', function() {
+        expect(helpers.rotate(10)).toEqual('rotate(10)');
+        expect(helpers.rotate()).toEqual('rotate(0)');
+      });
+
+      it('should create rotation with center (default to 0,0)', function() {
+        expect(helpers.rotate(10, {x: 5, y: 6})).toEqual('rotate(10 5,6)');
+        expect(helpers.rotate(10, {z: 5, r: 10})).toEqual('rotate(10 0,0)');
       });
     });
 
@@ -340,10 +338,6 @@
         expect(scale(new Date('1/1/2000 6:00'))).toEqual(50);
         expect(scale.invert(50).getHours()).toEqual(6);
       });
-    });
-
-    describe('stack', function() {
-
     });
 
     describe('style', function() {
