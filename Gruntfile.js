@@ -24,7 +24,6 @@ module.exports = function(grunt) {
       'src/mixins.js',
       'src/Base.js',
       'src/Chart.js',
-      'src/Container.js',
       'src/Component.js',
       'src/charts/Labels.js',
       'src/charts/XYLabels.js',
