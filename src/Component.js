@@ -1,4 +1,5 @@
-(function(d3, _, helpers) {
+(function(d3, helpers) {
+  var utils = helpers.utils;
   var property = helpers.property;
   
   /**
@@ -30,7 +31,7 @@
     position: property('position', {
       default_value: 'top',
       validate: function(value) {
-        return _.contains(['top', 'right', 'bottom', 'left'], value);
+        return utils.contains(['top', 'right', 'bottom', 'left'], value);
       }
     }),
     width: property('width', {
@@ -46,7 +47,7 @@
 
     margins: property('margins', {
       get: function(values) {
-        var percentages = _.defaults({}, values, {top: 0.0, right: 0.0, bottom: 0.0, left: 0.0});
+        var percentages = utils.defaults({}, values, {top: 0.0, right: 0.0, bottom: 0.0, left: 0.0});
         var width = this.width();
         var height = this.height();
 
@@ -93,11 +94,16 @@
       (Override for elements placed within chart)
     */
     setLayout: function(x, y, options) {
+      // TODO margins depends on height/width
+      //      -> setting them changes margins and would change layout calcs
+      //      => switch to pixel margins to match rest of d3.chart.multi
       var margins = this.margins();
       this.base.attr('transform', helpers.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
     }
+  }, {
+    z_index: 50
   });
 
-})(d3, _, d3.chart.helpers);
+})(d3, d3.chart.helpers);

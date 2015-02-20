@@ -135,7 +135,7 @@
         inserted.attr('style', chart.dataStyle.call(this, d, i));
     })
   }, {
-    z_index: helpers.z_index.legend
+    z_index: 200
   });
   
   /**

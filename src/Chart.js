@@ -9,7 +9,7 @@
       this.options(options || {});
     }
   }, {
-    z_index: helpers.z_index.chart
+    z_index: 100
   });
 
 })(d3, d3.chart.helpers);

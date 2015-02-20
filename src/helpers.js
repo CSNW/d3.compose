@@ -1,15 +1,35 @@
 (function(d3, _) {
 
-  /**
-    Setup global z-index values
-  */
-  var z_index = {
-    component: 50,
-    axis: 51,
-    title: 52,
-    chart: 100,
-    labels: 150,
-    legend: 200
+  utils = {
+    chain: _.chain,
+    clone: _.clone,
+    contains: _.contains,
+    compact: _.compact,
+    difference: _.difference,
+    defaults: _.defaults,
+    each: _.each,
+    extend: _.extend,
+    flatten: _.flatten,
+    first: _.first,
+    has: _.has,
+    isArray: _.isArray,
+    isBoolean: _.isBoolean,
+    isFunction: _.isFunction,
+    isObject: _.isObject,
+    isNumber: _.isNumber,
+    isString: _.isString,
+    isUndefined: _.isUndefined,
+    keys: _.keys,
+    map: _.map,
+    max: _.max,
+    reduce: _.reduce,
+    reduceRight: _.reduceRight,
+    reverse: _.reverse,
+    sortBy: _.sortBy,
+    throttle: _.throttle,
+    toArray: _.toArray,
+    uniq: _.uniq,
+    value: _.value,
   };
 
   /**
@@ -110,33 +130,27 @@
         var value = valueOrDefault(properties[name], getSet.default_value);
 
         // Unwrap value if its type is not a function
-        if (_.isFunction(value) && options.type != 'Function')
+        if (utils.isFunction(value) && options.type != 'Function')
           value = value.call(this);
 
-        return _.isFunction(options.get) ? options.get.call(context, value) : value;
+        return utils.isFunction(options.get) ? options.get.call(context, value) : value;
       }
 
       function set(value) {
         // Validate
-        if (_.isFunction(options.validate) && !options.validate.call(this, value))
+        if (utils.isFunction(options.validate) && !options.validate.call(this, value))
           throw new Error('Invalid value for ' + name + ': ' + JSON.stringify(value));
 
         getSet.previous = properties[name];
         properties[name] = value;
 
-        if (_.isFunction(options.set)) {
+        if (utils.isFunction(options.set)) {
           var response = options.set.call(context, value, getSet.previous);
           
-          if (response && _.has(response, 'override'))
+          if (response && utils.has(response, 'override'))
             properties[name] = response.override;
-          if (response && _.isFunction(response.after))
+          if (response && utils.isFunction(response.after))
             response.after.call(context, properties[name]);
-        }
-
-        var changed = !_.isEqual(properties[name], getSet.previous);
-        if (changed && _.isFunction(this.trigger)) {
-          this.trigger('change:' + name, properties[name]);
-          this.trigger('change', name, properties[name]);
         }
 
         return this;
@@ -160,7 +174,7 @@
     @return {Varies}
   */
   function valueOrDefault(value, default_value) {
-    return !_.isUndefined(value) ? value : default_value;
+    return !utils.isUndefined(value) ? value : default_value;
   }
 
   /**
@@ -218,8 +232,8 @@
       // Size set by svg -> attr override or bounding_box
       // -> Take maximum
       return {
-        width: _.max([client.width, attr.width || bbox.width]) || 0,
-        height: _.max([client.height, attr.height || bbox.height]) || 0
+        width: utils.max([client.width, attr.width || bbox.width]) || 0,
+        height: utils.max([client.height, attr.height || bbox.height]) || 0
       };
     }
   }
@@ -238,7 +252,7 @@
     @return {String}
   */
   function translate(x, y) {
-    if (_.isObject(x)) {
+    if (utils.isObject(x)) {
       y = x.y;
       x = x.x;
     }
@@ -265,8 +279,8 @@
     Determine if given data is likely series data
   */
   function isSeriesData(data) {
-    var first = _.first(data);
-    return first && _.isObject(first) && _.isArray(first.values);
+    var first = utils.first(data);
+    return first && utils.isObject(first) && utils.isArray(first.values);
   }
 
   /**
@@ -278,8 +292,8 @@
     };
 
     if (isSeriesData(data)) {
-      return _.reduce(data, function(memo, series, index) {
-        if (series && _.isArray(series.values)) {
+      return utils.reduce(data, function(memo, series, index) {
+        if (series && utils.isArray(series.values)) {
           var series_max = getMax(series.values);
           return series_max > memo ? series_max : memo;
         }
@@ -302,8 +316,8 @@
     };
 
     if (isSeriesData(data)) {
-      return _.reduce(data, function(memo, series, index) {
-        if (series && _.isArray(series.values)) {
+      return utils.reduce(data, function(memo, series, index) {
+        if (series && utils.isArray(series.values)) {
           var series_min = getMin(series.values);
           return series_min < memo ? series_min : memo;
         }
@@ -323,7 +337,7 @@
     @example
     ```javascript
     // Simple type, range, and domain
-    var scale = createScaleFromOptions({
+    var scale = createScale({
       type: 'linear', 
       domain: [0, 100], 
       range: [0, 500]
@@ -331,11 +345,11 @@
 
     // Scale is passed through
     var original = d3.scale.linear();
-    var scale = createScaleFromOptions(original);
+    var scale = createScale(original);
     scale === original;
 
     // Set other properties by passing in "arguments" array
-    var scale = createScaleFromOptions({
+    var scale = createScale({
       type: 'ordinal',
       domain: ['a', 'b', 'c', 'd', 'e'],
       rangeRoundBands: [[0, 100], 0.1, 0.05]
@@ -350,11 +364,11 @@
     - ...: {Arguments Array} Set any other scale properties by passing in "arguments" array
     @return {d3.scale}
   */
-  function createScaleFromOptions(options) {
+  function createScale(options) {
     options = options || {};
 
     // If function, scale was passed in as options
-    if (_.isFunction(options))
+    if (utils.isFunction(options))
       return options;
 
     // Create scale (using d3.time.scale() if type is 'time')
@@ -366,7 +380,7 @@
     else
       scale = d3.scale.linear();
 
-    _.each(options, function(value, key) {
+    utils.each(options, function(value, key) {
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments
@@ -386,13 +400,13 @@
       if (options.type == 'ordinal') {
         // Extract unique values from series
         var getValues = function(data) {
-          return _.map(data, getValue);
+          return utils.map(data, getValue);
         };
 
         var all_values;
         if (isSeriesData(options.data)) {
-          all_values = _.flatten(_.map(options.data, function(series) {
-            if (series && _.isArray(series.values)) {
+          all_values = utils.flatten(utils.map(options.data, function(series) {
+            if (series && utils.isArray(series.values)) {
               return getValues(series.values);
             }
           }));
@@ -401,7 +415,7 @@
           all_values = getValues(options.data);
         }
 
-        scale.domain(_.uniq(all_values));
+        scale.domain(utils.uniq(all_values));
       }
       else {
         // By default, domain starts at 0 unless min is less than 0
@@ -430,7 +444,7 @@
     if (!styles)
       return '';
 
-    styles = _.map(styles, function(value, key) {
+    styles = utils.map(styles, function(value, key) {
       return key + ': ' + value;
     });
     styles = styles.join('; ');
@@ -520,17 +534,17 @@
     @return {Object}
   */
   function mixin(mixins) {
-    mixins = _.isArray(mixins) ? mixins : _.toArray(arguments);
-    var mixed = _.extend.apply(this, [{}].concat(mixins));
+    mixins = utils.isArray(mixins) ? mixins : utils.toArray(arguments);
+    var mixed = utils.extend.apply(null, [{}].concat(mixins));
 
     // Don't mixin constructor with prototype
     delete mixed.constructor;
 
     if (mixed.initialize) {
       mixed.initialize = function initialize() {
-        var args = _.toArray(arguments);
+        var args = utils.toArray(arguments);
 
-        _.each(mixins, function(extension) {
+        utils.each(mixins, function(extension) {
           if (extension.initialize)
             extension.initialize.apply(this, args);
         }, this);
@@ -538,7 +552,7 @@
     }
     if (mixed.transform) {
       mixed.transform = function transform(data) {
-        return _.reduceRight(mixins, function(data, extension) {
+        return utils.reduceRight(mixins, function(data, extension) {
           if (extension && extension.transform)
             return extension.transform.call(this, data);
           else
@@ -551,8 +565,8 @@
   }
 
   // Add helpers to d3.chart (static)
-  d3.chart.helpers = _.extend({}, d3.chart.helpers, {
-    z_index: z_index,
+  d3.chart.helpers = utils.extend({}, d3.chart.helpers, {
+    utils: utils,
     property: property,
     valueOrDefault: valueOrDefault,
     dimensions: dimensions,
@@ -561,7 +575,7 @@
     isSeriesData: isSeriesData,
     max: max,
     min: min,
-    createScaleFromOptions: createScaleFromOptions,
+    createScale: createScale,
     style: style,
     di: di,
     bindDi: bindDi,

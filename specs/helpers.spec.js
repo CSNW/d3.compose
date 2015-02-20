@@ -198,30 +198,6 @@
           expect(instance.message()).toEqual('Hello from Context!');
         });
 
-        it('should trigger change (if changed)', function() {
-          instance.message = property('message', {
-            default_value: 'Hello'
-          });
-          instance.trigger = jasmine.createSpy();
-
-          instance.message('Hello');
-          expect(instance.trigger.calls.count()).toEqual(2);
-          expect(instance.trigger.calls.argsFor(0)).toEqual(['change:message', 'Hello']);
-          expect(instance.trigger.calls.argsFor(1)).toEqual(['change', 'message', 'Hello']);
-
-          instance.message('Howdy');
-          expect(instance.trigger.calls.count()).toEqual(4);
-          expect(instance.trigger.calls.argsFor(2)).toEqual(['change:message', 'Howdy']);
-          expect(instance.trigger.calls.argsFor(3)).toEqual(['change', 'message', 'Howdy']);
-
-          instance.message('Howdy');
-          expect(instance.trigger.calls.count()).toEqual(4);
-
-          instance.message({key: 'value', complex: [1,2,3]});
-          instance.message({key: 'value', complex: [1,2,3]});
-          expect(instance.trigger.calls.count()).toEqual(6);
-        });
-
         describe('validate', function() {
           beforeEach(function() {
             instance.message = property('message', {
@@ -272,34 +248,32 @@
       });
     });
 
-    describe('transform', function() {
-      describe('translate', function() {
-        it('should create from separate arguments or object', function() {
-          expect(helpers.translate(10, 15)).toEqual('translate(10, 15)');
-          expect(helpers.translate({x: 12, y: 17})).toEqual('translate(12, 17)');
-        });
-
-        it('should default to (0, 0)', function() {
-          expect(helpers.translate()).toEqual('translate(0, 0)');
-          expect(helpers.translate(10)).toEqual('translate(10, 0)');
-          expect(helpers.translate({y: 10})).toEqual('translate(0, 10)');
-        });
+    describe('translate', function() {
+      it('should create from separate arguments or object', function() {
+        expect(helpers.translate(10, 15)).toEqual('translate(10, 15)');
+        expect(helpers.translate({x: 12, y: 17})).toEqual('translate(12, 17)');
       });
 
-      describe('rotate', function() {
-        it('should create rotation without center (default to 0)', function() {
-          expect(helpers.rotate(10)).toEqual('rotate(10)');
-          expect(helpers.rotate()).toEqual('rotate(0)');
-        });
-
-        it('should create rotation with center (default to 0,0)', function() {
-          expect(helpers.rotate(10, {x: 5, y: 6})).toEqual('rotate(10 5,6)');
-          expect(helpers.rotate(10, {z: 5, r: 10})).toEqual('rotate(10 0,0)');
-        });
+      it('should default to (0, 0)', function() {
+        expect(helpers.translate()).toEqual('translate(0, 0)');
+        expect(helpers.translate(10)).toEqual('translate(10, 0)');
+        expect(helpers.translate({y: 10})).toEqual('translate(0, 10)');
       });
     });
 
-    describe('createScaleFromOptions', function() {
+    describe('rotate', function() {
+      it('should create rotation without center (default to 0)', function() {
+        expect(helpers.rotate(10)).toEqual('rotate(10)');
+        expect(helpers.rotate()).toEqual('rotate(0)');
+      });
+
+      it('should create rotation with center (default to 0,0)', function() {
+        expect(helpers.rotate(10, {x: 5, y: 6})).toEqual('rotate(10 5,6)');
+        expect(helpers.rotate(10, {z: 5, r: 10})).toEqual('rotate(10 0,0)');
+      });
+    });
+
+    describe('createScale', function() {
       it('should create scale using type, domain, and range', function() {
         var options = {
           type: 'linear',
@@ -307,14 +281,14 @@
           domain: [0, 100]
         };
 
-        var scale = helpers.createScaleFromOptions(options);
+        var scale = helpers.createScale(options);
         expect(scale.domain()).toEqual([0, 100]);
         expect(scale.range()).toEqual([0, 500]);
       });
 
       it('should return original if scale is passed in (as function)', function() {
         var scale = function() {};
-        expect(helpers.createScaleFromOptions(scale)).toBe(scale);
+        expect(helpers.createScale(scale)).toBe(scale);
       });
 
       it('should use any special passed-in options (e.g. rangeBands) and pass in as arguments array', function() {
@@ -324,7 +298,7 @@
           rangeRoundBands: [[0, 100], 0.1, 0.05]
         };
 
-        var scale = helpers.createScaleFromOptions(options);
+        var scale = helpers.createScale(options);
         expect(scale.domain()).toEqual(options.domain);
         expect(scale.range()).toEqual([1, 21, 41, 61, 81]);
       });
@@ -336,14 +310,10 @@
           range: [0, 100]
         };
 
-        var scale = helpers.createScaleFromOptions(options);
+        var scale = helpers.createScale(options);
         expect(scale(new Date('1/1/2000 6:00'))).toEqual(50);
         expect(scale.invert(50).getHours()).toEqual(6);
       });
-    });
-
-    describe('stack', function() {
-
     });
 
     describe('style', function() {

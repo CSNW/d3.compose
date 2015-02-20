@@ -115,7 +115,7 @@
     scale: property('scale', {
       type: 'Function',
       set: function(value) {
-        var scale = helpers.createScaleFromOptions(value);
+        var scale = helpers.createScale(value);
 
         if (this.orientation() == 'vertical')
           this.yScale(scale.copy());
@@ -323,7 +323,7 @@
     }
   }), {
     layer_type: 'chart',
-    z_index: helpers.z_index.axis
+    z_index: 60
   });
   
   /**

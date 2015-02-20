@@ -20,20 +20,24 @@ module.exports = function(grunt) {
       ' * License: <%= pkg.license %>\n' +
       ' */\n',
     srcFiles: [
+      // core
       'src/helpers.js',
-      'src/mixins.js',
       'src/Base.js',
       'src/Chart.js',
-      'src/Container.js',
       'src/Component.js',
-      'src/charts/Labels.js',
+      'src/Multi.js',
+
+      // mixins
+      'src/mixins.js',
+
+      // library
       'src/charts/XYLabels.js',
       'src/charts/Bars.js',
       'src/charts/Line.js',
       'src/components/Title.js',
       'src/components/Axis.js',
       'src/components/Legend.js',
-      'src/Multi.js'
+      'src/extensions/xy.js'
     ]
   };
   grunt.initConfig(config);

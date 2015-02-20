@@ -1,4 +1,5 @@
-(function(d3, _, helpers, mixins) {
+(function(d3, helpers, mixins) {
+  var utils = helpers.utils;
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -72,7 +73,7 @@
     format: property('format', {
       type: 'Function',
       set: function(value) {
-        if (_.isString(value)) {
+        if (utils.isString(value)) {
           return {
             override: d3.format(value)
           };
@@ -83,14 +84,14 @@
     position: property('position', {
       default_value: 'top',
       validate: function(value) {
-        return _.contains(['top', 'right', 'bottom', 'left'], value);
+        return utils.contains(['top', 'right', 'bottom', 'left'], value);
       }
     }),
 
     offset: property('offset', {
       default_value: {x: 0, y: 0},
       set: function(offset) {
-        if (_.isNumber(offset)) {
+        if (utils.isNumber(offset)) {
           offset = {
             top: {x: 0, y: -offset},
             right: {x: offset, y: 0},
@@ -120,7 +121,7 @@
         }[this.position()];
       },
       validate: function(value) {
-        return _.contains(['start', 'middle', 'end'], value);
+        return utils.contains(['start', 'middle', 'end'], value);
       }
     }),
 
@@ -134,7 +135,7 @@
         }[this.position()];
       },
       validate: function(value) {
-        return _.contains(['top', 'middle', 'bottom'], value);
+        return utils.contains(['top', 'middle', 'bottom'], value);
       }
     }),
 
@@ -189,8 +190,8 @@
       handleCollisions(chart, labels);
 
       // Layout labels
-      _.each(labels, function(series) {
-        _.each(series, function(label) {
+      utils.each(labels, function(series) {
+        utils.each(series, function(label) {
           setLayout(chart, label);
         });
       });
@@ -204,7 +205,7 @@
       var points = this.getClosestPoints(position.chart);
 
       this.removeHighlight();
-      _.each(points, function(series) {
+      utils.each(points, function(series) {
         if (series && series.length) {
           var closest = series[0];
         
@@ -217,7 +218,7 @@
       var points = this.getClosestPoints(position.chart);
 
       this.removeHighlight();
-      _.each(points, function(series) {
+      utils.each(points, function(series) {
         if (series && series.length) {
           var closest = series[0];
         
@@ -244,7 +245,7 @@
         .classed('highlight', false);
     }
   }), {
-    z_index: helpers.z_index.labels
+    z_index: 150
   });
 
   function prepareLabel(chart, element, d, i, j) {
@@ -309,11 +310,11 @@
   }
 
   function handleCollisions(chart, labels) {
-    _.each(labels, function(series, seriesIndex) {
+    utils.each(labels, function(series, seriesIndex) {
       // Check through remaining series for collisions
-      _.each(labels.slice(seriesIndex + 1), function(compareSeries) {
-        _.each(compareSeries, function(compareLabel) {
-          _.each(series, function(label) {
+      utils.each(labels.slice(seriesIndex + 1), function(compareSeries) {
+        utils.each(compareSeries, function(compareLabel) {
+          utils.each(series, function(label) {
             if (checkForOverlap(label, compareLabel))
               groupLabels(label, compareLabel);
           });
@@ -345,7 +346,7 @@
     function groupLabels(labelA, labelB) {
       if (labelA.group && labelB.group) {
         // Move labelB group labels into labelA group
-        _.each(labelB.group.labels, function(label) {
+        utils.each(labelB.group.labels, function(label) {
           labelA.group.labels.push(label);
           label.group = labelA.group;
         });
@@ -374,7 +375,7 @@
     }
 
     function updateGroupPositions(group) {
-      var byY = _.chain(group.labels)
+      var byY = utils.chain(group.labels)
         .each(function(label) {
           // Reset to original y
           label.y = label.originalY;
@@ -385,8 +386,8 @@
         .reverse()
         .value();
 
-      _.each(byY, function(label, index) {
-        var prev = _.first(byY, index);
+      utils.each(byY, function(label, index) {
+        var prev = utils.first(byY, index);
         var overlap;
 
         for (var i = prev.length - 1; i >= 0; i--) {
@@ -417,4 +418,4 @@
       .attr('opacity', 0);
   }
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3, d3.chart.helpers, d3.chart.mixins);
