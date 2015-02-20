@@ -287,7 +287,7 @@
     },
 
     demux: function(name, data) {
-      if (!data.config || !data.original)
+      if (!data || !data.config || !data.original)
         return data;
 
       if (this.charts()[name] && data.config.charts[name])
