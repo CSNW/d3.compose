@@ -52,7 +52,7 @@
               y2: {domain: [0, 90]}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 bars: {
                   type: 'Bars', 
@@ -84,18 +84,15 @@
                 x: {
                   type: 'AxisValues',
                   title: {text: 'X Title', margins: {top: 0.5}},
-                  scale: scales.x,
-                  position: 'bottom'
+                  scale: scales.x
                 },
                 y: {
                   title: 'Y1 Title',
-                  scale: scales.y,
-                  position: 'left'
+                  scale: scales.y
                 },
                 y2: {
                   title: 'Y2 Title',
-                  scale: scales.y2,
-                  position: 'right'
+                  scale: scales.y2
                 }
               },
               legend: {
@@ -103,7 +100,7 @@
                 position: {x: 10, y: 0}
               },
               title: 'Chart Title'
-            }
+            });
           })
           .width(600)
           .height(400)
@@ -125,20 +122,20 @@
               y: {data: data.lines, key: 'y'}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 line: {type: 'Line', data: data.lines, xScale: scales.x, yScale: scales.y, labels: false},
               },
               axes: {
-                x: {position: 'bottom', scale: scales.x, title: 'Year', tickFormat: d3.format('####')},
-                y: {position: 'left', scale: scales.y, title: 'Results'}
+                x: {scale: scales.x, title: 'Year', tickFormat: d3.format('####')},
+                y: {scale: scales.y, title: 'Results'}
               },
               legend: {
                 display: 'right',
                 data: data.lines
               },
               title: 'Results by Year'
-            };
+            });
           })
           .width(600)
           .height(400)
@@ -160,7 +157,7 @@
               y: {data: data.bars, key: 'y'}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 bars: {
                   type: 'Bars', 
@@ -169,10 +166,10 @@
                 }
               },
               axes: {
-                y: {position: 'left', scale: scales.y, title: 'Results'}
+                y: {scale: scales.y, title: 'Results'}
               },
               title: 'Results'
-            };
+            });
           })
           .width(600)
           .height(400)
@@ -196,7 +193,7 @@
               y2: {domain: [0, 100]}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 stacked: {
                   type: 'StackedBars',
@@ -204,14 +201,14 @@
                 }
               },
               axes: {
-                y: {position: 'left', scale: scales.y},
-                y2: {position: 'right', scale: scales.y2}
+                y: {scale: scales.y},
+                y2: {scale: scales.y2}
               },
               legend: {
                 margins: {left: 0.2}
               },
               title: 'Stacked Bars'
-            };
+            });
           })
           .width(600)
           .height(200)

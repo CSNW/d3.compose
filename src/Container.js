@@ -121,7 +121,7 @@
     */
     chartLayer: function(options) {
       options = _.defaults({}, options, {
-        z_index: helpers.z_index.chart
+        z_index: d3.chart('Chart').z_index
       });
 
       return this.base.append('g')
@@ -137,7 +137,7 @@
     */
     componentLayer: function(options) {
       options = _.defaults({}, options, {
-        z_index: helpers.z_index.component
+        z_index: d3.chart('Component').z_index
       });
 
       return this.base.append('g')

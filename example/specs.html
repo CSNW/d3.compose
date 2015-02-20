@@ -63,17 +63,17 @@
               y: {data: data.values, key: 'y'}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y, labels: true}
               },
               axes: {
-                x: {title: 'X Axis', scale: scales.x, position: 'bottom'},
-                y: {title: 'Y Axis', scale: scales.y, position: 'left'}
+                x: {title: 'X Axis', scale: scales.x},
+                y: {title: 'Y Axis', scale: scales.y}
               },
               title: {text: 'Chart Title', margins: {top: 1.0, bottom: 1.0}},
               legend: {position: 'bottom'}
-            };
+            });
           },
           data: 'spec-abc',
           run: function(options, chart) {
@@ -95,16 +95,16 @@
               y: {data: data.values, key: 'y'}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
                 line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
-                y: {position: 'left', scale: scales.y}
+                x: {type: 'AxisValues', scale: scales.x},
+                y: {scale: scales.y}
               }
-            };
+            });
           },
           data: 'spec-abc'
         });
@@ -123,7 +123,7 @@
               y: {domain: [-5, 5]}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 line: {
                   type: 'Line', 
@@ -138,7 +138,7 @@
                 x: {position: 'y0', xScale: scales.x, yScale: scales.y},
                 y: {position: 'x0', xScale: scales.x, yScale: scales.y}
               }
-            };
+            });
           },
           data: 'spec-overlap'
         });
@@ -159,16 +159,16 @@
               y: {domain: [20, 60]}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {position: 'bottom', scale: scales.x},
-                y: {position: 'left', scale: scales.y}
+                x: {scale: scales.x},
+                y: {scale: scales.y}
               },
               title: 'Smooth'
-            };
+            });
           },
           data: 'spec-smooth',
           run: function(options, chart) {
@@ -195,16 +195,16 @@
               y: {data: data.values, key: 'y'}
             };
 
-            return {
+            return d3.chart.xy({
               type: 'XY',
               charts: {
                 line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {position: 'bottom', scale: scales.x, ticks: 5},
-                y: {position: 'left', scale: scales.y}
+                x: {scale: scales.x, ticks: 5},
+                y: {scale: scales.y}
               }
-            };
+            });
           },
           data: 'spec-abc'
         });
@@ -225,16 +225,16 @@
               y: {data: data.values, key: 'y'}
             }
 
-            return {
+            return d3.chart.xy({
               charts: {
                 line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {position: 'bottom', scale: scales.x, ticks: 5},
-                y: {position: 'left', scale: scales.y}
+                x: {scale: scales.x, ticks: 5},
+                y: {scale: scales.y}
               },
               title: 'Before'
-            };
+            });
           },
           data: 'spec-abc',
           run: function(options, chart) {
@@ -271,16 +271,16 @@
               y: {data: data.values, key: 'y'}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {position: 'bottom', scale: scales.x, ticks: 5},
-                y: {position: 'left', scale: scales.y}
+                x: {scale: scales.x, ticks: 5},
+                y: {scale: scales.y}
               },
               title: {text: data.title}
-            };
+            });
           },
           data: 'spec-data-bound',
           run: function(options, chart) {
@@ -307,16 +307,16 @@
               y: {data: data.values, key: 'y'}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
                 line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
-                y: {position: 'left', scale: scales.y}
+                x: {type: 'AxisValues', scale: scales.x},
+                y: {scale: scales.y}
               }
-            };
+            });
           },
           data: 'spec-abc'
         });
@@ -337,16 +337,16 @@
               y: {data: data.values, key: 'y'}
             };
 
-            return {
+            return d3.chart.xy({
               charts: {
                 bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
                 line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
-                y: {position: 'left', scale: scales.y}
+                x: {type: 'AxisValues', scale: scales.x},
+                y: {scale: scales.y}
               }
-            };
+            });
           },
           data: 'spec-abc'
         });

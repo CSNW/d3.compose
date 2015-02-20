@@ -33,7 +33,8 @@ module.exports = function(grunt) {
       'src/components/Title.js',
       'src/components/Axis.js',
       'src/components/Legend.js',
-      'src/Multi.js'
+      'src/Multi.js',
+      'src/extensions/xy.js'
     ]
   };
   grunt.initConfig(config);

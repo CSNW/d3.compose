@@ -165,7 +165,7 @@
         y: {domain: [0, 200]}
       };
       
-      return {
+      return d3.chart.xy({
         charts: {
           line: {type: 'Line', data: values, xScale: scales.x, yScale: scales.y, labels: true},
         },
@@ -174,7 +174,7 @@
           y: {scale: scales.y, position: 'left', duration: 500}
         },
         title: {text: 'Howdy!', position: 'bottom'}
-      };
+      });
     };
 
     var chart = d3.select('#chart')

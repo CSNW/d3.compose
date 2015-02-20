@@ -20,7 +20,7 @@
           secondaryY: {data: results, key: 'y'}
         };
 
-        return {
+        return d3.chart.xy({
           charts: {
             participation: {type: 'Bars', data: participation, xScale: scales.x, yScale: scales.y, itemPadding: 20},
             results: {type: 'Line', data: results, xScale: scales.x, yScale: scales.secondaryY, labels: {position: 'top'}}
@@ -32,7 +32,7 @@
           },
           legend: true,
           title: 'd3.chart.multi'
-        };
+        });
       })
     ```
 
@@ -42,10 +42,6 @@
     initialize: function() {
       // When "options" changes, a full redraw is required to setup config
       this._full_redraw = false;
-
-      // Internal storage of components and axes
-      this._components = {};
-      this._axes = {};
     },
 
     options: property('options', {
@@ -66,102 +62,81 @@
       }
     }),
 
-    title: property('title', {
-      set: function(options, previous) {
-        // Remove title if no options are given
-        if (!options || _.isEmpty(options)) {
-          this.detachComponent('title');
-          return;
-        }
-
-        // Title may be set directly
-        if (_.isString(options))
-          options = {text: options};
-
-        // Load defaults
-        options = _.defaults({}, options, d3.chart('Multi').defaults.title);
-
-        this.attachComponents({title: options});
-      }
-    }),
-
     charts: property('charts', {
       set: function(charts, previous) {
         charts = charts || {};
         
-        // Find charts to remove
+        // Remove charts that are no longer needed
         var remove_ids = _.difference(_.keys(this.charts_by_id), _.keys(charts));
-        _.each(remove_ids, function(remove_id) {
-          this.detachChart(remove_id);
-        }, this);
+        _.each(remove_ids, this.detachChart, this);
 
         // Create or update charts
-        _.each(charts, function(chart_options, chart_id) {
-          var chart = this.charts_by_id[chart_id];
-          chart_options = _.defaults({}, chart_options, d3.chart('Multi').defaults.charts);
+        _.each(charts, function(options, id) {
+          var chart = this.charts_by_id[id];
+
+          // If chart type has changed, detach and re-create
+          if (chart && chart.type != options.type) {
+            this.detachChart(id);
+            chart = undefined;
+          }
 
           if (!chart) {
-            var Chart = d3.chart(chart_options.type);
-            chart = new Chart(this.chartLayer(), chart_options);
+            var Chart = d3.chart(options.type);
+            
+            if (!Chart)
+              throw new Error('No registered d3.chart found for ' + options.type);
 
-            this.attachChart(chart_id, chart);
+            var base = this.chartLayer();
+
+            chart = new Chart(base, options);
+            chart.type = options.type;
+
+            this.attachChart(id, chart);
           }
           else {
-            chart.options(chart_options);
+            chart.options(options);
           }
         }, this);
       },
       default_value: {}
-    }),
-
-    axes: property('axes', {
-      set: function(axes) {
-        // Prepare axis and title options
-        var components = {};
-        _.each(axes || {}, function(options, id) {
-          options = _.defaults({}, options, d3.chart('Multi').defaults.axes);
-          components['axis.' + id] = options;
-
-          if (options.title) {
-            var title_options = _.isString(options.title) ? {text: options.title} : options.title;
-            title_options = _.defaults({}, title_options, {
-              type: 'Title',
-              position: options.position,
-              'class': 'chart-title-axis'
-            });
-
-            components['axis_title.' + id] = title_options;
-          }
-        });
-        
-        this.attachComponents(components, this._axes);
-      },
-      default_value: {}
-    }),
-
-    legend: property('legend', {
-      set: function(options) {
-        if (!options || options === false || options.display === false) {
-          this.detachComponent('legend');
-          return;
-        }
-        
-        options = _.defaults({}, options, d3.chart('Multi').defaults.legend);
-
-        // Load charts
-        if (options.charts) {
-          options.charts = _.map(options.charts, function(chart_id) {
-            return this.charts_by_id[chart_id];
-          }, this);
-        }
-
-        this.attachComponents({legend: options});
-      }
     }),
 
     components: property('components', {
       set: function(components) {
-        this.attachComponents(components, this._components);
+        components = components || {};
+
+        // Remove components that are no longer needed
+        var remove_ids = _.difference(_.keys(this.components_by_id), _.keys(components));
+        _.each(remove_ids, this.detachComponent, this);
+
+        // Create or update components
+        _.each(components, function(options, id) {
+          var component = this.components_by_id[id];
+
+          // If component type has change, detach and recreate
+          if (component && component.type != options.type) {
+            this.detachComponent(id);
+            component = undefined;
+          }
+
+          if (!component) {
+            var Component = d3.chart(options.type);
+
+            if (!Component)
+              throw new Error('No registered d3.chart found for ' + options.type);
+
+            var layer_options = {z_index: Component.z_index};
+            var base = Component.layer_type == 'chart' ? this.chartLayer(layer_options) : this.componentLayer(layer_options);
+
+            component = new Component(base, options);
+            component.type = options.type;
+
+            this.attachComponent(id, component);
+          }
+          else {
+            component.options(options);
+          }
+        }, this);
       },
       default_value: {}
     }),
@@ -169,11 +144,8 @@
     draw: function(data) {
       var config = this._prepareConfig(data);
 
-      this.axes(config.axes);
       this.charts(config.charts);
       this.components(config.components);
-      this.legend(config.legend);
-      this.title(config.title);
 
       d3.chart('Container').prototype.draw.call(this, {
         original: data,
@@ -215,105 +187,45 @@
       return data.original;
     },
 
-    attachComponents: function(components, reference) {
-      if (reference) {
-        var remove_ids = _.difference(_.keys(reference), _.keys(components));
-        _.each(remove_ids, function(remove_id) {
-          this.detachComponent(remove_id);
-          delete reference[remove_id];
-        }, this);  
-      }
-
-      _.each(components, function(options, id) {
-        var component = this.components_by_id[id];
-
-        // If component type has change, detach and recreate
-        if (component && component.type != options.type) {
-          this.detachComponent(componentId);
-          component = undefined;
-        }
-
-        if (!component) {
-          var Component = d3.chart(options.type);
-
-          var layer_options = {z_index: helpers.valueOrDefault(Component.z_index, helpers.z_index.component)};
-          var base = Component.layer_type == 'chart' ? this.chartLayer(layer_options) : this.componentLayer(layer_options);
-
-          component = new Component(base, options);
-          component.type = options.type;
-
-          this.attachComponent(id, component);
-
-          if (reference)
-            reference[id] = component;
-        }
-        else {
-          component.options(options);
-        }
-      }, this);
-    },
-
     _prepareConfig: function(data) {
-      var config = _.defaults({}, this.options()(data), {
+      // Load config from options fn
+      var config = this.options()(data);
+
+      config = _.defaults({}, config, {
         charts: {},
-        axes: {},
-        components: {},
-        legend: false,
-        title: false,
-        options: {}
+        components: {}
       });
 
-      // Normalize legend and title config
-      if (config.legend === true)
-        config.legend = {};
-
-      if (!config.legend.charts && !config.legend.data)
-        config.legend.charts = _.keys(config.charts);
-
-      if (_.isString(config.title))
-        config.title = {text: config.title};
-
-      // Extract and remove data from config
-      var config_data = {
+      config.data = {
         charts: {},
         components: {}
       };
-      _.each(config.charts, function(chart_options, chart_id) {
-        config_data.charts[chart_id] = chart_options.data;
-        delete chart_options.data;
-      });
-      _.each(config.axes, function(axis_options, axis_id) {
-        config_data.components['axis.' + axis_id] = axis_options.data;
-        delete axis_options.data;
-      });
-      _.each(config.components, function(component_options, component_id) {
-        config_data.components[component_id] = component_options.data;
-        delete component_options.data;
-      });
-      if (_.isObject(config.legend)) {
-        config_data.components.legend = config.legend.data;
-        delete config.legend.data;
-      }
 
-      // Attach data to config
-      config.data = config_data;
+      _.each(config.charts, function(options, id) {
+        if (options.data) {
+          // Store data for draw later
+          config.data.charts[id] = options.data;
+
+          // Remove data from options
+          options = _.clone(options);
+          delete options.data;
+          config.charts[id] = options;
+        }
+      });
+
+      _.each(config.components, function(options, id) {
+        if (options.data) {
+          // Store data for draw later
+          config.data.components[id] = options.data;
+
+          // Remove data from options
+          options = _.clone(options);
+          delete options.data;
+          config.components[id] = options;
+        }
+      });
+
       return config;
-    }
-  }, {
-    defaults: {
-      charts: {},
-      axes: {
-        type: 'Axis'
-      },
-      legend: {
-        type: 'Legend',
-        position: 'right'
-      },
-      title: {
-        type: 'Title',
-        position: 'top',
-        'class': 'chart-title-main'
-      }
     }
   });
 
