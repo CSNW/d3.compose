@@ -14,7 +14,6 @@
     has: _.has,
     isArray: _.isArray,
     isBoolean: _.isBoolean,
-    isEqual: _.isEqual,
     isFunction: _.isFunction,
     isObject: _.isObject,
     isNumber: _.isNumber,
@@ -152,12 +151,6 @@
             properties[name] = response.override;
           if (response && utils.isFunction(response.after))
             response.after.call(context, properties[name]);
-        }
-
-        var changed = !utils.isEqual(properties[name], getSet.previous);
-        if (changed && utils.isFunction(this.trigger)) {
-          this.trigger('change:' + name, properties[name]);
-          this.trigger('change', name, properties[name]);
         }
 
         return this;
