@@ -19,17 +19,21 @@
 
       it('should attach chart', function() {
         charts[0] = new Chart(container.chartLayer());
-        container.attachChart('chart1', charts[0]);
+        container.charts({
+          'chart1': charts[0]
+        });
 
-        expect(container.charts_by_id['chart1']).toBe(charts[0]);
+        expect(container.charts()['chart1']).toBe(charts[0]);
         expect(container._attached['chart1']).toBe(charts[0]);
       });
 
       it('should attach component', function() {
         components[0] = new Component(container.componentLayer());
-        container.attachComponent('component1', components[0]);
+        container.components({
+          component1: components[0]
+        });
         
-        expect(container.components_by_id['component1']).toBe(components[0]);
+        expect(container.components()['component1']).toBe(components[0]);
         expect(container._attached['component1']).toBe(components[0]);
       });
 
@@ -73,8 +77,16 @@
             new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'left'}),
             new Component(container.componentLayer({z_index: 200}), {position: 'left'})
           ];
-          _.each(components, function(component, index) {
-            container.attachComponent('component-' + (index + 1), component);
+
+          container.components({
+            'component-0': components[0],
+            'component-1': components[1],
+            'component-2': components[2],
+            'component-3': components[3],
+            'component-4': components[4],
+            'component-5': components[5],
+            'component-6': components[6],
+            'component-7': components[7]
           });
 
           // Setup and attach chart
@@ -82,7 +94,10 @@
           Chart = d3.chart('Chart').extend('SimpleChart', {
             draw: chartSpy
           });
-          container.attachChart('chart-1', new Chart(container.chartLayer()));
+
+          container.charts({
+            'chart-1': new Chart(container.chartLayer())
+          });
 
           // Setup container
           container.width(600).height(400);

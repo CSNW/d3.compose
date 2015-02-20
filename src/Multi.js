@@ -146,28 +146,38 @@
         utils.each(chart_options, function(options, id) {
           var chart = charts[id];
 
-          // If chart type has changed, detach and re-create
-          if (chart && chart.type != options.type) {
-            this.detachChart(id);
-            chart = undefined;
-          }
+          if (options instanceof d3.chart()) {
+            // If chart instance, replace with instance
+            if (chart)
+              this.detach(id, chart);
 
-          if (!chart) {
-            var Chart = d3.chart(options.type);
-            
-            if (!Chart)
-              throw new Error('No registered d3.chart found for ' + options.type);
-
-            var base = this.chartLayer();
-
-            chart = new Chart(base, options);
-            chart.type = options.type;
-
-            this.attach(id, chart);
-            charts[id] = chart;
+            this.attach(id, options);
+            charts[id] = options;
           }
           else {
-            chart.options(options);
+            if (chart && chart.type != options.type) {
+              // If chart type has changed, detach and re-create
+              this.detach(id, chart);
+              chart = undefined;
+            }
+
+            if (!chart) {
+              var Chart = d3.chart(options.type);
+              
+              if (!Chart)
+                throw new Error('No registered d3.chart found for ' + options.type);
+
+              var base = this.chartLayer();
+
+              chart = new Chart(base, options);
+              chart.type = options.type;
+
+              this.attach(id, chart);
+              charts[id] = chart;
+            }
+            else {
+              chart.options(options);
+            }
           }
         }, this);
 
@@ -195,30 +205,42 @@
         utils.each(component_options, function(options, id) {
           var component = components[id];
 
-          // If component type has change, detach and recreate
-          if (component && component.type != options.type) {
-            this.detachComponent(id);
-            component = undefined;
-          }
+          if (options instanceof d3.chart()) {
+            // If component instance, replace with component
+            if (component)
+              this.detach(id, component);
 
-          if (!component) {
-            var Component = d3.chart(options.type);
-
-            if (!Component)
-              throw new Error('No registered d3.chart found for ' + options.type);
-
-            var layer_options = {z_index: Component.z_index};
-            var base = Component.layer_type == 'chart' ? this.chartLayer(layer_options) : this.componentLayer(layer_options);
-
-            component = new Component(base, options);
-            component.type = options.type;
-
-            this.attach(id, component);
-            components[id] = component;
+            this.attach(id, options);
+            components[id] = options;
           }
           else {
-            component.options(options);
+            // If component type has changed, detach and recreate
+            if (component && component.type != options.type) {
+              this.detach(id, component);
+              component = undefined;
+            }
+
+            if (!component) {
+              var Component = d3.chart(options.type);
+
+              if (!Component)
+                throw new Error('No registered d3.chart found for ' + options.type);
+
+              var layer_options = {z_index: Component.z_index};
+              var base = Component.layer_type == 'chart' ? this.chartLayer(layer_options) : this.componentLayer(layer_options);
+
+              component = new Component(base, options);
+              component.type = options.type;
+
+              this.attach(id, component);
+              components[id] = component;
+            }
+            else {
+              component.options(options);
+            }
           }
+
+          
         }, this);
 
         // Store actual components rather than options
