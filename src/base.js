@@ -1,4 +1,5 @@
-(function(d3, _, helpers) {
+(function(d3, helpers) {
+  var each = helpers.utils.each;
   var property = helpers.property;
   
   /**
@@ -31,7 +32,7 @@
     options: property('options', {
       default_value: {},
       set: function(options) {
-        _.each(options, function(value, key) {
+        each(options, function(value, key) {
           if (this[key] && this[key].is_property && this[key].set_from_options)
             this[key](value);
         }, this);
@@ -81,4 +82,4 @@
     }
   });
 
-})(d3, _, d3.chart.helpers);
+})(d3, d3.chart.helpers);

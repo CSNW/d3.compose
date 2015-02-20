@@ -1,4 +1,5 @@
-(function(d3, _, helpers) {
+(function(d3, helpers) {
+  var utils = helpers.utils;
   var property = helpers.property;
 
   /**
@@ -63,7 +64,7 @@
 
         // If options is plain object,
         // return from generic options function
-        if (!_.isFunction(options)) {
+        if (!utils.isFunction(options)) {
           return {
             override: function(data) {
               return options;
@@ -89,7 +90,7 @@
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
       set: function(values) {
         return {
-          override: _.defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
+          override: utils.defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
         };
       }
     }),
@@ -103,7 +104,7 @@
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
       set: function(values) {
         return {
-          override: _.defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
+          override: utils.defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
         };
       },
       get: function(values) {
@@ -135,14 +136,14 @@
         charts = charts || {};
         
         // Remove charts that are no longer needed
-        var remove_ids = _.difference(_.keys(charts), _.keys(chart_options));
-        _.each(remove_ids, function(remove_id) {
+        var remove_ids = utils.difference(utils.keys(charts), utils.keys(chart_options));
+        utils.each(remove_ids, function(remove_id) {
           this.detach(remove_id, charts[remove_id]);
           delete charts[remove_id];
         }, this);
 
         // Create or update charts
-        _.each(chart_options, function(options, id) {
+        utils.each(chart_options, function(options, id) {
           var chart = charts[id];
 
           // If chart type has changed, detach and re-create
@@ -184,14 +185,14 @@
         components = components || {};
 
         // Remove components that are no longer needed
-        var remove_ids = _.difference(_.keys(components), _.keys(component_options));
-        _.each(remove_ids, function(remove_id) {
+        var remove_ids = utils.difference(utils.keys(components), utils.keys(component_options));
+        utils.each(remove_ids, function(remove_id) {
           this.detach(remove_id, components[remove_id]);
           delete components[remove_id];
         }, this);
 
         // Create or update components
-        _.each(component_options, function(options, id) {
+        utils.each(component_options, function(options, id) {
           var component = components[id];
 
           // If component type has change, detach and recreate
@@ -234,7 +235,7 @@
         this._config = this._prepareConfig(data);
 
         // Set charts and components from config
-        _.each(this._config, function(value, key) {
+        utils.each(this._config, function(value, key) {
           if (this[key] && this[key].is_property && this[key].set_from_options)
             this[key](value);
         }, this);
@@ -282,7 +283,7 @@
       - z_index
     */
     chartLayer: function(options) {
-      options = _.defaults({}, options, {
+      options = utils.defaults({}, options, {
         z_index: d3.chart('Chart').z_index
       });
 
@@ -298,7 +299,7 @@
       - z_index
     */
     componentLayer: function(options) {
-      options = _.defaults({}, options, {
+      options = utils.defaults({}, options, {
         z_index: d3.chart('Component').z_index
       });
 
@@ -318,9 +319,9 @@
       var layout = this._extractLayout(data);
 
       // 3. Set chart position from layout
-      var chart_position = _.extend({}, this.margins());
-      _.each(layout, function(parts, key) {
-        _.each(parts, function(part) {
+      var chart_position = utils.extend({}, this.margins());
+      utils.each(layout, function(parts, key) {
+        utils.each(parts, function(part) {
           chart_position[key] += part.offset || 0;
         });
       });
@@ -335,7 +336,7 @@
       var chartPosition = this.chartPosition.bind(this);
       var inside, chart_position;
       
-      var throttledMouseMove = _.throttle(function(coordinates) {
+      var throttledMouseMove = utils.throttle(function(coordinates) {
         if (inside)
           trigger('move:mouse', coordinates);
       }, 50);
@@ -381,7 +382,7 @@
       // Load config from options fn
       var config = this.options()(data);
 
-      config = _.defaults({}, config, {
+      config = utils.defaults({}, config, {
         charts: {},
         components: {}
       });
@@ -391,25 +392,25 @@
         components: {}
       };
 
-      _.each(config.charts, function(options, id) {
+      utils.each(config.charts, function(options, id) {
         if (options.data) {
           // Store data for draw later
           config.data.charts[id] = options.data;
 
           // Remove data from options
-          options = _.clone(options);
+          options = utils.clone(options);
           delete options.data;
           config.charts[id] = options;
         }
       });
 
-      _.each(config.components, function(options, id) {
+      utils.each(config.components, function(options, id) {
         if (options.data) {
           // Store data for draw later
           config.data.components[id] = options.data;
 
           // Remove data from options
-          options = _.clone(options);
+          options = utils.clone(options);
           delete options.data;
           config.components[id] = options;
         }
@@ -425,7 +426,7 @@
 
       d3.chart('Base').prototype.attach.call(this, id, item);
 
-      if (item && _.isFunction(item.trigger))
+      if (item && utils.isFunction(item.trigger))
         item.trigger('attach');
     },
 
@@ -434,7 +435,7 @@
 
       delete this._attached[id];
 
-      if (item && _.isFunction(item.trigger))
+      if (item && utils.isFunction(item.trigger))
         item.trigger('detach');
     },
 
@@ -458,14 +459,14 @@
       var width = this._width();
       var height = this._height();
       
-      _.reduce(layout.top, function(previous, part, index, parts) {
+      utils.reduce(layout.top, function(previous, part, index, parts) {
         var y = previous - part.offset;
         setLayout(part.component, chart.left, y, {width: chart.width});
         
         return y;
       }, chart.top);
 
-      _.reduce(layout.right, function(previous, part, index, parts) {
+      utils.reduce(layout.right, function(previous, part, index, parts) {
         var previousPart = parts[index - 1] || {offset: 0};
         var x = previous + previousPart.offset;
         setLayout(part.component, x, chart.top, {height: chart.height});
@@ -473,7 +474,7 @@
         return x;
       }, width - chart.right);
 
-      _.reduce(layout.bottom, function(previous, part, index, parts) {
+      utils.reduce(layout.bottom, function(previous, part, index, parts) {
         var previousPart = parts[index - 1] || {offset: 0};
         var y = previous + previousPart.offset;
         setLayout(part.component, chart.left, y, {width: chart.width});
@@ -481,7 +482,7 @@
         return y;
       }, height - chart.bottom);
 
-      _.reduce(layout.left, function(previous, part, index, parts) {
+      utils.reduce(layout.left, function(previous, part, index, parts) {
         var x = previous - part.offset;
         setLayout(part.component, x, chart.top, {height: chart.height});
 
@@ -489,7 +490,7 @@
       }, chart.left);
 
       function setLayout(component, x, y, options) {
-        if (component && _.isFunction(component.setLayout))
+        if (component && utils.isFunction(component.setLayout))
           component.setLayout(x, y, options);
       }
     },
@@ -499,12 +500,12 @@
       var elements = this.base.selectAll('.chart-layer, .chart-component-layer')[0];
 
       // Sort by z-index
-      elements = _.sortBy(elements, function(element) {
+      elements = utils.sortBy(elements, function(element) {
         return parseInt(d3.select(element).attr('data-zIndex')) || 0;
       });
 
       // Move layers to z-index order
-      _.each(elements, function(element) {
+      utils.each(elements, function(element) {
         element.parentNode.appendChild(element);
       }, this);
     },
@@ -512,14 +513,14 @@
     // Extract layout from components
     _extractLayout: function(data) {
       var overall_layout = {top: [], right: [], bottom: [], left: []};
-      _.each(this.components(), function(component) {
+      utils.each(this.components(), function(component) {
         if (component.skip_layout)
           return;
 
         var layout = component.getLayout(data);
         var position = layout && layout.position;
 
-        if (!_.contains(['top', 'right', 'bottom', 'left'], position))
+        if (!utils.contains(['top', 'right', 'bottom', 'left'], position))
           return;
 
         overall_layout[position].push({
@@ -532,4 +533,4 @@
     }
   });
 
-})(d3, _, d3.chart.helpers);
+})(d3, d3.chart.helpers);

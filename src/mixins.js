@@ -1,4 +1,4 @@
-(function(d3, _, helpers) {
+(function(d3, helpers) {
   var property = helpers.property;
   var valueOrDefault = helpers.valueOrDefault;
   var di = helpers.di;
@@ -32,7 +32,7 @@
       // Get style for data item in the following progression
       // data.style -> series.style -> chart.style
       var series = chart.seriesData.call(this, d, i) || {};
-      var styles = _.defaults({}, d.style, series.style, chart.options().style);
+      var styles = utils.defaults({}, d.style, series.style, chart.options().style);
       
       return helpers.style(styles) || null;
     }),
@@ -185,7 +185,7 @@
       return d[chart.yKey()];
     }),
     keyValue: di(function(chart, d, i) {
-      return !_.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i);
+      return !utils.isUndefined(d.key) ? d.key : chart.xValue.call(this, d, i);
     }),
 
     setScales: function() {
@@ -221,22 +221,22 @@
     - [itemPadding = 0.1] {Number} % padding between each item (for ValuesSeries, padding is just around group, not individual series items)
     Dependencies: XY
   */
-  var XYValues = _.extend({}, XY, {
+  var XYValues = utils.extend({}, XY, {
     transform: function(data) {
       // Transform series data from values to x,y
       if (helpers.isSeriesData(data)) {
-        _.each(data, function(series) {
-          series.values = _.map(series.values, normalizeData);
+        utils.each(data, function(series) {
+          series.values = utils.map(series.values, normalizeData);
         }, this);
       }
       else {
-        data = _.map(data, normalizeData);
+        data = utils.map(data, normalizeData);
       }
 
       return data;
 
       function normalizeData(point, index) {
-        point = _.isObject(point) ? point : {y: point};
+        point = utils.isObject(point) ? point : {y: point};
         point.x = valueOrDefault(point.x, point.key);
 
         return point;
@@ -287,7 +287,7 @@
     }),
 
     setXScaleRange: function(x_scale) {
-      if (_.isFunction(x_scale.rangeBands)) {
+      if (utils.isFunction(x_scale.rangeBands)) {
         x_scale.rangeBands(
           [0, this.width()], 
           this.itemPadding(), 
@@ -335,10 +335,10 @@
 
     labels: property('labels', {
       get: function(value) {
-        if (_.isBoolean(value))
+        if (utils.isBoolean(value))
           value = {display: value};
 
-        return _.defaults({}, value, {
+        return utils.defaults({}, value, {
           display: false,
           type: 'XYLabels'
         });
@@ -363,7 +363,7 @@
     onMouseLeave: function() {}
   };
 
-  var XYHover = _.extend({}, Hover, {
+  var XYHover = utils.extend({}, Hover, {
     initialize: function() {
       Hover.initialize.apply(this, arguments);
       this.on('before:draw', function() {
@@ -385,7 +385,7 @@
       if (!this._points && data) {
         if (helpers.isSeriesData(data)) {
           // Get all points for each series
-          this._points = _.map(data, function(series, j) {
+          this._points = utils.map(data, function(series, j) {
             return getPointsForValues.call(this, series.values, j, {_parent_data: series});
           }, this);
         }
@@ -397,7 +397,7 @@
       return this._points;
 
       function getPointsForValues(values, seriesIndex, element) {
-        var points = _.map(values, function(d, i) {
+        var points = utils.map(values, function(d, i) {
           return this.getPoint.call(element, d, i, seriesIndex);
         }, this);
 
@@ -414,9 +414,9 @@
       var points = this.getPoints();
       var closest = [];
 
-      if (points.length && _.isArray(points[0])) {
+      if (points.length && utils.isArray(points[0])) {
         // Series data
-        _.each(points, function(series) {
+        utils.each(points, function(series) {
           closest.push(sortByDistance(series, position));
         });
       }
@@ -427,12 +427,12 @@
       return closest;
 
       function sortByDistance(values, position) {
-        var byDistance = _.map(values, function(point) {
+        var byDistance = utils.map(values, function(point) {
           point.distance = getDistance(point, position);
           return point;
         });
 
-        return _.sortBy(byDistance, 'distance'); 
+        return utils.sortBy(byDistance, 'distance'); 
       }
 
       function getDistance(a, b) {
@@ -442,7 +442,7 @@
   });
 
   // Expose mixins
-  d3.chart.mixins = _.extend(d3.chart.mixins || {}, {
+  d3.chart.mixins = utils.extend(d3.chart.mixins || {}, {
     Series: Series,
     XY: XY,
     XYValues: XYValues,
@@ -451,4 +451,4 @@
     XYHover: XYHover
   });
 
-})(d3, _, d3.chart.helpers);
+})(d3, d3.chart.helpers);
