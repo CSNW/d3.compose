@@ -337,7 +337,7 @@
     @example
     ```javascript
     // Simple type, range, and domain
-    var scale = createScaleFromOptions({
+    var scale = createScale({
       type: 'linear', 
       domain: [0, 100], 
       range: [0, 500]
@@ -345,11 +345,11 @@
 
     // Scale is passed through
     var original = d3.scale.linear();
-    var scale = createScaleFromOptions(original);
+    var scale = createScale(original);
     scale === original;
 
     // Set other properties by passing in "arguments" array
-    var scale = createScaleFromOptions({
+    var scale = createScale({
       type: 'ordinal',
       domain: ['a', 'b', 'c', 'd', 'e'],
       rangeRoundBands: [[0, 100], 0.1, 0.05]
@@ -364,7 +364,7 @@
     - ...: {Arguments Array} Set any other scale properties by passing in "arguments" array
     @return {d3.scale}
   */
-  function createScaleFromOptions(options) {
+  function createScale(options) {
     options = options || {};
 
     // If function, scale was passed in as options
@@ -535,7 +535,7 @@
   */
   function mixin(mixins) {
     mixins = utils.isArray(mixins) ? mixins : utils.toArray(arguments);
-    var mixed = utils.extend.apply(this, [{}].concat(mixins));
+    var mixed = utils.extend.apply(null, [{}].concat(mixins));
 
     // Don't mixin constructor with prototype
     delete mixed.constructor;
@@ -575,7 +575,7 @@
     isSeriesData: isSeriesData,
     max: max,
     min: min,
-    createScaleFromOptions: createScaleFromOptions,
+    createScale: createScale,
     style: style,
     di: di,
     bindDi: bindDi,

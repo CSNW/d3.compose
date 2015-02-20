@@ -100,7 +100,7 @@
     xScale: property('xScale', {
       type: 'Function',
       set: function(value) {
-        var scale = helpers.createScaleFromOptions(value);
+        var scale = helpers.createScale(value);
         this.setXScaleRange(scale);
 
         return {
@@ -119,7 +119,7 @@
     yScale: property('yScale', {
       type: 'Function',
       set: function(value) {
-        var scale = helpers.createScaleFromOptions(value);
+        var scale = helpers.createScale(value);
         this.setYScaleRange(scale);
 
         return {
@@ -201,13 +201,13 @@
     },
 
     getDefaultXScale: function() {
-      return helpers.createScaleFromOptions({
+      return helpers.createScale({
         data: this.data(),
         key: this.xKey()
       });
     },
     getDefaultYScale: function() {
-      return helpers.createScaleFromOptions({
+      return helpers.createScale({
         data: this.data(),
         key: this.yKey()
       });
@@ -300,7 +300,7 @@
     },
 
     getDefaultXScale: function() {
-      return helpers.createScaleFromOptions({
+      return helpers.createScale({
         type: 'ordinal',
         data: this.data(),
         key: this.xKey()

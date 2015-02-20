@@ -273,7 +273,7 @@
       });
     });
 
-    describe('createScaleFromOptions', function() {
+    describe('createScale', function() {
       it('should create scale using type, domain, and range', function() {
         var options = {
           type: 'linear',
@@ -281,14 +281,14 @@
           domain: [0, 100]
         };
 
-        var scale = helpers.createScaleFromOptions(options);
+        var scale = helpers.createScale(options);
         expect(scale.domain()).toEqual([0, 100]);
         expect(scale.range()).toEqual([0, 500]);
       });
 
       it('should return original if scale is passed in (as function)', function() {
         var scale = function() {};
-        expect(helpers.createScaleFromOptions(scale)).toBe(scale);
+        expect(helpers.createScale(scale)).toBe(scale);
       });
 
       it('should use any special passed-in options (e.g. rangeBands) and pass in as arguments array', function() {
@@ -298,7 +298,7 @@
           rangeRoundBands: [[0, 100], 0.1, 0.05]
         };
 
-        var scale = helpers.createScaleFromOptions(options);
+        var scale = helpers.createScale(options);
         expect(scale.domain()).toEqual(options.domain);
         expect(scale.range()).toEqual([1, 21, 41, 61, 81]);
       });
@@ -310,7 +310,7 @@
           range: [0, 100]
         };
 
-        var scale = helpers.createScaleFromOptions(options);
+        var scale = helpers.createScale(options);
         expect(scale(new Date('1/1/2000 6:00'))).toEqual(50);
         expect(scale.invert(50).getHours()).toEqual(6);
       });

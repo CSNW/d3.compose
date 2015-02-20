@@ -115,7 +115,7 @@
     scale: property('scale', {
       type: 'Function',
       set: function(value) {
-        var scale = helpers.createScaleFromOptions(value);
+        var scale = helpers.createScale(value);
 
         if (this.orientation() == 'vertical')
           this.yScale(scale.copy());
