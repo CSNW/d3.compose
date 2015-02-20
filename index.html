@@ -20,8 +20,8 @@ title: Docs
     Usage
   </a>
 
-  <a class="toc_title" href="#example">
-    Example
+  <a class="toc_title" href="#examples">
+    Examples
   </a>
 
   <a class="toc_title" href="#/Multi/">
@@ -318,53 +318,278 @@ title: Docs
     <script src="d3.chart.multi.js"></script>
 
     <script>
-      <!-- Your code -->
+      // Your code
     </script>
   </body>
 </html>
 {% endhighlight %}
 
-  <h2 id="example">Example</h2>
+  <h2 id="examples">Examples</h2>
 
   <h3>Line</h3>
   
   <p>
-
+    To get started with d3.chart.multi, use <tt>d3.select('...').chart('Multi')</tt> and pass in a options function that takes in the data to be drawn and returns options for the charts and components to be drawn. The below example takes in series data, creates options for scales that are shared between charts and components, sets options for a Line chart, and sets options for axes and title components.
   </p>
 
 {% highlight js %}
+var example_1 = d3.select('#js-example-1').append('svg')
+  .chart('Multi', function(data) {
+    // Manipulate data as needed
 
+    // Create options for scales shared between charts and/or components
+    var scales = {
+      x: {data: data, key: 'x'},
+      y: {data: data, key: 'y'}
+    };
+
+    return {
+      charts: {
+        // Add a d3.chart('Line') chart
+        // with given data and scales
+        line: {
+          type: 'Line', 
+          data: data, 
+
+          // Set options for chart
+          xScale: scales.x, 
+          yScale: scales.y,
+          interpolate: 'monotone'
+        }
+      },
+      axes: {
+        // Add x and y axes
+        x: {position: 'bottom', scale: scales.x},
+        y: {position: 'left', scale: scales.y}
+      },
+      // Add chart title
+      title: 'Line Chart'
+    };
+  });
+
+// Draw chart with series data: [{key, values}, {key, values}, ...]
+example_1.draw([
+  {
+    key: 'a', values: [
+      {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
+    ]
+  },
+  {
+    key: 'b', values: [
+      {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
+    ]
+  }
+]);
 {% endhighlight %}
+
+  <div class="example-chart" id="js-example-1"></div>
 
   <h3>Line-Bar Values</h3>
   
   <p>
-
+    The next example demonstrates how easy it is to compose are chart out of multiple child charts. Each chart layer is aligned and all components are laid out around the chart layer. This chart uses <tt>XYValues</tt> to center the value at each x-value/key/index and that needs to be specified for the axes with <tt>type: 'AxisValues'</tt>.
   </p>
 
 {% highlight js %}
+var example_2 = d3.select('#js-example-2').append('svg')
+  .chart('Multi', function(data) {
+    var input = data.input;
+    var results = data.results;
+    var scales = {
+      x: {type: 'ordinal', data: input, key: 'x'},
+      y: {data: input, key: 'y'},
+      y2: {data: results, key: 'y', domain: [0, 100]}
+    };
 
+    return {
+      charts: {
+        input: {
+          type: 'LineValues', 
+          data: input, 
+          xScale: scales.x, 
+          yScale: scales.y
+        },
+        results: {
+          type: 'Bars', 
+          data: results, 
+          xScale: scales.x, 
+          yScale: scales.y2
+        }
+      },
+      axes: {
+        x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
+        y: {position: 'left', scale: scales.y, title: 'Input'},
+        y2: {position: 'right', scale: scales.y2, title: 'Results'}
+      },
+      title: 'Input vs. Output'
+    }
+  });
+
+example_2.draw({
+  input: [
+    {
+      key: 'input', 
+      values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
+    }
+  ],
+  results: [
+    {
+      key: 'run-1',
+      values: [{x: 'a', y: 10}, {x: 'b', y: 30}, {x: 'c', y: 20}]
+    },
+    {
+      key: 'run-2',
+      values: [{x: 'a', y: 15}, {x: 'b', y: 25}, {x: 'c', y: 20}]
+    }
+  ]
+});
 {% endhighlight %}
+
+  <div class="example-chart" id="js-example-2"></div>
 
   <h3>Custom Chart</h3>
 
   <p>
-
+    d3.chart.multi makes it straightforward to create reusable charts with a common <tt>Chart</tt> base to extend from and helpers and mixins for common functionality.
   </p>
 
 {% highlight js %}
+var helpers = d3.chart.helpers;
+var mixins = d3.chart.mixins;
 
+d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
+  initialize: function() {
+    var base = this.base.append('g').attr('class', 'chart-dots');
+
+    // seriesLayer wraps series functionality 
+    // so that standard layer approach can be used
+    this.seriesLayer('Dots', base, {
+      dataBind: function(data) {
+        return this.selectAll('circle')
+          .data(data, this.chart().keyValue);
+      },
+      insert: function() {
+        return this.append('circle');
+      },
+      events: {
+        merge: function() {
+          var chart = this.chart();
+          this
+            .attr('cx', chart.x)
+            .attr('cy', chart.y)
+            .attr('r', chart.r);
+        }
+      }
+    });
+  },
+
+  // helpers.di binds chart to "di" functions
+  // so that "this" refers to the element (as expected)
+  r: helpers.di(function(chart, d, i) {
+    return chart.rValue();
+  }),
+
+  // helpers.property creates get/set property
+  rValue: helpers.property('rValue', {
+    default_value: 5
+  })
+}));
+
+example_3 = d3.select('#js-example-3').append('svg')
+  .chart('Multi', function(data) {
+    var scales = {
+      x: {data: data, key: 'x'},
+      y: {data: data, key: 'y'}
+    };
+
+    return {
+      charts: {
+        line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y},
+        dots: {type: 'Dots', data: data, xScale: scales.x, yScale: scales.y}
+      }
+    }
+  });
+
+example_3.draw([
+  {
+    key: 'a',
+    values: [{x: 0, y: 10}, {x: 10, y: 100}, {x: 50, y: 0}]
+  },
+  {
+    key: 'b',
+    values: [{x: 50, y: 10}, {x: 30, y: 70}, {x: 0, y: 0}]
+  }
+]);
 {% endhighlight %}
+
+  <div class="example-chart" id="js-example-3"></div>
 
   <h3>Custom Component</h3>
 
   <p>
-
+    In addition to custom charts, d3.chart.multi allows you to make custom components with a common <tt>Component</tt> base that includes layout helpers.
   </p>
 
 {% highlight js %}
+d3.chart('Component').extend('Key', {
+  initialize: function() {
+    this.layer('Key', this.base, {
+      dataBind: function(data) {
+        return this.selectAll('text')
+          .data(data);
+      },
+      insert: function() {
+        return this.append('text');
+      },
+      events: {
+        merge: function() {
+          this.text(this.chart().keyText)
+        }
+      }
+    })
+  },
 
+  keyText: helpers.di(function(chart, d, i) {
+    return d.abbr + ' = ' + d.value;
+  })
+});
+
+var example_4 = d3.select('#js-example-4').append('svg')
+  .chart('Multi', function(data) {
+    var scales = {
+      x: {type: 'ordinal', data: data.values, key: 'x'},
+      y: {domain: [0, 20]}
+    }
+
+    return {
+      charts: {
+        bars: {
+          type: 'Bars', 
+          data: data.values, 
+          xScale: scales.x, 
+          yScale: scales.y
+        }
+      },
+      axes: {
+        x: {type: 'AxisValues', scale: scales.x}
+      },
+      components: {
+        key: {type: 'Key', data: data.key, position: 'right'}
+      }
+    }
+  })
+  .margins({top: 10, right: 10, bottom: 10, left: 10});
+
+example_4.draw({
+  values: [{
+    key: 'a',
+    values: [{x: 'js', y: 10}]
+  }],
+  key: [{abbr: 'js', value: 'javascript'}]
+});
 {% endhighlight %}
+
+  <div class="example-chart" id="js-example-4"></div>
 
   <!-- 
     Multi
@@ -1654,8 +1879,219 @@ chart.draw([
     <li>General cleanup and normalize coding style</li>
   </ul>
 
-  <p>
+  <!-- <p>
     Footer...
-  </p>
+  </p> -->
 
 </div>
+
+<script src="js/d3.min.js"></script>
+<script src="js/d3.chart.min.js"></script>
+<script src="js/underscore.js"></script>
+
+<script src="d3.chart.multi.js"></script>
+
+<script type="text/javascript">
+(function(d3) {
+
+  var helpers = d3.chart.helpers;
+  var mixins = d3.chart.mixins;
+
+  // Example 1: Line
+  var example_1 = d3.select('#js-example-1').append('svg')
+    .chart('Multi', function(data) {
+      var scales = {
+        x: {data: data, key: 'x'},
+        y: {data: data, key: 'y'}
+      };
+
+      return {
+        charts: {
+          line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y, interpolate: 'monotone'}
+        },
+        axes: {
+          x: {position: 'bottom', scale: scales.x, ticks: 5},
+          y: {position: 'left', scale: scales.y, ticks: 5}
+        },
+        title: {text: 'Line Chart', margins: {top: 0.5, bottom: 0.5}}
+      };
+    })
+    .margins({top: 0, right: 15, bottom: 5, left: 5});
+
+  example_1.draw([
+    {
+      key: 'a', values: [
+        {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
+      ]
+    },
+    {
+      key: 'b', values: [
+        {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
+      ]
+    }
+  ]);
+
+  // Example 2: Line-Bar Values
+  var example_2 = d3.select('#js-example-2').append('svg')
+    .chart('Multi', function(data) {
+      var input = data.input;
+      var results = data.results;
+      var scales = {
+        x: {type: 'ordinal', data: input, key: 'x'},
+        y: {data: input, key: 'y'},
+        y2: {data: results, key: 'y', domain: [0, 100]}
+      };
+
+      return {
+        charts: {
+          input: {type: 'LineValues', data: input, xScale: scales.x, yScale: scales.y},
+          results: {type: 'Bars', data: results, xScale: scales.x, yScale: scales.y2}
+        },
+        axes: {
+          x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
+          y: {position: 'left', scale: scales.y, title: 'Input'},
+          y2: {position: 'right', scale: scales.y2, title: 'Results'}
+        },
+        title: {text: 'Input vs. Output', margins: {top: 0.5, bottom: 0.5}}
+      }
+    })
+    .margins({top: 0, right: 15, bottom: 5, left: 5});
+
+  example_2.draw({
+    input: [
+      {
+        key: 'input', 
+        values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
+      }
+    ],
+    results: [
+      {
+        key: 'run-1',
+        values: [{x: 'a', y: 10}, {x: 'b', y: 30}, {x: 'c', y: 20}]
+      },
+      {
+        key: 'run-2',
+        values: [{x: 'a', y: 15}, {x: 'b', y: 25}, {x: 'c', y: 20}]
+      }
+    ]
+  });
+
+  // Example 3: Custom Chart
+  d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
+    initialize: function() {
+      // seriesLayer wraps series functionality 
+      // so that standard layer approach can be used
+      this.seriesLayer('Dots', this.base.append('g').classed('chart-dots', true), {
+        dataBind: function(data) {
+          return this.selectAll('circle')
+            .data(data, this.chart().keyValue);
+        },
+        insert: function() {
+          return this.append('circle');
+        },
+        events: {
+          merge: function() {
+            var chart = this.chart();
+            this
+              .attr('cx', chart.x)
+              .attr('cy', chart.y)
+              .attr('r', chart.r);
+          }
+        }
+      });
+    },
+
+    // helpers.di binds chart to "di" functions
+    // so that "this" refers to the element (as expected)
+    r: helpers.di(function(chart, d, i) {
+      return chart.rValue();
+    }),
+
+    // helpers.property creates get/set property
+    rValue: helpers.property('rValue', {
+      default_value: 5
+    })
+  }));
+
+  example_3 = d3.select('#js-example-3').append('svg')
+    .chart('Multi', function(data) {
+      var scales = {
+        x: {data: data, key: 'x'},
+        y: {data: data, key: 'y'}
+      };
+
+      return {
+        charts: {
+          line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y},
+          dots: {type: 'Dots', data: data, xScale: scales.x, yScale: scales.y}
+        }
+      }
+    })
+    .margins({top: 25, right: 15, bottom: 10, left: 15});
+
+  example_3.draw([
+    {
+      key: 'a',
+      values: [{x: 0, y: 10}, {x: 10, y: 100}, {x: 50, y: 0}]
+    },
+    {
+      key: 'b',
+      values: [{x: 50, y: 10}, {x: 30, y: 70}, {x: 0, y: 0}]
+    }
+  ]);
+
+  // Example 4: Custom Component
+  d3.chart('Component').extend('Key', {
+    initialize: function() {
+      this.layer('Key', this.base, {
+        dataBind: function(data) {
+          return this.selectAll('text')
+            .data(data);
+        },
+        insert: function() {
+          return this.append('text');
+        },
+        events: {
+          merge: function() {
+            this.text(this.chart().keyText)
+          }
+        }
+      })
+    },
+
+    keyText: helpers.di(function(chart, d, i) {
+      return d.abbr + ' = ' + d.value;
+    })
+  });
+
+  var example_4 = d3.select('#js-example-4').append('svg')
+    .chart('Multi', function(data) {
+      var scales = {
+        x: {type: 'ordinal', data: data.values, key: 'x'},
+        y: {domain: [0, 20]}
+      }
+
+      return {
+        charts: {
+          bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y}
+        },
+        axes: {
+          x: {type: 'AxisValues', scale: scales.x}
+        },
+        components: {
+          key: {type: 'Key', data: data.key, position: 'right'}
+        }
+      }
+    })
+    .margins({top: 10, right: 10, bottom: 10, left: 10});
+
+  example_4.draw({
+    values: [{
+      key: 'a',
+      values: [{x: 'js', y: 10}]
+    }],
+    key: [{abbr: 'js', value: 'javascript'}]
+  });
+
+})(d3);
+</script>

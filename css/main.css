@@ -4,7 +4,7 @@
 .highlight .k { color: #a71d5d; } /* Keyword */
 .highlight .o { color: #a71d5d } /* Operator */
 .highlight .cm { color: #999988; font-style: italic } /* Comment.Multiline */
-.highlight .cp { color: #999999; font-weight: bold; font-style: italic } /* Comment.Preproc */
+.highlight .cp { color: #999999; font-style: italic } /* Comment.Preproc */
 .highlight .c1 { color: #999988; font-style: italic } /* Comment.Single */
 .highlight .cs { color: #999999; font-weight: bold; font-style: italic } /* Comment.Special */
 .highlight .gd { color: #000000; background-color: #ffdddd } /* Generic.Deleted */
@@ -266,6 +266,17 @@ code, pre, tt {
       margin: 20px;
       box-shadow: 0 8px 15px rgba(0,0,0,0.4);
     }
+
+.example-chart {
+  width: 500px;
+  height: 300px;
+}
+  .example-chart > svg {
+    width: 500px;
+    height: 300px;
+  }
+
+
 @media only screen and (-webkit-max-device-pixel-ratio: 1) and (max-width: 600px),
        only screen and (max--moz-device-pixel-ratio: 1) and (max-width: 600px) {
   div#sidebar {
