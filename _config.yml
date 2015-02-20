@@ -4,7 +4,7 @@ url: http://csnw.github.io/d3.chart.multi
 github: https://github.com/csnw/d3.chart.multi
 
 # TODO Load from package.json/bower.json
-version: 0.9.0
+version: 0.10.0
 
 exclude:
 - Gemfile
