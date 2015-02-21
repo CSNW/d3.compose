@@ -38,9 +38,6 @@ title: Docs
     <li>– <a href="#/Multi/draw">draw</a></li>
     <li>– <a href="#/Multi/charts">charts</a></li>
     <li>– <a href="#/Multi/components">components</a></li>
-    <li>– <a href="#/Multi/title">title</a></li>
-    <li>– <a href="#/Multi/axes">axes</a></li>
-    <li>– <a href="#/Multi/legend">legend</a></li>
     <li>– <a href="#/Multi/margins">margins</a></li>
     <li>– <a href="#/Multi/width">width</a></li>
     <li>– <a href="#/Multi/height">height</a></li>
@@ -137,6 +134,13 @@ title: Docs
     <li>- <a href="#/Component/skip_layout">skip_layout</a></li>
   </ul>
 
+  <a class="toc_title" href="#/extensions/">
+    Extensions
+  </a>
+  <ul class="toc_section">
+    <li>- <a href="#/extensions/xy/">d3.chart.xy</a></li>
+  </ul>
+
   <a class="toc_title" href="#/helpers/">
     helpers
   </a>
@@ -149,7 +153,7 @@ title: Docs
     <li>- <a href="#/helpers/isSeriesData">isSeriesData</a></li>
     <li>- <a href="#/helpers/max">max</a></li>
     <li>- <a href="#/helpers/min">min</a></li>
-    <li>- <a href="#/helpers/createScaleFromOptions">createScaleFromOptions</a></li>
+    <li>- <a href="#/helpers/createScale">createScale</a></li>
     <li>- <a href="#/helpers/style">style</a></li>
     <li>- <a href="#/helpers/di">di</a></li>
     <li>- <a href="#/helpers/bindDi">bindDi</a></li>
@@ -298,7 +302,7 @@ title: Docs
   <h2 id="introduction">Introduction</h2>
 
   <p>
-    When creating complex charts with D3.js and d3.chart, laying out and sizing parts of the chart is often a manual process and creating composable and reusable components becomes very difficult. d3.chart.multi creates a standard base that charts and components are built on top of that automatically handles layout and sizing and can be composed and layered to created rich, data-bound charts.
+    When creating complex charts with D3.js and d3.chart, laying out and sizing parts of the chart are often manual processes and creating composable and reusable components becomes very difficult. d3.chart.multi creates a standard base that charts and components are built on top of that automatically handles layout and sizing and can be composed and layered to created rich, data-bound charts.
   </p>
 
   <h2 id="usage">Usage</h2>
@@ -364,17 +368,27 @@ var example_1 = d3.select('#js-example-1').append('svg')
           interpolate: 'monotone'
         }
       },
-      axes: {
-        // Add x and y axes
-        x: {position: 'bottom', scale: scales.x},
-        y: {position: 'left', scale: scales.y}
-      },
-      // Add chart title
-      title: 'Line Chart'
+      components: {
+        'axis.x': {
+          type: 'Axis', 
+          position: 'bottom', 
+          scale: scales.x
+        },
+        'axis.y': {
+          type: 'Axis', 
+          position: 'left', 
+          scale: scales.y
+        },
+        title: {
+          type: 'Title', 
+          position: 'top', 
+          text: 'Line Chart'
+        }
+      }
     };
-  });
+  })
+  .margins({top: 0, right: 15, bottom: 5, left: 5});
 
-// Draw chart with series data: [{key, values}, {key, values}, ...]
 example_1.draw([
   {
     key: 'a', values: [
@@ -390,6 +404,45 @@ example_1.draw([
 {% endhighlight %}
 
   <div class="example-chart" id="js-example-1"></div>
+
+  <h3 id="/examples/xy-extension">XY Extension</h3>
+
+  <p>
+    Thanks to the flexibility of the options function, you can create extensions that wrap common behavior and reduce boilerplate for composing charts. The <tt>d3.chart.xy</tt> extension includes helpers/default values for axes, titles, and legends that make creating standard XY charts much simpler. Here's the Line example using the <tt>d3.chart.xy</tt> extension:
+  </p>
+
+{% highlight js %}
+var example_2 = d3.select('#js-example-2').append('svg')
+  .chart('Multi', function(data) {
+    var scales = {
+      x: {data: data, key: 'x'},
+      y: {data: data, key: 'y'}
+    };
+
+    // Use xy extension for axes, title, and legend helpers
+    return d3.chart.xy({
+      charts: {
+        line: {
+          // same as above
+        }
+      },
+      axes: {
+        // Add x and y axes
+        x: {scale: scales.x}, // defaults: type: Axis, position: bottom
+        y: {scale: scales.y} // defaults: type: Axis, position: left
+      },
+      // Add chart title
+      title: 'Line Chart'
+    });
+  });
+
+// Draw chart with series data: [{key, values}, {key, values}, ...]
+example_2.draw([
+  // same as above
+]);
+{% endhighlight %}
+
+  <div class="example-chart" id="js-example-2"></div>
 
   <h3 id="/examples/line-bar-values">Line-Bar Values</h3>
   
@@ -408,7 +461,7 @@ var example_2 = d3.select('#js-example-2').append('svg')
       y2: {data: results, key: 'y', domain: [0, 100]}
     };
 
-    return {
+    return d3.chart.xy({
       charts: {
         input: {
           type: 'LineValues', 
@@ -429,7 +482,7 @@ var example_2 = d3.select('#js-example-2').append('svg')
         y2: {position: 'right', scale: scales.y2, title: 'Results'}
       },
       title: 'Input vs. Output'
-    }
+    });
   });
 
 example_2.draw({
@@ -452,7 +505,7 @@ example_2.draw({
 });
 {% endhighlight %}
 
-  <div class="example-chart" id="js-example-2"></div>
+  <div class="example-chart" id="js-example-3"></div>
 
   <h3 id="/examples/custom-chart">Custom Chart</h3>
 
@@ -514,7 +567,7 @@ example_3 = d3.select('#js-example-3').append('svg')
         line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y},
         dots: {type: 'Dots', data: data, xScale: scales.x, yScale: scales.y}
       }
-    }
+    };
   });
 
 example_3.draw([
@@ -529,7 +582,7 @@ example_3.draw([
 ]);
 {% endhighlight %}
 
-  <div class="example-chart" id="js-example-3"></div>
+  <div class="example-chart" id="js-example-4"></div>
 
   <h3 id="/examples/custom-component">Custom Component</h3>
 
@@ -568,7 +621,7 @@ var example_4 = d3.select('#js-example-4').append('svg')
       y: {domain: [0, 20]}
     }
 
-    return {
+    return d3.chart.xy({
       charts: {
         bars: {
           type: 'Bars', 
@@ -583,7 +636,7 @@ var example_4 = d3.select('#js-example-4').append('svg')
       components: {
         key: {type: 'Key', data: data.key, position: 'right'}
       }
-    }
+    });
   })
   .margins({top: 10, right: 10, bottom: 10, left: 10});
 
@@ -596,7 +649,7 @@ example_4.draw({
 });
 {% endhighlight %}
 
-  <div class="example-chart" id="js-example-4"></div>
+  <div class="example-chart" id="js-example-5"></div>
 
   <!-- 
     Multi
@@ -638,13 +691,19 @@ d3.select('#chart')
           yScale: scales.y2
         }
       },
-      axes: {
+      components: {
         // Create axes with given options
-        x: {scale: scales.x, position: 'bottom'},
-        y: {scale: scales.y, position: 'left', title: 'y1'},
-        y2: {scale: scales.y2, position: 'right', title: 'y2'}
-      },
-      title: 'Input vs. Output'
+        'axis.x': {
+          type: 'Axis', scale: scales.x, position: 'bottom'
+        },
+        'axis.y': {
+          type: 'Axis', scale: scales.y, position: 'left'
+        },
+        'axis.y2': {
+          type: 'Axis', scale: scales.y2, position: 'right'
+        },
+        title: {text: 'Input vs. Output'}
+      }
     };
   });
 {% endhighlight %}
@@ -662,7 +721,7 @@ chart.options();
 // Set (Object)
 chart.options({
   charts: {/*... */},
-  axes: {/* ... */}
+  components: {/* ... */}
 });
 
 // Set (Function, takes in data and returns object)
@@ -671,9 +730,15 @@ chart.options(function(data) {
 
   return {
     charts: {/*... */},
-    axes: {/* ... */}
+    components: {/* ... */}
   };
 });
+
+// Set directly from d3.chart creation
+d3.select('#chart')
+  .chart('Multi', function(data) {
+    // ...
+  });
 {% endhighlight %}
 
   <p id="/Multi/draw">
@@ -711,40 +776,6 @@ chart.components({
   legend: {type: 'Legend', /* options to pass to Legend */}
 });
 {% endhighlight %}
-
-  <p id="/Multi/title">
-    <b class="header">title</b><code>chart.title([value])</code><br>
-
-    Value / options to use for main title component for chart.
-  </p>
-
-{% highlight js %}
-chart.title('Title (Top)');
-chart.title({text: 'Title with options', position: 'bottom'});
-{% endhighlight %}
-
-  <p id="/Multi/axes">
-    <b class="header">axes</b><code>chart.axes([values])</code><br>
-
-    Axis options used for creating and laying out axes.
-    Each axis should use a unique key so that updates are passed to the correct axis.
-    The <tt>type</tt> option should be a registered <tt>d3.chart</tt> axis (optional, <tt>Axis</tt> be default) and all other options are passed to the axis.
-    The <tt>title</tt> option creates a separate title component with the given value / options (using the axis <tt>position</tt> by default).
-  </p>
-
-{% highlight js %}
-chart.axes({
-  x: {/* options to pass to Axis */},
-  y: {type: 'ValueAxis', /* options to pass to ValueAxis */},
-  y2: {position: 'right', title: {text: 'y2', rotation: 0}, /* ... */}
-});
-{% endhighlight %}
-
-  <p id="/Multi/legend">
-    <b class="header">legend</b><code>chart.legend([value])</code><br>
-
-    Options to pass to legend or <tt>true</tt> to use default legend.
-  </p>
 
   <p id="/Multi/margins">
     <b class="header">margins</b><code>chart.margins([values])</code><br>
@@ -1324,6 +1355,65 @@ d3.chart('Component').extend('Custom', {
   </p>
 
   <!-- 
+    Extensions
+    =========
+  -->
+
+  <h2 id="/extensions/">Extensions</h2>
+
+  <p>
+    Extensions are used for defining options for Multi that wrap common behavior, reduce boilerplate, and provide helpers for composing charts and components.
+  </p>
+
+  <h3 id="/extensions/xy/">d3.chart.xy</h3>
+
+  <p>
+    The <tt>d3.chart.xy</tt> extension includes helpers for creating XY charts that include a title, axes, and legend. It provides sensible defaults and can reduce the amount of boilerplate needed to create standard XY charts.
+  </p>
+
+{% highlight js %}
+d3.select('#chart')
+  .chart('Multi', function(data) {
+    var scales = {
+      x: {/* ... */},
+      y: {/* ... */},
+      y2: {/* ... */}
+    };
+
+    return d3.chart.xy({
+      // charts and components as normal
+      charts: {/* ... */},
+      components: {/* ... */},
+
+      // Axes:
+      // type: 'Axis'
+      // position: x -> bottom, y -> left, x2 -> top, y2 -> right
+      axes: {
+        x: {scale: scales.x, title: 'X Axis'},
+        y: {scale: scales.y, title: 'Y Axis'},
+        y2: {scale: scales.y2, title: 'Y2 Axis'}
+      },
+      title: 'Chart Title'
+    });
+
+    // Transforms to
+    return {
+      charts: {/* ... */},
+      components: {
+        /* ... */
+        'axis.x': {type: 'Axis', position: 'bottom', scale: scales.x},
+        'axis.x.title': {type: 'Title', position: 'bottom', text: 'X Axis'},
+        'axis.y': {type: 'Axis', position: 'left', scale: scales.y},
+        'axis.y.title': {type: 'Title', position: 'left', text: 'Y Axis'},
+        'axis.y2': {type: 'Axis', position: 'right', scale: scales.y2},
+        'axis.y2.title': {type: 'Title', position: 'right', text: 'Y2 Axis'},
+        title: {type: 'Title', position: 'top', text: 'Chart Title'}
+      }
+    }
+  });
+{% endhighlight %}
+
+  <!-- 
     helpers
     =======
   -->
@@ -1425,8 +1515,8 @@ helpers.min([
 }); // -> 0
 {% endhighlight %}
 
-  <p id="/helpers/createScaleFromOptions">
-    <b class="header">createScaleFromOptions</b><code>helpers.createScaleFromOptions(options)</code><br>
+  <p id="/helpers/createScale">
+    <b class="header">createScale</b><code>helpers.createScale(options)</code><br>
 
     Create <tt>d3.scale</tt> from the given options. If a <tt>d3.scale</tt> instance is given, it is passed through. 
     <br>
@@ -1636,13 +1726,13 @@ chart.draw([
   <p id="/mixins/XY/xScale">
     <b class="header">xScale</b><code>xScale([scale|options])</code><br>
 
-    Get/set the x-scale for the data. Can be <tt>d3.scale</tt> or options that are passed to <tt>helpers.createScaleFromOptions</tt>. Range for scale is set automatically from the chart dimensions with <tt>setXScaleRange</tt>
+    Get/set the x-scale for the data. Can be <tt>d3.scale</tt> or options that are passed to <tt>helpers.createScale</tt>. Range for scale is set automatically from the chart dimensions with <tt>setXScaleRange</tt>
   </p>
 
   <p id="/mixins/XY/yScale">
     <b class="header">yScale</b><code>yScale([scale|options])</code><br>
 
-    Get/set the y-scale for the data. Can be <tt>d3.scale</tt> or options that are passed to <tt>helpers.createScaleFromOptions</tt>. Range for scale is set automatically from the chart dimensions with <tt>setYScaleRange</tt>
+    Get/set the y-scale for the data. Can be <tt>d3.scale</tt> or options that are passed to <tt>helpers.createScale</tt>. Range for scale is set automatically from the chart dimensions with <tt>setYScaleRange</tt>
   </p>
 
   <p id="/mixins/XY/xMin">
@@ -1876,6 +1966,15 @@ chart.draw([
 
   <h2 id="changelog">Change Log</h2>
 
+  <b class="header">0.10.0</b> &mdash; <small><i>(Feb. 20, 2015)</i></small>
+  <br>
+  <ul style="margin-top: 5px;">
+    <li>Merge Container and Multi</li>
+    <li>Simplify Multi (remove Axes, Legend, and Title)</li>
+    <li>Add d3.chart.xy extension for axes, legend, and title helpers</li>
+    <li>Bugfix: Layout gets passed demuxed data</li>
+  </ul>
+
   <b class="header">0.9.0</b> &mdash; <small><i>(Feb. 11, 2015)</i></small>
   <br>
   <ul style="margin-top: 5px;">
@@ -1916,11 +2015,11 @@ chart.draw([
         charts: {
           line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y, interpolate: 'monotone'}
         },
-        axes: {
-          x: {position: 'bottom', scale: scales.x, ticks: 5},
-          y: {position: 'left', scale: scales.y, ticks: 5}
-        },
-        title: {text: 'Line Chart', margins: {top: 0.5, bottom: 0.5}}
+        components: {
+          'axis.x': {type: 'Axis', position: 'bottom', scale: scales.x, ticks: 5},
+          'axis.y': {type: 'Axis', position: 'left', scale: scales.y, ticks: 5},
+          title: {type: 'Title', position: 'top', text: 'Line Chart', margins: {top: 0.5, bottom: 0.4}}
+        }
       };
     })
     .margins({top: 0, right: 15, bottom: 5, left: 5});
@@ -1938,8 +2037,42 @@ chart.draw([
     }
   ]);
 
-  // Example 2: Line-Bar Values
+  // Example 2: XY Extension
   var example_2 = d3.select('#js-example-2').append('svg')
+    .chart('Multi', function(data) {
+      var scales = {
+        x: {data: data, key: 'x'},
+        y: {data: data, key: 'y'}
+      };
+
+      return d3.chart.xy({
+        charts: {
+          line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y, interpolate: 'monotone'}
+        },
+        axes: {
+          x: {scale: scales.x, ticks: 5},
+          y: {scale: scales.y, ticks: 5}
+        },
+        title: {text: 'Line Chart', margins: {top: 0.5, bottom: 0.5}}
+      });
+    })
+    .margins({top: 0, right: 15, bottom: 5, left: 5});
+
+  example_2.draw([
+    {
+      key: 'a', values: [
+        {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
+      ]
+    },
+    {
+      key: 'b', values: [
+        {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
+      ]
+    }
+  ]);
+
+  // Example 3: Line-Bar Values
+  var example_3 = d3.select('#js-example-3').append('svg')
     .chart('Multi', function(data) {
       var input = data.input;
       var results = data.results;
@@ -1949,7 +2082,7 @@ chart.draw([
         y2: {data: results, key: 'y', domain: [0, 100]}
       };
 
-      return {
+      return d3.chart.xy({
         charts: {
           input: {type: 'LineValues', data: input, xScale: scales.x, yScale: scales.y},
           results: {type: 'Bars', data: results, xScale: scales.x, yScale: scales.y2}
@@ -1960,11 +2093,11 @@ chart.draw([
           y2: {position: 'right', scale: scales.y2, title: 'Results'}
         },
         title: {text: 'Input vs. Output', margins: {top: 0.5, bottom: 0.5}}
-      }
+      });
     })
     .margins({top: 0, right: 15, bottom: 5, left: 5});
 
-  example_2.draw({
+  example_3.draw({
     input: [
       {
         key: 'input', 
@@ -1983,7 +2116,7 @@ chart.draw([
     ]
   });
 
-  // Example 3: Custom Chart
+  // Example 4: Custom Chart
   d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
     initialize: function() {
       // seriesLayer wraps series functionality 
@@ -2020,7 +2153,7 @@ chart.draw([
     })
   }));
 
-  example_3 = d3.select('#js-example-3').append('svg')
+  example_4 = d3.select('#js-example-4').append('svg')
     .chart('Multi', function(data) {
       var scales = {
         x: {data: data, key: 'x'},
@@ -2036,7 +2169,7 @@ chart.draw([
     })
     .margins({top: 25, right: 15, bottom: 10, left: 15});
 
-  example_3.draw([
+  example_4.draw([
     {
       key: 'a',
       values: [{x: 0, y: 10}, {x: 10, y: 100}, {x: 50, y: 0}]
@@ -2047,7 +2180,7 @@ chart.draw([
     }
   ]);
 
-  // Example 4: Custom Component
+  // Example 5: Custom Component
   d3.chart('Component').extend('Key', {
     initialize: function() {
       this.layer('Key', this.base, {
@@ -2071,14 +2204,14 @@ chart.draw([
     })
   });
 
-  var example_4 = d3.select('#js-example-4').append('svg')
+  var example_5 = d3.select('#js-example-5').append('svg')
     .chart('Multi', function(data) {
       var scales = {
         x: {type: 'ordinal', data: data.values, key: 'x'},
         y: {domain: [0, 20]}
       }
 
-      return {
+      return d3.chart.xy({
         charts: {
           bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y}
         },
@@ -2088,11 +2221,11 @@ chart.draw([
         components: {
           key: {type: 'Key', data: data.key, position: 'right'}
         }
-      }
+      });
     })
     .margins({top: 10, right: 10, bottom: 10, left: 10});
 
-  example_4.draw({
+  example_5.draw({
     values: [{
       key: 'a',
       values: [{x: 'js', y: 10}]
