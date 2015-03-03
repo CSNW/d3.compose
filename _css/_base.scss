@@ -2,16 +2,14 @@
 // ----------------------------------------------------- //
 
 html {
-  color: #222;
   font-size: 62.5%;
 }
 
 body {
-  @include font-size(1.5);
-  line-height: 1.5;
+  font-size: 14px;
   overflow-y: scroll;
+  line-height: 1.5;
   font-family: Helvetica Neue, Helvetica, Arial;
-  background-color: #f9f9f9;
 }
 
 code {
@@ -23,17 +21,17 @@ code {
 }
 
 pre {
-  border-left: solid 1px #ccc;
-  padding: 5px 0 5px 10px;
   max-width: 50em;
+  padding: 5px 0 5px 10px;
   line-height: 1.4em;
+  border-left: solid 1px #ccc;
 
   & > code {
     padding: 0;
     margin: 0;
+    font-size: 90%;
     background: none;
     border-radius: 0;
-    font-size: 90%;
   }
 }
 
