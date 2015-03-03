@@ -1,0 +1,16 @@
+@mixin container {
+  position: relative;
+
+  @media (min-width: $medium-screen) {
+    width: 970px;
+    margin: 0 auto;
+  }
+  @media (min-width: $large-screen) {
+    width: $large-screen;
+  }
+}
+
+@mixin font-size($size) {
+  font-size: ($size * 10) + px;
+  font-size: $size + rem;
+}

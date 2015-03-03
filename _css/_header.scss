@@ -1,0 +1,26 @@
+// Header
+// ----------------------------------------------------- //
+
+$header-height: 60px;
+
+.header {
+  @include container;
+
+  height: $header-height;
+  margin: 0 auto;
+  @include font-size(1.6);
+}
+
+.header-branding {
+  float: left;
+  margin: 0;
+  font-size: 1em;
+}
+
+.header-navigation {
+  float: right;
+}
+
+.header-link {
+  line-height: $header-height;
+}
