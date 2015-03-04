@@ -9,6 +9,11 @@ $header-height: 60px;
 
 @import "bootstrap";
 
+// General styles
+body {
+  overflow-y: scroll;
+}
+
 // Custom components
 @import "highlight";
 @import "header";
