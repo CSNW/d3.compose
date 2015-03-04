@@ -1,16 +1,31 @@
 ---
 layout: blank
 ---
-<header class="header clearfix">
-  <h1 class="header-branding"><a class="branding header-link" href="#">d3.chart.multi</a></h1>
-  <nav class="header-navigation">
-    <ul class="inline-list">
-      <li><a class="header-link" href="#">Getting Started</a></li>
-      <li><a class="header-link" href="#">Examples</a></li>
-      <li><a class="header-link" href="#">Docs</a></li>
-      <li><a class="header-link" href="#">GitHub</a></li>
-    </ul>
-  </nav>
-</header>
+<a class="sr-only sr-only-focusable" id="skip-to-content" href="#content">
+  <div class="container"><span class="skip-to-content-text">Skip to content</span></div>
+</a>
+<header class="navbar navbar-static-top header" id="top" role="banner">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navigation">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
 
+      <a class="navbar-brand" href="{{ site.baseurl }}/">d3.chart.multi</a>
+    </div>
+    <nav class="collapse navbar-collapse" id="navigation">
+      <ul class="nav navbar-nav navbar-right">
+        <li {% if page.url == "/index.html" %}class="active"{% endif %}><a href="{{ site.baseurl }}/">Getting Started</a></li>
+        <li {% if page.url == "/examples/index.html" %}class="active"{% endif %}><a href="{{ site.baseurl }}/examples/">Examples</a></li>
+        <li {% if page.url == "/docs/index.html" %}class="active"{% endif %}><a href="{{ site.baseurl }}/docs/">Docs</a></li>
+        <li><a href="https://github.com/CSNW/d3.chart.multi" target="_blank">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<article class="container" id="content" role="main">
 {{ content }}
+</article>

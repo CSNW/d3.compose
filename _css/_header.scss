@@ -1,0 +1,26 @@
+#skip-to-content {
+  display: block;
+  padding: 1em;
+  outline: 0;
+}
+.skip-to-content-text {
+  padding: 0.5em;
+  outline: 1px dotted;
+}
+
+.header {
+  border-bottom: solid 1px #eee;
+
+  & .navbar-brand {
+    font-size: 1.5em;
+  }
+  & .navbar-toggle {
+    border-color: #eee;
+  }
+  & .icon-bar {
+    background-color: #000;
+  }
+  & .active {
+    background-color: #fafafa;
+  }
+}
