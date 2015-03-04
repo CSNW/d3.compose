@@ -1,8 +1,6 @@
 ---
 ---
-$small-screen: 768px;
-$medium-screen: 992px;
-$large-screen: 1200px;
+$screen-xl-min: 1500px;
 
 $container-padding: 10px;
 $header-height: 60px;
@@ -12,6 +10,12 @@ $header-height: 60px;
 // General styles
 body {
   overflow-y: scroll;
+}
+
+.container {
+  @media (min-width: $screen-xl-min) {
+    width: (1440px + $grid-gutter-width);
+  }
 }
 
 // Custom components

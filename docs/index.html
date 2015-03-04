@@ -296,7 +296,7 @@ scripts: |
     </ul>
   </p>
 
-  <!-- 
+  <!--
     Introduction
     ============
   -->
@@ -340,7 +340,7 @@ scripts: |
   <h2 id="examples">Examples</h2>
 
   <h3 id="/examples/line">Line</h3>
-  
+
   <p>
     To get started with d3.chart.multi, use <tt>d3.select('...').chart('Multi')</tt> and pass in a options function that takes in the data to be drawn and returns options for the charts and components to be drawn. The below example takes in series data, creates options for scales that are shared between charts and components, sets options for a Line chart, and sets options for axes and title components.
   </p>
@@ -361,29 +361,29 @@ var example_1 = d3.select('#js-example-1').append('svg')
         // Add a d3.chart('Line') chart
         // with given data and scales
         line: {
-          type: 'Line', 
-          data: data, 
+          type: 'Line',
+          data: data,
 
           // Set options for chart
-          xScale: scales.x, 
+          xScale: scales.x,
           yScale: scales.y,
           interpolate: 'monotone'
         }
       },
       components: {
         'axis.x': {
-          type: 'Axis', 
-          position: 'bottom', 
+          type: 'Axis',
+          position: 'bottom',
           scale: scales.x
         },
         'axis.y': {
-          type: 'Axis', 
-          position: 'left', 
+          type: 'Axis',
+          position: 'left',
           scale: scales.y
         },
         title: {
-          type: 'Title', 
-          position: 'top', 
+          type: 'Title',
+          position: 'top',
           text: 'Line Chart'
         }
       }
@@ -447,7 +447,7 @@ example_2.draw([
   <div class="docs-chart" id="js-example-2"></div>
 
   <h3 id="/examples/line-bar-values">Line-Bar Values</h3>
-  
+
   <p>
     The next example demonstrates how easy it is to compose are chart out of multiple child charts. Each chart layer is aligned and all components are laid out around the chart layer. This chart uses <tt>XYValues</tt> to center the value at each x-value/key/index and that needs to be specified for the axes with <tt>type: 'AxisValues'</tt>.
   </p>
@@ -466,15 +466,15 @@ var example_2 = d3.select('#js-example-2').append('svg')
     return d3.chart.xy({
       charts: {
         input: {
-          type: 'LineValues', 
-          data: input, 
-          xScale: scales.x, 
+          type: 'LineValues',
+          data: input,
+          xScale: scales.x,
           yScale: scales.y
         },
         results: {
-          type: 'Bars', 
-          data: results, 
-          xScale: scales.x, 
+          type: 'Bars',
+          data: results,
+          xScale: scales.x,
           yScale: scales.y2
         }
       },
@@ -490,7 +490,7 @@ var example_2 = d3.select('#js-example-2').append('svg')
 example_2.draw({
   input: [
     {
-      key: 'input', 
+      key: 'input',
       values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
     }
   ],
@@ -523,7 +523,7 @@ d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
   initialize: function() {
     var base = this.base.append('g').attr('class', 'chart-dots');
 
-    // seriesLayer wraps series functionality 
+    // seriesLayer wraps series functionality
     // so that standard layer approach can be used
     this.seriesLayer('Dots', base, {
       dataBind: function(data) {
@@ -626,9 +626,9 @@ var example_4 = d3.select('#js-example-4').append('svg')
     return d3.chart.xy({
       charts: {
         bars: {
-          type: 'Bars', 
-          data: data.values, 
-          xScale: scales.x, 
+          type: 'Bars',
+          data: data.values,
+          xScale: scales.x,
           yScale: scales.y
         }
       },
@@ -653,7 +653,7 @@ example_4.draw({
 
   <div class="docs-chart" id="js-example-5"></div>
 
-  <!-- 
+  <!--
     Multi
     =====
   -->
@@ -661,7 +661,7 @@ example_4.draw({
   <h2 id="/Multi/">Multi</h2>
 
   <p>
-    <tt>d3.chart('Multi')</tt> allows charts and components to be composed into a rich charts. Using the <tt>options</tt> property, 
+    <tt>d3.chart('Multi')</tt> allows charts and components to be composed into a rich charts. Using the <tt>options</tt> property,
     charts and components can be bound to data and customized with options to create intricate and dynamic charts.
   </p>
 
@@ -681,15 +681,15 @@ d3.select('#chart')
       charts: {
         // Create Line and Bars charts with given options
         input: {
-          type: 'Line', 
-          data: data.input, 
-          xScale: scales.x, 
+          type: 'Line',
+          data: data.input,
+          xScale: scales.x,
           yScale: scales.y
         },
         output: {
-          type: 'Bars', 
-          data: data.output, 
-          xScale: scales.x, 
+          type: 'Bars',
+          data: data.output,
+          xScale: scales.x,
           yScale: scales.y2
         }
       },
@@ -752,7 +752,7 @@ d3.select('#chart')
   <p id="/Multi/charts">
     <b class="docs-header">charts</b><code>chart.charts([values])</code><br>
 
-    Chart options used for composing charts. 
+    Chart options used for composing charts.
     Each chart should use a unique key so that updates are passed to the correct chart.
     The <tt>type</tt> option should be a registered <tt>d3.chart</tt>.
   </p>
@@ -812,7 +812,7 @@ chart.margins({top: 10, right: 0, bottom: 0, left: 10});{% endhighlight %}
     <li><b>leave:mouse</b> &mdash; when mouse leaves chart</li>
   </ul>
 
-  <!-- 
+  <!--
     Line
     ====
   -->
@@ -830,10 +830,10 @@ d3.select('#chart')
     return {
       charts: {
         a: {
-          type: 'Line', 
-          data: ..., 
-          xScale: ..., 
-          yScale: ..., 
+          type: 'Line',
+          data: ...,
+          xScale: ...,
+          yScale: ...,
           other options...
         }
       }
@@ -886,7 +886,7 @@ line.labels({/* options to pass to XYLabels */})
     See the <a href="#/mixins/XY">XY Mixin</a> for details.
   </p>
 
-  <!-- 
+  <!--
     Bars
     ====
   -->
@@ -906,7 +906,7 @@ line.data([
 ]);
 {% endhighlight %}
 
-  <!-- 
+  <!--
     Bars
     ====
   -->
@@ -924,10 +924,10 @@ d3.select('#chart')
     return {
       charts: {
         a: {
-          type: 'Bars', 
-          data: ..., 
-          xScale: ..., 
-          yScale: ..., 
+          type: 'Bars',
+          data: ...,
+          xScale: ...,
+          yScale: ...,
           other options...
         }
       }
@@ -966,7 +966,7 @@ bars.data([
 bars.itemPadding(0.10);
 // 10% of bar width as padding between bars
 {% endhighlight %}
-  
+
   <p id="/Bars/labels">
     <b class="docs-header">labels</b><code>bars.labels([options])</code><br>
 
@@ -995,7 +995,7 @@ bars.labels({/* options to pass to XYLabels */})
     See the <a href="#/mixins/XY">XY Mixin</a> for details.
   </p>
 
-  <!-- 
+  <!--
     XYLabels
     ======
   -->
@@ -1102,7 +1102,7 @@ labels.format(d3.format('0,000'));
     See the <a href="#/mixins/XY">XY Mixin</a> for details.
   </p>
 
-  <!-- 
+  <!--
     Axis
     ====
   -->
@@ -1185,7 +1185,7 @@ axis.position('bottom');
     <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the axis transitions as data updates.
   </p>
 
-  <!-- 
+  <!--
     Legend
     ======
   -->
@@ -1199,10 +1199,10 @@ axis.position('bottom');
   <p id="/Legend/charts/">
     <b class="docs-header">charts</b><code>legend.charts([charts])</code><br>
 
-    When used in conjunction with <tt>d3.chart('Multi')</tt> a subset of charts can be used to generate the legend by passing in an array of the chart keys that should be included in the legend. 
+    When used in conjunction with <tt>d3.chart('Multi')</tt> a subset of charts can be used to generate the legend by passing in an array of the chart keys that should be included in the legend.
   </p>
 
-  <!-- 
+  <!--
     Title
     =====
   -->
@@ -1229,7 +1229,7 @@ axis.position('bottom');
     How to position axis relative to chart. Valid values: "top", "right", "bottom", "left".
   </p>
 
-  <!-- 
+  <!--
     Chart
     =====
   -->
@@ -1268,7 +1268,7 @@ d3.chart('Chart').extend('Pie', {
 });
 {% endhighlight %}
 
-  <!-- 
+  <!--
     Component
     =========
   -->
@@ -1276,7 +1276,7 @@ d3.chart('Chart').extend('Pie', {
   <h2 id="/Component/">Component</h2>
 
   <p>
-    <tt>d3.chart('Component')</tt> contains many helpers and required methods for creating a component for d3.chart.multi. 
+    <tt>d3.chart('Component')</tt> contains many helpers and required methods for creating a component for d3.chart.multi.
     Components are position around the chart ("top", "right", "bottom", "left") and include layout calculations for properly laying out components.
   </p>
 
@@ -1296,7 +1296,7 @@ d3.chart('Chart').extend('Pie', {
 {% highlight js %}
 d3.chart('Component').extend('Custom', {
   prepareLayout: function(data) {
-    // draw is normally called here 
+    // draw is normally called here
     // so that getLayout has real dimensions
 
     // -> custom preparation
@@ -1356,7 +1356,7 @@ d3.chart('Component').extend('Custom', {
     Set <tt>skip_layout</tt> to <tt>false</tt> on the component's prototype / instance to skip that component in layout calculations.
   </p>
 
-  <!-- 
+  <!--
     Extensions
     =========
   -->
@@ -1415,7 +1415,7 @@ d3.select('#chart')
   });
 {% endhighlight %}
 
-  <!-- 
+  <!--
     helpers
     =======
   -->
@@ -1424,14 +1424,14 @@ d3.select('#chart')
 
   <p>
     helpers (exposed as d3.chart.helpers) includes general purpose helpers that are used throughout d3.chart.multi.
-    Includes convenience functions for creating charts (<tt>property</tt>, <tt>di</tt>, and <tt>mixin</tt>), 
+    Includes convenience functions for creating charts (<tt>property</tt>, <tt>di</tt>, and <tt>mixin</tt>),
     helpful calculations (<tt>dimensions</tt>, <tt>max</tt>, and <tt>min</tt>), and other common behavior.
   </p>
 
   <p id="/helpers/property">
     <b class="docs-header">property</b><code>helpers.property(name, [options])</code><br>
 
-    Used throughout d3.chart.multi, <tt>property</tt> is used to create an get/set property. 
+    Used throughout d3.chart.multi, <tt>property</tt> is used to create an get/set property.
     Created properties are called with no arguments for <tt>get</tt> and called with value for <tt>set</tt>.
     <br>
     Options:
@@ -1493,8 +1493,8 @@ helpers.isSeriesData([{values: [1, 2, 3]}, {values: [4, 5, 6]}]); // -> true
 
 {% highlight js %}
 helpers.max([
-  {x: 0, y: 0}, 
-  {x: 5, y: 20}, 
+  {x: 0, y: 0},
+  {x: 5, y: 20},
   {x: 10, y: 10}
 ], function(d, i) {
   return d.y;
@@ -1509,8 +1509,8 @@ helpers.max([
 
 {% highlight js %}
 helpers.min([
-  {x: 0, y: 0}, 
-  {x: 5, y: 20}, 
+  {x: 0, y: 0},
+  {x: 5, y: 20},
   {x: 10, y: 10}
 ], function(d, i) {
   return d.x;
@@ -1520,7 +1520,7 @@ helpers.min([
   <p id="/helpers/createScale">
     <b class="docs-header">createScale</b><code>helpers.createScale(options)</code><br>
 
-    Create <tt>d3.scale</tt> from the given options. If a <tt>d3.scale</tt> instance is given, it is passed through. 
+    Create <tt>d3.scale</tt> from the given options. If a <tt>d3.scale</tt> instance is given, it is passed through.
     <br>
     Options:
   </p>
@@ -1586,14 +1586,14 @@ x: di(function(chart, d, i) {
 
 {% highlight js %}
 d3.chart('Chart').extend('HasMixins', helpers.mixin(
-  mixins.XY, 
+  mixins.XY,
   somePrototype, {
     // ...
   }
 ));
 {% endhighlight %}
 
-  <!-- 
+  <!--
     Series
     ======
   -->
@@ -1702,7 +1702,7 @@ chart.draw([
 ]);
 {% endhighlight %}
 
-  <!-- 
+  <!--
     XY
     ======
   -->
@@ -1827,7 +1827,7 @@ chart.draw([
     If no <tt>yScale</tt> is given, this method is used to create a default y-scale.
   </p>
 
-  <!-- 
+  <!--
     XYValues
     ======
   -->
@@ -1880,7 +1880,7 @@ chart.draw([
     Get the width of the item (<tt>layeredWidth</tt> by default, <tt>adjacentWidth</tt> if <tt>displayAdjacent</tt> is enabled).
   </p>
 
-  <!-- 
+  <!--
     XYLabels
     ======
   -->
@@ -1903,7 +1903,7 @@ chart.draw([
     Get/set options that are passed to labels. Use <tt>type</tt> to set the type of labels chart to add ("XYLabels" is default).
   </p>
 
-  <!-- 
+  <!--
     Hover
     ======
   -->
@@ -1932,7 +1932,7 @@ chart.draw([
     Called when mouse leaves the containing chart.
   </p>
 
-  <!-- 
+  <!--
     XYHover
     ======
   -->
@@ -1961,7 +1961,7 @@ chart.draw([
     Get point information (<tt>{x, y, d, i j}</tt>) for point of each series that is closest to given position (<tt>{x, y}</tt>).
   </p>
 
-  <!-- 
+  <!--
     Changelog
     =========
   -->

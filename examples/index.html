@@ -6,21 +6,34 @@ scripts: |
   <script src="../js/examples.js"></script>
 ---
 <div class="row">
-  <section class="col-lg-6">
+  <aside class="col-lg-2" role="complementary">
+    <nav class="example-sidebar js-sidebar">
+      <ul class="nav">
+        <li class="active"><a href="#/line">Line</a></li>
+        <li><a href="#/line-bar-values">Line-Bar Values</a></li>
+      </ul>
+    </nav>
+  </aside>
+  <section class="col-lg-5">
     <div class="js-chart"></div>
   </section>
-  <section class="col-lg-6">
+  <section class="col-lg-5">
     <div role="tabpanel">
       <ul class="nav nav-tabs" role="tablist">
-        <li class="active" role="presentation"><a href="#composer-config" aria-controls="configuration" role="tab" data-toggle="tab">Configuration</a></li>
-        <li role="presentation"><a href="#composer-data" aria-controls="data" role="tab" data-toggle="tab">data</a></li>
-        <li role="presentation"><a href="#composer-html" aria-controls="html" role="tab" data-toggle="tab">html</a></li>
+        <li class="active" role="presentation"><a href="#tab-composer" aria-controls="composer" role="tab" data-toggle="tab">Composer</a></li>
+        <li role="presentation"><a href="#tab-data" aria-controls="data" role="tab" data-toggle="tab">Data</a></li>
       </ul>
-      <div class="tab-content">
-        <div class="tab-pane active" role="tabpanel" id="composer-config">
+      <div class="tab-content js-config">
+        <div class="tab-pane active" role="tabpanel" id="tab-composer"></div>
+        <div class="tab-pane" role="tabpanel" id="tab-data"></div>
+      </div>
+    </div>
+  </section>
+</div>
 
+<script type="text/html" id="example-line-config">
 {% highlight js %}
-var example_1 = d3.select('#js-example-1').append('svg')
+var example = d3.select('.js-chart').append('svg')
   .chart('Multi', function(data) {
     // Manipulate data as needed
 
@@ -35,29 +48,29 @@ var example_1 = d3.select('#js-example-1').append('svg')
         // Add a d3.chart('Line') chart
         // with given data and scales
         line: {
-          type: 'Line', 
-          data: data, 
+          type: 'Line',
+          data: data,
 
           // Set options for chart
-          xScale: scales.x, 
+          xScale: scales.x,
           yScale: scales.y,
           interpolate: 'monotone'
         }
       },
       components: {
         'axis.x': {
-          type: 'Axis', 
-          position: 'bottom', 
+          type: 'Axis',
+          position: 'bottom',
           scale: scales.x
         },
         'axis.y': {
-          type: 'Axis', 
-          position: 'left', 
+          type: 'Axis',
+          position: 'left',
           scale: scales.y
         },
         title: {
-          type: 'Title', 
-          position: 'top', 
+          type: 'Title',
+          position: 'top',
           text: 'Line Chart'
         }
       }
@@ -65,10 +78,8 @@ var example_1 = d3.select('#js-example-1').append('svg')
   })
   .margins({top: 0, right: 15, bottom: 5, left: 5});
 {% endhighlight %}
-
-        </div>
-        <div class="tab-pane" role="tabpanel" id="composer-data">
-
+</script>
+<script type="text/html" id="example-line-data">
 {% highlight js %}
 [
   {
@@ -83,37 +94,64 @@ var example_1 = d3.select('#js-example-1').append('svg')
   }
 ]
 {% endhighlight %}
+</script>
 
-        </div>
-        <div class="tab-pane" role="tabpanel" id="composer-html">
+<script type="text/html" id="example-line-bar-values-config">
+{% highlight js %}
+var example = d3.select('.js-chart').append('svg')
+  .chart('Multi', function(data) {
+    var input = data.input;
+    var results = data.results;
+    var scales = {
+      x: {type: 'ordinal', data: input, key: 'x'},
+      y: {data: input, key: 'y'},
+      y2: {data: results, key: 'y', domain: [0, 100]}
+    };
 
-{% highlight html %}
-<!doctype html>
-<html>
-  <head>
-    <!-- ... -->
-
-    <link rel="stylesheet" type="text/css" href="d3.chart.multi.base.css">
-  </head>
-  <body>
-    <div class="js-chart"></div>
-
-    <script src="d3.js"></script>
-    <script src="d3.chart.js"></script>
-    <script src="underscore.js"></script>
-
-    <script src="d3.chart.multi.js"></script>
-
-    <script>
-      // Configuration and data
-    </script>
-  </body>
-</html>
+    return d3.chart.xy({
+      charts: {
+        input: {
+          type: 'LineValues',
+          data: input,
+          xScale: scales.x,
+          yScale: scales.y
+        },
+        results: {
+          type: 'Bars',
+          data: results,
+          xScale: scales.x,
+          yScale: scales.y2
+        }
+      },
+      axes: {
+        x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
+        y: {position: 'left', scale: scales.y, title: 'Input'},
+        y2: {position: 'right', scale: scales.y2, title: 'Results'}
+      },
+      title: 'Input vs. Output'
+    });
+  });
 {% endhighlight %}
-
-        </div>
-      </div>
-    </div>
-
-  </section>
-</div>
+</script>
+<script type="text/html" id="example-line-bar-values-data">
+{% highlight js %}
+{
+  input: [
+    {
+      key: 'input',
+      values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
+    }
+  ],
+  results: [
+    {
+      key: 'run-1',
+      values: [{x: 'a', y: 10}, {x: 'b', y: 30}, {x: 'c', y: 20}]
+    },
+    {
+      key: 'run-2',
+      values: [{x: 'a', y: 15}, {x: 'b', y: 25}, {x: 'c', y: 20}]
+    }
+  ]
+};
+{% endhighlight %}
+</script>

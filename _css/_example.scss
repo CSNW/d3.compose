@@ -2,6 +2,27 @@
 // ----------------------------------------------------- //
 
 .example svg {
-  width: 500px;
   height: 400px;
+
+  @media (min-width: $screen-lg-min) {
+    width: 460px;
+  }
+  @media (min-width: $screen-xl-min) {
+    width: 580px;
+  }
+}
+
+.example-sidebar {
+  .nav > li > a {
+    padding: 4px 4px;
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+      background-color: transparent;
+    }
+  }
+  .active {
+    font-weight: bold;
+  }
 }

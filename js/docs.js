@@ -100,7 +100,7 @@
   example_3.draw({
     input: [
       {
-        key: 'input', 
+        key: 'input',
         values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
       }
     ],
@@ -119,7 +119,7 @@
   // Example 4: Custom Chart
   d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
     initialize: function() {
-      // seriesLayer wraps series functionality 
+      // seriesLayer wraps series functionality
       // so that standard layer approach can be used
       this.seriesLayer('Dots', this.base.append('g').classed('chart-dots', true), {
         dataBind: function(data) {
