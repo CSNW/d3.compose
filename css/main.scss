@@ -7,13 +7,9 @@ $large-screen: 1200px;
 $container-padding: 10px;
 $header-height: 60px;
 
-@import 'normalize';
-@import 'highlight';
-@import 'mixins';
+@import "bootstrap";
 
-@import 'base';
-@import 'utilities';
-@import 'header';
-@import 'content';
-@import 'example';
-@import 'docs';
+// Custom components
+@import "highlight";
+@import "example";
+@import "docs";

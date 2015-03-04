@@ -1,0 +1,10 @@
+{
+  "name": "tasks",
+  "description": "Scripts for publishing d3.chart.multi",
+  "scripts": {
+    "dependencies": "uglifyjs ../js/jquery-2.1.3.js ../js/bootstrap.js ../js/underscore.js ../js/backbone.js ../js/d3.js ../js/d3.chart.js -o ../js/dependencies.min.js --source-map ../js/dependencies.min.js.map"
+  },
+  "devDependencies": {
+    "uglify-js": "~2.4.16"
+  }
+}

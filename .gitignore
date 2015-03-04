@@ -9,6 +9,7 @@ tmp/
 # gh-pages
 _site/
 .sass-cache/
+_tasks/node_modules/
 
 # OS Junk
 Thumbs.db
