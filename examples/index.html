@@ -1,14 +1,119 @@
 ---
 layout: default
 title: Example
+class: example
 scripts: |
   <script src="../js/examples.js"></script>
 ---
-<article class="content example">
-  <section class="example-chart">
-    Chart...
+<div class="row">
+  <section class="col-lg-6">
+    <div class="js-chart"></div>
   </section>
-  <section class="example-composer">
-    Composer... (js, data, html)
+  <section class="col-lg-6">
+    <div role="tabpanel">
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="active" role="presentation"><a href="#composer-config" aria-controls="configuration" role="tab" data-toggle="tab">Configuration</a></li>
+        <li role="presentation"><a href="#composer-data" aria-controls="data" role="tab" data-toggle="tab">data</a></li>
+        <li role="presentation"><a href="#composer-html" aria-controls="html" role="tab" data-toggle="tab">html</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" role="tabpanel" id="composer-config">
+
+{% highlight js %}
+var example_1 = d3.select('#js-example-1').append('svg')
+  .chart('Multi', function(data) {
+    // Manipulate data as needed
+
+    // Create options for scales shared between charts and/or components
+    var scales = {
+      x: {data: data, key: 'x'},
+      y: {data: data, key: 'y'}
+    };
+
+    return {
+      charts: {
+        // Add a d3.chart('Line') chart
+        // with given data and scales
+        line: {
+          type: 'Line', 
+          data: data, 
+
+          // Set options for chart
+          xScale: scales.x, 
+          yScale: scales.y,
+          interpolate: 'monotone'
+        }
+      },
+      components: {
+        'axis.x': {
+          type: 'Axis', 
+          position: 'bottom', 
+          scale: scales.x
+        },
+        'axis.y': {
+          type: 'Axis', 
+          position: 'left', 
+          scale: scales.y
+        },
+        title: {
+          type: 'Title', 
+          position: 'top', 
+          text: 'Line Chart'
+        }
+      }
+    };
+  })
+  .margins({top: 0, right: 15, bottom: 5, left: 5});
+{% endhighlight %}
+
+        </div>
+        <div class="tab-pane" role="tabpanel" id="composer-data">
+
+{% highlight js %}
+[
+  {
+    key: 'a', values: [
+      {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
+    ]
+  },
+  {
+    key: 'b', values: [
+      {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
+    ]
+  }
+]
+{% endhighlight %}
+
+        </div>
+        <div class="tab-pane" role="tabpanel" id="composer-html">
+
+{% highlight html %}
+<!doctype html>
+<html>
+  <head>
+    <!-- ... -->
+
+    <link rel="stylesheet" type="text/css" href="d3.chart.multi.base.css">
+  </head>
+  <body>
+    <div class="js-chart"></div>
+
+    <script src="d3.js"></script>
+    <script src="d3.chart.js"></script>
+    <script src="underscore.js"></script>
+
+    <script src="d3.chart.multi.js"></script>
+
+    <script>
+      // Configuration and data
+    </script>
+  </body>
+</html>
+{% endhighlight %}
+
+        </div>
+      </div>
+    </div>
+
   </section>
-</article>
+</div>
