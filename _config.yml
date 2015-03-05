@@ -10,6 +10,9 @@ exclude:
 - Gemfile
 - Gemfile.lock
 - README.md
+- bower_components
+- node_modules
+- tmp
 
 highlighter: pygments
 markdown: redcarpet
