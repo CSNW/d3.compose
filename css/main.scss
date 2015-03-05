@@ -18,8 +18,12 @@ body {
   }
 }
 
+.chart-multi {
+  background-color: transparent;
+}
+
 // Custom components
 @import "highlight";
 @import "header";
-@import "example";
+@import "examples";
 @import "docs";

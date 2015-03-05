@@ -113,11 +113,11 @@
 
   var ConfigView = example.ConfigView = Backbone.View.extend({
     render: function(options) {
-      var config_html = $('#example-' + options.example + '-config').html();
+      var options_html = $('#example-' + options.example + '-config').html();
       var data_html = $('#example-' + options.example + '-data').html();
 
-      this.$('#tab-composer').html(config_html || '');
-      this.$('#tab-data').html(data_html || '');
+      this.$('.js-options').html(options_html || '');
+      this.$('.js-data').html(data_html || '');
     }
   });
 

@@ -26,3 +26,24 @@
     font-weight: bold;
   }
 }
+
+.example-editor {
+  padding: 10px;
+  border-left: solid 1px #ddd;
+
+  & pre {
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    border: none;
+  }
+
+  .loading {
+    color: #999;
+    margin-top: 10px;
+  }
+}
+
+.example-chart {
+  margin-top: 40px;
+}

@@ -15,17 +15,21 @@ scripts: |
     </nav>
   </aside>
   <section class="col-lg-5">
-    <div class="js-chart"></div>
+    <div class="example-chart js-chart"></div>
   </section>
   <section class="col-lg-5">
     <div role="tabpanel">
       <ul class="nav nav-tabs" role="tablist">
-        <li class="active" role="presentation"><a href="#tab-composer" aria-controls="composer" role="tab" data-toggle="tab">Composer</a></li>
+        <li class="active" role="presentation"><a href="#tab-options" aria-controls="options" role="tab" data-toggle="tab">Options</a></li>
         <li role="presentation"><a href="#tab-data" aria-controls="data" role="tab" data-toggle="tab">Data</a></li>
       </ul>
       <div class="tab-content js-config">
-        <div class="tab-pane active" role="tabpanel" id="tab-composer"></div>
-        <div class="tab-pane" role="tabpanel" id="tab-data"></div>
+        <div class="tab-pane active example-editor js-options" role="tabpanel" id="tab-options">
+          <p class="loading">Loading options...</p>
+        </div>
+        <div class="tab-pane example-editor js-data" role="tabpanel" id="tab-data">
+          <p class="loading">Loading data...</p>
+        </div>
       </div>
     </div>
   </section>
