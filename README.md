@@ -17,3 +17,7 @@ References:
 - http://jekyll-windows.juthilo.com/
 - https://help.github.com/articles/using-jekyll-with-pages/
 - http://rubyinstaller.org/downloads/
+
+Issues:
+
+- SSL Certificate issues with gems: https://gist.github.com/luislavena/f064211759ee0f806c88
