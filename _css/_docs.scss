@@ -2,7 +2,7 @@
   background: #fff;
   position: fixed;
   z-index: 10;
-  top: 60px; 
+  top: 60px;
   bottom: 10px;
   width: 200px;
   overflow-y: auto;
@@ -12,7 +12,7 @@
   border: 1px solid #eee;
 }
 
-.toc-title, 
+.toc-title,
 .toc-title:visited {
   display: block;
   color: black;
@@ -77,24 +77,11 @@
   height: 300px;
 }
 
-@media only screen and (-webkit-max-device-pixel-ratio: 1) and (max-width: 600px),
-  only screen and (max--moz-device-pixel-ratio: 1) and (max-width: 600px) {
-
+@media (max-width: $screen-sm-min - 1) {
   .docs-sidebar {
     display: none;
   }
-}
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5) and (max-width: 640px),
-      only screen and (-o-min-device-pixel-ratio: 3/2) and (max-width: 640px),
-      only screen and (min-device-pixel-ratio: 1.5) and (max-width: 640px) {
-  .docs-sidebar {
-    -webkit-overflow-scrolling: initial;
-    position: relative;
-    width: 90%;
-    height: 120px;
-    left: 0;
-    top: -7px;
-    padding: 10px 0 10px 30px;
-    border: 0;
+  .docs-content {
+    margin-left: 0;
   }
 }

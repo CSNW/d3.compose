@@ -18,6 +18,12 @@ body {
   }
 }
 
+.narrow .content-container {
+  @media (min-width: $screen-md-min) {
+    width: $container-md;
+  }
+}
+
 .chart-multi {
   background-color: transparent;
 }
