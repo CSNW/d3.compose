@@ -93,11 +93,12 @@
 
   var Router = example.Router = Backbone.Router.extend({
     routes: {
-      ':example': 'example',
+      '': 'example',
+      ':example': 'example'
     },
 
     example: function(id, query) {
-      var example = examples[id];
+      var example = examples[id || 'line'];
 
       if (example) {
         app.state.set({
