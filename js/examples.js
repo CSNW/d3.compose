@@ -131,11 +131,10 @@
       this.listenTo(this.model, 'change', this.render);
     },
     render: function() {
-      var options_html = $('#example-' + this.model.get('example').id + '-config').html();
-      var data_html = $('#example-' + this.model.get('example').id + '-data').html();
+      var html = $($('#example-' + this.model.get('example').id).html());
 
-      this.$('.js-options').html(options_html || '');
-      this.$('.js-data').html(data_html || '');
+      this.$('.js-options').html(html[0] || '');
+      this.$('.js-data').html(html[2] || '');
     }
   });
 
