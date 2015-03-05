@@ -1,4 +1,4 @@
-(function($, _, Backbone, d3, global) {
+(function($, _, Backbone, d3, hljs, global) {
 
   var helpers = d3.chart.helpers;
   var mixins = d3.chart.mixins;
@@ -135,6 +135,9 @@
 
       this.$('.js-options').html(html[0] || '');
       this.$('.js-data').html(html[2] || '');
+
+      hljs.highlightBlock(this.$('.js-options')[0]);
+      hljs.highlightBlock(this.$('.js-data')[0]);
     }
   });
 
@@ -178,4 +181,4 @@
 
   $(document).ready(app.startup);
 
-})(jQuery, _, Backbone, d3, this);
+})(jQuery, _, Backbone, d3, hljs, this);
