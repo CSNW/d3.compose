@@ -3,25 +3,10 @@
   var helpers = d3.chart.helpers;
   var mixins = d3.chart.mixins;
 
-  /**
-    Interactive d3.chart.multi example
-
-    Features:
-    - Navigate between pre-made examples
-    - Dynamic data and compose for chart
-    - Long-lived chart for transitions
-  */
-  var example = global.example = global.example || {};
-
-  var Router = example.Router = Backbone.Router.extend({
-    routes: {
-      '': 'line',
-      'line': 'line',
-      'line-bar-values': 'lineBarValues'
-    },
-
-    line: function() {
-      var config = function(data) {
+  var examples = {
+    line: {
+      id: 'line',
+      options: function(data) {
         var scales = {
           x: {data: data, key: 'x'},
           y: {data: data, key: 'y'}
@@ -37,8 +22,8 @@
             title: {type: 'Title', position: 'top', text: 'Line Chart', margins: {top: 0.5, bottom: 0.4}}
           }
         };
-      };
-      var data = [
+      },
+      data: [
         {
           key: 'a', values: [
             {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
@@ -49,15 +34,11 @@
             {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
           ]
         }
-      ];
-
-      example.sidebar.render({active: 'line'});
-      example.config.render({example: 'line'});
-      example.chart.render({config: config, data: data});
+      ]
     },
-
-    lineBarValues: function() {
-      var config = function(data) {
+    'line-bar-values': {
+      id: 'line-bar-values',
+      options: function(data) {
         var input = data.input;
         var results = data.results;
         var scales = {
@@ -78,8 +59,8 @@
           },
           title: {text: 'Input vs. Output', margins: {top: 0.5, bottom: 0.5}}
         });
-      };
-      var data = {
+      },
+      data: {
         input: [
           {
             key: 'input',
@@ -96,60 +77,105 @@
             values: [{x: 'a', y: 15}, {x: 'b', y: 25}, {x: 'c', y: 20}]
           }
         ]
-      };
+      }
+    }
+  };
 
-      example.sidebar.render({active: 'line-bar-values'});
-      example.config.render({example: 'line-bar-values'});
-      example.chart.render({config: config, data: data});
+  /**
+    Interactive d3.chart.multi example
+
+    Features:
+    - Navigate between pre-made examples
+    - Dynamic data and compose for chart
+    - Long-lived chart for transitions
+  */
+  var app = global.example = global.example || {};
+
+  var Router = example.Router = Backbone.Router.extend({
+    routes: {
+      ':example': 'example',
+    },
+
+    example: function(id, query) {
+      var example = examples[id];
+
+      if (example) {
+        app.state.set({
+          active: example.id,
+          example: example,
+          options: example.options,
+          data: example.data
+        });
+      }
+      else {
+        console.error('Example not found for ' + id);
+      }
     }
   });
 
-  var SidebarView = example.SidebarView = Backbone.View.extend({
-    render: function(options) {
+  var SidebarView = app.SidebarView = Backbone.View.extend({
+    initialize: function(options) {
+      this.model = options.model;
+      this.listenTo(this.model, 'change', this.render);
+    },
+    render: function() {
       this.$('.active').removeClass('active');
-      this.$('[href="#/' + options.active + '"]').addClass('active');
+      this.$('[href="#/' + this.model.get('active') + '"]').addClass('active');
     }
   });
 
-  var ConfigView = example.ConfigView = Backbone.View.extend({
-    render: function(options) {
-      var options_html = $('#example-' + options.example + '-config').html();
-      var data_html = $('#example-' + options.example + '-data').html();
+  var ConfigView = app.ConfigView = Backbone.View.extend({
+    initialize: function(options) {
+      this.model = options.model;
+      this.listenTo(this.model, 'change', this.render);
+    },
+    render: function() {
+      var options_html = $('#example-' + this.model.get('example').id + '-config').html();
+      var data_html = $('#example-' + this.model.get('example').id + '-data').html();
 
       this.$('.js-options').html(options_html || '');
       this.$('.js-data').html(data_html || '');
     }
   });
 
-  var ChartView = example.ChartView = Backbone.View.extend({
-    render: function(options) {
+  var ChartView = app.ChartView = Backbone.View.extend({
+    initialize: function(options) {
+      this.model = options.model;
+      this.listenTo(this.model, 'change', this.render);
+    },
+    render: function() {
       if (!this.chart) {
         this.chart = d3.select(this.$el[0]).append('svg')
           .chart('Multi')
           .margins({top: 0, right: 15, bottom: 5, left: 5});
       }
 
-      this.chart.options(options.config);
-      this.chart.draw(options.data);
+      this.chart.options(this.model.get('options'));
+      this.chart.draw(this.model.get('data'));
     }
   });
 
-  example.startup = function() {
-    example.router = new Router();
+  app.startup = function() {
+    app.state = new Backbone.Model();
 
-    example.sidebar = new SidebarView({
+    app.router = new Router();
+
+    app.sidebar = new SidebarView({
+      model: app.state,
       el: $('.js-sidebar')[0]
     });
-    example.config = new ConfigView({
+    app.config = new ConfigView({
+      model: app.state,
       el: $('.js-config')[0]
     });
-    example.chart = new ChartView({
+    app.chart = new ChartView({
+      model: app.state,
       el: $('.js-chart')[0]
     });
 
     Backbone.history.start();
   };
 
-  $(document).ready(example.startup);
+  $(document).ready(app.startup);
 
 })(jQuery, _, Backbone, d3, this);
