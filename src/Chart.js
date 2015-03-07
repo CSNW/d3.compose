@@ -1,8 +1,9 @@
 (function(d3, helpers) {
-  
+
   /**
-    Chart
     Foundation for building charts with series data
+
+    @class Chart
   */
   d3.chart('Base').extend('Chart', {
     initialize: function(options) {

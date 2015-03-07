@@ -30,7 +30,7 @@
             groups.append('text')
               .attr('class', 'chart-legend-label chart-label')
               .attr('transform', helpers.translate(25, 0));
-            
+
             return groups;
           },
           events: {
@@ -67,7 +67,7 @@
 
         var chartData = _.compact(_.map(chart.data(), function(series, index) {
           if (series.exclude_from_legend) return;
-          
+
           return {
             chart: chart,
             series: series,
@@ -77,7 +77,7 @@
 
         return data.concat(chartData);
       }, [], this);
-      
+
       return data;
     },
 
@@ -103,9 +103,7 @@
       return classes.join(' ') || null;
     }),
     dataStyle: di(function(chart, d, i) {
-      var styles = _.defaults({}, d.series.style, d.chart.options().style);
-      
-      return helpers.style(styles) || null;
+      return helpers.style(d.series.style) || null;
     }),
 
     createSwatch: di(function(chart, d, i) {
@@ -137,7 +135,7 @@
   }, {
     z_index: 200
   });
-  
+
   /**
     Inset legend
     Legend positioned within chart bounds
@@ -183,7 +181,7 @@
     @example
     this.call(helpers.stack)
     this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
-  
+
     @param {Object} [options]
     - {String} [direction=vertical] vertical or horizontal
     - {String} [origin=top] top/bottom for vertical and left/right for horizontal
@@ -237,5 +235,5 @@
         });
     }
   }
-  
+
 })(d3, d3.chart.helpers);

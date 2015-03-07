@@ -32,8 +32,8 @@
       // Get style for data item in the following progression
       // data.style -> series.style -> chart.style
       var series = chart.seriesData.call(this, d, i) || {};
-      var styles = utils.defaults({}, d.style, series.style, chart.options().style);
-      
+      var styles = utils.defaults({}, d.style, series.style);
+
       return helpers.style(styles) || null;
     }),
 
@@ -44,7 +44,7 @@
       - updates dataBind method to access underlying series values
       - handles appending series groups to chart
       -> should be used just like layer() would be used without series
-      
+
       @param {String} name
       @param {Selection} selection
       @param {Object} options (`dataBind` and `insert` required)
@@ -61,16 +61,16 @@
           series.enter()
             .append('g')
             .attr('class', chart.seriesClass);
-          
+
           series.exit()
             .remove();
-          
+
           series.chart = function() { return chart; };
 
           return dataBind.call(series, chart.seriesValues);
         };
       }
-      
+
       return d3.chart().prototype.layer.call(this, name, selection, options);
     }
   };
@@ -131,7 +131,7 @@
           scale = this.getDefaultYScale();
           this.setYScaleRange(scale);
         }
- 
+
         return scale;
       }
     }),
@@ -216,7 +216,7 @@
 
   /**
     mixins for charts of centered key,value data (x: index, y: value, key)
-  
+
     Properties:
     - [itemPadding = 0.1] {Number} % padding between each item (for ValuesSeries, padding is just around group, not individual series items)
     Dependencies: XY
@@ -260,7 +260,7 @@
       var adjacent_width = chart.adjacentWidth.call(this, d, i);
       var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacent_width / 2;
       var series_index = chart.seriesIndex ? chart.seriesIndex.call(this, d, i) : 1;
-      
+
       return left + adjacent_width * series_index;
     }),
     adjacentWidth: di(function(chart, d, i) {
@@ -289,8 +289,8 @@
     setXScaleRange: function(x_scale) {
       if (utils.isFunction(x_scale.rangeBands)) {
         x_scale.rangeBands(
-          [0, this.width()], 
-          this.itemPadding(), 
+          [0, this.width()],
+          this.itemPadding(),
           this.itemPadding() / 2
         );
       }
@@ -310,7 +310,7 @@
 
   /**
     mixin for handling labels in charts
-  
+
     - attachLabels: call during chart initialization to add labels to chart
     - labels: properties passed directly to labels chart
   */
@@ -423,7 +423,7 @@
       else {
         closest.push(sortByDistance(points, position));
       }
-      
+
       return closest;
 
       function sortByDistance(values, position) {
@@ -432,13 +432,13 @@
           return point;
         });
 
-        return utils.sortBy(byDistance, 'distance'); 
+        return utils.sortBy(byDistance, 'distance');
       }
 
       function getDistance(a, b) {
         return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
       }
-    }    
+    }
   });
 
   // Expose mixins

@@ -1,50 +1,61 @@
 (function(d3, helpers) {
   var utils = helpers.utils;
   var property = helpers.property;
-  
+
   /**
-    Component
     Common component functionality / base for creating components
 
-    Properties
-    - {String} [position = top] (top, right, bottom, left)
-    - {Number} [width = base width]
-    - {Number} [height = base height]
-    - {Object} [margins] % margins relative to component dimensions
-      - top {Number} % of height
-      - right {Number} % of width
-      - bottom {Number} % of height
-      - left {Number} % of width
-
-    Customization
-    - skip_layout: Don't use this component type during layout (e.g. inset within chart)
-    - layoutWidth: Adjust with more precise sizing calculations
-    - layoutHeight: Adjust with more precise sizing calculations
-    - layoutPosition: Adjust layout positioning
-    - setLayout: Override if layout needs to be customized
+    @class Component
   */
   d3.chart('Base').extend('Component', {
     initialize: function(options) {
       this.options(options || {});
     },
 
+    /**
+      Component position relative to chart
+      (top, right, bottom, left)
+
+      @property position
+      @type String
+      @default top
+    */
     position: property('position', {
       default_value: 'top',
       validate: function(value) {
         return utils.contains(['top', 'right', 'bottom', 'left'], value);
       }
     }),
+
+    /**
+      @property width
+      @type Number
+      @default (actual width)
+    */
     width: property('width', {
       default_value: function() {
         return helpers.dimensions(this.base).width;
       }
     }),
+
+    /**
+      @property height
+      @type Number
+      @default (actual height)
+    */
     height: property('height', {
       default_value: function() {
         return helpers.dimensions(this.base).height;
       }
     }),
 
+    /**
+      Margins (in pixels) around component
+
+      @property margins
+      @type Object
+      @default {top: 0, right: 0, bottom: 0, left: 0}
+    */
     margins: property('margins', {
       get: function(values) {
         var percentages = utils.defaults({}, values, {top: 0.0, right: 0.0, bottom: 0.0, left: 0.0});
@@ -61,26 +72,39 @@
     }),
 
     /**
-      Height/width/position to use in layout calculations
-      (Override for more specific sizing in layout calculations)
+      Skip component during layout calculations and positioning
+      (override in prototype of extension)
 
-      - skip_layout: Skip component during layout calculations and positioning
-      - prepareLayout: perform any layout preparation required (default is draw)
-      - getLayout: return position, width, and height for layout
-      - setLayout: use x, y, and options {height, width} for layout
+      @attribute skip_layout
+      @type Boolean
+      @default false
     */
     skip_layout: false,
 
+    /**
+      Perform any layout preparation required before getLayout (default is draw)
+      (override in prototype of extension)
+
+      Note: By default, components are double-drawn, which may cause issues with transitions
+
+      @method prepareLayout
+      @param {Any} data
+    */
     prepareLayout: function(data) {
-      // Note: By default, components are double-drawn
-      //       this may cause issues with transitions
-      //       override prepareLayout to adjust this behavior
       this.draw(data);
     },
 
+    /**
+      Get layout details for use when laying out component
+      (override in prototype of extension)
+
+      @method getLayout
+      @param {Any} data
+      @return {Object} position, width, and height for layout
+    */
     getLayout: function(data) {
       this.prepareLayout(data);
-      
+
       var margins = this.margins();
       return {
         position: this.position(),
@@ -91,7 +115,14 @@
 
     /**
       Set layout of underlying base
-      (Override for elements placed within chart)
+      (override in prototype of extension)
+
+      @method setLayout
+      @param {Number} x position of base top-left
+      @param {Number} y position of base top-left
+      @param {Object} options
+        @param {Object} [options.height] height of component in layout
+        @param {Object} [options.width] width of component in layout
     */
     setLayout: function(x, y, options) {
       // TODO margins depends on height/width

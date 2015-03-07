@@ -1,5 +1,5 @@
 (function(d3, _, helpers, mixins) {
-  
+
   describe('mixins', function() {
     var Chart, chart, data, values, width, height, processed;
 
@@ -83,14 +83,11 @@
         var d = processed[1].values[2];
         var i = 2;
 
-        chart.options = function() { return {style: {fill: 'red', stroke: 'blue'}};};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: red; stroke: blue;');
-
         data[1].style = {fill: 'yellow', 'stroke-width': '1.5px'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: yellow; stroke-width: 1.5px; stroke: blue;');
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: yellow; stroke-width: 1.5px;');
 
         data[1].values[2].style = {fill: 'purple', 'font-size': '16px'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: purple; font-size: 16px; stroke-width: 1.5px; stroke: blue;');
+        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: purple; font-size: 16px; stroke-width: 1.5px;');
       });
     });
 
@@ -114,7 +111,7 @@
         chart.setScales();
 
         expect(chart.xScale().domain()).toEqual([0, 100]);
-        expect(chart.yScale().domain()).toEqual([0, 100]);        
+        expect(chart.yScale().domain()).toEqual([0, 100]);
       });
 
       it('should return scaled x-value', function() {
