@@ -37,7 +37,8 @@
       })
     ```
 
-    @param {Function|Object} options
+    @class Multi
+    @param {Function|Object} [options]
   */
   d3.chart('Base').extend('Multi', {
     initialize: function(options) {
@@ -56,10 +57,17 @@
       this.attachHoverListeners();
     },
 
+    /**
+      Options function that returns {chart,component} for data or static {chart,component}
+
+      @property options
+      @type Function|Object
+    */
     options: property('options', {
       default_value: function(data) { return {}; },
       type: 'Function',
       set: function(options) {
+        // Clear cached config
         this._config = null;
 
         // If options is plain object,
@@ -77,14 +85,16 @@
     /**
       Store raw data for container before it has been transformed
 
-      @param {Object|Array} value
+      @property rawData
+      @type Any
     */
     rawData: property('rawData'),
 
     /**
       Margins between edge of container and components/chart
 
-      @param {Object} value {top, right, bottom, left}
+      @property margins
+      @type Object {top, right, bottom, left}
     */
     margins: property('margins', {
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
@@ -98,7 +108,9 @@
     /**
       Chart position (generally used internally)
 
-      @param {Object} value {top, right, bottom, left}
+      @internal
+      @property chartPosition
+      @param Object {top, right, bottom, left}
     */
     chartPosition: property('chartPosition', {
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
@@ -116,9 +128,19 @@
     }),
 
     /**
-      Get/set overall width/height of Container
+      Get/set overall width of chart
+
+      @property width
+      @type Number
     */
     width: property('width'),
+
+    /**
+      Get/set overall height of chart
+
+      @property height
+      @type Number
+    */
     height: property('height'),
 
     _width: function() {
@@ -130,11 +152,18 @@
       return height != null ? height : d3.chart('Base').prototype.height.call(this);
     },
 
+    /**
+      Set charts from options or get charts
+      (Set from charts returned from `options` function)
+
+      @property charts
+      @type Object
+    */
     charts: property('charts', {
       set: function(chart_options, charts) {
         chart_options = chart_options || {};
         charts = charts || {};
-        
+
         // Remove charts that are no longer needed
         var remove_ids = utils.difference(utils.keys(charts), utils.keys(chart_options));
         utils.each(remove_ids, function(remove_id) {
@@ -163,11 +192,11 @@
 
             if (!chart) {
               var Chart = d3.chart(options.type);
-              
+
               if (!Chart)
                 throw new Error('No registered d3.chart found for ' + options.type);
 
-              var base = this.chartLayer();
+              var base = this.createChartLayer();
 
               chart = new Chart(base, options);
               chart.type = options.type;
@@ -189,6 +218,13 @@
       default_value: {}
     }),
 
+    /**
+      Set components from options or get components
+      (Set from components returned from `options` function)
+
+      @property components
+      @type Object
+    */
     components: property('components', {
       set: function(component_options, components) {
         component_options = component_options || {};
@@ -227,7 +263,7 @@
                 throw new Error('No registered d3.chart found for ' + options.type);
 
               var layer_options = {z_index: Component.z_index};
-              var base = Component.layer_type == 'chart' ? this.chartLayer(layer_options) : this.componentLayer(layer_options);
+              var base = Component.layer_type == 'chart' ? this.createChartLayer(layer_options) : this.createComponentLayer(layer_options);
 
               component = new Component(base, options);
               component.type = options.type;
@@ -240,7 +276,7 @@
             }
           }
 
-          
+
         }, this);
 
         // Store actual components rather than options
@@ -250,7 +286,13 @@
       },
       default_value: {}
     }),
-  
+
+    /**
+      Draw chart with given data
+
+      @method draw
+      @param {Object} data
+    */
     draw: function(data) {
       if (!this._config) {
         data = data.original || data;
@@ -281,6 +323,11 @@
       d3.chart().prototype.draw.call(this, data);
     },
 
+    /**
+      Redraw chart with current data
+
+      @method redraw
+    */
     redraw: function() {
       if (this.rawData())
         this.draw(this.rawData().original);
@@ -299,12 +346,14 @@
     },
 
     /**
-      Get chart layer (for laying out with charts)
+      Create chart layer (for laying out with charts)
 
+      @method createChartLayer
       @param {Object} options
-      - z_index
+        @param {Number} options.z_index
+      @return {d3.selection}
     */
-    chartLayer: function(options) {
+    createChartLayer: function(options) {
       options = utils.defaults({}, options, {
         z_index: d3.chart('Chart').z_index
       });
@@ -315,12 +364,14 @@
     },
 
     /**
-      Get component layer
+      create component layer
 
+      @method createComponentLayer
       @param {Object} options
-      - z_index
+        @param {Number} options.z_index
+      @return {d3.selection}
     */
-    componentLayer: function(options) {
+    createComponentLayer: function(options) {
       options = utils.defaults({}, options, {
         z_index: d3.chart('Component').z_index
       });
@@ -330,9 +381,7 @@
         .attr('data-zIndex', options.z_index);
     },
 
-    /**
-      Layout components and charts
-    */
+    // Layout components and chart for given data
     layout: function(data) {
       // 1. Place chart layers
       this._positionChartLayers();
@@ -357,7 +406,7 @@
       var trigger = this.trigger.bind(this);
       var chartPosition = this.chartPosition.bind(this);
       var inside, chart_position;
-      
+
       var throttledMouseMove = utils.throttle(function(coordinates) {
         if (inside)
           trigger('move:mouse', coordinates);
@@ -381,7 +430,7 @@
         var y = coordinates[1];
         var chart_x = x - chart_position.left;
         var chart_y = y - chart_position.top;
-        
+
         // Set at chart bounds if outside of chart
         if (x > (chart_position.left + chart_position.width))
           chart_x = chart_position.left + chart_position.width;
@@ -464,12 +513,12 @@
     _positionLayers: function(layout) {
       this._positionChartLayers();
       this._positionComponents(layout);
-      this._positionByZIndex();      
+      this._positionByZIndex();
     },
 
     _positionChartLayers: function() {
       var position = this.chartPosition();
-      
+
       this.base.selectAll('.chart-layer')
         .attr('transform', helpers.translate(position.left, position.top))
         .attr('width', position.width)
@@ -480,11 +529,11 @@
       var chart = this.chartPosition();
       var width = this._width();
       var height = this._height();
-      
+
       utils.reduce(layout.top, function(previous, part, index, parts) {
         var y = previous - part.offset;
         setLayout(part.component, chart.left, y, {width: chart.width});
-        
+
         return y;
       }, chart.top);
 
@@ -550,7 +599,7 @@
           component: component
         });
       }, this);
-      
+
       return overall_layout;
     }
   });

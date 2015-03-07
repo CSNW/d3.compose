@@ -14,7 +14,7 @@
           var chart = this.chart();
 
           return this.selectAll('rect')
-            .data(data, chart.keyValue);
+            .data(data, chart.key);
         },
         insert: function() {
           var chart = this.chart();
@@ -29,7 +29,7 @@
 
             this
               .attr('y', chart.y0)
-              .attr('height', 0);  
+              .attr('height', 0);
           },
           'merge': function() {
             var chart = this.chart();
@@ -67,7 +67,7 @@
     displayAdjacent: property('displayAdjacent', {default_value: true}),
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)) - chart.barOffset(); 
+      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)) - chart.barOffset();
       return height > 0 ? height : 0;
     }),
     barX: di(function(chart, d, i) {
@@ -102,7 +102,7 @@
         .attr('class', 'chart-bar');
     }
   }));
-  
+
   /**
     Stacked Bars
   */
@@ -135,7 +135,7 @@
       var new_position = previous - (y0 - y);
 
       chart.bar_positions[i] = new_position;
-      
+
       return new_position;
     }),
 

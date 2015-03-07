@@ -78,16 +78,16 @@
         expect(chart.seriesIndex.call(element(2, 1), processed[2].values[1])).toEqual(2);
       });
 
-      it('should get style from data -> series -> options', function() {
+      it('should get item style and series style', function() {
         var context = element(1, 2);
+        var series = processed[1];
         var d = processed[1].values[2];
-        var i = 2;
 
-        data[1].style = {fill: 'yellow', 'stroke-width': '1.5px'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: yellow; stroke-width: 1.5px;');
+        series.style = {fill: 'yellow', 'stroke-width': '1.5px'};
+        expect(chart.itemStyle.call(context, series, 1)).toEqual('fill: yellow; stroke-width: 1.5px;');
 
-        data[1].values[2].style = {fill: 'purple', 'font-size': '16px'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: purple; font-size: 16px; stroke-width: 1.5px;');
+        d.style = {fill: 'purple', 'font-size': '16px'};
+        expect(chart.itemStyle.call(context, d, 2)).toEqual('fill: purple; font-size: 16px;');
       });
     });
 
@@ -122,13 +122,6 @@
       it('should return scaled y-value', function() {
         expect(chart.y(data[0].values[0])).toEqual(400);
         expect(chart.y(data[2].values[3])).toEqual(0);
-      });
-
-      it('should calculate x,y min,max for all series', function() {
-        expect(chart.xMin()).toEqual(0);
-        expect(chart.xMax()).toEqual(12);
-        expect(chart.yMin()).toEqual(0);
-        expect(chart.yMax()).toEqual(12);
       });
     });
 

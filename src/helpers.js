@@ -47,14 +47,14 @@
 
     // get
     console.log(obj.simple()); // -> 'Howdy'
-    
+
     // Advanced
     // --------
     // Default values:
     obj.advanced = property('advanced', {
       default_value: 'Howdy!'
     });
-  
+
     console.log(obj.advanced()); // -> 'Howdy!'
     obj.advanced('Goodbye');
     console.log(obj.advanced()); // -> 'Goodbye'
@@ -95,23 +95,22 @@
     });
     ```
 
+    @method property
     @param {String} name of stored property
     @param {Object} options
-    - default_value: default value for property (when set value is undefined)
-    - get: function(value) {return ...} getter, where value is the stored value, return desired value
-    - set: function(value, previous) {return {override, after}} 
-      - return override to set stored value and after() to run after set
-    - type: {String} ['Function']
-      - 'Object' gets object extensions: extend({...})
-      - 'Array' gets array extensions: push(...)
-      - 'Function' don't evaluate in get/set
-    - context: {Object} [this] context to evaluate get/set/after functions
-    - prop_key: {String} ['__properties'] underlying key on object to store properties on
+      @param {Any} options.default_value default value for property (when set value is undefined)
+      @param {Function} options.get function(value) {return ...} getter, where value is the stored value, return desired value
+      @param {Function} options.set: function(value, previous) {return {override, after}}
+        - return override to set stored value and after() to run after set
+      @param {String} [options.type='Function']
+        - 'Function' don't evaluate in get/set
+      @param {Object} [options.context=this] context to evaluate get/set/after functions
+      @param {String} [options.prop_key='__properties'] underlying key on object to store properties on
 
     @return {Function}
-    - (): get
-    - (value): set
-  */ 
+      - (): get
+      - (value): set
+  */
   function property(name, options) {
     options = options || {};
     var prop_key = options.prop_key || '__properties';
@@ -120,7 +119,7 @@
       var properties = this[prop_key] = this[prop_key] || {};
       var existing = properties[name];
       var context = valueOrDefault(getSet.context, this);
-      
+
       if (arguments.length)
         return set.call(this, value);
       else
@@ -146,7 +145,7 @@
 
         if (utils.isFunction(options.set)) {
           var response = options.set.call(context, value, getSet.previous);
-          
+
           if (response && utils.has(response, 'override'))
             properties[name] = response.override;
           if (response && utils.isFunction(response.after))
@@ -168,20 +167,21 @@
 
   /**
     If value isn't undefined, return value, otherwise use default_value
-  
-    @param {Varies} [value]
-    @param {Varies} default_value
-    @return {Varies}
+
+    @method valueOrDefault
+    @param {Any} [value]
+    @param {Any} default_value
+    @return {Any}
   */
   function valueOrDefault(value, default_value) {
     return !utils.isUndefined(value) ? value : default_value;
   }
 
   /**
-    Dimensions
     Helper for robustly determining width/height of given selector
 
-    @param {d3 Selection} selection
+    @method dimensions
+    @param {d3.Selection} selection
     @return {Object} {width, height}
   */
   function dimensions(selection) {
@@ -190,7 +190,7 @@
 
     // 1. Get width/height set via css (only valid for svg and some other elements)
     var client = {
-      width: element && element.clientWidth, 
+      width: element && element.clientWidth,
       height: element && element.clientHeight
     };
 
@@ -212,7 +212,7 @@
       width: selection && selection.attr && parseFloat(selection.attr('width')),
       height: selection && selection.attr && parseFloat(selection.attr('height'))
     };
-    
+
     if (is_SVG) {
       return {
         width: client.width != null ? client.width : attr.width || 0,
@@ -240,14 +240,15 @@
 
   /**
     Translate by (x, y) distance
-    
+
     @example
     ```javascript
     transform.translate(10, 15) == 'translate(10, 15)'
     transform.translate({x: 10, y: 15}) == 'translate(10, 15)'
     ```
 
-    @param {Number|Object} [x] value or object with x and y
+    @method translate
+    @param {Number|Object} [x] value or {x, y}
     @param {Number} [y]
     @return {String}
   */
@@ -256,13 +257,14 @@
       y = x.y;
       x = x.x;
     }
-      
+
     return 'translate(' + (x || 0) + ', ' + (y || 0) + ')';
   }
 
   /**
     Rotate by degrees, with optional center
 
+    @method rotate
     @param {Number} degrees
     @param {Object} [center = {x: 0, y: 0}]
     @return {String}
@@ -277,6 +279,10 @@
 
   /**
     Determine if given data is likely series data
+
+    @method isSeriesData
+    @param {Array} data
+    @return {Boolean}
   */
   function isSeriesData(data) {
     var first = utils.first(data);
@@ -285,6 +291,11 @@
 
   /**
     Get max for array/series by value di
+
+    @method max
+    @param {Array} data
+    @param {Function} getValue di function that returns value for given (d, i)
+    @return {Number}
   */
   function max(data, getValue) {
     var getMax = function(data) {
@@ -309,6 +320,11 @@
 
   /**
     Get min for array/series by value di
+
+    @method min
+    @param {Array} data
+    @param {Function} getValue di function that returns value for given (d, i)
+    @return {Number}
   */
   function min(data, getValue) {
     var getMin = function(data) {
@@ -333,13 +349,13 @@
 
   /**
     Create scale from options
-    
+
     @example
     ```javascript
     // Simple type, range, and domain
     var scale = createScale({
-      type: 'linear', 
-      domain: [0, 100], 
+      type: 'linear',
+      domain: [0, 100],
       range: [0, 500]
     });
 
@@ -356,13 +372,14 @@
     });
     ```
 
-    @param {Object|function} options
-    - (passing in function returns original function with no changes)
-    - type: {String} Any available d3 scale (linear, ordinal, log, etc.) or time
-    - domain: {Array} Domain for scale
-    - range: {Array} Range for scale
-    - ...: {Arguments Array} Set any other scale properties by passing in "arguments" array
-    @return {d3.scale}
+    @method createScale
+    @param {Object|Function} options
+      - (passing in function returns original function with no changes)
+      @param {String} options.type Any available d3 scale (linear, ordinal, log, etc.) or time
+      @praam {Array} domain Domain for scale
+      @param {Array} range Range for scale
+      @param {Array...} ... Set any other scale properties with array of arguments to pass to property
+    @return {d3.Scale}
   */
   function createScale(options) {
     options = options || {};
@@ -388,7 +405,7 @@
         if (key == 'range' || key == 'domain')
           scale[key](value);
         else if (key != 'type' && key != 'data' && key != 'key')
-          scale[key].apply(scale, value);  
+          scale[key].apply(scale, value);
       }
     });
 
@@ -422,10 +439,10 @@
         var min_value = min(options.data, getValue);
 
         scale.domain([
-          min_value < 0 ? min_value : 0, 
+          min_value < 0 ? min_value : 0,
           max(options.data, getValue)
         ]);
-      }      
+      }
     }
 
     return scale;
@@ -437,6 +454,7 @@
     @example
     style({color: 'red', display: 'block'}) -> color: red; display: block;
 
+    @method style
     @param {Object} styles
     @return {String}
   */
@@ -455,7 +473,7 @@
   /**
     Create wrapped (d, i) function that adds chart instance as first argument
     Wrapped function uses standard d3 arguments and context
-  
+
     Note: in order to pass proper context to di-functions called within di-function
           use `.call(this, d, i)` (where "this" is d3 context)
 
@@ -465,7 +483,7 @@
       // "this" is traditional d3 context: node
       return chart._xScale()(chart.xValue.call(this, d, i));
     });
-  
+
     // In order for chart to be specified, bind to chart
     chart.x = helpers.bindDi(chart.x, chart);
     // or
@@ -475,6 +493,7 @@
     // (d, i) and "this" used from d3, "chart" injected automatically
     ```
 
+    @method di
     @param {Function} callback with (chart, d, i) arguments
     @return {Function}
   */
@@ -507,8 +526,9 @@
   /**
     Get parent data for element
 
+    @method getParentData
     @param {Element} element
-    @return {Varies}
+    @return {Any}
   */
   function getParentData(element) {
     // @internal Shortcut if element + parentData needs to be mocked
@@ -523,14 +543,15 @@
   }
 
   /**
-    Mixin mixins into prototype
+    Mixin into prototype
 
-    Designed specifically to work with d3-chart
+    Designed specifically to work with d3.chart
     - transform is called from last to first
     - initialize is called from first to last
-    - remaining are overriden from first to last  
+    - remaining are overriden from first to last
 
-    @param {Array or Object...} mixins Array of mixins or separate extension arguments
+    @method mixin
+    @param {Array|Object...} mixins... Array of mixins or mixins as separate arguments
     @return {Object}
   */
   function mixin(mixins) {
@@ -560,7 +581,7 @@
         }, data, this);
       };
     }
-    
+
     return mixed;
   }
 

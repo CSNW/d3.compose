@@ -29,7 +29,7 @@
       this.seriesLayer('Labels', this.base, {
         dataBind: function(data) {
           return this.selectAll('g')
-            .data(data, this.chart().keyValue);
+            .data(data, this.chart().key);
         },
         insert: function() {
           var chart = this.chart();
@@ -163,7 +163,7 @@
 
     mergeLabels: function(selection) {
       var chart = this;
-      
+
       selection.selectAll('text')
         .text(this.labelText);
 
@@ -208,9 +208,9 @@
       utils.each(points, function(series) {
         if (series && series.length) {
           var closest = series[0];
-        
+
           if (closest.distance < 50)
-            this.highlightLabel(closest); 
+            this.highlightLabel(closest);
         }
       }, this);
     },
@@ -221,7 +221,7 @@
       utils.each(points, function(series) {
         if (series && series.length) {
           var closest = series[0];
-        
+
           if (closest.distance < 50)
             this.highlightLabel(closest);
         }
