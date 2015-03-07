@@ -28,7 +28,7 @@
         .attr('height', 300);
       component
         .position('left')
-        .margins({top: 0.1, right: 0.1, bottom: 0.1, left: 0.1});
+        .margins({top: 30, right: 40, bottom: 30, left: 40});
 
       var layout = component.getLayout([]);
 
@@ -43,7 +43,7 @@
       component
         .width(400)
         .height(300)
-        .margins({top: 0.1, right: 0.1, bottom: 0.1, left: 0.1});
+        .margins({top: 30, right: 40, bottom: 30, left: 40});
 
       component.setLayout(10, 10, {width: 100, height: 200});
 

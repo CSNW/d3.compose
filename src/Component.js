@@ -57,18 +57,12 @@
       @default {top: 0, right: 0, bottom: 0, left: 0}
     */
     margins: property('margins', {
-      get: function(values) {
-        var percentages = utils.defaults({}, values, {top: 0.0, right: 0.0, bottom: 0.0, left: 0.0});
-        var width = this.width();
-        var height = this.height();
-
+      set: function(values) {
         return {
-          top: percentages.top * height,
-          right: percentages.right * width,
-          bottom: percentages.bottom * height,
-          left: percentages.left * width
+          override: utils.defaults(values, {top: 0, right: 0, bottom: 0, left: 0})
         };
-      }
+      },
+      default_value: {top: 0, right: 0, bottom: 0, left: 0}
     }),
 
     /**
@@ -125,10 +119,8 @@
         @param {Object} [options.width] width of component in layout
     */
     setLayout: function(x, y, options) {
-      // TODO margins depends on height/width
-      //      -> setting them changes margins and would change layout calcs
-      //      => switch to pixel margins to match rest of d3.chart.multi
       var margins = this.margins();
+
       this.base.attr('transform', helpers.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
