@@ -10,7 +10,7 @@
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/default.css">
 
-  <link rel="stylesheet" type="text/css" href="../dist/css/d3.chart.multi.base.css">
+  <link rel="stylesheet" type="text/css" href="../tmp/d3.chart.multi.css">
   <style>
     .input .chart-line, .input2 .chart-line {
       stroke-dasharray: 4,4;
@@ -31,7 +31,7 @@
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
 
-  <script src="../tmp/d3.chart.multi.js"></script>
+  <script src="../tmp/d3.chart.multi-all.js"></script>
 
   <script src="js/data.js"></script>
 </head>
@@ -55,7 +55,7 @@
             return d3.chart.xy({
               charts: {
                 bars: {
-                  type: 'Bars', 
+                  type: 'Bars',
                   data: data.results,
                   xScale: scales.x,
                   yScale: scales.y,
@@ -109,7 +109,7 @@
         chart.draw(data['chart-1']);
       </script>
     </section>
-    
+
     <section class="example">
       <h2>Lines</h2>
       <svg id="chart-2"></svg>
@@ -160,7 +160,7 @@
             return d3.chart.xy({
               charts: {
                 bars: {
-                  type: 'Bars', 
+                  type: 'Bars',
                   data: data.bars, xScale: scales.x, yScale: scales.y,
                   labels: {format: d3.format(',0d')}
                 }

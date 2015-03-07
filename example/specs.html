@@ -10,7 +10,7 @@
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/default.css">
 
-  <link rel="stylesheet" type="text/css" href="../tmp/css/d3.chart.multi.base.css">
+  <link rel="stylesheet" type="text/css" href="../tmp/d3.chart.multi.css">
   <style>
     .spec {
       margin-bottom: 16px;
@@ -23,7 +23,7 @@
     }
 
     .resizable {
-      /* Resizes automatically with container */  
+      /* Resizes automatically with container */
     }
   </style>
 
@@ -126,11 +126,11 @@
             return d3.chart.xy({
               charts: {
                 line: {
-                  type: 'Line', 
+                  type: 'Line',
                   data: data.values,
                   xScale: scales.x,
                   yScale: scales.y,
-                  style: {'stroke-width': '5px'}, 
+                  style: {'stroke-width': '5px'},
                   labels: {style: {'font-weight': 'bold', 'font-size': '16px'}}
                 },
               },
@@ -177,8 +177,8 @@
             chart.title('Not Smooth');
           },
           reset: function(options) {
-          
-          } 
+
+          }
         });
       </script>
     </section>
@@ -358,7 +358,7 @@
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
 
-  <script src="../tmp/d3.chart.multi.js"></script>
+  <script src="../tmp/d3.chart.multi-all.js"></script>
 
   <script src="js/data.js"></script>
   <script type="text/javascript">
@@ -385,7 +385,7 @@
         charts.push(chart);
       }
 
-      create(); 
+      create();
 
       if (_.isFunction(options.run) || _.isFunction(options.reset)) {
         var $run = $(options.elements.run);
@@ -406,7 +406,7 @@
         $reset.on('click', function() {
           if ($reset.attr('disabled'))
             return;
-          
+
           $(options.elements.chart).empty();
           if (_.isFunction(options.reset))
             options.reset(options);

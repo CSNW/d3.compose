@@ -10,7 +10,7 @@
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/default.css">
 
-  <link rel="stylesheet" type="text/css" href="../tmp/css/d3.chart.multi.base.css">
+  <link rel="stylesheet" type="text/css" href="../tmp/d3.chart.multi.css">
   <style>
     .container {
       margin: 40px auto 0;
@@ -23,7 +23,7 @@
       #chart {
         width: 600px;
         height: 400px;
-      }  
+      }
     }
   </style>
 </head>
@@ -44,7 +44,7 @@
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
-  <script src="../tmp/d3.chart.multi.js"></script>
+  <script src="../tmp/d3.chart.multi-all.js"></script>
 
   <script src="../bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript">
@@ -110,7 +110,7 @@
         {
           key: 'inc-dense-a',
           name: 'Increasing Dense A',
-          values: []  
+          values: []
         },
         {
           key: 'inc-dense-b',
@@ -122,7 +122,7 @@
         {
           key: 'dec-dense-a',
           name: 'Decreasing Dense A',
-          values: []  
+          values: []
         },
         {
           key: 'dec-dense-b',
@@ -142,17 +142,17 @@
     data['increasing-dense'][1].values[0]['labelStyle'] = highlight_style;
     data['decreasing-dense'][0].values[0]['class'] = highlight_class;
     data['decreasing-dense'][1].values[0]['labelStyle'] = highlight_style;
-    
+
     // Config
     // ------ //
-    
+
     var config = function(data) {
       var values = data['increasing-dense'];
       var scales = {
         x: {domain: [0, 50]},
         y: {domain: [0, 200]}
       };
-      
+
       return d3.chart.xy({
         charts: {
           line: {type: 'Line', data: values, xScale: scales.x, yScale: scales.y, labels: true},
@@ -180,7 +180,7 @@
           });
         });
       });
-      
+
       chart.draw(data);
     }
 

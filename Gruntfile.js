@@ -1,6 +1,31 @@
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
+  var src = {
+    core: [
+      'src/helpers.js',
+      'src/Base.js',
+      'src/Chart.js',
+      'src/Component.js',
+      'src/Multi.js'
+    ],
+    mixins: [
+      'src/mixins.js'
+    ],
+    lib: [
+      'src/charts/XYLabels.js',
+      'src/charts/Bars.js',
+      'src/charts/Line.js',
+      'src/components/Title.js',
+      'src/components/Axis.js',
+      'src/components/Legend.js',
+      'src/extensions/xy.js'
+    ],
+    css: [
+      'src/css/d3.chart.multi.css'
+    ]
+  };
+
   grunt.initConfig({
     env: process.env,
     pkg: grunt.file.readJSON('package.json'),
@@ -9,40 +34,30 @@ module.exports = function(grunt) {
         ' * <%= pkg.homepage %>\n' +
         ' * License: <%= pkg.license %>\n' +
         ' */\n',
-      srcFiles: [
-        // core
-        'src/helpers.js',
-        'src/Base.js',
-        'src/Chart.js',
-        'src/Component.js',
-        'src/Multi.js',
-
-        // mixins
-        'src/mixins.js',
-
-        // library
-        'src/charts/XYLabels.js',
-        'src/charts/Bars.js',
-        'src/charts/Line.js',
-        'src/components/Title.js',
-        'src/components/Axis.js',
-        'src/components/Legend.js',
-        'src/extensions/xy.js'
-      ]
+      src: src
     },
 
     concat: {
-      options: {
-        banner: '<%= meta.banner %>'
-      },
       temp: {
+        options: {
+          sourceMap: true
+        },
         files: {
-          'tmp/<%= pkg.name %>.js': '<%= meta.srcFiles %>'
+          'tmp/<%= pkg.name %>.js': src.core,
+          'tmp/<%= pkg.name %>-mixins.js': src.core.concat(src.mixins),
+          'tmp/<%= pkg.name %>-all.js': src.core.concat(src.mixins, src.lib),
+          'tmp/<%= pkg.name %>.css': src.css
         }
       },
       release: {
+        options: {
+          banner: '<%= meta.banner %>'
+        },
         files: {
-          'dist/<%= pkg.name %>.js': '<%= meta.srcFiles %>'
+          'dist/<%= pkg.name %>.js': src.core,
+          'dist/<%= pkg.name %>-mixins.js': src.core.concat(src.mixins),
+          'dist/<%= pkg.name %>-all.js': src.core.concat(src.mixins, src.lib),
+          'dist/<%= pkg.name %>.css': src.css
         }
       }
     },
@@ -55,31 +70,6 @@ module.exports = function(grunt) {
           open: true,
           hostname: 'localhost'
         }
-      }
-    },
-
-    copy: {
-      temp: {
-        files: [{
-          expand: true,
-          cwd: 'src/css',
-          src: ['*.css'],
-          dest: 'tmp/css/',
-          rename: function(dest, name) {
-            return dest + '<%= pkg.name %>.' + name;
-          }
-        }]
-      },
-      release: {
-        files: [{
-          expand: true,
-          cwd: 'src/css',
-          src: ['*.css'],
-          dest: 'dist/css/',
-          rename: function(dest, name) {
-            return dest + '<%= pkg.name %>.' + name;
-          }
-        }]
       }
     },
 
@@ -98,17 +88,17 @@ module.exports = function(grunt) {
       },
 
       temp: {
-        src: 'tmp/d3.chart.multi.js',
+        src: 'tmp/<%= pkg.name %>-mixins.js',
         options: {
           outfile: 'specs/index.html',
-          keepRunner: true  
+          keepRunner: true
         }
       },
       release: {
-        src: 'dist/d3.chart.multi.js',
+        src: 'dist/<%= pkg.name %>-mixins.js',
         options: {
           outfile: 'specs/index.html',
-          keepRunner: false  
+          keepRunner: false
         }
       }
     },
@@ -120,8 +110,8 @@ module.exports = function(grunt) {
 
       src: ['src/**/*.js'],
       specs: ['specs/*.spec.js'],
-      temp: ['tmp/<%= pkg.name %>.js'],
-      release: ['dist/<%= pkg.name %>.js'],
+      temp: ['tmp/<%= pkg.name %>-all.js'],
+      release: ['dist/<%= pkg.name %>-all.js'],
       grunt: ['Gruntfile.js']
     },
 
@@ -135,7 +125,9 @@ module.exports = function(grunt) {
       },
       release: {
         files: {
-          'dist/<%= pkg.name %>.min.js': 'dist/<%= pkg.name %>.js'
+          'dist/<%= pkg.name %>.min.js': 'dist/<%= pkg.name %>.js',
+          'dist/<%= pkg.name %>-mixins.min.js': 'dist/<%= pkg.name %>-mixins.js',
+          'dist/<%= pkg.name %>-all.min.js': 'dist/<%= pkg.name %>-all.js'
         }
       }
     },
@@ -159,14 +151,12 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['test']);
 
   grunt.registerTask('build', 'Temp build of the library', [
-    'concat:temp',
-    'copy:temp'
+    'concat:temp'
   ]);
 
   grunt.registerTask('build:release', 'Release build of the library', [
     'concat:release',
-    'uglify:release',
-    'copy:release'
+    'uglify:release'
   ]);
 
   grunt.registerTask('release', 'Builds a new release of the library', [
@@ -174,19 +164,20 @@ module.exports = function(grunt) {
     'jshint:release',
     'jasmine:release'
   ]);
-  
+
   grunt.registerTask('test', 'Lint and run specs', [
     'jshint:src',
     'jshint:specs',
     'jasmine:temp'
   ]);
 
-  grunt.registerTask('server', 'Run example (at http://localhost:4001)', [
-    'connect:example:keepalive'
-  ]);
-
-  grunt.registerTask('debug', 'Run example with automatic build', [
+  grunt.registerTask('serve', 'Run example with automatic build', [
     'connect:example',
     'watch:build'
+  ]);
+
+  grunt.registerTask('debug', 'Run example with automatic build and testing', [
+    'connect:example',
+    'watch:test'
   ]);
 };
