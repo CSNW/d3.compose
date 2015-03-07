@@ -5,7 +5,9 @@ specs/index.html
 npm-debug.log
 example/data
 tmp/
+
 _site/
+.sass-cache
 
 # OS Junk
 Thumbs.db
