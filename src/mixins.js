@@ -498,9 +498,10 @@
       get: function(value) {
         if (utils.isBoolean(value))
           value = {display: value};
+        else if (!value)
+          value = {display: false};
 
         return utils.defaults({}, value, {
-          display: false,
           type: 'XYLabels'
         });
       }

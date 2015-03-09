@@ -53,7 +53,7 @@
             .attr('height', chart.swatchDimensions().height)
             .attr('class', 'chart-legend-swatch');
           groups.append('text')
-            .attr('class', 'chart-legend-label chart-label')
+            .attr('class', 'chart-legend-label')
             .attr('transform', helpers.translate(chart.swatchDimensions().width + 5, 0));
 
           return groups;
@@ -110,7 +110,7 @@
           if (!chart || chart.exclude_from_legend || chart.options().exclude_from_legend)
             return data;
 
-          var chart_data = chart.data();
+          var chart_data = this.container.demux(chart_id, this.container.data());
           if (!helpers.isSeriesData(chart_data))
             chart_data = [chart_data];
 
@@ -132,7 +132,7 @@
           }));
 
           return data.concat(legend_data);
-        }, []);
+        }, [], this);
       }
 
       return data;
@@ -277,7 +277,7 @@
       @default {x: 10, y: 10, relative_to: 'left-top'}
     */
     translation: property('translation', {
-      default_value: {x: 10, y: 10, relative_to: 'left-top'},
+      default_value: {x: 10, y: 0, relative_to: 'left-top'},
       get: function(value) {
         var x = value.x || 0;
         var y = value.y || 0;

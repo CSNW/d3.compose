@@ -310,6 +310,7 @@
         original: data,
         config: this._config.data
       };
+      this.data(data);
 
       // Explicitly set width and height of container if width/height is defined
       this.base
