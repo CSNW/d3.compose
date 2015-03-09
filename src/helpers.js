@@ -376,10 +376,13 @@
     @method createScale
     @param {Object|Function} options
       - (passing in function returns original function with no changes)
-      @param {String} options.type Any available d3 scale (linear, ordinal, log, etc.) or time
-      @praam {Array} domain Domain for scale
-      @param {Array} range Range for scale
-      @param {Array...} ... Set any other scale properties with array of arguments to pass to property
+      @param {String} [options.type] Any available d3 scale (linear, ordinal, log, etc.) or time
+      @praam {Array} [options.domain] Domain for scale
+      @param {Array} [options.range] Range for scale
+      @param {Any} [options.data] Used to dynamically set domain (with given value "di" or key)
+      @param {Function} [options.value] "di" for getting value for data
+      @param {String} [options.key] Data key to extract value
+      @param {Array...} [...] Set any other scale properties with array of arguments to pass to property
     @return {d3.Scale}
   */
   function createScale(options) {
@@ -402,48 +405,47 @@
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments
-        // (don't pass through type, data, or key)
+        // (don't pass through type, data, value, or key)
         if (key == 'range' || key == 'domain')
           scale[key](value);
-        else if (key != 'type' && key != 'data' && key != 'key')
+        else if (!utils.contains(['type', 'data', 'value', 'key'], key))
           scale[key].apply(scale, value);
       }
     });
 
-    if (!options.domain && options.data && options.key) {
-      var getValue = function(d, i) {
+    if (!options.domain && options.data && (options.key || options.value)) {
+      // Use value "di" or create for key
+      var getValue = options.value || function(d, i) {
         return d[options.key];
       };
 
+      // Enforce series data
+      var data = options.data;
+      if (!isSeriesData(data))
+        data = [{values: data}];
+
+      var domain;
       if (options.type == 'ordinal') {
-        // Extract unique values from series
-        var getValues = function(data) {
-          return utils.map(data, getValue);
-        };
-
-        var all_values;
-        if (isSeriesData(options.data)) {
-          all_values = utils.flatten(utils.map(options.data, function(series) {
-            if (series && utils.isArray(series.values)) {
-              return getValues(series.values);
-            }
-          }));
-        }
-        else {
-          all_values = getValues(options.data);
-        }
-
-        scale.domain(utils.uniq(all_values));
+        // Domain for ordinal is array of unique values
+        domain = utils.chain(data)
+          .map(function(series) {
+            if (series && series.values)
+              return utils.map(series.values, getValue);
+          })
+          .flatten()
+          .uniq()
+          .value();
       }
       else {
-        // By default, domain starts at 0 unless min is less than 0
-        var min_value = min(options.data, getValue);
+        var min_value = min(data, getValue);
 
-        scale.domain([
+        domain = [
           min_value < 0 ? min_value : 0,
-          max(options.data, getValue)
-        ]);
+          max(data, getValue)
+        ];
       }
+
+      scale.domain(domain);
     }
 
     return scale;
