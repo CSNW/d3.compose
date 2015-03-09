@@ -8,6 +8,7 @@
 
       Container = d3.chart('Multi').extend('TestContainer');
       container = new Container(selection);
+      container.margins({});
 
       Chart = d3.chart('Chart').extend('TestChart');
       Component = d3.chart('Component').extend('TestComponent');

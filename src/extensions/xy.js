@@ -15,6 +15,8 @@
     options = options || {};
     var charts = utils.extend({}, options.charts);
     var components = utils.extend({}, options.components);
+    var default_margin = 8;
+    var default_margins = {top: default_margin, right: default_margin, bottom: default_margin, left: default_margin};
 
     // Title
     if (options.title) {
@@ -25,7 +27,8 @@
       title_options = utils.defaults({}, title_options, {
         type: 'Title',
         position: 'top',
-        'class': 'chart-title-main'
+        'class': 'chart-title-main',
+        margins: default_margins
       });
 
       components.title = title_options;
@@ -57,7 +60,13 @@
         title_options = utils.defaults({}, title_options, {
           type: 'Title',
           position: axis_options.position,
-          'class': 'chart-title-axis'
+          'class': 'chart-title-axis',
+          margins: utils.defaults({
+            top: {top: default_margin / 2},
+            right: {left: default_margin / 2},
+            bottom: {bottom: default_margin / 2},
+            left: {right: default_margin / 2}
+          }[axis_options.position], default_margins)
         });
 
         components['axis.' + key + '.title'] = title_options;
@@ -72,7 +81,8 @@
 
       legend_options = utils.defaults({}, legend_options, {
         type: 'Legend',
-        position: 'right'
+        position: 'right',
+        margins: default_margins
       });
 
       // By default, use all charts for legend

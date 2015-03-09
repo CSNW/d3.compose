@@ -57,7 +57,7 @@
                   yScale: scales.y,
 
                   labels: {
-                    offset: 8,
+                    offset: 2,
                     position: 'top',
                     style: {
                       'font-size': '14px'
@@ -79,7 +79,7 @@
               axes: {
                 x: {
                   type: 'AxisValues',
-                  title: {text: 'X Title', margins: {top: 0.5}},
+                  title: 'X Title',
                   scale: scales.x
                 },
                 y: {
@@ -92,15 +92,13 @@
                 }
               },
               legend: {
-                type: 'InsetLegend',
-                translation: {x: 10, y: 0, relative_to: 'left-top'}
+                type: 'InsetLegend'
               },
               title: 'Chart Title'
             });
           })
           .width(600)
-          .height(400)
-          .margins({top: 10, right: 10, bottom: 10, left: 10});
+          .height(400);
 
         chart.draw(data['chart-1']);
       </script>
@@ -133,8 +131,7 @@
             });
           })
           .width(600)
-          .height(400)
-          .margins({top: 10, right: 10, bottom: 10, left: 10});
+          .height(400);
 
         chart.draw(data['chart-2']);
       </script>
@@ -148,15 +145,15 @@
         var chart = d3.select('#chart-3')
           .chart('Multi', function(data) {
             var scales = {
-              x: {type: 'ordinal', data: data.bars, key: 'x'},
-              y: {data: data.bars, key: 'y'}
+              x: {type: 'ordinal', data: data, value: function(d, i) { return i; }},
+              y: {data: data, value: function(d, i) { return d; }}
             };
 
             return d3.chart.xy({
               charts: {
                 bars: {
                   type: 'Bars',
-                  data: data.bars, xScale: scales.x, yScale: scales.y,
+                  data: data, xScale: scales.x, yScale: scales.y,
                   labels: {format: d3.format(',0d')}
                 }
               },
@@ -167,8 +164,7 @@
             });
           })
           .width(600)
-          .height(400)
-          .margins({top: 10, right: 10, bottom: 10, left: 10});
+          .height(400);
 
         chart.draw(data['chart-3']);
       </script>
@@ -196,18 +192,15 @@
                 }
               },
               axes: {
-                y: {scale: scales.y},
-                y2: {scale: scales.y2}
+                y: {scale: scales.y, ticks: 5},
+                y2: {scale: scales.y2, ticks: 5}
               },
-              legend: {
-                margins: {left: 0.2}
-              },
+              legend: true,
               title: 'Stacked Bars'
             });
           })
           .width(600)
-          .height(200)
-          .margins({top: 10, right: 10, bottom: 10, left: 10});
+          .height(200);
 
         chart.draw({
           stacked: [

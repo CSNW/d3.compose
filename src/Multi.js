@@ -97,7 +97,7 @@
       @type Object {top, right, bottom, left}
     */
     margins: property('margins', {
-      default_value: {top: 0, right: 0, bottom: 0, left: 0},
+      default_value: {top: 10, right: 10, bottom: 10, left: 10},
       set: function(values) {
         return {
           override: utils.defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})

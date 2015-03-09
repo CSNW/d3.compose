@@ -76,12 +76,10 @@
       ]
     },
 
-    'chart-3': {
-      bars: [
-        {key: 'a', name: 'A', values: [{key: 'Results', y: 10000}]},
-        {key: 'b', name: 'B', values: [{key: 'Results', y: 20000}]}
-      ]
-    },
+    'chart-3': [
+      {key: 'a', name: 'A', values: [10000, 20000]},
+      {key: 'b', name: 'B', values: [20000, 25000]}
+    ],
 
     // Specs
     'spec-abc': {

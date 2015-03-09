@@ -56,7 +56,9 @@
       this.attachLabels();
     },
 
-    interpolate: property('interpolate'),
+    interpolate: property('interpolate', {
+      default_value: 'monotone'
+    }),
 
     delay: property('delay', {type: 'Function'}),
     duration: property('duration', {type: 'Function'}),
