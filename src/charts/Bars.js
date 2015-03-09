@@ -28,7 +28,7 @@
             var chart = this.chart();
 
             this
-              .attr('y', chart.y0)
+              .attr('y', chart.y0())
               .attr('height', 0);
           },
           'merge': function() {
@@ -67,7 +67,7 @@
     displayAdjacent: property('displayAdjacent', {default_value: true}),
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)) - chart.barOffset();
+      var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
       return height > 0 ? height : 0;
     }),
     barX: di(function(chart, d, i) {
@@ -114,7 +114,7 @@
     },
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+      var height = Math.abs(chart.y0() - chart.y.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
       return height > 0 ? height - offset : 0;
     }),

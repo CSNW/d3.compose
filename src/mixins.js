@@ -115,10 +115,12 @@
     */
     seriesCount: function() {
       var data = this.data();
-      if (data && helpers.isSeriesData(data))
-        return data.length;
-      else
-        return 1;
+      return (data && helpers.isSeriesData(data)) ? data.length : 1;
+    },
+
+    // Ensure data is in series form
+    transform: function(data) {
+      return !helpers.isSeriesData(data) ? [{values: data}] : data;
     }
   };
 
@@ -242,7 +244,8 @@
       @return {Any}
     */
     xValue: di(function(chart, d, i) {
-      return d.x;
+      if (d)
+        return 'x' in d ? d.x : d[0];
     }),
 
     /**
@@ -252,7 +255,8 @@
       @return {Any}
     */
     yValue: di(function(chart, d, i) {
-      return d.y;
+      if (d)
+        return 'y' in d ? d.y : d[1];
     }),
 
     /**
@@ -332,8 +336,10 @@
       return data;
 
       function normalizeData(point, index) {
-        point = utils.isObject(point) ? point : {y: point};
-        point.x = valueOrDefault(point.x, point.key);
+        if (!utils.isObject(point))
+          point = {x: index, y: point};
+        else if (!utils.isArray(point) && utils.isUndefined(point.x))
+          point.x = valueOrDefault(point.key, index);
 
         return point;
       }

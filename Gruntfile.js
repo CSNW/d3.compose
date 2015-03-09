@@ -22,7 +22,7 @@ module.exports = function(grunt) {
       'src/extensions/xy.js'
     ],
     css: [
-      'src/css/d3.chart.multi.css'
+      'src/css/base.css'
     ]
   };
 
