@@ -476,8 +476,15 @@
       labels.y = this.y;
 
       this.on('draw', function(data) {
-        labels.options(this.labels());
-        labels.draw(options.data || data);
+        options = this.labels();
+        options.parent = this;
+
+        labels.options(options);
+
+        if (options.display !== false)
+          labels.draw(options.data || data);
+        else
+          labels.draw([]);
       }.bind(this));
     },
 
