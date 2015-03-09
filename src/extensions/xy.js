@@ -1,4 +1,5 @@
-(function(d3) {
+(function(d3, helpers) {
+  var utils = helpers.utils;
 
   /**
     XY extension
@@ -12,16 +13,16 @@
   */
   d3.chart.xy = function xy(options) {
     options = options || {};
-    var charts = _.extend({}, options.charts);
-    var components = _.extend({}, options.components);
+    var charts = utils.extend({}, options.charts);
+    var components = utils.extend({}, options.components);
 
     // Title
     if (options.title) {
       var title_options = options.title;
-      if (_.isString(title_options))
+      if (utils.isString(title_options))
         title_options = {text: title_options};
 
-      title_options = _.defaults({}, title_options, {
+      title_options = utils.defaults({}, title_options, {
         type: 'Title',
         position: 'top',
         'class': 'chart-title-main'
@@ -31,7 +32,7 @@
     }
 
     // Axes
-    _.each(options.axes, function(axis_options, key) {
+    utils.each(options.axes, function(axis_options, key) {
       var positionByKey = {
         x: 'bottom',
         y: 'left',
@@ -41,7 +42,7 @@
         secondaryY: 'right'
       };
 
-      axis_options = _.defaults({}, axis_options, {
+      axis_options = utils.defaults({}, axis_options, {
         type: 'Axis',
         position: positionByKey[key]
       });
@@ -50,10 +51,10 @@
 
       if (axis_options.title) {
         var title_options = axis_options.title;
-        if (_.isString(title_options))
+        if (utils.isString(title_options))
           title_options = {text: title_options};
-        
-        title_options = _.defaults({}, title_options, {
+
+        title_options = utils.defaults({}, title_options, {
           type: 'Title',
           position: axis_options.position,
           'class': 'chart-title-axis'
@@ -69,18 +70,22 @@
       if (legend_options === true)
         legend_options = {};
 
-      legend_options = _.defaults({}, legend_options, {
+      legend_options = utils.defaults({}, legend_options, {
         type: 'Legend',
         position: 'right'
       });
 
+      // By default, use all charts for legend
+      if (!legend_options.data && !legend_options.charts)
+        legend_options.charts = utils.keys(charts);
+
       components.legend = legend_options;
     }
-    
+
     return {
       charts: charts,
       components: components
     };
   };
-  
-})(d3);
+
+})(d3, d3.chart.helpers);

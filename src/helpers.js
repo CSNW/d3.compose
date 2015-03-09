@@ -21,6 +21,7 @@
     isUndefined: _.isUndefined,
     keys: _.keys,
     map: _.map,
+    min: _.min,
     max: _.max,
     reduce: _.reduce,
     reduceRight: _.reduceRight,

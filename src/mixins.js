@@ -626,6 +626,9 @@
       var points = this.getPoints();
       var closest = [];
 
+      if (!points)
+        return [];
+
       if (points.length && utils.isArray(points[0])) {
         // Series data
         utils.each(points, function(series) {

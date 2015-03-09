@@ -12,10 +12,6 @@
 
   <link rel="stylesheet" type="text/css" href="../tmp/d3.chart.multi.css">
   <style>
-    .input .chart-line, .input2 .chart-line {
-      stroke-dasharray: 4,4;
-    }
-
     .example {
       margin-bottom: 16px;
     }
@@ -97,7 +93,7 @@
               },
               legend: {
                 type: 'InsetLegend',
-                position: {x: 10, y: 0}
+                translation: {x: 10, y: 0, relative_to: 'left-top'}
               },
               title: 'Chart Title'
             });
@@ -131,8 +127,7 @@
                 y: {scale: scales.y, title: 'Results'}
               },
               legend: {
-                display: 'right',
-                data: data.lines
+                display: 'right'
               },
               title: 'Results by Year'
             });

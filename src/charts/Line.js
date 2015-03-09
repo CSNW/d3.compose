@@ -55,7 +55,7 @@
 
       this.attachLabels();
     },
-    
+
     interpolate: property('interpolate'),
 
     delay: property('delay', {type: 'Function'}),
@@ -72,15 +72,9 @@
         line.interpolate(interpolate);
 
       return line;
-    },
-    insertSwatch: function() {
-      return this.append('line')
-        .attr('x1', 0).attr('y1', 10)
-        .attr('x2', 20).attr('y2', 10)
-        .attr('class', 'chart-line');
     }
   }));
-  
+
   /**
     LineValues
     Line graph for centered key,value data
