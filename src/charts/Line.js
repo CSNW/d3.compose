@@ -4,8 +4,9 @@
   var di = helpers.di;
 
   /**
-    Line
-    (x,y) line graph
+    XY Line graph
+
+    @class Line
   */
   d3.chart('Chart').extend('Line', mixin(mixins.Series, mixins.XY, mixins.XYLabels, {
     initialize: function() {
@@ -56,6 +57,16 @@
       this.attachLabels();
     },
 
+    /**
+      Set interpolation mode for line
+
+      - See: https://github.com/mbostock/d3/wiki/SVG-Shapes#line_interpolate
+      - Set to null or 'linear' for no interpolation
+
+      @property interpolate
+      @type String
+      @default monotone
+    */
     interpolate: property('interpolate', {
       default_value: 'monotone'
     }),

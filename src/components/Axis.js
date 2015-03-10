@@ -4,18 +4,9 @@
   var di = helpers.di;
 
   /**
-    Axis
-    Add axis for given (x,y) series data
+    Axis component for XY data
 
-    Properties:
-    - {String} [position = bottom] top, right, bottom, left, x0, y0
-      Note: for x0 and y0, both x and y scales are required,
-            so use `xScale` and `yScale` rather than `scale`
-    - {x, y} [translation] of axis relative to chart bounds
-    - {String} [orient = bottom] top, right, bottom, left
-    - {String} [orientation = horizontal] horizontal, vertical
-
-    Available d3 Axis mixins:
+    Available d3.axis extensions:
     - ticks
     - tickValues
     - tickSize
@@ -23,6 +14,8 @@
     - outerTickSize
     - tickPadding
     - tickFormat
+
+    @class Axis
   */
   d3.chart('Component').extend('Axis', mixin(mixins.XY, {
     initialize: function() {
@@ -55,7 +48,7 @@
           'enter': function() {
             // Place and render axis
             var chart = this.chart();
-            
+
             this
               .attr('transform', chart.translation())
               .call(chart.axis);
@@ -69,7 +62,7 @@
 
             if (chart.delay())
               this.delay(chart.delay());
-            
+
             if (chart._skip_transition) {
               this.duration(0);
               chart._skip_transition = undefined;
@@ -77,7 +70,7 @@
             else if (chart.duration()) {
               this.duration(chart.duration());
             }
-            
+
             if (chart.ease())
               this.ease(chart.ease());
 
@@ -108,10 +101,18 @@
         }
       });
     },
+
     duration: property('duration', {type: 'Function'}),
     delay: property('delay', {type: 'Function'}),
     ease: property('ease', {type: 'Function'}),
 
+    /**
+      Scale to pass to d3.axis
+      (if Object is given, helpers.createScale is used)
+
+      @property scale
+      @type Object|d3.scale
+    */
     scale: property('scale', {
       type: 'Function',
       set: function(value) {
@@ -128,6 +129,14 @@
       }
     }),
 
+    /**
+      Position axis relative to chart
+      (top, right, bottom, left, x0, y0)
+
+      @property position
+      @type String
+      @default bottom
+    */
     position: property('position', {
       default_value: 'bottom',
       validate: function(value) {
@@ -140,6 +149,14 @@
       }
     }),
 
+    /**
+      {x,y} translation of axis relative to chart
+      (set by default based on position)
+
+      @property translation
+      @type Object
+      @default (set based on position)
+    */
     translation: property('translation', {
       default_value: function() {
         return {
@@ -156,19 +173,34 @@
       }
     }),
 
+    /**
+      Axis orient for ticks
+      (set by default based on position)
+
+      @property orient
+      @type String
+      @default (set based on position)
+    */
     orient: property('orient', {
       default_value: function() {
         var orient = this.position();
-        
+
         if (orient == 'x0')
           orient = 'left';
         else if (orient == 'y0')
           orient = 'bottom';
-        
+
         return orient;
       }
     }),
 
+    /**
+      Axis orientation (vertical or horizonal)
+
+      @property orientation
+      @type String
+      @default (set based on position)
+    */
     orientation: property('orientation', {
       validate: function(value) {
         return _.contains(['horizontal', 'vertical'], value);
@@ -189,8 +221,8 @@
           this.scale(this.scale());
       }
     }),
-    type: property('type'),
 
+    // d3.axis extensions
     ticks: property('ticks', {type: 'Function'}),
     tickValues: property('tickValues', {type: 'Function'}),
     tickSize: property('tickSize', {type: 'Function'}),
@@ -202,22 +234,22 @@
     getLayout: function(data) {
       // 1. Get previous values to restore after draw for proper transitions
       var state = this.getState();
-      
+
       // 2. Draw with current values
       this.draw(data);
 
       // 3. Calculate layout
       // (make layout axis visible for width calculations in Firefox)
       this._layout_base.attr('style', 'display: block;');
-      
+
       var label_overhang = this._getLabelOverhang();
-      
+
       this._layout_base.attr('style', 'display: none;');
 
       // 4. Draw with previous values
       if (this._previous_raw_data) {
         this.setState(_.extend(state.previous, {duration: 0}));
-        
+
         this.draw(this._previous_raw_data);
 
         // 5. Restore current values
@@ -237,7 +269,7 @@
         position = 'bottom';
       else if (position == 'y0')
         position = 'right';
-      
+
       return {
         position: position,
         width: label_overhang.width,
@@ -302,7 +334,7 @@
 
       this._layout_base.selectAll('.tick').each(function() {
         try {
-          // There are cases where getBBox may throw 
+          // There are cases where getBBox may throw
           // (e.g. not currently displayed in Firefox)
           var bbox = this.getBBox();
 
@@ -325,11 +357,12 @@
     layer_type: 'chart',
     z_index: 60
   });
-  
+
   /**
-    AxisValues
-    Axis component for (key,value) series data
+    Axis component for values data
+
+    @class AxisValues
   */
   d3.chart('Axis').extend('AxisValues', mixin(mixins.XYValues));
-  
+
 })(d3, d3.chart.helpers, d3.chart.mixins);

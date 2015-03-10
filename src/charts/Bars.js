@@ -4,8 +4,9 @@
   var di = helpers.di;
 
   /**
-    Bars
-    Bar graph with centered key,value data and adjacent display for series
+    Bar graph with centered values data and adjacent display for series
+
+    @class Bars
   */
   d3.chart('Chart').extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, {
     initialize: function() {
@@ -60,11 +61,21 @@
 
       this.attachLabels();
     },
+
     delay: property('delay', {type: 'Function'}),
     duration: property('duration', {type: 'Function'}),
     ease: property('ease', {type: 'Function'}),
 
-    displayAdjacent: property('displayAdjacent', {default_value: true}),
+    /**
+      Display bars from different series next to eachother
+
+      @property displayAdjacent
+      @type Boolean
+      @default true
+    */
+    displayAdjacent: property('displayAdjacent', {
+      default_value: true
+    }),
 
     barHeight: di(function(chart, d, i) {
       var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
@@ -83,21 +94,23 @@
       return 'chart-bar' + (d['class'] ? ' ' + d['class'] : '');
     }),
 
+    // Shift bars slightly to account for axis thickness
     barOffset: function barOffset() {
-      if (!this.__axis) {
-        this.__axis = d3.select(this.base[0][0].parentNode).select('[data-id="axis.x"] .domain');
+      var axis = this.container && this.container.components()['axis.x'];
+      if (axis) {
+        var axis_thickness = parseInt(axis.base.select('.domain').style('stroke-width')) || 0;
+        return axis_thickness / 2;
       }
-      if (!this.__axis) {
+      else {
         return 0;
       }
-
-      var axisThickness = this.__axis[0][0] && parseInt(this.__axis.style('stroke-width')) || 0;
-      return axisThickness / 2;
     }
   }));
 
   /**
     Stacked Bars
+
+    @class StackedBars
   */
   d3.chart('Bars').extend('StackedBars', {
     transform: function(data) {
@@ -105,6 +118,8 @@
       this.bar_positions = [];
       return data;
     },
+
+    displayAdjacent: property('displayAdjacent', {default_value: false}),
 
     barHeight: di(function(chart, d, i) {
       var height = Math.abs(chart.y0() - chart.y.call(this, d, i));
@@ -130,9 +145,7 @@
       chart.bar_positions[i] = new_position;
 
       return new_position;
-    }),
-
-    displayAdjacent: property('displayAdjacent', {default_value: false})
+    })
   });
 
 })(d3, d3.chart.helpers, d3.chart.mixins);

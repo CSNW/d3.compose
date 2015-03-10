@@ -4,12 +4,7 @@
   var di = helpers.di;
 
   /**
-    Title
-
-    Properties:
-    - {String} title
-    - {Object} style
-    - {Number} rotation
+    @class Title
   */
   d3.chart('Component').extend('Title', {
     initialize: function() {
@@ -35,11 +30,23 @@
       });
     },
 
+    /**
+      @property text
+      @type String
+    */
     text: property('text', {
       get: function() {
         return this.options().text;
       }
     }),
+
+    /**
+      Rotation of title text
+
+      @property rotation
+      @type Number
+      @default (set based on position)
+    */
     rotation: property('rotation', {
       default_value: function() {
         var rotate_by_position = {
@@ -50,6 +57,14 @@
         return rotate_by_position[this.position()] || 0;
       }
     }),
+
+    /**
+      Style object containing styles for title
+
+      @property style
+      @type Object
+      @default {}
+    */
     style: property('style', {
       default_value: {}
     }),
