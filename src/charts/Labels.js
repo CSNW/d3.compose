@@ -256,6 +256,52 @@
     z_index: 150
   });
 
+  /**
+    @class HoverLabels
+  */
+  d3.chart('Labels').extend('HoverLabels', mixin(mixins.XYHover, {
+    /**
+      Maximum distance to find active points
+
+      @property hoverTolerance
+      @type Number
+      @default 20
+    */
+    hoverTolerance: property('hoverTolerance', {
+      set: function(value) {
+        // Pass through hover tolerance to parent (if present)
+        if (this.parent && this.parent.hoverTolerance)
+          this.parent.hoverTolerance(value);
+      },
+      default_value: 20
+    }),
+
+    // Override default hover check
+    getHoverPoints: function(position) {},
+
+    // Don't fade in labels, hidden until hover
+    transitionLabels: function(selection) {},
+
+    onMouseEnterPoint: function(point) {
+      if (this.parent && point.chart === this.parent) {
+        var labels = this.base.selectAll('g.chart-series').selectAll('g');
+        var label = labels && labels[point.j] && labels[point.j][point.i];
+
+        if (label)
+          d3.select(label).attr('opacity', 1);
+      }
+    },
+    onMouseLeavePoint: function(point) {
+      if (this.parent && point.chart === this.parent) {
+        var labels = this.base.selectAll('g.chart-series').selectAll('g');
+        var label = labels && labels[point.j] && labels[point.j][point.i];
+
+        if (label)
+          d3.select(label).attr('opacity', 0);
+      }
+    }
+  }));
+
   function prepareLabel(chart, element, d, i, j) {
     var selection = d3.select(element);
     var text = selection.select('text');
