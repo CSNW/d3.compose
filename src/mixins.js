@@ -510,7 +510,7 @@
 
     // Array of methods to proxy on labels chart
     proxyLabelMethods: []
-  }
+  };
 
   /**
     mixin for handling labels in XY charts

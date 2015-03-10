@@ -324,12 +324,7 @@
     var text_bounds = label.text.element.getBBox();
 
     // Need to adjust text for line-height
-    var text_y_adjustment = 0;
-    try {
-      var style = window.getComputedStyle(label.text.element);
-      text_y_adjustment = -(parseFloat(style['line-height']) - parseFloat(style['font-size'])) / 2;
-    }
-    catch (ex) {}
+    var text_y_adjustment = helpers.alignText(label.text.element);
 
     // Position background
     var layout = label.bg.layout = {
@@ -356,7 +351,7 @@
     // Center text in background
     label.text.layout = {
       x: layout.x + (layout.width / 2) - (text_bounds.width / 2),
-      y: layout.y + (layout.height / 2) - (text_bounds.height / 2) + text_bounds.height + text_y_adjustment
+      y: layout.y + (layout.height / 2) - (text_bounds.height / 2) + text_y_adjustment
     };
   }
 

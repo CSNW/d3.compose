@@ -279,6 +279,34 @@
   }
 
   /**
+    Find vertical offset to vertically align text
+    (needed due to lack of alignment-baseline support in Firefox)
+
+    @method alignText
+    @param {element} element
+    @param {Number} [line_height]
+    @return {Number} offset
+  */
+  function alignText(element, line_height) {
+    var offset = 0;
+    try {
+      var style = window.getComputedStyle(element);
+      var height = element.getBBox().height;
+
+      // Adjust for line-height
+      var adjustment = -(parseFloat(style['line-height']) - parseFloat(style['font-size'])) / 2;
+
+      if (line_height && line_height > 0)
+        adjustment += (line_height - height) / 2;
+
+      offset = height + adjustment;
+    }
+    catch (ex) {}
+
+    return offset;
+  }
+
+  /**
     Determine if given data is likely series data
 
     @method isSeriesData
@@ -596,6 +624,7 @@
     dimensions: dimensions,
     translate: translate,
     rotate: rotate,
+    alignText: alignText,
     isSeriesData: isSeriesData,
     max: max,
     min: min,

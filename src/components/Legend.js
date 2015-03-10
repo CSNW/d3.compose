@@ -53,19 +53,24 @@
             .attr('height', chart.swatchDimensions().height)
             .attr('class', 'chart-legend-swatch');
           groups.append('text')
-            .attr('class', 'chart-legend-label')
-            .attr('transform', helpers.translate(chart.swatchDimensions().width + 5, 0));
+            .attr('class', 'chart-legend-label');
 
           return groups;
         },
         events: {
           merge: function() {
             var chart = this.chart();
+            var swatch = chart.swatchDimensions();
 
             this.select('g').each(chart.createSwatch);
             this.select('text')
               .text(chart.itemText)
-              .attr('alignment-baseline', 'before-edge');
+              .each(function() {
+                // Vertically center text
+                var offset = helpers.alignText(this, swatch.height);
+                d3.select(this)
+                  .attr('transform', helpers.translate(swatch.width + 5, offset));
+              });
 
             // Position groups after positioning everything inside
             var direction_by_position = {
