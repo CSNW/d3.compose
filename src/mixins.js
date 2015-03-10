@@ -476,8 +476,6 @@
 
       this.on('draw', function(data) {
         options = this.labels();
-        options.parent = this;
-
         labels.options(options);
 
         if (options.display !== false)
@@ -527,11 +525,9 @@
   var Hover = {
     initialize: function() {
       this.on('attach', function() {
-        if (this.container) {
-          this.container.on('mouseenter', this.onMouseEnter.bind(this));
-          this.container.on('mousemove', this.onMouseMove.bind(this));
-          this.container.on('mouseleave', this.onMouseLeave.bind(this));
-        }
+        this.container.on('mouseenter', this.onMouseEnter.bind(this));
+        this.container.on('mousemove', this.onMouseMove.bind(this));
+        this.container.on('mouseleave', this.onMouseLeave.bind(this));
       }.bind(this));
     },
 
@@ -571,102 +567,139 @@
   var XYHover = utils.extend({}, Hover, {
     initialize: function() {
       Hover.initialize.apply(this, arguments);
-      this.on('before:draw', function() {
-        // Reset points on draw
-        this._points = undefined;
-      });
+
+      this.on('attach', function() {
+        this.container.on('mouseenter:point', this.onMouseEnterPoint.bind(this));
+        this.container.on('mousemove:point', this.onMouseMovePoint.bind(this));
+        this.container.on('mouseleave:point', this.onMouseLeavePoint.bind(this));
+
+        var active = {};
+
+        this.container.on('mouseenter', function(position) {
+          updateActive(active, this.getHoverPoints(position), this.container);
+        }.bind(this));
+        this.container.on('mousemove', function(position) {
+          updateActive(active, this.getHoverPoints(position), this.container);
+        }.bind(this));
+        this.container.on('mouseleave', function() {
+          updateActive(active, [], this.container);
+        }.bind(this));
+
+        this.on('before:draw', function() {
+          // Reset points on draw
+          this._points = undefined;
+        });
+      }.bind(this));
     },
 
+    hoverTolerance: property('hoverTolerance', {
+      default_value: 20
+    }),
+
     /**
-      Get {x,y} details for given data-point
+      Get point details for given data-point
 
       @method getPoint
-      @return {x, y, d, i, j}
+      @return {x, y, key, chart, [series], d, i, j}
     */
     getPoint: di(function(chart, d, i, j) {
+      var key = chart.key.call(this, d, i, j);
+      var series = chart.seriesData && chart.seriesData.call(this, d, i, j) || {};
+
       return {
+        point_key: chart.id + '.' + (series.key || j) + '.' + (key || i),
+
         x: chart.x.call(this, d, i, j),
         y: chart.y.call(this, d, i, j),
-        d: d, i: i, j: j
+        key: key,
+        chart: chart,
+        series: series,
+        d: d,
+        i: i,
+        j: j
       };
     }),
 
     /**
-      Get all point details for chart data (cached)
+      Get active points for given position
+      (override for custom hover calculation)
 
-      @method getPoints
-      @return {Array} {x,y} details for chart data
+      @method getHoverPoints
+      @param {Object} position {container: {x, y}, chart: {x, y}} mouse position
+      @return {Array} set of active points
     */
-    getPoints: function() {
-      var data = this.data();
-      if (!this._points && data) {
-        if (helpers.isSeriesData(data)) {
-          // Get all points for each series
-          this._points = utils.map(data, function(series, j) {
-            return getPointsForValues.call(this, series.values, j, {_parent_data: series});
-          }, this);
-        }
-        else {
-          this._points = getPointsForValues.call(this, data, 0);
-        }
-      }
+    getHoverPoints: function(position) {
+      if (!this._points)
+        this._points = getPoints(this, this.data());
 
-      return this._points;
-
-      function getPointsForValues(values, seriesIndex, element) {
-        var points = utils.map(values, function(d, i) {
-          return this.getPoint.call(element, d, i, seriesIndex);
-        }, this);
-
-        // Sort by x
-        points.sort(function(a, b) {
-          return a.x - b.x;
-        });
-
-        return points;
-      }
+      return getClosestPoints(this._points, position.chart, this.hoverTolerance());
     },
 
-    /**
-      Find closest points for each series to the given {x,y} position
+    onMouseEnterPoint: function(point) {},
+    onMouseMovePoint: function(point) {},
+    onMouseLeavePoint: function(point) {}
+  });
 
-      @method getClosestPoints
-      @param {Object} position {x,y} position relative to chart
-      @return {Array}
-    */
-    getClosestPoints: function(position) {
-      var points = this.getPoints();
-      var closest = [];
+  function getPoints(chart, data) {
+    if (data) {
+      if (!helpers.isSeriesData(data))
+        data = [{values: data}];
 
-      if (!points)
-        return [];
-
-      if (points.length && utils.isArray(points[0])) {
-        // Series data
-        utils.each(points, function(series) {
-          closest.push(sortByDistance(series, position));
+      return utils.map(data, function(series, j) {
+        return utils.map(series.values, function(d, i) {
+          return chart.getPoint.call({_parent_data: series}, d, i, j);
+        }).sort(function(a, b) {
+          // Sort by x
+          return a.x - b.x;
         });
-      }
-      else {
-        closest.push(sortByDistance(points, position));
-      }
+      });
+    }
+  }
 
-      return closest;
-
-      function sortByDistance(values, position) {
-        var byDistance = utils.map(values, function(point) {
+  function getClosestPoints(points, position, tolerance) {
+    return utils.compact(utils.map(points, function(series) {
+      var by_distance = utils.chain(series)
+        .map(function(point) {
           point.distance = getDistance(point, position);
           return point;
-        });
+        })
+        .filter(function(point) {
+          return point.distance < tolerance;
+        })
+        .sortBy('distance')
+        .value();
 
-        return utils.sortBy(byDistance, 'distance');
-      }
+      return by_distance[0];
+    }));
 
-      function getDistance(a, b) {
-        return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
-      }
+    function getDistance(a, b) {
+      return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
     }
-  });
+  }
+
+  function updateActive(active, closest, container) {
+    utils.each(active, function(point) {
+      if (point)
+        point.inactive = true;
+    });
+
+    utils.each(closest, function(point) {
+      if (active[point.point_key])
+        container.trigger('mousemove:point', point);
+      else
+        container.trigger('mouseenter:point', point);
+
+      active[point.point_key] = point;
+      point.inactive = false;
+    });
+
+    utils.each(active, function(point, key) {
+      if (point && point.inactive) {
+        container.trigger('mouseleave:point', point);
+        active[key] = null;
+      }
+    });
+  }
 
   // Expose mixins
   d3.chart.mixins = utils.extend(d3.chart.mixins || {}, {

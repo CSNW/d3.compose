@@ -7,11 +7,12 @@
   /**
     @class Labels
   */
-  d3.chart('Chart').extend('Labels', mixin(mixins.Series, mixins.XY, mixins.XYHover, {
+  d3.chart('Chart').extend('Labels', mixin(mixins.Series, mixins.XY, {
     initialize: function() {
       // Proxy attach to parent for hover
       var parent = this.options().parent;
       if (parent) {
+        this.parent = parent;
         parent.on('attach', function() {
           this.container = parent.container;
           this.trigger('attach');
@@ -129,7 +130,7 @@
       @type Number
       @default 0
     */
-    padding: property('padding', {default_value: 0}),
+    padding: property('padding', {default_value: 1}),
 
     /**
       Define text anchor, start, middle, or end
@@ -250,50 +251,6 @@
     // (Override for custom labels)
     transitionLabels: function(selection) {
       selection.attr('opacity', 1);
-    },
-
-    onMouseEnter: function(position) {
-      var points = this.getClosestPoints(position.chart);
-
-      this.removeHighlight();
-      utils.each(points, function(series) {
-        if (series && series.length) {
-          var closest = series[0];
-
-          if (closest.distance < 50)
-            this.highlightLabel(closest);
-        }
-      }, this);
-    },
-    onMouseMove: function(position) {
-      var points = this.getClosestPoints(position.chart);
-
-      this.removeHighlight();
-      utils.each(points, function(series) {
-        if (series && series.length) {
-          var closest = series[0];
-
-          if (closest.distance < 50)
-            this.highlightLabel(closest);
-        }
-      }, this);
-    },
-    onMouseLeave: function() {
-      this.removeHighlight();
-    },
-
-    highlightLabel: function(point) {
-      var label = this.base.selectAll('g.chart-series')
-        .selectAll('g')[point.j][point.i];
-
-      if (label)
-        d3.select(label).classed('highlight', true);
-    },
-    removeHighlight: function() {
-      this.base
-        .selectAll('g')
-        .selectAll('g')
-        .classed('highlight', false);
     }
   }), {
     z_index: 150

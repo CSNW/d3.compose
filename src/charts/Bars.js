@@ -8,7 +8,7 @@
 
     @class Bars
   */
-  d3.chart('Chart').extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, {
+  d3.chart('Chart').extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, mixins.XYHover, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -22,7 +22,10 @@
 
           return this.append('rect')
             .attr('class', chart.barClass)
-            .attr('style', chart.itemStyle);
+            .attr('style', chart.itemStyle)
+            .on('mouseenter', chart.onMouseEnterBar)
+            .on('mousemove', chart.onMouseMoveBar)
+            .on('mouseleave', chart.onMouseLeaveBar);
         },
         events: {
           'enter': function() {
@@ -104,7 +107,18 @@
       else {
         return 0;
       }
-    }
+    },
+
+    getHoverPoints: function(position) {},
+    onMouseEnterBar: di(function(chart, d, i, j) {
+      chart.container.trigger('mouseenter:point', chart.getPoint.call(this, d, i, j));
+    }),
+    onMouseMoveBar: di(function(chart, d, i, j) {
+      chart.container.trigger('mousemove:point', chart.getPoint.call(this, d, i, j));
+    }),
+    onMouseLeaveBar: di(function(chart, d, i, j) {
+      chart.container.trigger('mouseleave:point', chart.getPoint.call(this, d, i, j));
+    })
   }));
 
   /**
