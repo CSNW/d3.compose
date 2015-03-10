@@ -13,7 +13,7 @@ module.exports = function(grunt) {
       'src/mixins.js'
     ],
     lib: [
-      'src/charts/XYLabels.js',
+      'src/charts/Labels.js',
       'src/charts/Bars.js',
       'src/charts/Line.js',
       'src/components/Title.js',
@@ -138,7 +138,7 @@ module.exports = function(grunt) {
         tasks: ['jshint:src']
       },
       test: {
-        files: ['src/**/*.js', 'specs/**/*.js'],
+        files: ['src/**/*.js', 'src/**/*.css', 'specs/**/*.js'],
         tasks: ['build', 'test']
       },
       build: {

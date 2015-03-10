@@ -455,9 +455,9 @@
   /**
     mixin for handling labels in charts
 
-    @module XYLabels
+    @module Labels
   */
-  var XYLabels = {
+  var Labels = {
     /**
       Call during chart initialization to add labels to chart
 
@@ -472,8 +472,9 @@
       var labels = this._labels = new Labels(base, options);
 
       // Proxy x and y to parent chart
-      labels.x = this.x;
-      labels.y = this.y;
+      utils.each(this.proxyLabelMethods, function(method) {
+        labels[method] = this[method];
+      }, this);
 
       this.on('draw', function(data) {
         options = this.labels();
@@ -502,11 +503,23 @@
           value = {display: false};
 
         return utils.defaults({}, value, {
-          type: 'XYLabels'
+          type: 'Labels'
         });
       }
-    })
-  };
+    }),
+
+    // Array of methods to proxy on labels chart
+    proxyLabelMethods: []
+  }
+
+  /**
+    mixin for handling labels in XY charts
+
+    @module XYLabels
+  */
+  var XYLabels = utils.extend(Labels, {
+    proxyLabelMethods: ['x', 'y']
+  });
 
   /**
     mixin for handling common hover behavior
@@ -662,6 +675,7 @@
     Series: Series,
     XY: XY,
     XYValues: XYValues,
+    Labels: Labels,
     XYLabels: XYLabels,
     Hover: Hover,
     XYHover: XYHover

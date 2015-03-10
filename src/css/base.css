@@ -43,7 +43,9 @@
   font-size: 0.85em;
 }
 .chart-label-bg {
-  opacity: 0.5;
+  opacity: 0.6;
+  fill: white;
+  stroke: none;
 }
 
 /* Title */

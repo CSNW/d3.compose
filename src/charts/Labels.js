@@ -5,17 +5,9 @@
   var di = helpers.di;
 
   /**
-    Labels
-
-    Options:
-    - format
-    - position (top, right, bottom, left)
-    - offset ({x: ..., y: ...})
-    - padding
-    - anchor (start, middle, end)
-    - alignment (top, middle, bottom)
+    @class Labels
   */
-  d3.chart('Chart').extend('XYLabels', mixin(mixins.Series, mixins.XY, mixins.XYHover, {
+  d3.chart('Chart').extend('Labels', mixin(mixins.Series, mixins.XY, mixins.XYHover, {
     initialize: function() {
       // Proxy attach to parent for hover
       var parent = this.options().parent;
@@ -70,6 +62,12 @@
       return data;
     },
 
+    /**
+      Formatting function or string (string is passed to d3.format) for label values
+
+      @property format
+      @type String|Function
+    */
     format: property('format', {
       type: 'Function',
       set: function(value) {
@@ -81,6 +79,13 @@
       }
     }),
 
+    /**
+      Label position relative to data-point
+
+      @property position
+      @type String
+      @default top
+    */
     position: property('position', {
       default_value: 'top',
       validate: function(value) {
@@ -88,6 +93,14 @@
       }
     }),
 
+    /**
+      Offset between data-point and label
+      (if number is given, offset is set based on position)
+
+      @property offset
+      @type Number|Object
+      @default {x: 0, y: 0}
+    */
     offset: property('offset', {
       default_value: {x: 0, y: 0},
       set: function(offset) {
@@ -109,8 +122,23 @@
       }
     }),
 
-    padding: property('padding', {default_value: 2}),
+    /**
+      Padding between text and label background
 
+      @property padding
+      @type Number
+      @default 0
+    */
+    padding: property('padding', {default_value: 0}),
+
+    /**
+      Define text anchor, start, middle, or end
+      (set by default based on label position)
+
+      @property anchor
+      @type String
+      @default middle
+    */
     anchor: property('anchor', {
       default_value: function() {
         return {
@@ -125,7 +153,15 @@
       }
     }),
 
-    alignment: property('labelAlignment', {
+    /**
+      Define text-aligmment, top, middle, or bottom
+      (set by default based on label position)
+
+      @property alignment
+      @type String
+      @default middle
+    */
+    alignment: property('alignment', {
       default_value: function() {
         return {
           'top': 'bottom',
@@ -143,6 +179,12 @@
     duration: property('duration', {type: 'Function'}),
     ease: property('ease', {type: 'Function'}),
 
+    /**
+      Get label text for data-point (uses "label" property or y-value)
+
+      @method labelText
+      @return {String}
+    */
     labelText: di(function(chart, d, i) {
       var value = helpers.valueOrDefault(d.label, chart.yValue.call(this, d, i));
       var format = chart.format();
@@ -150,10 +192,17 @@
       return format ? format(value) : value;
     }),
 
+    /**
+      Get class for label group
+
+      @method labelClass
+      @return {String}
+    */
     labelClass: di(function(chart, d, i) {
       return 'chart-label' + (d['class'] ? ' ' + d['class'] : '');
     }),
 
+    // (Override for custom labels)
     insertLabels: function(selection) {
       selection.append('rect')
         .attr('class', 'chart-label-bg');
@@ -161,6 +210,7 @@
         .attr('class', 'chart-label-text');
     },
 
+    // (Override for custom labels)
     mergeLabels: function(selection) {
       var chart = this;
 
@@ -197,6 +247,7 @@
       });
     },
 
+    // (Override for custom labels)
     transitionLabels: function(selection) {
       selection.attr('opacity', 1);
     },
@@ -276,7 +327,7 @@
     var text_y_adjustment = 0;
     try {
       var style = window.getComputedStyle(label.text.element);
-      text_y_adjustment = -(parseInt(style['line-height']) - parseInt(style['font-size'])) / 2;
+      text_y_adjustment = -(parseFloat(style['line-height']) - parseFloat(style['font-size'])) / 2;
     }
     catch (ex) {}
 
