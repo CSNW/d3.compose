@@ -50,6 +50,9 @@
         return rotate_by_position[this.position()] || 0;
       }
     }),
+    style: property('style', {
+      default_value: {}
+    }),
 
     transformation: function() {
       var translate = helpers.translate(this.width() / 2, this.height() / 2);
@@ -60,5 +63,5 @@
   }, {
     z_index: 70
   });
-  
+
 })(d3, d3.chart.helpers, d3.chart.mixins);

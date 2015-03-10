@@ -1,7 +1,7 @@
 (function(d3, _, helpers, mixins) {
-  
+
   describe('mixins', function() {
-    var Chart, chart, data, values, width, height, processed;
+    var Chart, chart, data, values, width, height, processed, transformed;
 
     // Process data to mimic actual data that is passed to (d, i) methods
     function processData(data) {
@@ -10,6 +10,7 @@
         _.each(chart.seriesValues(series, index), function(value) {
           value.series = series;
         });
+
         return series;
       });
     }
@@ -27,15 +28,18 @@
       width = 600;
       height = 400;
 
-      Chart = d3.chart('Test', {
+      Chart = d3.chart('Chart').extend('Series', helpers.mixin(mixins.Series, {
         initialize: function() {
-          helpers.bindAllDi(this);
+          this._layers = {
+            mock: {
+              draw: function(data) {
+                transformed = data;
+              }
+            }
+          };
         },
         data: function() {
           return data || [];
-        },
-        options: function() {
-          return {};
         },
         height: function() {
           return height;
@@ -43,7 +47,7 @@
         width: function() {
           return width;
         }
-      }).extend('Series', mixins.Series);
+      }));
     });
 
     describe('Series', function() {
@@ -78,25 +82,27 @@
         expect(chart.seriesIndex.call(element(2, 1), processed[2].values[1])).toEqual(2);
       });
 
-      it('should get style from data -> series -> options', function() {
+      it('should get item style and series style', function() {
         var context = element(1, 2);
+        var series = processed[1];
         var d = processed[1].values[2];
-        var i = 2;
 
-        chart.options = function() { return {style: {fill: 'red', stroke: 'blue'}};};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: red; stroke: blue;');
+        series.style = {fill: 'yellow', 'stroke-width': '1.5px'};
+        expect(chart.itemStyle.call(context, series, 1)).toEqual('fill: yellow; stroke-width: 1.5px;');
 
-        data[1].style = {fill: 'yellow', 'stroke-width': '1.5px'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: yellow; stroke-width: 1.5px; stroke: blue;');
+        d.style = {fill: 'purple', 'font-size': '16px'};
+        expect(chart.itemStyle.call(context, d, 2)).toEqual('fill: purple; font-size: 16px;');
+      });
 
-        data[1].values[2].style = {fill: 'purple', 'font-size': '16px'};
-        expect(chart.itemStyle.call(context, d, i)).toEqual('fill: purple; font-size: 16px; stroke-width: 1.5px; stroke: blue;');
+      it('should ensure data is in series form', function() {
+        chart.draw([1, 2, 3]);
+        expect(transformed).toEqual([{values: [1, 2, 3]}]);
       });
     });
 
     describe('XY', function() {
       beforeEach(function() {
-        Chart = Chart.extend('XY', helpers.mixin(mixins.XY));
+        Chart = Chart.extend('XY', mixins.XY);
         chart = new Chart();
       });
 
@@ -114,7 +120,7 @@
         chart.setScales();
 
         expect(chart.xScale().domain()).toEqual([0, 100]);
-        expect(chart.yScale().domain()).toEqual([0, 100]);        
+        expect(chart.yScale().domain()).toEqual([0, 100]);
       });
 
       it('should return scaled x-value', function() {
@@ -127,17 +133,20 @@
         expect(chart.y(data[2].values[3])).toEqual(0);
       });
 
-      it('should calculate x,y min,max for all series', function() {
-        expect(chart.xMin()).toEqual(0);
-        expect(chart.xMax()).toEqual(12);
-        expect(chart.yMin()).toEqual(0);
-        expect(chart.yMax()).toEqual(12);
+      it('should handle varying data formats', function() {
+        _.each([
+          [[1, 10], [2, 20], [3, 30]],
+          [{x: 1, y: 10}, {x: 2, y: 20}, {x: 3, y: 30}]
+        ], function(test_case, i) {
+          expect(chart.xValue(test_case[i])).toEqual(i + 1);
+          expect(chart.yValue(test_case[i])).toEqual((i + 1) * 10);
+        });
       });
     });
 
     describe('XYValues', function() {
       beforeEach(function() {
-        Chart = Chart.extend('Values', helpers.mixin(mixins.XYValues));
+        Chart = Chart.extend('Values', mixins.XYValues);
         data = values;
         width = 500;
 
@@ -173,6 +182,20 @@
         chart.displayAdjacent(true);
         expect(chart.x(processed[0].values[2])).toEqual(225);
         expect(chart.x(processed[1].values[2])).toEqual(275);
+      });
+
+      it('should handle varying data formats', function() {
+        _.chain([
+          [0, 10, 20],
+          [{y: 0}, {y: 10}, {y: 20}],
+          [[0, 0], [1, 10], [2, 20]],
+          [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 20}, {x: 3, y: 30}]
+        ])
+        .map(mixins.XYValues.transform)
+        .each(function(test_case, i) {
+          expect(chart.xValue(test_case[i])).toEqual(i);
+          expect(chart.yValue(test_case[i])).toEqual(i * 10);
+        });
       });
     });
   });

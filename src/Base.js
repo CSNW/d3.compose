@@ -1,15 +1,11 @@
 (function(d3, helpers) {
   var each = helpers.utils.each;
   var property = helpers.property;
-  
-  /**
-    Base
-    Shared functionality between all charts, components, and containers
 
-    Properties:
-    - data
-    - options
-    - style
+  /**
+    Shared functionality between all charts and components
+
+    @class Base
   */
   d3.chart('Base', {
     initialize: function() {
@@ -20,14 +16,16 @@
     /**
       Store fully-transformed data
 
-      @param {Object|Array} value
+      @property data
+      @type Any
     */
     data: property('data'),
 
     /**
-      General options for chart/component
+      Overall options for chart/component, automatically setting any matching properties
 
-      @param {Object} value
+      @property options
+      @type Object
     */
     options: property('options', {
       default_value: {},
@@ -40,31 +38,27 @@
     }),
 
     /**
-      General style for chart/component
+      Width of chart/component
 
-      @param {Object} value
-    */
-    style: property('style', {
-      get: function(value) {
-        return helpers.style(value) || null;
-      }
-    }),
-    
-
-    /**
-      Get width/height of base
+      @method width
+      @return {Number}
     */
     width: function width() {
       return helpers.dimensions(this.base).width;
     },
+
+    /**
+      Height of chart/component
+
+      @method height
+      @return {Number}
+    */
     height: function height() {
       return helpers.dimensions(this.base).height;
     },
 
-    /**
-      Base is last transform to be called,
-      so stored data has been fully transformed
-    */
+    // Store transformed data for reference
+    // (Base is last transform to be called, so stored data has been fully transformed)
     transform: function(data) {
       data = data || [];
 
@@ -72,9 +66,7 @@
       return data;
     },
 
-    /**
-      Add events to draw: before:draw and draw
-    */
+    // Add events to draw: before:draw and draw
     draw: function(data) {
       this.trigger('before:draw', data);
       d3.chart().prototype.draw.apply(this, arguments);

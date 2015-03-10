@@ -14,7 +14,7 @@
           var chart = this.chart();
 
           return this.selectAll('rect')
-            .data(data, chart.keyValue);
+            .data(data, chart.key);
         },
         insert: function() {
           var chart = this.chart();
@@ -28,8 +28,8 @@
             var chart = this.chart();
 
             this
-              .attr('y', chart.y0)
-              .attr('height', 0);  
+              .attr('y', chart.y0())
+              .attr('height', 0);
           },
           'merge': function() {
             var chart = this.chart();
@@ -67,7 +67,7 @@
     displayAdjacent: property('displayAdjacent', {default_value: true}),
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i)) - chart.barOffset(); 
+      var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
       return height > 0 ? height : 0;
     }),
     barX: di(function(chart, d, i) {
@@ -93,16 +93,9 @@
 
       var axisThickness = this.__axis[0][0] && parseInt(this.__axis.style('stroke-width')) || 0;
       return axisThickness / 2;
-    },
-
-    insertSwatch: function() {
-      return this.append('rect')
-        .attr('x', 0).attr('y', 0)
-        .attr('width', 20).attr('height', 20)
-        .attr('class', 'chart-bar');
     }
   }));
-  
+
   /**
     Stacked Bars
   */
@@ -114,7 +107,7 @@
     },
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0.call(this, d, i) - chart.y.call(this, d, i));
+      var height = Math.abs(chart.y0() - chart.y.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
       return height > 0 ? height - offset : 0;
     }),
@@ -135,7 +128,7 @@
       var new_position = previous - (y0 - y);
 
       chart.bar_positions[i] = new_position;
-      
+
       return new_position;
     }),
 

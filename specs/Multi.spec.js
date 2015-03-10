@@ -1,6 +1,6 @@
 (function(d3, _, helpers, mixins) {
 
-  describe('Multi', function() {    
+  describe('Multi', function() {
     var fixture, selection, Container, container, Chart, charts, Component, components;
     beforeEach(function() {
       fixture = setFixtures('<svg id="chart"></svg>');
@@ -8,6 +8,7 @@
 
       Container = d3.chart('Multi').extend('TestContainer');
       container = new Container(selection);
+      container.margins({});
 
       Chart = d3.chart('Chart').extend('TestChart');
       Component = d3.chart('Component').extend('TestComponent');
@@ -17,7 +18,7 @@
     });
 
     it('should attach chart', function() {
-      charts[0] = new Chart(container.chartLayer());
+      charts[0] = new Chart(container.createChartLayer());
       container.charts({
         'chart1': charts[0]
       });
@@ -27,11 +28,11 @@
     });
 
     it('should attach component', function() {
-      components[0] = new Component(container.componentLayer());
+      components[0] = new Component(container.createComponentLayer());
       container.components({
         component1: components[0]
       });
-      
+
       expect(container.components()['component1']).toBe(components[0]);
       expect(container._attached['component1']).toBe(components[0]);
     });
@@ -63,18 +64,18 @@
               .attr('height', 100);
           },
           draw: spy
-        });          
+        });
 
         // Create and attach components
         components = [
-          new Component(container.componentLayer({z_index: 101}), {position: 'top'}),
-          new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'top'}),
-          new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'right'}),
-          new Component(container.componentLayer({z_index: 100}), {position: 'right'}),
-          new Component(container.componentLayer({z_index: 1}), {position: 'bottom'}),
-          new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'bottom'}),
-          new OverridenComponent(container.componentLayer({z_index: 50}), {position: 'left'}),
-          new Component(container.componentLayer({z_index: 200}), {position: 'left'})
+          new Component(container.createComponentLayer({z_index: 101}), {position: 'top'}),
+          new OverridenComponent(container.createComponentLayer({z_index: 50}), {position: 'top'}),
+          new OverridenComponent(container.createComponentLayer({z_index: 50}), {position: 'right'}),
+          new Component(container.createComponentLayer({z_index: 100}), {position: 'right'}),
+          new Component(container.createComponentLayer({z_index: 1}), {position: 'bottom'}),
+          new OverridenComponent(container.createComponentLayer({z_index: 50}), {position: 'bottom'}),
+          new OverridenComponent(container.createComponentLayer({z_index: 50}), {position: 'left'}),
+          new Component(container.createComponentLayer({z_index: 200}), {position: 'left'})
         ];
 
         container.components({
@@ -95,7 +96,7 @@
         });
 
         container.charts({
-          'chart-1': new Chart(container.chartLayer())
+          'chart-1': new Chart(container.createChartLayer())
         });
 
         // Setup container
@@ -111,7 +112,7 @@
           0: offset width x height = 50 x 100 -> offset 100 -> 170 - 100 = 70 -> (110, 70)
           1: 60 x 70 -> 70 -> 70 - 70 = 0 -> (110, 0)
           Chart: 0 + 100 + 70 = 170
-          
+
           Right
           -----
           2: 60 x 70 -> 60 -> 490 + 0 = 490 -> (490, 170)
@@ -157,12 +158,12 @@
       });
 
       it('should layout chartBase by component layout', function() {
-        var chartLayer = container.base.select('.chart-layer');
+        var createChartLayer = container.base.select('.chart-layer');
 
-        expect(chartLayer.attr('transform')).toEqual(translate(110, 170));
-        expect(chartLayer.attr('transform')).toEqual(translate(110, 170));
-        expect(helpers.dimensions(chartLayer).width).toEqual(380);
-        expect(helpers.dimensions(chartLayer).height).toEqual(60);
+        expect(createChartLayer.attr('transform')).toEqual(translate(110, 170));
+        expect(createChartLayer.attr('transform')).toEqual(translate(110, 170));
+        expect(helpers.dimensions(createChartLayer).width).toEqual(380);
+        expect(helpers.dimensions(createChartLayer).height).toEqual(60);
       });
 
       // it('should pre-draw just components on draw', function() {

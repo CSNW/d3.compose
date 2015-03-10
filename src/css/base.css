@@ -10,8 +10,9 @@
 */
 
 .chart-multi {
-  background-color: #eee;
+  background-color: #fff;
   border: solid 1px #ddd;
+  font-size: 14px;
 }
 
 .chart-index-0 {stroke: #1f77b4; fill: #1f77b4;}
@@ -39,9 +40,12 @@
 .chart-label-text {
   stroke: none;
   fill: black;
+  font-size: 0.85em;
 }
 .chart-label-bg {
-  opacity: 0.5;
+  opacity: 0.6;
+  fill: white;
+  stroke: none;
 }
 
 /* Title */
@@ -71,6 +75,6 @@
 }
 
 /* Legend */
-.chart-legend {
-
+.chart-legend-label {
+  font-size: 0.9em;
 }
