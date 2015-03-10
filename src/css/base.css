@@ -10,9 +10,9 @@
 */
 
 .chart-multi {
+  font-size: 14px;
   background-color: #fff;
   border: solid 1px #ddd;
-  font-size: 14px;
 }
 
 .chart-index-0 {stroke: #1f77b4; fill: #1f77b4;}
@@ -38,9 +38,9 @@
 
 /* Labels */
 .chart-label-text {
+  font-size: 0.85em;
   stroke: none;
   fill: black;
-  font-size: 0.85em;
 }
 .chart-label-bg {
   opacity: 0.6;
@@ -50,11 +50,11 @@
 
 /* Title */
 .chart-title {
-  font-size: 110%;
+  font-size: 1.1em;
   font-weight: bold;
 }
 .chart-title-main {
-  font-size: 120%;
+  font-size: 1.2em;
   font-weight: bold;
 }
 
@@ -63,12 +63,12 @@
   shape-rendering: crispEdges;
 }
 .chart-axis path {
-  stroke-width: 2px;
   fill: none;
+  stroke-width: 2px;
   stroke: black;
 }
 .chart-axis .tick {
-  font-size: 90%;
+  font-size: 0.9em;
 }
 .chart-axis .tick line {
   stroke: black;
