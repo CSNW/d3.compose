@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.11.0
+/*! d3.chart.multi - v0.11.1
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -1550,8 +1550,6 @@
     }),
 
     /**
-      seriesLayer
-
       extension of layer()
       - updates dataBind method to access underlying series values
       - handles appending series groups to chart
@@ -1998,7 +1996,7 @@
 
     @module XYLabels
   */
-  var XYLabels = utils.extend(Labels, {
+  var XYLabels = utils.extend({}, Labels, {
     proxyLabelMethods: ['x', 'y']
   });
 

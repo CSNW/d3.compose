@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.11.0
+/*! d3.chart.multi - v0.11.1
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
