@@ -309,20 +309,22 @@
 
       var throttledMouseMove = utils.throttle(function(coordinates) {
         if (inside)
-          trigger('move:mouse', coordinates);
+          trigger('mousemove', coordinates);
       }, 50);
 
       this.base.on('mouseenter', function() {
-        inside = true;
+        // Calculate chart position on enter and cache during move
         chart_position = chartPosition();
-        trigger('enter:mouse', translateToXY(d3.mouse(this), chart_position));
+
+        inside = true;
+        trigger('mouseenter', translateToXY(d3.mouse(this), chart_position));
       });
       this.base.on('mousemove', function() {
         throttledMouseMove(translateToXY(d3.mouse(this), chart_position));
       });
       this.base.on('mouseleave', function() {
         inside = false;
-        trigger('leave:mouse');
+        trigger('mouseleave');
       });
 
       function translateToXY(coordinates, chart_position) {

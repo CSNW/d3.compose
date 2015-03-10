@@ -528,9 +528,9 @@
     initialize: function() {
       this.on('attach', function() {
         if (this.container) {
-          this.container.on('enter:mouse', this.onMouseEnter.bind(this));
-          this.container.on('move:mouse', this.onMouseMove.bind(this));
-          this.container.on('leave:mouse', this.onMouseLeave.bind(this));
+          this.container.on('mouseenter', this.onMouseEnter.bind(this));
+          this.container.on('mousemove', this.onMouseMove.bind(this));
+          this.container.on('mouseleave', this.onMouseLeave.bind(this));
         }
       }.bind(this));
     },
