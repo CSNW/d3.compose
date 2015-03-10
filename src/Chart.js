@@ -10,7 +10,8 @@
       this.options(options || {});
     }
   }, {
-    z_index: 100
+    z_index: 100,
+    layer_type: 'chart'
   });
 
 })(d3, d3.chart.helpers);

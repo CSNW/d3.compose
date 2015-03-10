@@ -126,7 +126,8 @@
       this.width(options && options.width);
     }
   }, {
-    z_index: 50
+    z_index: 50,
+    layer_type: 'component'
   });
 
 })(d3, d3.chart.helpers);
