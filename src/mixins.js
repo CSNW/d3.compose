@@ -69,8 +69,6 @@
     }),
 
     /**
-      seriesLayer
-
       extension of layer()
       - updates dataBind method to access underlying series values
       - handles appending series groups to chart
@@ -517,7 +515,7 @@
 
     @module XYLabels
   */
-  var XYLabels = utils.extend(Labels, {
+  var XYLabels = utils.extend({}, Labels, {
     proxyLabelMethods: ['x', 'y']
   });
 
