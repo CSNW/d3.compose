@@ -1,4 +1,84 @@
-/*! d3.chart.multi - v0.10.0
+/*! d3.chart.multi - v0.11.0
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
+/**
+  Base styles for d3.chart.multi
+
+  Includes
+  - chart
+  - lines
+  - bars
+  - axis
+  - legend
+*/
+
+.chart-multi {
+  background-color: #fff;
+  border: solid 1px #ddd;
+  font-size: 14px;
+}
+
+.chart-index-0 {stroke: #1f77b4; fill: #1f77b4;}
+.chart-index-1 {stroke: #ff7f0e; fill: #ff7f0e;}
+.chart-index-2 {stroke: #2ca02c; fill: #2ca02c;}
+.chart-index-3 {stroke: #d62728; fill: #d62728;}
+.chart-index-4 {stroke: #9467bd; fill: #9467bd;}
+.chart-index-5 {stroke: #8c564b; fill: #8c564b;}
+.chart-index-6 {stroke: #e377c2; fill: #e377c2;}
+.chart-index-7 {stroke: #7f7f7f; fill: #7f7f7f;}
+
+/* Lines */
+.chart-line {
+  stroke-width: 1.5px;
+  fill: none;
+}
+
+/* Bars */
+.chart-bar {
+  stroke: none;
+  shape-rendering: crispEdges;
+}
+
+/* Labels */
+.chart-label-text {
+  stroke: none;
+  fill: black;
+  font-size: 0.85em;
+}
+.chart-label-bg {
+  opacity: 0.6;
+  fill: white;
+  stroke: none;
+}
+
+/* Title */
+.chart-title {
+  font-size: 110%;
+  font-weight: bold;
+}
+.chart-title-main {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+/* Axis */
+.chart-axis {
+  shape-rendering: crispEdges;
+}
+.chart-axis path {
+  stroke-width: 2px;
+  fill: none;
+  stroke: black;
+}
+.chart-axis .tick {
+  font-size: 90%;
+}
+.chart-axis .tick line {
+  stroke: black;
+}
+
+/* Legend */
+.chart-legend-label {
+  font-size: 0.9em;
+}

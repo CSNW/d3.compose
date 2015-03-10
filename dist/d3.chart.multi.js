@@ -1,4 +1,4 @@
-/*! d3.chart.multi - v0.10.0
+/*! d3.chart.multi - v0.11.0
  * https://github.com/CSNW/d3.chart.multi
  * License: MIT
  */
@@ -25,6 +25,7 @@
     isUndefined: _.isUndefined,
     keys: _.keys,
     map: _.map,
+    min: _.min,
     max: _.max,
     reduce: _.reduce,
     reduceRight: _.reduceRight,
@@ -51,14 +52,14 @@
 
     // get
     console.log(obj.simple()); // -> 'Howdy'
-    
+
     // Advanced
     // --------
     // Default values:
     obj.advanced = property('advanced', {
       default_value: 'Howdy!'
     });
-  
+
     console.log(obj.advanced()); // -> 'Howdy!'
     obj.advanced('Goodbye');
     console.log(obj.advanced()); // -> 'Goodbye'
@@ -99,23 +100,22 @@
     });
     ```
 
+    @method property
     @param {String} name of stored property
     @param {Object} options
-    - default_value: default value for property (when set value is undefined)
-    - get: function(value) {return ...} getter, where value is the stored value, return desired value
-    - set: function(value, previous) {return {override, after}} 
-      - return override to set stored value and after() to run after set
-    - type: {String} ['Function']
-      - 'Object' gets object extensions: extend({...})
-      - 'Array' gets array extensions: push(...)
-      - 'Function' don't evaluate in get/set
-    - context: {Object} [this] context to evaluate get/set/after functions
-    - prop_key: {String} ['__properties'] underlying key on object to store properties on
+      @param {Any} options.default_value default value for property (when set value is undefined)
+      @param {Function} options.get function(value) {return ...} getter, where value is the stored value, return desired value
+      @param {Function} options.set: function(value, previous) {return {override, after}}
+        - return override to set stored value and after() to run after set
+      @param {String} [options.type='Function']
+        - 'Function' don't evaluate in get/set
+      @param {Object} [options.context=this] context to evaluate get/set/after functions
+      @param {String} [options.prop_key='__properties'] underlying key on object to store properties on
 
     @return {Function}
-    - (): get
-    - (value): set
-  */ 
+      - (): get
+      - (value): set
+  */
   function property(name, options) {
     options = options || {};
     var prop_key = options.prop_key || '__properties';
@@ -124,7 +124,7 @@
       var properties = this[prop_key] = this[prop_key] || {};
       var existing = properties[name];
       var context = valueOrDefault(getSet.context, this);
-      
+
       if (arguments.length)
         return set.call(this, value);
       else
@@ -150,7 +150,7 @@
 
         if (utils.isFunction(options.set)) {
           var response = options.set.call(context, value, getSet.previous);
-          
+
           if (response && utils.has(response, 'override'))
             properties[name] = response.override;
           if (response && utils.isFunction(response.after))
@@ -172,20 +172,21 @@
 
   /**
     If value isn't undefined, return value, otherwise use default_value
-  
-    @param {Varies} [value]
-    @param {Varies} default_value
-    @return {Varies}
+
+    @method valueOrDefault
+    @param {Any} [value]
+    @param {Any} default_value
+    @return {Any}
   */
   function valueOrDefault(value, default_value) {
     return !utils.isUndefined(value) ? value : default_value;
   }
 
   /**
-    Dimensions
     Helper for robustly determining width/height of given selector
 
-    @param {d3 Selection} selection
+    @method dimensions
+    @param {d3.Selection} selection
     @return {Object} {width, height}
   */
   function dimensions(selection) {
@@ -194,7 +195,7 @@
 
     // 1. Get width/height set via css (only valid for svg and some other elements)
     var client = {
-      width: element && element.clientWidth, 
+      width: element && element.clientWidth,
       height: element && element.clientHeight
     };
 
@@ -216,7 +217,7 @@
       width: selection && selection.attr && parseFloat(selection.attr('width')),
       height: selection && selection.attr && parseFloat(selection.attr('height'))
     };
-    
+
     if (is_SVG) {
       return {
         width: client.width != null ? client.width : attr.width || 0,
@@ -244,14 +245,15 @@
 
   /**
     Translate by (x, y) distance
-    
+
     @example
     ```javascript
     transform.translate(10, 15) == 'translate(10, 15)'
     transform.translate({x: 10, y: 15}) == 'translate(10, 15)'
     ```
 
-    @param {Number|Object} [x] value or object with x and y
+    @method translate
+    @param {Number|Object} [x] value or {x, y}
     @param {Number} [y]
     @return {String}
   */
@@ -260,13 +262,14 @@
       y = x.y;
       x = x.x;
     }
-      
+
     return 'translate(' + (x || 0) + ', ' + (y || 0) + ')';
   }
 
   /**
     Rotate by degrees, with optional center
 
+    @method rotate
     @param {Number} degrees
     @param {Object} [center = {x: 0, y: 0}]
     @return {String}
@@ -280,7 +283,39 @@
   }
 
   /**
+    Find vertical offset to vertically align text
+    (needed due to lack of alignment-baseline support in Firefox)
+
+    @method alignText
+    @param {element} element
+    @param {Number} [line_height]
+    @return {Number} offset
+  */
+  function alignText(element, line_height) {
+    var offset = 0;
+    try {
+      var style = window.getComputedStyle(element);
+      var height = element.getBBox().height;
+
+      // Adjust for line-height
+      var adjustment = -(parseFloat(style['line-height']) - parseFloat(style['font-size'])) / 2;
+
+      if (line_height && line_height > 0)
+        adjustment += (line_height - height) / 2;
+
+      offset = height + adjustment;
+    }
+    catch (ex) {}
+
+    return offset;
+  }
+
+  /**
     Determine if given data is likely series data
+
+    @method isSeriesData
+    @param {Array} data
+    @return {Boolean}
   */
   function isSeriesData(data) {
     var first = utils.first(data);
@@ -289,6 +324,11 @@
 
   /**
     Get max for array/series by value di
+
+    @method max
+    @param {Array} data
+    @param {Function} getValue di function that returns value for given (d, i)
+    @return {Number}
   */
   function max(data, getValue) {
     var getMax = function(data) {
@@ -313,6 +353,11 @@
 
   /**
     Get min for array/series by value di
+
+    @method min
+    @param {Array} data
+    @param {Function} getValue di function that returns value for given (d, i)
+    @return {Number}
   */
   function min(data, getValue) {
     var getMin = function(data) {
@@ -337,13 +382,13 @@
 
   /**
     Create scale from options
-    
+
     @example
     ```javascript
     // Simple type, range, and domain
     var scale = createScale({
-      type: 'linear', 
-      domain: [0, 100], 
+      type: 'linear',
+      domain: [0, 100],
       range: [0, 500]
     });
 
@@ -360,13 +405,17 @@
     });
     ```
 
-    @param {Object|function} options
-    - (passing in function returns original function with no changes)
-    - type: {String} Any available d3 scale (linear, ordinal, log, etc.) or time
-    - domain: {Array} Domain for scale
-    - range: {Array} Range for scale
-    - ...: {Arguments Array} Set any other scale properties by passing in "arguments" array
-    @return {d3.scale}
+    @method createScale
+    @param {Object|Function} options
+      - (passing in function returns original function with no changes)
+      @param {String} [options.type] Any available d3 scale (linear, ordinal, log, etc.) or time
+      @praam {Array} [options.domain] Domain for scale
+      @param {Array} [options.range] Range for scale
+      @param {Any} [options.data] Used to dynamically set domain (with given value "di" or key)
+      @param {Function} [options.value] "di" for getting value for data
+      @param {String} [options.key] Data key to extract value
+      @param {Array...} [...] Set any other scale properties with array of arguments to pass to property
+    @return {d3.Scale}
   */
   function createScale(options) {
     options = options || {};
@@ -388,48 +437,47 @@
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments
-        // (don't pass through type, data, or key)
+        // (don't pass through type, data, value, or key)
         if (key == 'range' || key == 'domain')
           scale[key](value);
-        else if (key != 'type' && key != 'data' && key != 'key')
-          scale[key].apply(scale, value);  
+        else if (!utils.contains(['type', 'data', 'value', 'key'], key))
+          scale[key].apply(scale, value);
       }
     });
 
-    if (!options.domain && options.data && options.key) {
-      var getValue = function(d, i) {
+    if (!options.domain && options.data && (options.key || options.value)) {
+      // Use value "di" or create for key
+      var getValue = options.value || function(d, i) {
         return d[options.key];
       };
 
+      // Enforce series data
+      var data = options.data;
+      if (!isSeriesData(data))
+        data = [{values: data}];
+
+      var domain;
       if (options.type == 'ordinal') {
-        // Extract unique values from series
-        var getValues = function(data) {
-          return utils.map(data, getValue);
-        };
-
-        var all_values;
-        if (isSeriesData(options.data)) {
-          all_values = utils.flatten(utils.map(options.data, function(series) {
-            if (series && utils.isArray(series.values)) {
-              return getValues(series.values);
-            }
-          }));
-        }
-        else {
-          all_values = getValues(options.data);
-        }
-
-        scale.domain(utils.uniq(all_values));
+        // Domain for ordinal is array of unique values
+        domain = utils.chain(data)
+          .map(function(series) {
+            if (series && series.values)
+              return utils.map(series.values, getValue);
+          })
+          .flatten()
+          .uniq()
+          .value();
       }
       else {
-        // By default, domain starts at 0 unless min is less than 0
-        var min_value = min(options.data, getValue);
+        var min_value = min(data, getValue);
 
-        scale.domain([
-          min_value < 0 ? min_value : 0, 
-          max(options.data, getValue)
-        ]);
-      }      
+        domain = [
+          min_value < 0 ? min_value : 0,
+          max(data, getValue)
+        ];
+      }
+
+      scale.domain(domain);
     }
 
     return scale;
@@ -441,6 +489,7 @@
     @example
     style({color: 'red', display: 'block'}) -> color: red; display: block;
 
+    @method style
     @param {Object} styles
     @return {String}
   */
@@ -459,7 +508,7 @@
   /**
     Create wrapped (d, i) function that adds chart instance as first argument
     Wrapped function uses standard d3 arguments and context
-  
+
     Note: in order to pass proper context to di-functions called within di-function
           use `.call(this, d, i)` (where "this" is d3 context)
 
@@ -469,7 +518,7 @@
       // "this" is traditional d3 context: node
       return chart._xScale()(chart.xValue.call(this, d, i));
     });
-  
+
     // In order for chart to be specified, bind to chart
     chart.x = helpers.bindDi(chart.x, chart);
     // or
@@ -479,6 +528,7 @@
     // (d, i) and "this" used from d3, "chart" injected automatically
     ```
 
+    @method di
     @param {Function} callback with (chart, d, i) arguments
     @return {Function}
   */
@@ -511,8 +561,9 @@
   /**
     Get parent data for element
 
+    @method getParentData
     @param {Element} element
-    @return {Varies}
+    @return {Any}
   */
   function getParentData(element) {
     // @internal Shortcut if element + parentData needs to be mocked
@@ -527,14 +578,15 @@
   }
 
   /**
-    Mixin mixins into prototype
+    Mixin into prototype
 
-    Designed specifically to work with d3-chart
+    Designed specifically to work with d3.chart
     - transform is called from last to first
     - initialize is called from first to last
-    - remaining are overriden from first to last  
+    - remaining are overriden from first to last
 
-    @param {Array or Object...} mixins Array of mixins or separate extension arguments
+    @method mixin
+    @param {Array|Object...} mixins... Array of mixins or mixins as separate arguments
     @return {Object}
   */
   function mixin(mixins) {
@@ -564,7 +616,7 @@
         }, data, this);
       };
     }
-    
+
     return mixed;
   }
 
@@ -576,6 +628,7 @@
     dimensions: dimensions,
     translate: translate,
     rotate: rotate,
+    alignText: alignText,
     isSeriesData: isSeriesData,
     max: max,
     min: min,
@@ -588,18 +641,15 @@
     mixin: mixin
   });
 })(d3, _);
+
 (function(d3, helpers) {
   var each = helpers.utils.each;
   var property = helpers.property;
-  
-  /**
-    Base
-    Shared functionality between all charts, components, and containers
 
-    Properties:
-    - data
-    - options
-    - style
+  /**
+    Shared functionality between all charts and components
+
+    @class Base
   */
   d3.chart('Base', {
     initialize: function() {
@@ -610,14 +660,16 @@
     /**
       Store fully-transformed data
 
-      @param {Object|Array} value
+      @property data
+      @type Any
     */
     data: property('data'),
 
     /**
-      General options for chart/component
+      Overall options for chart/component, automatically setting any matching properties
 
-      @param {Object} value
+      @property options
+      @type Object
     */
     options: property('options', {
       default_value: {},
@@ -630,31 +682,27 @@
     }),
 
     /**
-      General style for chart/component
+      Width of chart/component
 
-      @param {Object} value
-    */
-    style: property('style', {
-      get: function(value) {
-        return helpers.style(value) || null;
-      }
-    }),
-    
-
-    /**
-      Get width/height of base
+      @method width
+      @return {Number}
     */
     width: function width() {
       return helpers.dimensions(this.base).width;
     },
+
+    /**
+      Height of chart/component
+
+      @method height
+      @return {Number}
+    */
     height: function height() {
       return helpers.dimensions(this.base).height;
     },
 
-    /**
-      Base is last transform to be called,
-      so stored data has been fully transformed
-    */
+    // Store transformed data for reference
+    // (Base is last transform to be called, so stored data has been fully transformed)
     transform: function(data) {
       data = data || [];
 
@@ -662,9 +710,7 @@
       return data;
     },
 
-    /**
-      Add events to draw: before:draw and draw
-    */
+    // Add events to draw: before:draw and draw
     draw: function(data) {
       this.trigger('before:draw', data);
       d3.chart().prototype.draw.apply(this, arguments);
@@ -675,10 +721,11 @@
 })(d3, d3.chart.helpers);
 
 (function(d3, helpers) {
-  
+
   /**
-    Chart
     Foundation for building charts with series data
+
+    @class Chart
   */
   d3.chart('Base').extend('Chart', {
     initialize: function(options) {
@@ -693,86 +740,104 @@
 (function(d3, helpers) {
   var utils = helpers.utils;
   var property = helpers.property;
-  
+
   /**
-    Component
     Common component functionality / base for creating components
 
-    Properties
-    - {String} [position = top] (top, right, bottom, left)
-    - {Number} [width = base width]
-    - {Number} [height = base height]
-    - {Object} [margins] % margins relative to component dimensions
-      - top {Number} % of height
-      - right {Number} % of width
-      - bottom {Number} % of height
-      - left {Number} % of width
-
-    Customization
-    - skip_layout: Don't use this component type during layout (e.g. inset within chart)
-    - layoutWidth: Adjust with more precise sizing calculations
-    - layoutHeight: Adjust with more precise sizing calculations
-    - layoutPosition: Adjust layout positioning
-    - setLayout: Override if layout needs to be customized
+    @class Component
   */
   d3.chart('Base').extend('Component', {
     initialize: function(options) {
       this.options(options || {});
     },
 
+    /**
+      Component position relative to chart
+      (top, right, bottom, left)
+
+      @property position
+      @type String
+      @default top
+    */
     position: property('position', {
       default_value: 'top',
       validate: function(value) {
         return utils.contains(['top', 'right', 'bottom', 'left'], value);
       }
     }),
+
+    /**
+      @property width
+      @type Number
+      @default (actual width)
+    */
     width: property('width', {
       default_value: function() {
         return helpers.dimensions(this.base).width;
       }
     }),
+
+    /**
+      @property height
+      @type Number
+      @default (actual height)
+    */
     height: property('height', {
       default_value: function() {
         return helpers.dimensions(this.base).height;
       }
     }),
 
-    margins: property('margins', {
-      get: function(values) {
-        var percentages = utils.defaults({}, values, {top: 0.0, right: 0.0, bottom: 0.0, left: 0.0});
-        var width = this.width();
-        var height = this.height();
+    /**
+      Margins (in pixels) around component
 
+      @property margins
+      @type Object
+      @default {top: 0, right: 0, bottom: 0, left: 0}
+    */
+    margins: property('margins', {
+      set: function(values) {
         return {
-          top: percentages.top * height,
-          right: percentages.right * width,
-          bottom: percentages.bottom * height,
-          left: percentages.left * width
+          override: utils.defaults(values, {top: 0, right: 0, bottom: 0, left: 0})
         };
-      }
+      },
+      default_value: {top: 0, right: 0, bottom: 0, left: 0}
     }),
 
     /**
-      Height/width/position to use in layout calculations
-      (Override for more specific sizing in layout calculations)
+      Skip component during layout calculations and positioning
+      (override in prototype of extension)
 
-      - skip_layout: Skip component during layout calculations and positioning
-      - prepareLayout: perform any layout preparation required (default is draw)
-      - getLayout: return position, width, and height for layout
-      - setLayout: use x, y, and options {height, width} for layout
+      @attribute skip_layout
+      @type Boolean
+      @default false
     */
     skip_layout: false,
 
+    /**
+      Perform any layout preparation required before getLayout (default is draw)
+      (override in prototype of extension)
+
+      Note: By default, components are double-drawn, which may cause issues with transitions
+
+      @method prepareLayout
+      @param {Any} data
+    */
     prepareLayout: function(data) {
-      // Note: By default, components are double-drawn
-      //       this may cause issues with transitions
-      //       override prepareLayout to adjust this behavior
       this.draw(data);
     },
 
+    /**
+      Get layout details for use when laying out component
+      (override in prototype of extension)
+
+      @method getLayout
+      @param {Any} data
+      @return {Object} position, width, and height for layout
+    */
     getLayout: function(data) {
       this.prepareLayout(data);
-      
+
       var margins = this.margins();
       return {
         position: this.position(),
@@ -783,13 +848,18 @@
 
     /**
       Set layout of underlying base
-      (Override for elements placed within chart)
+      (override in prototype of extension)
+
+      @method setLayout
+      @param {Number} x position of base top-left
+      @param {Number} y position of base top-left
+      @param {Object} options
+        @param {Object} [options.height] height of component in layout
+        @param {Object} [options.width] width of component in layout
     */
     setLayout: function(x, y, options) {
-      // TODO margins depends on height/width
-      //      -> setting them changes margins and would change layout calcs
-      //      => switch to pixel margins to match rest of d3.chart.multi
       var margins = this.margins();
+
       this.base.attr('transform', helpers.translate(x + margins.left, y + margins.top));
       this.height(options && options.height);
       this.width(options && options.width);
@@ -839,7 +909,8 @@
       })
     ```
 
-    @param {Function|Object} options
+    @class Multi
+    @param {Function|Object} [options]
   */
   d3.chart('Base').extend('Multi', {
     initialize: function(options) {
@@ -858,10 +929,17 @@
       this.attachHoverListeners();
     },
 
+    /**
+      Options function that returns {chart,component} for data or static {chart,component}
+
+      @property options
+      @type Function|Object
+    */
     options: property('options', {
       default_value: function(data) { return {}; },
       type: 'Function',
       set: function(options) {
+        // Clear cached config
         this._config = null;
 
         // If options is plain object,
@@ -879,17 +957,19 @@
     /**
       Store raw data for container before it has been transformed
 
-      @param {Object|Array} value
+      @property rawData
+      @type Any
     */
     rawData: property('rawData'),
 
     /**
       Margins between edge of container and components/chart
 
-      @param {Object} value {top, right, bottom, left}
+      @property margins
+      @type Object {top, right, bottom, left}
     */
     margins: property('margins', {
-      default_value: {top: 0, right: 0, bottom: 0, left: 0},
+      default_value: {top: 10, right: 10, bottom: 10, left: 10},
       set: function(values) {
         return {
           override: utils.defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
@@ -900,7 +980,9 @@
     /**
       Chart position (generally used internally)
 
-      @param {Object} value {top, right, bottom, left}
+      @internal
+      @property chartPosition
+      @param Object {top, right, bottom, left}
     */
     chartPosition: property('chartPosition', {
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
@@ -918,9 +1000,19 @@
     }),
 
     /**
-      Get/set overall width/height of Container
+      Get/set overall width of chart
+
+      @property width
+      @type Number
     */
     width: property('width'),
+
+    /**
+      Get/set overall height of chart
+
+      @property height
+      @type Number
+    */
     height: property('height'),
 
     _width: function() {
@@ -932,11 +1024,18 @@
       return height != null ? height : d3.chart('Base').prototype.height.call(this);
     },
 
+    /**
+      Set charts from options or get charts
+      (Set from charts returned from `options` function)
+
+      @property charts
+      @type Object
+    */
     charts: property('charts', {
       set: function(chart_options, charts) {
         chart_options = chart_options || {};
         charts = charts || {};
-        
+
         // Remove charts that are no longer needed
         var remove_ids = utils.difference(utils.keys(charts), utils.keys(chart_options));
         utils.each(remove_ids, function(remove_id) {
@@ -965,11 +1064,11 @@
 
             if (!chart) {
               var Chart = d3.chart(options.type);
-              
+
               if (!Chart)
                 throw new Error('No registered d3.chart found for ' + options.type);
 
-              var base = this.chartLayer();
+              var base = this.createChartLayer();
 
               chart = new Chart(base, options);
               chart.type = options.type;
@@ -991,6 +1090,13 @@
       default_value: {}
     }),
 
+    /**
+      Set components from options or get components
+      (Set from components returned from `options` function)
+
+      @property components
+      @type Object
+    */
     components: property('components', {
       set: function(component_options, components) {
         component_options = component_options || {};
@@ -1029,7 +1135,7 @@
                 throw new Error('No registered d3.chart found for ' + options.type);
 
               var layer_options = {z_index: Component.z_index};
-              var base = Component.layer_type == 'chart' ? this.chartLayer(layer_options) : this.componentLayer(layer_options);
+              var base = Component.layer_type == 'chart' ? this.createChartLayer(layer_options) : this.createComponentLayer(layer_options);
 
               component = new Component(base, options);
               component.type = options.type;
@@ -1042,7 +1148,7 @@
             }
           }
 
-          
+
         }, this);
 
         // Store actual components rather than options
@@ -1052,7 +1158,13 @@
       },
       default_value: {}
     }),
-  
+
+    /**
+      Draw chart with given data
+
+      @method draw
+      @param {Object} data
+    */
     draw: function(data) {
       if (!this._config) {
         data = data.original || data;
@@ -1070,6 +1182,7 @@
         original: data,
         config: this._config.data
       };
+      this.data(data);
 
       // Explicitly set width and height of container if width/height is defined
       this.base
@@ -1083,6 +1196,11 @@
       d3.chart().prototype.draw.call(this, data);
     },
 
+    /**
+      Redraw chart with current data
+
+      @method redraw
+    */
     redraw: function() {
       if (this.rawData())
         this.draw(this.rawData().original);
@@ -1101,12 +1219,14 @@
     },
 
     /**
-      Get chart layer (for laying out with charts)
+      Create chart layer (for laying out with charts)
 
+      @method createChartLayer
       @param {Object} options
-      - z_index
+        @param {Number} options.z_index
+      @return {d3.selection}
     */
-    chartLayer: function(options) {
+    createChartLayer: function(options) {
       options = utils.defaults({}, options, {
         z_index: d3.chart('Chart').z_index
       });
@@ -1117,12 +1237,14 @@
     },
 
     /**
-      Get component layer
+      create component layer
 
+      @method createComponentLayer
       @param {Object} options
-      - z_index
+        @param {Number} options.z_index
+      @return {d3.selection}
     */
-    componentLayer: function(options) {
+    createComponentLayer: function(options) {
       options = utils.defaults({}, options, {
         z_index: d3.chart('Component').z_index
       });
@@ -1132,9 +1254,7 @@
         .attr('data-zIndex', options.z_index);
     },
 
-    /**
-      Layout components and charts
-    */
+    // Layout components and chart for given data
     layout: function(data) {
       // 1. Place chart layers
       this._positionChartLayers();
@@ -1159,7 +1279,7 @@
       var trigger = this.trigger.bind(this);
       var chartPosition = this.chartPosition.bind(this);
       var inside, chart_position;
-      
+
       var throttledMouseMove = utils.throttle(function(coordinates) {
         if (inside)
           trigger('move:mouse', coordinates);
@@ -1183,7 +1303,7 @@
         var y = coordinates[1];
         var chart_x = x - chart_position.left;
         var chart_y = y - chart_position.top;
-        
+
         // Set at chart bounds if outside of chart
         if (x > (chart_position.left + chart_position.width))
           chart_x = chart_position.left + chart_position.width;
@@ -1266,12 +1386,12 @@
     _positionLayers: function(layout) {
       this._positionChartLayers();
       this._positionComponents(layout);
-      this._positionByZIndex();      
+      this._positionByZIndex();
     },
 
     _positionChartLayers: function() {
       var position = this.chartPosition();
-      
+
       this.base.selectAll('.chart-layer')
         .attr('transform', helpers.translate(position.left, position.top))
         .attr('width', position.width)
@@ -1282,11 +1402,11 @@
       var chart = this.chartPosition();
       var width = this._width();
       var height = this._height();
-      
+
       utils.reduce(layout.top, function(previous, part, index, parts) {
         var y = previous - part.offset;
         setLayout(part.component, chart.left, y, {width: chart.width});
-        
+
         return y;
       }, chart.top);
 
@@ -1352,7 +1472,7 @@
           component: component
         });
       }, this);
-      
+
       return overall_layout;
     }
   });
