@@ -8,35 +8,28 @@
 
     @class Line
   */
-  d3.chart('Chart').extend('Line', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.XYHover, {
+  d3.chart('Chart').extend('Line', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
     initialize: function() {
+      this.lines = [];
+
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
-          var chart = this.chart();
-          var lines = chart.lines = [];
-
-          // Add lines based on underlying series data
-          _.each(chart.data(), function(series, index) {
-            lines[index] = chart.createLine(series);
-          });
-
-          // Rather than use provided series data
           return this.selectAll('path')
-            .data(function(d, i) {
-              return [chart.data()[i]];
-            }, chart.seriesKey);
+            .data(function(d, i, j) {
+              return [data.call(this, d, i, j)];
+            });
         },
         insert: function() {
           var chart = this.chart();
 
           return this.append('path')
             .classed('chart-line', true)
-            .attr('style', chart.itemStyle);
+            .attr('style', chart.itemStyle)
+            .each(chart.createLine);
         },
         events: {
           'merge:transition': function() {
             var chart = this.chart();
-            var lines = chart.lines;
 
             if (chart.delay())
               this.delay(chart.delay());
@@ -45,11 +38,9 @@
             if (chart.ease())
               this.ease(chart.ease());
 
-            this
-              .attr('d', function(d, i) {
-                return lines[chart.seriesIndex.call(this, d, i)](chart.seriesValues.call(this, d, i));
-              })
-              .attr('style', chart.itemStyle);
+            this.attr('d', function(d, i, j) {
+              return chart.lines[j](d);
+            });
           }
         }
       });
@@ -75,17 +66,15 @@
     duration: property('duration', {type: 'Function'}),
     ease: property('ease', {type: 'Function'}),
 
-    createLine: function(series) {
-      var line = d3.svg.line()
-        .x(this.x)
-        .y(this.y);
+    createLine: di(function(chart, d, i, j) {
+      var line = chart.lines[j] = d3.svg.line()
+        .x(chart.x)
+        .y(chart.y);
 
-      var interpolate = series.interpolate || this.interpolate();
+      var interpolate = d.interpolate || chart.interpolate();
       if (interpolate)
         line.interpolate(interpolate);
-
-      return line;
-    }
+    })
   }));
 
   /**

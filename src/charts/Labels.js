@@ -7,7 +7,7 @@
   /**
     @class Labels
   */
-  d3.chart('Chart').extend('Labels', mixin(mixins.Series, mixins.XY, {
+  d3.chart('Chart').extend('Labels', mixin(mixins.Series, mixins.XY, mixins.Hover, {
     initialize: function() {
       // Proxy attach to parent for hover
       var parent = this.options().parent;
@@ -29,6 +29,8 @@
 
           var labels = this.append('g')
             .attr('class', chart.labelClass)
+            .on('mouseenter', chart.mouseEnterPoint)
+            .on('mouseleave', chart.mouseLeavePoint)
             .call(chart.insertLabels);
 
           return labels;
@@ -259,7 +261,14 @@
   /**
     @class HoverLabels
   */
-  d3.chart('Labels').extend('HoverLabels', mixin(mixins.XYHover, {
+  d3.chart('Labels').extend('HoverLabels', mixin(mixins.Hover, {
+    initialize: function() {
+      this.on('attach', function() {
+        this.container.on('mouseenter:point', this.onMouseEnterPoint.bind(this));
+        this.container.on('mouseleave:point', this.onMouseLeavePoint.bind(this));
+      }.bind(this));
+    },
+
     /**
       Maximum distance to find active points
 
@@ -276,29 +285,32 @@
       default_value: 20
     }),
 
-    // Override default hover check
-    getHoverPoints: function(position) {},
-
     // Don't fade in labels, hidden until hover
     transitionLabels: function(selection) {},
 
     onMouseEnterPoint: function(point) {
-      if (this.parent && point.chart === this.parent) {
-        var labels = this.base.selectAll('g.chart-series').selectAll('g');
-        var label = labels && labels[point.j] && labels[point.j][point.i];
-
-        if (label)
-          d3.select(label).attr('opacity', 1);
-      }
+      var label = this.findLabelForPoint(point);
+      if (label)
+        d3.select(label).attr('opacity', 1);
     },
     onMouseLeavePoint: function(point) {
-      if (this.parent && point.chart === this.parent) {
-        var labels = this.base.selectAll('g.chart-series').selectAll('g');
-        var label = labels && labels[point.j] && labels[point.j][point.i];
+      var label = this.findLabelForPoint(point);
+      if (label)
+        d3.select(label).attr('opacity', 0);
+    },
 
-        if (label)
-          d3.select(label).attr('opacity', 0);
-      }
+    findLabelForPoint: function(point) {
+      var labels = this.base.selectAll('g.chart-series').selectAll('g');
+      var chart = this;
+      var label;
+
+      labels.each(function(d, i, j) {
+        var series = chart.seriesData.call(this, d, i, j);
+        if (d === point.d && series === point.series)
+          label = this;
+      });
+
+      return label;
     }
   }));
 

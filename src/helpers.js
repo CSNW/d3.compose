@@ -23,6 +23,7 @@
     map: _.map,
     min: _.min,
     max: _.max,
+    pluck: _.pluck,
     reduce: _.reduce,
     reduceRight: _.reduceRight,
     reverse: _.reverse,

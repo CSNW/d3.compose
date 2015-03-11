@@ -532,6 +532,48 @@
     },
 
     /**
+      Get point information for given data-point
+
+      @method getPoint
+      @return {key, series, d, i, j}
+    */
+    getPoint: di(function(chart, d, i, j) {
+      var key = chart.key && chart.key.call(this, d, i, j);
+      var series = chart.seriesData && chart.seriesData.call(this, d, i, j) || {};
+
+      return {
+        key: (series.key || j) + '.' + (key || i),
+        series: series,
+        d: d,
+        meta: {
+          chart: chart,
+          i: i,
+          j: j,
+          x: chart.x && chart.x.call(this, d, i, j),
+          y: chart.y && chart.y.call(this, d, i, j)
+        }
+      };
+    }),
+
+    /**
+      Call to trigger mouseenter:point when mouse enters data-point
+
+      @method mouseEnterPoint
+    */
+    mouseEnterPoint: di(function(chart, d, i, j) {
+      chart.container.trigger('mouseenter:point', chart.getPoint.call(this, d, i, j));
+    }),
+
+    /**
+      Call to trigger mouseleave:point when mouse leaves data-point
+
+      @method mouseleavePoint
+    */
+    mouseLeavePoint: di(function(chart, d, i, j) {
+      chart.container.trigger('mouseleave:point', chart.getPoint.call(this, d, i, j));
+    }),
+
+    /**
       (Override) Called when mouse enters container
 
       @method onMouseEnter
@@ -559,86 +601,49 @@
     onMouseLeave: function() {}
   };
 
-  /**
-    mixin for handling hover behavior for XY charts
-
-    @module XYHover
-  */
-  var XYHover = utils.extend({}, Hover, {
+  var HoverPoints = {
     initialize: function() {
-      Hover.initialize.apply(this, arguments);
+      var points, tolerance, active;
+
+      this.on('draw', function() {
+        // Clear cache on draw
+        points = null;
+      });
 
       this.on('attach', function() {
-        this.container.on('mouseenter:point', this.onMouseEnterPoint.bind(this));
-        this.container.on('mousemove:point', this.onMouseMovePoint.bind(this));
-        this.container.on('mouseleave:point', this.onMouseLeavePoint.bind(this));
-
-        var active = {};
-
         this.container.on('mouseenter', function(position) {
-          updateActive(active, this.getHoverPoints(position), this.container);
-        }.bind(this));
-        this.container.on('mousemove', function(position) {
-          updateActive(active, this.getHoverPoints(position), this.container);
-        }.bind(this));
-        this.container.on('mouseleave', function() {
-          updateActive(active, [], this.container);
+          if (!points)
+            points = getPoints(this, this.data());
+
+          tolerance = this.hoverTolerance();
+          update(position);
         }.bind(this));
 
-        this.on('before:draw', function() {
-          // Reset points on draw
-          this._points = undefined;
-        });
+        this.container.on('mousemove', update);
+        this.container.on('mouseleave', update);
       }.bind(this));
+
+      var update = function update(position) {
+        var closest = [];
+        if (position)
+          closest = getClosestPoints(points, position.chart, tolerance);
+
+        updateActive(active, closest, this.container);
+        active = closest;
+      }.bind(this);
     },
 
+    /**
+      Hover tolerance for calculating close points
+
+      @property hoverTolerance
+      @type Number
+      @default 20
+    */
     hoverTolerance: property('hoverTolerance', {
       default_value: 20
-    }),
-
-    /**
-      Get point details for given data-point
-
-      @method getPoint
-      @return {x, y, key, chart, [series], d, i, j}
-    */
-    getPoint: di(function(chart, d, i, j) {
-      var key = chart.key.call(this, d, i, j);
-      var series = chart.seriesData && chart.seriesData.call(this, d, i, j) || {};
-
-      return {
-        point_key: chart.id + '.' + (series.key || j) + '.' + (key || i),
-
-        x: chart.x.call(this, d, i, j),
-        y: chart.y.call(this, d, i, j),
-        key: key,
-        chart: chart,
-        series: series,
-        d: d,
-        i: i,
-        j: j
-      };
-    }),
-
-    /**
-      Get active points for given position
-      (override for custom hover calculation)
-
-      @method getHoverPoints
-      @param {Object} position {container: {x, y}, chart: {x, y}} mouse position
-      @return {Array} set of active points
-    */
-    getHoverPoints: function(position) {
-      if (!this._points)
-        this._points = getPoints(this, this.data());
-
-      return getClosestPoints(this._points, position.chart, this.hoverTolerance());
-    },
-
-    onMouseEnterPoint: function(point) {},
-    onMouseMovePoint: function(point) {},
-    onMouseLeavePoint: function(point) {}
-  });
+    })
+  };
 
   function getPoints(chart, data) {
     if (data) {
@@ -650,7 +655,7 @@
           return chart.getPoint.call({_parent_data: series}, d, i, j);
         }).sort(function(a, b) {
           // Sort by x
-          return a.x - b.x;
+          return a.meta.x - b.meta.x;
         });
       });
     }
@@ -660,7 +665,7 @@
     return utils.compact(utils.map(points, function(series) {
       var by_distance = utils.chain(series)
         .map(function(point) {
-          point.distance = getDistance(point, position);
+          point.distance = getDistance(point.meta, position);
           return point;
         })
         .filter(function(point) {
@@ -678,26 +683,18 @@
   }
 
   function updateActive(active, closest, container) {
-    utils.each(active, function(point) {
-      if (point)
-        point.inactive = true;
-    });
+    var active_keys = utils.pluck(active, 'key');
+    var closest_keys = utils.pluck(closest, 'key');
 
     utils.each(closest, function(point) {
-      if (active[point.point_key])
+      if (utils.contains(active_keys, point.key))
         container.trigger('mousemove:point', point);
       else
         container.trigger('mouseenter:point', point);
-
-      active[point.point_key] = point;
-      point.inactive = false;
     });
-
-    utils.each(active, function(point, key) {
-      if (point && point.inactive) {
+    utils.each(active, function(point) {
+      if (!utils.contains(closest_keys, point.key))
         container.trigger('mouseleave:point', point);
-        active[key] = null;
-      }
     });
   }
 
@@ -709,7 +706,7 @@
     Labels: Labels,
     XYLabels: XYLabels,
     Hover: Hover,
-    XYHover: XYHover
+    HoverPoints: HoverPoints
   });
 
 })(d3, d3.chart.helpers);
