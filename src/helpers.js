@@ -486,7 +486,9 @@
     }
 
     // Add centered and adjacent extensions to ordinal
-    if (options.type == 'ordinal' && (options.centered || options.adjacent)) {
+    // (centered by default for ordinal)
+    var centered = options.centered || (options.type == 'ordinal' && options.centered == null);
+    if (options.type == 'ordinal' && (centered || options.adjacent)) {
       var original = scale;
 
       // Get series count for adjacent
@@ -520,10 +522,13 @@
     }
 
     // Add padding extension to ordinal
-    if (options.type == 'ordinal' && (options.padding != null || options.centered || options.adjacent)) {
+    if (options.type == 'ordinal' && (options.padding != null || centered || options.adjacent)) {
       var padding = options.padding != null ? options.padding : 0.1;
 
+      var original_range = scale.range;
       scale.range = function(range) {
+        if (!arguments.length) return original_range();
+
         scale.rangeBands(
           range,
           padding,

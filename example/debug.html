@@ -16,9 +16,6 @@
       margin: 40px auto 0;
       width: 900px;
     }
-    .highlight {
-      fill: #2ca02c;
-    }
     @media (min-width: 768px) {
       #chart {
         width: 600px;
@@ -30,15 +27,22 @@
 <body>
   <div class="container">
     <svg id="chart"></svg>
-    <div>
-      <button id="update">Update</button>
-      <button id="change">Change</button>
-      <button id="redraw">Redraw</button>
-    </div>
-    <div>
-      Container: <span id="mouse-container"></span><br>
-      Chart: <span id="mouse-chart"></span>
-    </div>
+
+    <p>Tests:</p>
+    <ul>
+      <li><a class="js-add-chart" href="#">Add Chart</a></li>
+      <li><a class="js-change-chart" href="#">Change Chart</a></li>
+      <li><a class="js-remove-chart" href="#">Remove Chart</a></li>
+      <li><a class="js-add-component" href="#">Add Component</a></li>
+      <li><a class="js-change-component" href="#">Change Component</a></li>
+      <li><a class="js-move-component" href="#">Move Component</a></li>
+      <li><a class="js-remove-component" href="#">Remove Component</a></li>
+      <li><a class="js-change-data" href="#">Change Data</a></li>
+    </ul>
+    <ul class="js-mouse">
+      <li>Container: <span class="js-mouse-container"></span></li>
+      <li>Chart: <span class="js-mouse-chart"></span></li>
+    </ul>
   </div>
 
   <script src="../bower_components/d3/d3.js"></script>
@@ -47,217 +51,136 @@
   <script src="../tmp/d3.chart.multi-all.js"></script>
 
   <script src="../bower_components/jquery/dist/jquery.js"></script>
+
   <script type="text/javascript">
-    // Data
-    // ---- //
-    var highlight_class = 'highlight';
-    var highlight_style = {fill: '#2ca02c'};
+  var chart = d3.select('#chart').chart('Multi');
+  var config = {charts: {}, components: {}};
+  var data = {
+    increasing: [
+      {key: 'a', name: 'A', values: [1, 2, 3, 4, 5]},
+      {key: 'b', name: 'B', values: [2, 4, 6, 8, 10]}
+    ],
+    decreasing: [
+      {key: 'c', name: 'C', values: [5, 4, 3, 2, 1]},
+      {key: 'd', name: 'D', values: [10, 8, 6, 4, 2]}
+    ]
+  };
 
-    var data = {
-      increasing: [
-        {
-          key: 'inc-a',
-          name: 'Increasing A',
-          values: [
-            {x: 0, y: 10, 'class': highlight_class},
-            {x: 10, y: 20},
-            {x: 20, y: 40},
-            {x: 30, y: 70},
-            {x: 40, y: 110},
-            {x: 50, y: 160}
-          ]
-        },
-        {
-          key: 'inc-b',
-          name: 'Increasing B',
-          values: [
-            {x: 0, y: 25, 'labelStyle': highlight_style},
-            {x: 10, y: 30},
-            {x: 20, y: 40},
-            {x: 30, y: 55},
-            {x: 40, y: 75},
-            {x: 50, y: 100}
-          ]
-        }
-      ],
-      decreasing: [
-        {
-          key: 'dec-a',
-          name: 'Decreasing A',
-          values: [
-            {x: 0, y: 160, 'class': highlight_class},
-            {x: 10, y: 110},
-            {x: 20, y: 70},
-            {x: 30, y: 40},
-            {x: 40, y: 20},
-            {x: 50, y: 10}
-          ]
-        },
-        {
-          key: 'dec-b',
-          name: 'Decreasing B',
-          values: [
-            {x: 0, y: 100, 'labelStyle': highlight_style},
-            {x: 10, y: 75},
-            {x: 20, y: 55},
-            {x: 30, y: 40},
-            {x: 40, y: 30},
-            {x: 50, y: 25}
-          ]
-        }
-      ],
-      'increasing-dense': [
-        {
-          key: 'inc-dense-a',
-          name: 'Increasing Dense A',
-          values: []
-        },
-        {
-          key: 'inc-dense-b',
-          name: 'Increasing Dense B',
-          values: []
-        }
-      ],
-      'decreasing-dense': [
-        {
-          key: 'dec-dense-a',
-          name: 'Decreasing Dense A',
-          values: []
-        },
-        {
-          key: 'dec-dense-b',
-          name: 'Decreasing Dense B',
-          values: []
-        }
-      ]
-    };
+  function draw(options) {
+    options = options || {};
 
-    for (var i = 0; i <= 50; i++) {
-      data['increasing-dense'][0].values.push({x: i, y: Math.round(0.05*Math.pow(i, 2) + 0.5*i + 10, 0)});
-      data['increasing-dense'][1].values.push({x: i, y: Math.round(0.025*Math.pow(i, 2) + 0.25*i + 25, 0)});
-      data['decreasing-dense'][0].values.push({x: i, y: Math.round(0.025*Math.pow(i, 2) - 2.75*i + 160, 0)});
-      data['decreasing-dense'][1].values.push({x: i, y: Math.round(0.05*Math.pow(i, 2) - 5.5*i + 100, 0)});
-    }
-    data['increasing-dense'][0].values[0]['class'] = highlight_class;
-    data['increasing-dense'][1].values[0]['labelStyle'] = highlight_style;
-    data['decreasing-dense'][0].values[0]['class'] = highlight_class;
-    data['decreasing-dense'][1].values[0]['labelStyle'] = highlight_style;
-
-    // Config
-    // ------ //
-
-    var config = function(data) {
-      var values = data['increasing-dense'];
+    chart.options(function(data) {
       var scales = {
-        x: {domain: [0, 50]},
-        y: {domain: [0, 200]}
+        x: {type: 'ordinal', domain: [0, 1, 2, 3, 4]},
+        y: {domain: [0, 10]}
       };
 
-      return d3.chart.xy({
-        charts: {
-          line: {type: 'Lines', data: values, xScale: scales.x, yScale: scales.y, labels: true},
-        },
-        axes: {
-          x: {scale: scales.x, position: 'top', title: 'Howdy'},
-          y: {scale: scales.y, position: 'left', duration: 500}
-        },
-        title: {text: 'Howdy!', position: 'bottom'}
-      });
-    };
+      config.charts.lines = {type: 'Lines', data: data.increasing, xScale: scales.x, yScale: scales.y, labels: true};
+      config.components.axis = {type: 'Axis', position: 'left', scale: scales.y};
 
-    var chart = d3.select('#chart')
-      .chart('Multi', config)
-      .margins({top: 10, right: 10, bottom: 10, left: 10});
+      if (options.charts == 'add')
+        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: _.extend({adjacent: true, series: 2}, scales.x), yScale: scales.y, labels: true};
+      else if (options.charts == 'change')
+        config.charts['chart_2'] = {type: 'Lines', data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true};
+      else if (options.charts == 'remove')
+        delete config.charts['chart_2'];
+      else if (config.charts['chart_2'] && config.charts['chart_2'].type == 'Bars')
+        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: _.extend({adjacent: true, series: 2}, scales.x), yScale: scales.y, labels: true};
+      else if (config.charts['chart_2'])
+        config.charts['chart_2'] = {type: 'Lines', data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true};
+
+      if (options.components == 'add')
+        config.components['component_2'] = {type: 'Legend', position: 'right', charts: ['lines', 'chart_2']};
+      else if (options.components == 'change')
+        config.components['component_2'] = {type: 'Axis', position: 'bottom', scale: scales.x};
+      else if (options.components == 'move')
+        config.components['component_2'] = {type: 'Axis', position: 'top', scale: scales.x};
+      else if (options.components == 'remove')
+        delete config.components['component_2'];
+
+      return config;
+    });
 
     chart.draw(data);
+  }
 
-    function update() {
-      _.each(data, function(item) {
-        _.each(item, function(series) {
-          _.each(series.values, function(point) {
-            // +/- 10%
-            point.y = Math.round(point.y * (0.9 + Math.random()*0.2), 0);
-          });
+  draw();
+
+  $('.js-add-chart').on('click', function addChart(e) {
+    e.preventDefault();
+
+    draw({charts: 'add'});
+  });
+  $('.js-change-chart').on('click', function changeChart(e) {
+    e.preventDefault();
+
+    draw({charts: 'change'});
+  });
+  $('.js-remove-chart').on('click', function removeChart(e) {
+    e.preventDefault();
+
+    draw({charts: 'remove'});
+  });
+  $('.js-add-component').on('click', function addComponent(e) {
+    e.preventDefault();
+
+    draw({components: 'add'});
+  });
+  $('.js-change-component').on('click', function changeComponent(e) {
+    e.preventDefault();
+
+    draw({components: 'change'});
+  });
+  $('.js-move-component').on('click', function moveComponent(e) {
+    e.preventDefault();
+
+    draw({components: 'move'});
+  });
+  $('.js-remove-component').on('click', function removeComponent(e) {
+    e.preventDefault();
+
+    draw({components: 'remove'});
+  });
+
+  $('.js-change-data').on('click', function changeData(e) {
+    e.preventDefault();
+
+    _.each(data, function(set, key) {
+      _.each(set, function(series) {
+        series.values = _.map(series.values, function(value, i) {
+          return Math.round(Math.random() * 10);
         });
       });
-
-      chart.draw(data);
-    }
-
-    var count = 1;
-    function change() {
-      chart
-        .options(function(data) {
-          var values = data['increasing-dense'];
-          var scales = {
-            x: {domain: [0, 50]},
-            y: {domain: [0, 200 + 5 * count]}
-          };
-
-          return d3.chart.xy({
-            charts: {
-              line: {type: 'Lines', data: values, xScale: scales.x, yScale: scales.y, labels: true},
-            },
-            axes: {
-              x: {scale: scales.x, position: 'top', title: 'Howdy'},
-              y: {scale: scales.y, position: 'left'}
-            },
-            legend: false,
-            title: {text: 'Howdy ' + count++ + '!', position: 'bottom'}
-          });
-        })
-        .redraw();
-    }
-
-    function redraw() {
-      chart.redraw();
-    }
-
-    $('#update').on('click', update);
-    $('#change').on('click', change);
-    $('#redraw').on('click', redraw);
-
-    // DEBUG
-    chart.on('enter:mouse', function(coordinates) {
-      logMouse('container', coordinates.container);
-      logMouse('chart', coordinates.chart);
-    });
-    chart.on('move:mouse', function(coordinates) {
-      logMouse('container', coordinates.container);
-      logMouse('chart', coordinates.chart);
-    });
-    chart.on('leave:mouse', function() {
-      logMouse('container');
-      logMouse('chart');
     });
 
-    function logMouse(type, coordinates) {
-      var $selector = $('#mouse-' + type);
+    draw();
+  })
 
-      if (!coordinates) {
-        $selector.empty();
-      }
-      else {
-        var msg = '';
+  // Mouse debugging
+  chart.on('mouseenter', function(position) {
+    $('.js-mouse-container').text(positionToString(position.container));
+    $('.js-mouse-chart').text(positionToString(position.chart));
+  });
+  chart.on('mousemove', function(position) {
+    $('.js-mouse-container').text(positionToString(position.container));
+    $('.js-mouse-chart').text(positionToString(position.chart));
+  });
+  chart.on('mouseleave', function() {
+    $('.js-mouse-container').text('');
+    $('.js-mouse-chart').text('');
+  });
 
-        // Points come in as array
-        if (_.isArray(coordinates))
-          msg = _.map(coordinates, function(series) {
-            return _.map(series.points, function(point) {
-              return series.name + ': {x = ' + point.values.x + ', y = ' + point.values.y + '}';
-            }).join(', ');
-          }).join(' ');
-        else {
-          msg = logCoordinates(coordinates);
-        }
+  chart.on('mouseenter:point', function(point) {
+    $('.js-mouse').append('<li data-point="' + point.key + point.meta.chart.id + '">(' + point.d.x + ', ' + point.d.y + ') ' + point.key + '</li>');
+  });
+  chart.on('mouseleave:point', function(point) {
+    $('.js-mouse [data-point="' + point.key + point.meta.chart.id + '"]').remove();
+  });
 
-        $selector.text(msg);
-      }
+  function positionToString(position) {
+    return '(' + position.x + ', ' + position.y + ')';
+  }
 
-      function logCoordinates(coordinates) {
-        return 'x = ' + coordinates.x + ', y = ' + coordinates.y;
-      }
-    }
   </script>
 </body>
 </html>
