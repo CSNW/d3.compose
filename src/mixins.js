@@ -133,6 +133,29 @@
       this.on('before:draw', this.setScales.bind(this));
     },
 
+    transform: function(data) {
+      // Transform series data from values to x,y
+      if (helpers.isSeriesData(data)) {
+        utils.each(data, function(series) {
+          series.values = utils.map(series.values, normalizeData);
+        });
+      }
+      else {
+        data = utils.map(data, normalizeData);
+      }
+
+      return data;
+
+      function normalizeData(point, index) {
+        if (!utils.isObject(point))
+          point = {x: index, y: point};
+        else if (!utils.isArray(point) && utils.isUndefined(point.x))
+          point.x = index;
+
+        return point;
+      }
+    },
+
     /**
       Get/set x-scale with d3.scale or with object (uses helpers.createScale)
 
@@ -192,7 +215,10 @@
       @return {Number}
     */
     x: di(function(chart, d, i) {
-      return parseFloat(chart.xScale()(chart.xValue.call(this, d, i)));
+      var value = chart.xValue.call(this, d, i);
+      var series_index = chart.seriesIndex && chart.seriesIndex.call(this, d, i) || 0;
+
+      return parseFloat(chart.xScale()(value, series_index));
     }),
 
     /**
@@ -202,7 +228,10 @@
       @return {Number}
     */
     y: di(function(chart, d, i) {
-      return parseFloat(chart.yScale()(chart.yValue.call(this, d, i)));
+      var value = chart.yValue.call(this, d, i);
+      var series_index = chart.seriesIndex && chart.seriesIndex.call(this, d, i) || 0;
+
+      return parseFloat(chart.yScale()(value, series_index));
     }),
 
     /**
@@ -320,124 +349,36 @@
     @module XYValues
   */
   var XYValues = utils.extend({}, XY, {
-    transform: function(data) {
-      // Transform series data from values to x,y
-      if (helpers.isSeriesData(data)) {
-        utils.each(data, function(series) {
-          series.values = utils.map(series.values, normalizeData);
-        }, this);
-      }
-      else {
-        data = utils.map(data, normalizeData);
-      }
-
-      return data;
-
-      function normalizeData(point, index) {
-        if (!utils.isObject(point))
-          point = {x: index, y: point};
-        else if (!utils.isArray(point) && utils.isUndefined(point.x))
-          point.x = valueOrDefault(point.key, index);
-
-        return point;
-      }
-    },
-
-    /**
-      Define padding (in percentage) between each item
-      (If series is displayed adjacent, padding is just around group, not individual series)
-
-      @property itemPadding
-      @type Number
-      @default 0.1
-    */
-    itemPadding: property('itemPadding', {default_value: 0.1}),
-
-    /**
-      If series data, display points at same index for different series adjacent
-
-      @property displayAdjacent
-      @type Boolean
-      @default false
-    */
-    displayAdjacent: property('displayAdjacent', {default_value: false}),
-
-    /**
-      Determine centered-x based on series display type (adjacent or layered)
-
-      @method x
-    */
-    x: di(function(chart, d, i) {
-      return chart.displayAdjacent() ? chart.adjacentX.call(this, d, i) : chart.layeredX.call(this, d, i);
-    }),
-
-    /**
-      x-value, when series are displayed next to each other at each x
-
-      @method adjacentX
-    */
-    adjacentX: di(function(chart, d, i) {
-      var adjacent_width = chart.adjacentWidth.call(this, d, i);
-      var left = chart.layeredX.call(this, d, i) - chart.layeredWidth.call(this, d, i) / 2 + adjacent_width / 2;
-      var series_index = chart.seriesIndex ? chart.seriesIndex.call(this, d, i) : 1;
-
-      return left + adjacent_width * series_index;
-    }),
-
     /**
       Determine width of data-point when displayed adjacent
 
       @method adjacentWidth
     */
-    adjacentWidth: di(function(chart, d, i) {
-      var series_count = chart.seriesCount ? chart.seriesCount() : 1;
-
-      if (series_count > 0)
-        return chart.layeredWidth.call(this, d, i) / series_count;
-      else
-        return 0;
-    }),
-
-    /**
-      x-value, when series are layered (share same x)
-
-      @method layeredX
-    */
-    layeredX: di(function(chart, d, i) {
-      return chart.xScale()(chart.xValue.call(this, d, i)) + 0.5 * chart.layeredWidth.call(this) || 0;
-    }),
+    adjacentWidth: function() {
+      var series_count = this.seriesCount ? this.seriesCount() : 1;
+      return this.layeredWidth() / series_count;
+    },
 
     /**
       Determine layered width (width of group for adjacent)
 
       @method layeredWidth
     */
-    layeredWidth: di(function(chart, d, i) {
-      var range_band = chart.xScale().rangeBand();
-      return isFinite(range_band) ? range_band : 0;
-    }),
+    layeredWidth: function() {
+      var range_band = this.xScale() && this.xScale().rangeBand && this.xScale().rangeBand();
+      var width = isFinite(range_band) ? range_band : 0;
+      
+      return width;
+    },
 
     /**
       Determine item width based on series display type (adjacent or layered)
 
       @method itemWidth
     */
-    itemWidth: di(function(chart, d, i) {
-      return chart.displayAdjacent() ? chart.adjacentWidth.call(this, d, i) : chart.layeredWidth.call(this, d, i);
-    }),
-
-    // Override set x-scale range to use rangeBands (if present)
-    setXScaleRange: function(x_scale) {
-      if (utils.isFunction(x_scale.rangeBands)) {
-        x_scale.rangeBands(
-          [0, this.width()],
-          this.itemPadding(),
-          this.itemPadding() / 2
-        );
-      }
-      else {
-        XY.setXScaleRange.call(this, x_scale);
-      }
+    itemWidth: function() {
+      var scale = this.xScale();
+      return scale && scale.width ? scale.width() : this.layeredWidth();
     },
 
     // Override default x-scale to use ordinal type
@@ -445,7 +386,8 @@
       return helpers.createScale({
         type: 'ordinal',
         data: this.data(),
-        key: 'x'
+        key: 'x',
+        centered: true
       });
     }
   });

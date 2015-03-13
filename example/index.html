@@ -43,7 +43,7 @@
         var chart = d3.select('#chart-1')
           .chart('Multi', function(data) {
             var scales = {
-              x: {type: 'ordinal', domain: [2000, 2005, 2010, 2015, 2020]},
+              x: {type: 'ordinal', domain: [2000, 2005, 2010, 2015, 2020], centered: true},
               y: {domain: [0, 20000]},
               y2: {domain: [0, 90]}
             };
@@ -53,7 +53,7 @@
                 bars: {
                   type: 'Bars',
                   data: data.results,
-                  xScale: scales.x,
+                  xScale: _.extend({adjacent: true, series: 2}, scales.x),
                   yScale: scales.y,
 
                   labels: {
@@ -66,7 +66,7 @@
                   }
                 },
                 line: {
-                  type: 'LineValues',
+                  type: 'Line',
                   data: data.input,
                   xScale: scales.x,
                   yScale: scales.y2,
@@ -78,7 +78,7 @@
               },
               axes: {
                 x: {
-                  type: 'AxisValues',
+                  type: 'Axis',
                   title: 'X Title',
                   scale: scales.x
                 },
@@ -145,7 +145,7 @@
         var chart = d3.select('#chart-3')
           .chart('Multi', function(data) {
             var scales = {
-              x: {type: 'ordinal', data: data, value: function(d, i) { return i; }},
+              x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
               y: {data: data, value: function(d, i) { return d; }}
             };
 
@@ -179,7 +179,7 @@
           .chart('Multi', function(data) {
             // TODO inverted XY
             var scales = {
-              x: {type: 'ordinal', data: data.stacked, key: 'x'},
+              x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
               y: {domain: [0, 200]},
               y2: {domain: [0, 100]}
             };

@@ -119,9 +119,9 @@
         var scale = helpers.createScale(value);
 
         if (this.orientation() == 'vertical')
-          this.yScale(scale.copy());
+          this.yScale(scale);
         else
-          this.xScale(scale.copy());
+          this.xScale(scale);
 
         return {
           override: scale
@@ -357,12 +357,5 @@
     layer_type: 'chart',
     z_index: 60
   });
-
-  /**
-    Axis component for values data
-
-    @class AxisValues
-  */
-  d3.chart('Axis').extend('AxisValues', mixin(mixins.XYValues));
 
 })(d3, d3.chart.helpers, d3.chart.mixins);

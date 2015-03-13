@@ -77,10 +77,4 @@
     })
   }));
 
-  /**
-    LineValues
-    Line graph for centered key,value data
-  */
-  d3.chart('Line').extend('LineValues', mixins.XYValues);
-
 })(d3, d3.chart.helpers, d3.chart.mixins);

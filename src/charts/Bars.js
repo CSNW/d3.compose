@@ -39,7 +39,7 @@
 
             this
               .attr('x', chart.barX)
-              .attr('width', chart.itemWidth);
+              .attr('width', chart.itemWidth());
           },
           'merge:transition': function() {
             var chart = this.chart();
@@ -68,23 +68,12 @@
     duration: property('duration', {type: 'Function'}),
     ease: property('ease', {type: 'Function'}),
 
-    /**
-      Display bars from different series next to eachother
-
-      @property displayAdjacent
-      @type Boolean
-      @default true
-    */
-    displayAdjacent: property('displayAdjacent', {
-      default_value: true
-    }),
-
     barHeight: di(function(chart, d, i) {
       var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
       return height > 0 ? height : 0;
     }),
     barX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
+      return chart.x.call(this, d, i) - chart.itemWidth() / 2;
     }),
     barY: di(function(chart, d, i) {
       var y = chart.y.call(this, d, i);
@@ -121,15 +110,13 @@
       return data;
     },
 
-    displayAdjacent: property('displayAdjacent', {default_value: false}),
-
     barHeight: di(function(chart, d, i) {
       var height = Math.abs(chart.y0() - chart.y.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
       return height > 0 ? height - offset : 0;
     }),
     barX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i) - chart.itemWidth.call(this, d, i) / 2;
+      return chart.x.call(this, d, i) - chart.itemWidth() / 2;
     }),
     barY: di(function(chart, d, i) {
       var y = chart.y.call(this, d, i);

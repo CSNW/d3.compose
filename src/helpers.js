@@ -405,7 +405,7 @@
     @method createScale
     @param {Object|Function} options
       - (passing in function returns original function with no changes)
-      @param {String} [options.type] Any available d3 scale (linear, ordinal, log, etc.) or time
+      @param {String} [options.type='linear'] Any available d3 scale (linear, ordinal, log, etc.) or time
       @praam {Array} [options.domain] Domain for scale
       @param {Array} [options.range] Range for scale
       @param {Any} [options.data] Used to dynamically set domain (with given value "di" or key)
@@ -417,7 +417,8 @@
         - Requires series-index as second argument to scale, otherwise centered x-value is used
         - Requires "data" or "series" options to determine number of series
       @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
-      @param {Number} [options.padding] For "ordinal" scales, set padding between different x-values
+      @param {Number} [options.padding=0.1] For "ordinal" scales, set padding between different x-values
+        Note: Default = 0.1 for "centered" and "adjacent"
       @param {Array...} [...] Set any other scale properties with array of arguments to pass to property
     @return {d3.Scale}
   */
@@ -430,9 +431,9 @@
 
     // Create scale (using d3.time.scale() if type is 'time')
     var scale;
-    if (options.type && options.type == 'time')
+    if (options.type == 'time')
       scale = d3.time.scale();
-    else if (options.type && d3.scale[options.type])
+    else if (d3.scale[options.type])
       scale = d3.scale[options.type]();
     else
       scale = d3.scale.linear();
@@ -441,10 +442,10 @@
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments
-        // (don't pass through type, data, value, or key)
+        // (don't pass through internal options)
         if (key == 'range' || key == 'domain')
           scale[key](value);
-        else if (!utils.contains(['type', 'data', 'value', 'key'], key))
+        else if (!utils.contains(['type', 'data', 'value', 'key', 'centered', 'adjacent', 'series', 'padding'], key))
           scale[key].apply(scale, value);
       }
     });
@@ -493,35 +494,47 @@
 
       scale = (function(original, options, series_count) {
         var context = function scale(value, series_index) {
-          var range_band = context.rangeBand && context.rangeBand();
-          var width = isFinite(range_band) ? range_band : 0;
-          var x = original(value);
+          var width = context.width();
 
-          if (options.adjacent && series_index != null)
-            width = width / series_count;
-          else
+          if (!options.adjacent)
             series_index = 0;
 
-          return x + (0.5 * width) + (width * series_index);
+          return original(value) + (0.5 * width) + (width * (series_index || 0));
         };
-        utils.extend(context, original);
+        utils.extend(context, original, {
+          width: function() {
+            var range_band = context.rangeBand && context.rangeBand();
+            var width = isFinite(range_band) ? range_band : 0;
+
+            if (options.adjacent)
+              width = width / series_count;
+
+            return width;
+          }
+        });
+
+        // TODO test copy() behavior
 
         return context;
       })(original, options, series_count);
     }
 
     // Add padding extension to ordinal
-    if (options.type == 'ordinal' && options.padding) {
+    if (options.type == 'ordinal' && (options.padding != null || options.centered || options.adjacent)) {
+      var padding = options.padding != null ? options.padding : 0.1;
+
       scale.range = function(range) {
         scale.rangeBands(
           range,
-          options.padding,
-          options.padding / 2
+          padding,
+          padding / 2
         );
       };
 
       if (options.range)
         scale.range(options.range);
+
+      // TODO test copy() behavior
     }
 
     return scale;
