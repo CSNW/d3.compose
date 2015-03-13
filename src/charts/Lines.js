@@ -4,11 +4,11 @@
   var di = helpers.di;
 
   /**
-    XY Line graph
+    XY Lines graph
 
-    @class Line
+    @class Lines
   */
-  d3.chart('Chart').extend('Line', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
+  d3.chart('Chart').extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
     initialize: function() {
       this.lines = [];
 
