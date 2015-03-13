@@ -411,6 +411,13 @@
       @param {Any} [options.data] Used to dynamically set domain (with given value "di" or key)
       @param {Function} [options.value] "di" for getting value for data
       @param {String} [options.key] Data key to extract value
+      @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
+      @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each-other
+        Notes: 
+        - Requires series-index as second argument to scale, otherwise centered x-value is used
+        - Requires "data" or "series" options to determine number of series
+      @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
+      @param {Number} [options.padding] For "ordinal" scales, set padding between different x-values
       @param {Array...} [...] Set any other scale properties with array of arguments to pass to property
     @return {d3.Scale}
   */
@@ -475,6 +482,46 @@
       }
 
       scale.domain(domain);
+    }
+
+    // Add centered and adjacent extensions to ordinal
+    if (options.type == 'ordinal' && (options.centered || options.adjacent)) {
+      var original = scale;
+
+      // Get series count for adjacent
+      var series_count = options.series || (!isSeriesData(options.data) ? 1 : options.data.length);
+
+      scale = (function(original, options, series_count) {
+        var context = function scale(value, series_index) {
+          var range_band = context.rangeBand && context.rangeBand();
+          var width = isFinite(range_band) ? range_band : 0;
+          var x = original(value);
+
+          if (options.adjacent && series_index != null)
+            width = width / series_count;
+          else
+            series_index = 0;
+
+          return x + (0.5 * width) + (width * series_index);
+        };
+        utils.extend(context, original);
+
+        return context;
+      })(original, options, series_count);
+    }
+
+    // Add padding extension to ordinal
+    if (options.type == 'ordinal' && options.padding) {
+      scale.range = function(range) {
+        scale.rangeBands(
+          range,
+          options.padding,
+          options.padding / 2
+        );
+      };
+
+      if (options.range)
+        scale.range(options.range);
     }
 
     return scale;

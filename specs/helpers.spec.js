@@ -314,6 +314,71 @@
         expect(scale(new Date('1/1/2000 6:00'))).toEqual(50);
         expect(scale.invert(50).getHours()).toEqual(6);
       });
+
+      it('should create centered ordinal scale', function() {
+        var options = {
+          type: 'ordinal',
+          centered: true,
+          domain: ['a', 'b', 'c', 'd', 'e'],
+          rangeBands: [[0, 100], 0, 0]
+        };
+
+        var scale = helpers.createScale(options);
+        expect(scale('b')).toEqual(30);
+      });
+
+      it('should create adjacent ordinal scale (with series)', function() {
+        var options = {
+          type: 'ordinal',
+          adjacent: true,
+          series: 5,
+          domain: ['a', 'b', 'c', 'd', 'e'],
+          rangeBands: [[0, 100], 0, 0]
+        };
+
+        var scale = helpers.createScale(options);
+        expect(scale('b', 1)).toEqual(26);
+      });
+
+      it('should create adjacent ordinal scale (with data)', function() {
+        var options = {
+          type: 'ordinal',
+          adjacent: true,
+          data: [
+            {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
+            {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
+            {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
+            {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
+            {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
+          ],
+          key: 'x',
+          rangeBands: [[0, 100], 0, 0]
+        };
+
+        // b -> 20-40: 22, 26, 30, 34, 48
+
+        var scale = helpers.createScale(options);
+        expect(scale('b', 1)).toEqual(26);
+      });
+
+      it('should create adjacent + padding ordinal scale', function() {
+        var options = {
+          type: 'ordinal',
+          adjacent: true,
+          series: 4,
+          domain: ['a', 'b', 'c', 'd', 'e'],
+          padding: 0.2,
+          range: [0, 100]
+        };
+
+        // 20 * (1 - 0.2) = 16 / 4 = 4
+        // b -> 22-38: 24, 28, 32, 36
+        // c -> 42-58: 44, 48, 52, 56
+
+        var scale = helpers.createScale(options);
+        expect(scale('b', 1)).toEqual(28);
+        expect(scale('c', 3)).toEqual(56);
+      });
     });
 
     describe('style', function() {
