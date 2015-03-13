@@ -238,7 +238,7 @@
   });
 
   // Create line swatch for Line and LineValues
-  d3.chart('Legend').registerSwatch(['Line', 'LineValues'], function(chart, d, i) {
+  d3.chart('Legend').registerSwatch(['Lines'], function(chart, d, i) {
     var dimensions = chart.swatchDimensions();
 
     return this.append('line')
