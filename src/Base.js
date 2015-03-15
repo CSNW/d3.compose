@@ -30,7 +30,7 @@
     options: property('options', {
       default_value: {},
       set: function(options) {
-        each(options, function(value, key) {
+        each(options, function setFromOptions(value, key) {
           if (this[key] && this[key].is_property && this[key].set_from_options)
             this[key](value);
         }, this);
