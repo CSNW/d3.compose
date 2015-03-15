@@ -425,15 +425,15 @@
           item.type = options.type;
 
           context.attach(id, item);
-          items[id] = item;
+          container[id] = item;
         }
         else {
           item.options(options);
         }
       }
     });
-  
-    return items;
+
+    return container;
   }
 
   function prepareConfig(options, data) {

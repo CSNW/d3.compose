@@ -40,13 +40,13 @@
 
       this.layer('Legend', this.legend_base, {
         dataBind: function(data) {
-          return this.selectAll('g')
+          return this.selectAll('.chart-legend-group')
             .data(data, this.chart().itemKey);
         },
         insert: function() {
           var chart = this.chart();
           var groups = this.append('g')
-            .attr('class', chart.itemClass);
+            .attr('class', 'chart-legend-group');
 
           groups.append('g')
             .attr('width', chart.swatchDimensions().width)
@@ -80,6 +80,9 @@
               left: 'vertical'
             };
             this.call(stack.bind(this, {direction: direction_by_position[chart.position()], origin: 'top', padding: 5}));
+          },
+          exit: function() {
+            this.remove();
           }
         }
       });
@@ -125,7 +128,7 @@
 
             return {
               text: series.name || 'Series ' + (index + 1),
-              key: series.key ? chart_id + '.' + series.key : null,
+              key: chart_id + '.' + (series.key || index),
               type: chart.type,
               'class': utils.compact([
                 'chart-series',
@@ -161,16 +164,6 @@
     */
     itemText: di(function(chart, d, i) {
       return d.text;
-    }),
-
-    /**
-      Class to apply to swatch-text group
-
-      @method itemClass
-      @return {String}
-    */
-    itemClass: di(function(chart, d, i) {
-      return 'chart-legend-group';
     }),
 
     /**
@@ -238,7 +231,7 @@
   });
 
   // Create line swatch for Line and LineValues
-  d3.chart('Legend').registerSwatch(['Line', 'LineValues'], function(chart, d, i) {
+  d3.chart('Legend').registerSwatch(['Lines'], function(chart, d, i) {
     var dimensions = chart.swatchDimensions();
 
     return this.append('line')

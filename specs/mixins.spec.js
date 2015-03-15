@@ -135,11 +135,15 @@
 
       it('should handle varying data formats', function() {
         _.each([
-          [[1, 10], [2, 20], [3, 30]],
-          [{x: 1, y: 10}, {x: 2, y: 20}, {x: 3, y: 30}]
+          [0, 10, 20],
+          [{y: 0}, {y: 10}, {y: 20}],
+          [[0, 0], [1, 10], [2, 20]],
+          [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 20}]
         ], function(test_case, i) {
-          expect(chart.xValue(test_case[i])).toEqual(i + 1);
-          expect(chart.yValue(test_case[i])).toEqual((i + 1) * 10);
+          test_case = mixins.XY.transform(test_case);
+
+          expect(chart.xValue(test_case[1])).toEqual(1);
+          expect(chart.yValue(test_case[1])).toEqual(10);
         });
       });
     });
@@ -148,10 +152,9 @@
       beforeEach(function() {
         Chart = Chart.extend('Values', mixins.XYValues);
         data = values;
-        width = 500;
+        width = 100;
 
         chart = new Chart();
-        chart.itemPadding(0.0);
         chart.setScales();
 
         processed = processData(data);
@@ -165,37 +168,19 @@
         expect(chart.xScale().domain()).toEqual(['A', 'B', 'C', 'D', 'E']);
       });
 
-      it('should find centered x-value', function() {
-        expect(chart.x(data[0].values[2])).toEqual(250);
+      it('should calculate adjacent width', function() {
+        expect(chart.adjacentWidth()).toEqual(9);
       });
 
-      it('should find adjacent centered x-value', function() {
-        expect(chart.adjacentX(processed[0].values[2])).toEqual(225);
-        expect(chart.adjacentX(processed[1].values[2])).toEqual(275);
+      it('should calculate layered width', function() {
+        expect(chart.layeredWidth()).toEqual(18);
       });
 
-      it('should update x and itemWidth with displayAdjacent', function() {
-        chart.displayAdjacent(false);
-        expect(chart.x(processed[0].values[2])).toEqual(250);
-        expect(chart.x(processed[1].values[2])).toEqual(250);
+      it('should calculate item width (from scale)', function() {
+        expect(chart.itemWidth()).toEqual(18);
 
-        chart.displayAdjacent(true);
-        expect(chart.x(processed[0].values[2])).toEqual(225);
-        expect(chart.x(processed[1].values[2])).toEqual(275);
-      });
-
-      it('should handle varying data formats', function() {
-        _.chain([
-          [0, 10, 20],
-          [{y: 0}, {y: 10}, {y: 20}],
-          [[0, 0], [1, 10], [2, 20]],
-          [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 20}, {x: 3, y: 30}]
-        ])
-        .map(mixins.XYValues.transform)
-        .each(function(test_case, i) {
-          expect(chart.xValue(test_case[i])).toEqual(i);
-          expect(chart.yValue(test_case[i])).toEqual(i * 10);
-        });
+        chart.xScale({type: 'ordinal', domain: ['A', 'B', 'C', 'D', 'E'], series: 2, adjacent: true});
+        expect(chart.itemWidth()).toEqual(9);
       });
     });
   });

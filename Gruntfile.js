@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     lib: [
       'src/charts/Labels.js',
       'src/charts/Bars.js',
-      'src/charts/Line.js',
+      'src/charts/Lines.js',
       'src/components/Title.js',
       'src/components/Axis.js',
       'src/components/Legend.js',

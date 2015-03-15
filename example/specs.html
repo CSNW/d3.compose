@@ -65,7 +65,7 @@
 
             return d3.chart.xy({
               charts: {
-                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y, labels: true}
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y, labels: true}
               },
               axes: {
                 x: {title: 'X Axis', scale: scales.x},
@@ -91,17 +91,17 @@
         spec({
           chart: function(data) {
             var scales = {
-              x: {type: 'ordinal', data: data.values, key: 'x'},
+              x: {type: 'ordinal', data: data.values, key: 'x', centered: true},
               y: {data: data.values, key: 'y'}
             };
 
             return d3.chart.xy({
               charts: {
                 bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
-                line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {type: 'AxisValues', scale: scales.x},
+                x: {type: 'Axis', scale: scales.x},
                 y: {scale: scales.y}
               }
             });
@@ -126,7 +126,7 @@
             return d3.chart.xy({
               charts: {
                 line: {
-                  type: 'Line',
+                  type: 'Lines',
                   data: data.values,
                   xScale: scales.x,
                   yScale: scales.y,
@@ -161,7 +161,7 @@
 
             return d3.chart.xy({
               charts: {
-                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
                 x: {scale: scales.x},
@@ -198,7 +198,7 @@
             return d3.chart.xy({
               type: 'XY',
               charts: {
-                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
                 x: {scale: scales.x, ticks: 5},
@@ -227,7 +227,7 @@
 
             return d3.chart.xy({
               charts: {
-                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
                 x: {scale: scales.x, ticks: 5},
@@ -273,7 +273,7 @@
 
             return d3.chart.xy({
               charts: {
-                line: {type: 'Line', data: data.values, xScale: scales.x, yScale: scales.y}
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
                 x: {scale: scales.x, ticks: 5},
@@ -303,17 +303,17 @@
           resizable: true,
           chart: function(data) {
             var scales = {
-              x: {type: 'ordinal', data: data.values, key: 'x'},
+              x: {type: 'ordinal', data: data.values, key: 'x', centered: true},
               y: {data: data.values, key: 'y'}
             };
 
             return d3.chart.xy({
               charts: {
                 bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
-                line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {type: 'AxisValues', scale: scales.x},
+                x: {type: 'Axis', scale: scales.x},
                 y: {scale: scales.y}
               }
             });
@@ -333,17 +333,17 @@
           margins: false,
           chart: function(data) {
             var scales = {
-              x: {type: 'ordinal', data: data.values, key: 'x'},
+              x: {type: 'ordinal', data: data.values, key: 'x', centered: true},
               y: {data: data.values, key: 'y'}
             };
 
             return d3.chart.xy({
               charts: {
                 bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y},
-                line: {type: 'LineValues', data: data.values, xScale: scales.x, yScale: scales.y}
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y}
               },
               axes: {
-                x: {type: 'AxisValues', scale: scales.x},
+                x: {type: 'Axis', scale: scales.x},
                 y: {scale: scales.y}
               }
             });

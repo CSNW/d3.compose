@@ -119,9 +119,9 @@
         var scale = helpers.createScale(value);
 
         if (this.orientation() == 'vertical')
-          this.yScale(scale.copy());
+          this.yScale(scale);
         else
-          this.xScale(scale.copy());
+          this.xScale(scale);
 
         return {
           override: scale
@@ -159,14 +159,20 @@
     */
     translation: property('translation', {
       default_value: function() {
-        return {
-          top: {x: 0, y: 0},
-          right: {x: this.width(), y: 0},
-          bottom: {x: 0, y: this.height()},
-          left: {x: 0, y: 0},
-          x0: {x: this.x0(), y: 0},
-          y0: {x: 0, y: this.y0()}
-        }[this.position()];
+        switch (this.position()) {
+          case 'top':
+            return {x: 0, y: 0};
+          case 'right':
+            return {x: this.width(), y: 0};
+          case 'bottom':
+            return {x: 0, y: this.height()};
+          case 'left':
+            return {x: 0, y: 0};
+          case 'x0':
+            return {x: this.x0(), y: 0};
+          case 'y0':
+            return {x: 0, y: this.y0()};
+        }
       },
       get: function(value) {
         return helpers.translate(value);
@@ -357,12 +363,5 @@
     layer_type: 'chart',
     z_index: 60
   });
-
-  /**
-    Axis component for values data
-
-    @class AxisValues
-  */
-  d3.chart('Axis').extend('AxisValues', mixin(mixins.XYValues));
 
 })(d3, d3.chart.helpers, d3.chart.mixins);
