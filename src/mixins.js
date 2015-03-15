@@ -136,8 +136,10 @@
     transform: function(data) {
       // Transform series data from values to x,y
       if (helpers.isSeriesData(data)) {
-        utils.each(data, function(series) {
-          series.values = utils.map(series.values, normalizeData);
+        data = utils.map(data, function(series) {
+          return utils.extend({}, series, {
+            values: utils.map(series.values, normalizeData)
+          });
         });
       }
       else {

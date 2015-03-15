@@ -71,21 +71,21 @@
 
     chart.options(function(data) {
       var scales = {
-        x: {type: 'ordinal', domain: [0, 1, 2, 3, 4]},
-        y: {domain: [0, 10]}
+        x: {type: 'ordinal', data: data.increasing, value: function(d, i) { return i; }},
+        y: {data: data.increasing.concat(data.decreasing), value: function(d, i) { return d; }}
       };
 
       config.charts.lines = {type: 'Lines', data: data.increasing, xScale: scales.x, yScale: scales.y, labels: true};
       config.components.axis = {type: 'Axis', position: 'left', scale: scales.y};
 
       if (options.charts == 'add')
-        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: _.extend({adjacent: true, series: 2}, scales.x), yScale: scales.y, labels: true};
+        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: _.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true};
       else if (options.charts == 'change')
         config.charts['chart_2'] = {type: 'Lines', data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true};
       else if (options.charts == 'remove')
         delete config.charts['chart_2'];
       else if (config.charts['chart_2'] && config.charts['chart_2'].type == 'Bars')
-        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: _.extend({adjacent: true, series: 2}, scales.x), yScale: scales.y, labels: true};
+        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: _.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true};
       else if (config.charts['chart_2'])
         config.charts['chart_2'] = {type: 'Lines', data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true};
 
@@ -145,10 +145,13 @@
   $('.js-change-data').on('click', function changeData(e) {
     e.preventDefault();
 
+    var count = Math.round(Math.random() * 5 + 5);
+
     _.each(data, function(set, key) {
       _.each(set, function(series) {
-        series.values = _.map(series.values, function(value, i) {
-          return Math.round(Math.random() * 10);
+        series.values = [];
+        _.times(count, function() {
+          series.values.push(Math.round(Math.random() * 25));
         });
       });
     });
