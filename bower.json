@@ -1,10 +1,10 @@
 {
-  "name": "d3.chart.multi",
-  "homepage": "https://github.com/CSNW/d3.chart.multi",
-  "version": "0.11.1",
+  "name": "d3.compose",
+  "homepage": "https://github.com/CSNW/d3.compose",
+  "version": "0.12.0",
   "main": [
-    "./dist/d3.chart.multi.js",
-    "./dist/css/d3.chart.multi.main.css"
+    "./dist/d3.compose.js",
+    "./dist/d3.chart.multi.css"
   ],
   "authors": [
     "CSNW",
@@ -12,10 +12,11 @@
   ],
   "description": "Composable charts with d3.chart",
   "keywords": [
-    "d3-chart",
+    "d3.compose",
     "d3",
-    "chart",
-    "multi"
+    "d3.chart",
+    "d3-chart",
+    "compose"
   ],
   "private": true,
   "dependencies": {

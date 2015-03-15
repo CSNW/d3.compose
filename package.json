@@ -1,8 +1,8 @@
 {
-  "name": "d3.chart.multi",
-  "version": "0.11.1",
-  "description": "d3-chart multi",
-  "main": "dist/d3.chart.multi.js",
+  "name": "d3.compose",
+  "version": "0.12.0",
+  "description": "d3.compose",
+  "main": "dist/d3.compose.js",
   "scripts": {
     "build": "node -e \"require('grunt').tasks(['build']);\"",
     "jshint": "node -e \"require('grunt').tasks(['jshint']);\"",
@@ -12,19 +12,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/CSNW/d3.chart.multi.git"
+    "url": "https://github.com/CSNW/d3.compose.git"
   },
   "keywords": [
-    "d3-chart",
+    "d3.compose",
     "d3",
-    "chart",
-    "multi"
+    "d3.chart",
+    "d3-chart",
+    "compose"
   ],
   "author": "CSNW",
   "bugs": {
-    "url": "https://github.com/CSNW/d3.chart.multi/issues"
+    "url": "https://github.com/CSNW/d3.compose/issues"
   },
-  "homepage": "https://github.com/CSNW/d3.chart.multi",
+  "homepage": "https://github.com/CSNW/d3.compose",
   "license": "MIT",
   "devDependencies": {
     "grunt": "~0.4.5",
