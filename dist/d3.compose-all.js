@@ -3687,7 +3687,7 @@
     - title {String|Object}
     - legend {Boolean|Object}
   */
-  d3.chart.xy = function xy(options) {
+  d3.compose.xy = function xy(options) {
     options = options || {};
     var charts = utils.extend({}, options.charts);
     var components = utils.extend({}, options.components);
