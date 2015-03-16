@@ -1,12 +1,12 @@
-(function(d3, _, helpers, mixins) {
+(function(d3, helpers) {
 
-  describe('Multi', function() {
+  describe('Compose', function() {
     var fixture, selection, Container, container, Chart, charts, Component, components;
     beforeEach(function() {
       fixture = setFixtures('<svg id="chart"></svg>');
       selection = d3.select('#chart');
 
-      Container = d3.chart('Multi').extend('TestContainer');
+      Container = d3.chart('Compose').extend('TestContainer');
       container = new Container(selection);
       container.margins({});
 
@@ -207,4 +207,4 @@
     });
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3, d3.compose.helpers);

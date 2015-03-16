@@ -643,7 +643,8 @@
   }
 
   // Expose mixins
-  d3.chart.mixins = utils.extend(d3.chart.mixins || {}, {
+  d3.compose = d3.compose || {};
+  d3.compose.mixins = utils.extend(d3.compose.mixins || {}, {
     Series: Series,
     XY: XY,
     XYValues: XYValues,
@@ -653,4 +654,4 @@
     HoverPoints: HoverPoints
   });
 
-})(d3, d3.chart.helpers);
+})(d3, d3.compose.helpers);

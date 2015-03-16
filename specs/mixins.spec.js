@@ -1,13 +1,14 @@
-(function(d3, _, helpers, mixins) {
+(function(d3, helpers, mixins) {
+  var utils = helpers.utils;
 
   describe('mixins', function() {
     var Chart, chart, data, values, width, height, processed, transformed;
 
     // Process data to mimic actual data that is passed to (d, i) methods
     function processData(data) {
-      return _.map(data, function(series, index) {
+      return utils.map(data, function(series, index) {
         // Add series index to values for mocking
-        _.each(chart.seriesValues(series, index), function(value) {
+        utils.each(chart.seriesValues(series, index), function(value) {
           value.series = series;
         });
 
@@ -134,7 +135,7 @@
       });
 
       it('should handle varying data formats', function() {
-        _.each([
+        utils.each([
           [0, 10, 20],
           [{y: 0}, {y: 10}, {y: 20}],
           [[0, 0], [1, 10], [2, 20]],
@@ -185,4 +186,4 @@
     });
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins);

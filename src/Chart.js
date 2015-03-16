@@ -1,4 +1,4 @@
-(function(d3, helpers) {
+(function(d3) {
 
   /**
     Foundation for building charts with series data
@@ -14,4 +14,4 @@
     layer_type: 'chart'
   });
 
-})(d3, d3.chart.helpers);
+})(d3);

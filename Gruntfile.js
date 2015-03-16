@@ -7,7 +7,7 @@ module.exports = function(grunt) {
       'src/Base.js',
       'src/Chart.js',
       'src/Component.js',
-      'src/Multi.js'
+      'src/Compose.js'
     ],
     mixins: [
       'src/mixins.js'
@@ -82,8 +82,8 @@ module.exports = function(grunt) {
         ],
         vendor: [
           'bower_components/d3/d3.js',
-          'bower_components/underscore/underscore.js',
-          'bower_components/d3.chart/d3.chart.js'
+          'bower_components/d3.chart/d3.chart.js',
+          'bower_components/underscore/underscore.js'
         ]
       },
 

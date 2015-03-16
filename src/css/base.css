@@ -1,5 +1,5 @@
 /**
-  Base styles for d3.chart.multi
+  Base styles for d3.compose
 
   Includes
   - chart
@@ -9,7 +9,7 @@
   - legend
 */
 
-.chart-multi {
+.chart-compose {
   font-size: 14px;
   background-color: #fff;
   border: solid 1px #ddd;

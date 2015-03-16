@@ -1,4 +1,4 @@
-(function(d3, _, helpers) {
+(function(d3, helpers) {
 
   describe('helpers', function() {
     describe('property', function() {
@@ -446,4 +446,4 @@
     });
   });
 
-})(d3, _, d3.chart.helpers);
+})(d3, d3.compose.helpers);

@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>d3.chart.multi Example</title>
+  <title>d3.compose Example</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/default.css">
 
-  <link rel="stylesheet" type="text/css" href="../tmp/d3.chart.multi.css">
+  <link rel="stylesheet" type="text/css" href="../tmp/d3.compose.css">
   <style>
     .example {
       margin-bottom: 16px;
@@ -27,13 +27,13 @@
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
 
-  <script src="../tmp/d3.chart.multi-all.js"></script>
+  <script src="../tmp/d3.compose-all.js"></script>
 
   <script src="js/data.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>d3.chart.multi Examples</h1>
+    <h1>d3.compose Examples</h1>
 
     <section class="example">
       <h2>Line-Bar</h2>
@@ -41,7 +41,7 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-1')
-          .chart('Multi', function(data) {
+          .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', domain: [2000, 2005, 2010, 2015, 2020], centered: true},
               y: {domain: [0, 20000]},
@@ -110,7 +110,7 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-2')
-          .chart('Multi', function(data) {
+          .chart('Compose', function(data) {
             var scales = {
               x: {domain: [2000, 2020]},
               y: {data: data.lines, key: 'y'}
@@ -143,7 +143,7 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-3')
-          .chart('Multi', function(data) {
+          .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
               y: {data: data, value: function(d, i) { return d; }}
@@ -176,7 +176,7 @@
 
       <script type="text/javascript">
         var chart = d3.select('#chart-4')
-          .chart('Multi', function(data) {
+          .chart('Compose', function(data) {
             // TODO inverted XY
             var scales = {
               x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},

@@ -683,7 +683,8 @@
   }
 
   // Add helpers to d3.chart (static)
-  d3.chart.helpers = utils.extend({}, d3.chart.helpers, {
+  d3.compose = d3.compose || {};
+  d3.compose.helpers = utils.extend({}, d3.compose.helpers, {
     utils: utils,
     property: property,
     valueOrDefault: valueOrDefault,

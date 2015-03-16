@@ -1,4 +1,4 @@
-(function(d3, _, helpers, mixins) {
+(function(d3) {
 
   describe('Component', function() {
     var Component = d3.chart('Component');
@@ -53,4 +53,4 @@
     });
   });
 
-})(d3, _, d3.chart.helpers, d3.chart.mixins);
+})(d3);

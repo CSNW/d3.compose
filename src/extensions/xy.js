@@ -98,4 +98,4 @@
     };
   };
 
-})(d3, d3.chart.helpers);
+})(d3, d3.compose.helpers);

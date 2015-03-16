@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>d3.chart.multi Example</title>
+  <title>d3.compose Example</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/default.css">
 
-  <link rel="stylesheet" type="text/css" href="../tmp/d3.chart.multi.css">
+  <link rel="stylesheet" type="text/css" href="../tmp/d3.compose.css">
   <style>
     .spec {
       margin-bottom: 16px;
@@ -47,7 +47,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>d3.chart.multi Specs</h1>
+    <h1>d3.compose Specs</h1>
 
     <section class="spec">
       <span>Should re-layout correctly on redraw</span>
@@ -358,7 +358,7 @@
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
 
-  <script src="../tmp/d3.chart.multi-all.js"></script>
+  <script src="../tmp/d3.compose-all.js"></script>
 
   <script src="js/data.js"></script>
   <script type="text/javascript">
@@ -371,7 +371,7 @@
       function create() {
         chart = d3.select(options.elements.chart)
           .append('svg')
-          .chart('Multi', options.chart);
+          .chart('Compose', options.chart);
 
         if (!options.resizable)
           chart.width(600).height(400);

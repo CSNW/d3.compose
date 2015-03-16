@@ -4,7 +4,7 @@
   "version": "0.12.0",
   "main": [
     "./dist/d3.compose.js",
-    "./dist/d3.chart.multi.css"
+    "./dist/d3.compose.css"
   ],
   "authors": [
     "CSNW",

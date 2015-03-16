@@ -479,4 +479,4 @@
       .attr('opacity', 0);
   }
 
-})(d3, d3.chart.helpers, d3.chart.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins);
