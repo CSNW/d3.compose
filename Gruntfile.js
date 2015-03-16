@@ -194,6 +194,8 @@ module.exports = function(grunt) {
     // (e.g. grunt release:minor, grunt release:1.0.0-beta.1)
     if (version == 'major' || version == 'minor' || version == 'patch')
       version = semver.inc(pkg.version, version);
+    else if (version && version.indexOf('v') === 0)
+      version = version.substring(1);
 
     if (!version || !semver.valid(version))
       throw new Error('version of "major", "minor", "patch", or [version] is required for release (e.g. grunt release:minor or grunt release:1.0.0-beta.1');
@@ -221,24 +223,43 @@ module.exports = function(grunt) {
 
   grunt.registerTask('publish', 'Publish a new release of the library', function() {
     var done = this.async();
+    var path = require('path');
     var async = require('async');
+    var inquirer = require('inquirer');
+    var pkg = grunt.config('pkg');
     var version = grunt.option('version');
 
     if (!version)
       return done(new Error('"version" option required for publish task'));
 
-    git.currentBranch(function(err, branch) {
-      if (err) return done(err);
-      if (branch != 'master')
-        return done(new Error('Must be on master branch to publish'));
+    inquirer.prompt([{
+      type: 'input',
+      name: 'token',
+      message: 'Enter your GitHub token'
+    }], function(answers) {
+      var token = answers.token;
+      if (!token)
+        return done(new Error('A GitHub token is required to publish'));
 
-      async.series([
-        git.commit.bind(git, 'v' + version),
-        git.tag.bind(git, 'v' + version),
-        git.push,
-        git.pushTags
-        // TODO Upload zip to GitHub release API
-      ], done);
+      git.currentBranch(function(err, branch) {
+        if (err) return done(err);
+        if (branch != 'master')
+          return done(new Error('Must be on master branch to publish'));
+
+        var owner = 'CSNW';
+        var repo = pkg.name;
+        var tag = 'v' + version;
+        var name = pkg.name + ' ' + tag;
+        var asset_path = path.resolve(__dirname, 'tmp', pkg.name + '-' + tag + '.zip');
+
+        async.series([
+          git.commit.bind(git, tag),
+          git.tag.bind(git, tag),
+          git.push,
+          git.pushTags,
+          github.release.bind(github, owner, repo, tag, name, asset_path, token)
+        ], done);
+      });
     });
   });
 };
@@ -264,6 +285,55 @@ var git = {
     });
   }
 };
+
+var github = {
+  release: function(owner, repo, tag, name, asset_path, token, cb) {
+    var fs = require('fs');
+    var path = require('path');
+    var request = require('request');
+
+    request.post({
+      url: 'https://api.github.com/repos/' + owner + '/' + repo + '/releases',
+      body: {
+        tag_name: tag,
+        name: name
+      },
+      headers: {
+        'User-Agent': 'grunt publisher',
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token ' + token
+      },
+      json: true
+    }, function(err, response, body) {
+      if (err) return cb(err);
+
+      var upload_url = body.upload_url.replace('{?name}', '');
+      var stats = fs.statSync(asset_path);
+
+      fs.createReadStream(asset_path)
+        .pipe(request.post({
+          url: upload_url,
+          port: 443,
+          headers: {
+            'User-Agent': 'd3.compose publish',
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': 'token ' + token,
+            'Content-Type': 'application/zip',
+            'Content-Length': stats.size
+          },
+          qs: {
+            name: path.basename(asset_path)
+          }
+        }, function(err, res, body) {
+          if (err) return cb(err);
+          if (res.statusCode != 201)
+            cb(new Error(body), res, body);
+          else
+            cb(null, res, body);
+        }));
+    });
+  }
+}
 
 function exec(cmd, cb) {
   require('child_process').exec(cmd, {cwd: process.cwd()}, function(err, stdout, stderr) {
