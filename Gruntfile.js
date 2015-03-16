@@ -145,6 +145,14 @@ module.exports = function(grunt) {
         files: ['src/**/*.js', 'src/**/*.css'],
         tasks: ['build']
       }
+    },
+
+    zip: {
+      release: {
+        cwd: 'dist/',
+        src: ['dist/*'],
+        dest: 'tmp/<%= pkg.name %>-v<%= pkg.version %>.zip'
+      }
     }
   });
 
@@ -192,12 +200,13 @@ module.exports = function(grunt) {
 
     grunt.log.writeln('Releasing ' + version + '...');
 
-    // Update package.json, bower.json, and gh-pages/config.yml with new version number
+    // Update package.json, bower.json, and TODO gh-pages/config.yml with new version number
     pkg.version = version;
     bower.version = version;
 
     fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
     fs.writeFileSync('bower.json', JSON.stringify(bower, null, 2) + '\n');
+    grunt.config('pkg', pkg);
 
     // build, jshint, test, and publish
     grunt.option('version', version);
@@ -205,7 +214,7 @@ module.exports = function(grunt) {
       'build:release',
       'jshint:release',
       'jasmine:release',
-      // TODO Create d3.compose-v#.#.#.zip of dist/
+      'zip:release',
       'publish'
     ]);
   });
