@@ -12,9 +12,9 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
 
 2. Download the dependencies:
     
-    - [http://d3js.org/](D3.js (>= 3.0.0))
-    - [http://misoproject.com/d3-chart/](d3.chart (>= 0.2.0))
-    - [http://underscorejs.org/](Underscore.js (>= 1.5.0))
+    - [D3.js (>= 3.0.0)](http://d3js.org/)
+    - [d3.chart (>= 0.2.0)](http://misoproject.com/d3-chart/)
+    - [Underscore.js (>= 1.5.0)](http://underscorejs.org/)
 
 3. Add d3.compose and dependencies to your html:
 
