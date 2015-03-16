@@ -63,6 +63,13 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
               xScale: scales.x,
               yScale: scales.y
             }
+          },
+          components: {
+            y_axis: {
+              type: 'Axis',
+              position: 'right',
+              scale: scales.y
+            }
           }
         };
       })
