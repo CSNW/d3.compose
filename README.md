@@ -91,7 +91,7 @@ Install bower (if necessary) `npm install -g bower`
 (With all changes merged to master and on master branch)
 
 1. Set version in `package.json` and `bower.json`
-2. Build release with `grunt release` or `npm release`
+2. Build release with `grunt release` or `npm run release`
 3. Commit files `git commit -am "v#.#.#"`
 4. Tag commit with version `git tag v#.#.#`
 5. Push changes to remote `git push` and `git push --tags`
