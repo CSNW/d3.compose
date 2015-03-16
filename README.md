@@ -97,7 +97,6 @@ Install bower (if necessary) `npm install -g bower`
 
 (With all changes merged to master and on master branch)
 
-1. Build release with `grunt release:(patch|minor|major|[version])`
-2. Commit files `git commit -am "v#.#.#"`
-3. Tag commit with version `git tag v#.#.#`
-4. Push changes to remote `git push` and `git push --tags`
+1. Build and publish release with `grunt release:(patch|minor|major|[version])`
+    
+    (e.g. `grunt release:patch` or `grunt release:1.0.0-beta.1`)
