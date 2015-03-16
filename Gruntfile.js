@@ -159,12 +159,6 @@ module.exports = function(grunt) {
     'uglify:release'
   ]);
 
-  grunt.registerTask('release', 'Builds a new release of the library', [
-    'build:release',
-    'jshint:release',
-    'jasmine:release'
-  ]);
-
   grunt.registerTask('test', 'Lint and run specs', [
     'jshint:src',
     'jshint:specs',
@@ -180,4 +174,46 @@ module.exports = function(grunt) {
     'connect:example',
     'watch:test'
   ]);
+
+  grunt.registerTask('release', 'Build a new release of the library', function(target) {
+    var semver = require('semver');
+    var fs = require('fs');
+    var pkg = grunt.config('pkg');
+    var bower = grunt.file.readJSON('bower.json');
+    var version = target;
+
+    // Use target for major, minor, patch or version
+    // (e.g. grunt release:minor, grunt release:1.0.0-beta.1)
+    if (version == 'major' || version == 'minor' || version == 'patch')
+      version = semver.inc(pkg.version, version);
+
+    if (!version || !semver.valid(version))
+      throw new Error('version of "major", "minor", "patch", or [version] is required for release (e.g. grunt release:minor or grunt release:1.0.0-beta.1');
+
+    grunt.log.writeln('Releasing ' + version + '...');
+
+    // Update package.json, bower.json, and gh-pages/config.yml with new version number
+    pkg.version = version;
+    bower.version = version;
+
+    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+    fs.writeFileSync('bower.json', JSON.stringify(bower, null, 2) + '\n');
+
+    // build, jshint, test, and publish
+    grunt.option('version', version);
+    grunt.task.run([
+      'build:release',
+      'jshint:release',
+      'jasmine:release',
+      // TODO Create d3.compose-v#.#.#.zip of dist/
+      'publish'
+    ]);
+  });
+
+  grunt.registerTask('publish', 'Publish a new release of the library', function() {
+    // commit version
+    // add tag
+    // push + push --tags
+    // GitHub API zip for release
+  });
 };
