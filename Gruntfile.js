@@ -220,9 +220,55 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('publish', 'Publish a new release of the library', function() {
-    // commit version
-    // add tag
-    // push + push --tags
-    // GitHub API zip for release
+    var done = this.async();
+    var async = require('async');
+    var version = grunt.option('version');
+
+    if (!version)
+      return done(new Error('"version" option required for publish task'));
+
+    git.currentBranch(function(err, branch) {
+      if (err) return done(err);
+      if (branch != 'master')
+        return done(new Error('Must be on master branch to publish'));
+
+      async.series([
+        git.commit.bind(git, 'v' + version),
+        git.tag.bind(git, 'v' + version),
+        git.push,
+        git.pushTags
+        // TODO Upload zip to GitHub release API
+      ], done);
+    });
   });
 };
+
+var git = {
+  commit: function(message, cb) {
+    exec('git commit -am ' + message, cb);
+  },
+  tag: function(tag, cb) {
+    exec('git tag ' + tag, cb);
+  },
+  push: function(cb) {
+    exec('git push', cb);
+  },
+  pushTags: function(cb) {
+    exec('git push --tags', cb);
+  },
+  currentBranch: function(cb) {
+    exec('git rev-parse --abbrev-ref HEAD', function(err, branch) {
+      if (err) return cb(err);
+
+      cb(null, branch.replace(/\n/, ''));
+    });
+  }
+};
+
+function exec(cmd, cb) {
+  require('child_process').exec(cmd, {cwd: process.cwd()}, function(err, stdout, stderr) {
+    if (err) return cb(err);
+
+    cb(stderr, stdout);
+  });
+}
