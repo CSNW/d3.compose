@@ -2,6 +2,12 @@
 
 Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart.
 
+- Advanced layout engine automatically positions and sizes charts and components
+- Standard library of charts and components for quickly creating beautiful charts
+- `Chart` and `Component` bases for creating composable and reusable charts and components
+- Includes helpers and mixins that cover a range of standard functionality
+- Class-based styling is extensible and easy to customize to match your site
+
 ## Getting Started
 
 1. Download the [latest release](https://github.com/CSNW/d3.compose/releases)
