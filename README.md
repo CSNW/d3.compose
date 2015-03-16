@@ -68,7 +68,7 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
 
 ## Examples and Docs
 
-See [http://CSNW.github.io/d3.compose] for live examples and docs.
+See [http://CSNW.github.io/d3.compose](http://CSNW.github.io/d3.compose) for live examples and docs.
 
 ## Development
 
