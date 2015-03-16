@@ -1,9 +1,9 @@
-/*! d3.compose - v0.12.0
+/*! d3.compose - v0.12.1
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
 /**
-  Base styles for d3.chart.multi
+  Base styles for d3.compose
 
   Includes
   - chart
@@ -13,7 +13,7 @@
   - legend
 */
 
-.chart-multi {
+.chart-compose {
   font-size: 14px;
   background-color: #fff;
   border: solid 1px #ddd;

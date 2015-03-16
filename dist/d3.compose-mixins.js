@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.0
+/*! d3.compose - v0.12.1
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -687,7 +687,8 @@
   }
 
   // Add helpers to d3.chart (static)
-  d3.chart.helpers = utils.extend({}, d3.chart.helpers, {
+  d3.compose = d3.compose || {};
+  d3.compose.helpers = utils.extend({}, d3.compose.helpers, {
     utils: utils,
     property: property,
     valueOrDefault: valueOrDefault,
@@ -784,9 +785,9 @@
     }
   });
 
-})(d3, d3.chart.helpers);
+})(d3, d3.compose.helpers);
 
-(function(d3, helpers) {
+(function(d3) {
 
   /**
     Foundation for building charts with series data
@@ -802,7 +803,7 @@
     layer_type: 'chart'
   });
 
-})(d3, d3.chart.helpers);
+})(d3);
 
 (function(d3, helpers) {
   var utils = helpers.utils;
@@ -936,51 +937,47 @@
     layer_type: 'component'
   });
 
-})(d3, d3.chart.helpers);
+})(d3, d3.compose.helpers);
 
 (function(d3, helpers) {
   var utils = helpers.utils;
   var property = helpers.property;
 
   /**
-    Multi chart
-
-    Configure chart based on given options, including adding charts, axes, legend, and other properties
+    d3.compose
+    Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart
 
     @example
     ```javascript
     var chart = d3.select('#chart')
-      .append('svg')
-      .chart('Multi', function(data) {
+      .chart('Compose', function(data) {
         // Process data...
-        var participation = data...;
-        var results = data...;
+        var participation = data.participation;
+        var results = data.results;
         var scales = {
-          x: {data: results or participation or join..., key: 'x'},
+          x: {data: participation.concat(results), key: 'x', adjacent: true},
           y: {data: participation, key: 'y'},
-          secondaryY: {data: results, key: 'y'}
+          y2: {data: results, key: 'y'}
         };
 
-        return d3.chart.xy({
+        return {
           charts: {
-            participation: {type: 'Bars', data: participation, xScale: scales.x, yScale: scales.y, itemPadding: 20},
-            results: {type: 'Line', data: results, xScale: scales.x, yScale: scales.secondaryY, labels: {position: 'top'}}
+            participation: {type: 'Bars', data: participation, xScale: scales.x, yScale: scales.y},
+            results: {type: 'Line', data: results, xScale: scales.x, yScale: scales.y2, labels: {position: 'top'}}
           },
-          axes: {
-            x: {scale: scales.x}
-            y: {scale: scales.y},
-            secondaryY: {scale: scales.secondaryY}
-          },
-          legend: true,
-          title: 'd3.chart.multi'
+          components: {
+            title: {type: 'Title', position: 'top', text: 'd3.compose'}
+          }
         });
-      })
+      });
+
+    chart.draw({participation: [...], results: [...]});
     ```
 
-    @class Multi
+    @class Compose
     @param {Function|Object} [options]
   */
-  d3.chart('Base').extend('Multi', {
+  d3.chart('Base').extend('Compose', {
     initialize: function(options) {
       // Overriding transform in init jumps it to the top of the transform cascade
       // Therefore, data coming in hasn't been transformed and is raw
@@ -993,7 +990,7 @@
       if (options)
         this.options(options);
 
-      this.base.classed('chart-multi', true);
+      this.base.classed('chart-compose', true);
       this.attachHoverListeners();
     },
 
@@ -1495,7 +1492,7 @@
     return overall_layout;
   }
 
-})(d3, d3.chart.helpers);
+})(d3, d3.compose.helpers);
 
 (function(d3, helpers) {
   var property = helpers.property;
@@ -2142,7 +2139,8 @@
   }
 
   // Expose mixins
-  d3.chart.mixins = utils.extend(d3.chart.mixins || {}, {
+  d3.compose = d3.compose || {};
+  d3.compose.mixins = utils.extend(d3.compose.mixins || {}, {
     Series: Series,
     XY: XY,
     XYValues: XYValues,
@@ -2152,4 +2150,4 @@
     HoverPoints: HoverPoints
   });
 
-})(d3, d3.chart.helpers);
+})(d3, d3.compose.helpers);
