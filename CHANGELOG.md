@@ -11,6 +11,7 @@
 - Refactor mouse events
 - __0.12.1__ Complete rename to d3.compose
 - __0.12.2__ Move xy to d3.compose namespace
+- __0.12.3__ Fix version number
 
 # 0.11.0
 
