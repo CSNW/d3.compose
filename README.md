@@ -97,6 +97,4 @@ Install bower (if necessary) `npm install -g bower`
 
 (With all changes merged to master and on master branch)
 
-1. Build and publish release with `grunt release:(patch|minor|major|[version])`
-    
-    (e.g. `grunt release:patch` or `grunt release:1.0.0-beta.1`)
+1. Build and publish release with `grunt release` or `npm run release`

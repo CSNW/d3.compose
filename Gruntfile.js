@@ -183,42 +183,49 @@ module.exports = function(grunt) {
     'watch:test'
   ]);
 
-  grunt.registerTask('release', 'Build a new release of the library', function(target) {
+  grunt.registerTask('release', 'Build a new release of the library', function() {
+    var done = this.async();
+    var inquirer = require('inquirer');
     var semver = require('semver');
     var fs = require('fs');
     var pkg = grunt.config('pkg');
     var bower = grunt.file.readJSON('bower.json');
-    var version = target;
+    
+    inquirer.prompt([{
+      type: 'input',
+      name: 'version',
+      message: 'Version ("major", "minor", "patch", or [version] (e.g. 0.1.2 or 1.0.0-beta.1)'
+    }], function(answers) {
+      var version = answers.version;
 
-    // Use target for major, minor, patch or version
-    // (e.g. grunt release:minor, grunt release:1.0.0-beta.1)
-    if (version == 'major' || version == 'minor' || version == 'patch')
-      version = semver.inc(pkg.version, version);
-    else if (version && version.indexOf('v') === 0)
-      version = version.substring(1);
+      if (version == 'major' || version == 'minor' || version == 'patch')
+        version = semver.inc(pkg.version, version);
+      else if (version && version.indexOf('v') === 0)
+        version = version.substring(1);
 
-    if (!version || !semver.valid(version))
-      throw new Error('version of "major", "minor", "patch", or [version] is required for release (e.g. grunt release:minor or grunt release:1.0.0-beta.1');
+      if (!version || !semver.valid(version))
+        return done(new Error('version of "major", "minor", "patch", or [version] (e.g. 0.1.2 or 1.0.0-beta.1) is required for release'));
 
-    grunt.log.writeln('Releasing ' + version + '...');
+      grunt.log.writeln('Releasing ' + version + '...');
 
-    // Update package.json, bower.json, and TODO gh-pages/config.yml with new version number
-    pkg.version = version;
-    bower.version = version;
+      // Update package.json, bower.json, and TODO gh-pages/config.yml with new version number
+      pkg.version = version;
+      bower.version = version;
 
-    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-    fs.writeFileSync('bower.json', JSON.stringify(bower, null, 2) + '\n');
-    grunt.config('pkg', pkg);
+      fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+      fs.writeFileSync('bower.json', JSON.stringify(bower, null, 2) + '\n');
+      grunt.config('pkg', pkg);
 
-    // build, jshint, test, and publish
-    grunt.option('version', version);
-    grunt.task.run([
-      'build:release',
-      'jshint:release',
-      'jasmine:release',
-      'zip:release',
-      'publish'
-    ]);
+      // build, jshint, test, and publish
+      grunt.option('version', version);
+      grunt.task.run([
+        'build:release',
+        'jshint:release',
+        'jasmine:release',
+        'zip:release',
+        'publish'
+      ]);
+    });
   });
 
   grunt.registerTask('publish', 'Publish a new release of the library', function() {
@@ -306,6 +313,7 @@ var github = {
       json: true
     }, function(err, response, body) {
       if (err) return cb(err);
+      if (response.statusCode != 201) return cb(new Error(body));
 
       var upload_url = body.upload_url.replace('{?name}', '');
       var stats = fs.statSync(asset_path);
@@ -324,12 +332,11 @@ var github = {
           qs: {
             name: path.basename(asset_path)
           }
-        }, function(err, res, body) {
+        }, function(err, response, body) {
           if (err) return cb(err);
-          if (res.statusCode != 201)
-            cb(new Error(body), res, body);
-          else
-            cb(null, res, body);
+          if (response.statusCode != 201) return cb(new Error(body));
+          
+          cb(null, response, body);
         }));
     });
   }
@@ -338,7 +345,8 @@ var github = {
 function exec(cmd, cb) {
   require('child_process').exec(cmd, {cwd: process.cwd()}, function(err, stdout, stderr) {
     if (err) return cb(err);
+    if (stderr) return cb(new Error(stderr));
 
-    cb(stderr, stdout);
+    cb(null, stdout);
   });
 }
