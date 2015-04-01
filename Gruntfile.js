@@ -345,10 +345,5 @@ var github = {
 }
 
 function exec(cmd, cb) {
-  require('child_process').exec(cmd, {cwd: process.cwd()}, function(err, stdout, stderr) {
-    if (err) return cb(err);
-    if (stderr) return cb(new Error(stderr));
-
-    cb(null, stdout);
-  });
+  require('child_process').exec(cmd, {cwd: process.cwd()}, cb);
 }
