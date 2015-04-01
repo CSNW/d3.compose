@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.4
+/*! d3.compose - v0.12.5
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -295,16 +295,25 @@
   function alignText(element, line_height) {
     var offset = 0;
     try {
-      var style = window.getComputedStyle(element);
       var height = element.getBBox().height;
 
-      // Adjust for line-height
-      var adjustment = -(parseFloat(style['line-height']) - parseFloat(style['font-size'])) / 2;
+      var style = window.getComputedStyle(element);
+      var css_font_size = parseFloat(style['font-size']);
+      var css_line_height = parseFloat(style['line-height']);
 
+      // If line-height: normal, use estimate 1.14em
+      // (actual line-height depends on browser and font)
+      if (isNaN(css_line_height))
+        css_line_height = 1.15 * css_font_size;
+
+      var css_adjustment = -(css_line_height - css_font_size) / 2;
+
+      // Add additional line-height, if specified
+      var height_adjustment = 0;
       if (line_height && line_height > 0)
-        adjustment += (line_height - height) / 2;
+        height_adjustment = (line_height - height) / 2;
 
-      offset = height + adjustment;
+      offset = height + (css_adjustment || 0) + (height_adjustment || 0);
     }
     catch (ex) {}
 
