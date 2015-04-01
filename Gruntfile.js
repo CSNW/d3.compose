@@ -190,7 +190,7 @@ module.exports = function(grunt) {
     var fs = require('fs');
     var pkg = grunt.config('pkg');
     var bower = grunt.file.readJSON('bower.json');
-    
+
     inquirer.prompt([{
       type: 'input',
       name: 'version',
@@ -225,6 +225,8 @@ module.exports = function(grunt) {
         'zip:release',
         'publish'
       ]);
+
+      done();
     });
   });
 
@@ -335,7 +337,7 @@ var github = {
         }, function(err, response, body) {
           if (err) return cb(err);
           if (response.statusCode != 201) return cb(new Error(body));
-          
+
           cb(null, response, body);
         }));
     });
