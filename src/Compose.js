@@ -189,10 +189,13 @@
       @param {Object} data
     */
     draw: function(data) {
-      if (!this._config) {
-        data = data.original || data;
-        this._config = prepareConfig(this.options(), data);
+      var set_properties = !this._config;
 
+      // On redraw, get original data
+      data = data.original || data;
+      this._config = prepareConfig(this.options(), data);
+
+      if (set_properties) {
         // Set charts and components from config
         utils.each(this._config, function(value, key) {
           if (this[key] && this[key].is_property && this[key].set_from_options)
@@ -373,7 +376,7 @@
       positionByZIndex(this.base.selectAll('.chart-layer, .chart-component-layer')[0]);
     },
   });
-  
+
   //
   // Internal
   //
