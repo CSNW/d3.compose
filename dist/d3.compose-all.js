@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.3
+/*! d3.compose - v0.12.4
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -417,7 +417,7 @@
       @param {String} [options.key] Data key to extract value
       @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
       @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each-other
-        Notes: 
+        Notes:
         - Requires series-index as second argument to scale, otherwise centered x-value is used
         - Requires "data" or "series" options to determine number of series
       @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
@@ -572,6 +572,67 @@
   }
 
   /**
+    Stack given array of elements using options
+
+    @example
+    this.call(helpers.stack)
+    this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
+
+    @param {Object} [options]
+    - {String} [direction=vertical] vertical or horizontal
+    - {String} [origin=top] top/bottom for vertical and left/right for horizontal
+  */
+  function stack(options, elements) {
+    if (options && !elements) {
+      elements = options;
+      options = {
+        direction: 'vertical',
+        origin: 'top',
+        padding: 0
+      };
+    }
+
+    function padding(d, i) {
+      return i > 0 && options.padding ? options.padding : 0;
+    }
+
+    if (elements && elements.attr) {
+      var previous = 0;
+      elements
+        .attr('transform', function(d, i) {
+          var dimensions = this.getBBox();
+          var x = 0;
+          var y = 0;
+
+          if (options.direction == 'horizontal') {
+            if (!(options.origin == 'left' || options.origin == 'right'))
+              options.origin = 'left';
+
+            if (options.origin == 'left')
+              x = previous + padding(d, i);
+            else
+              x = previous + dimensions.width + padding(d, i);
+
+            previous = previous + dimensions.width + padding(d, i);
+          }
+          else {
+            if (!(options.origin == 'top' || options.origin == 'bottom'))
+              options.origin = 'top';
+
+            if (options.origin == 'top')
+              y = previous + padding(d, i);
+            else
+              y = previous + dimensions.height + padding(d, i);
+
+            previous = previous + dimensions.height + padding(d, i);
+          }
+
+          return translate(x, y);
+        });
+    }
+  }
+
+  /**
     Create wrapped (d, i) function that adds chart instance as first argument
     Wrapped function uses standard d3 arguments and context
 
@@ -701,6 +762,7 @@
     min: min,
     createScale: createScale,
     style: style,
+    stack: stack,
     di: di,
     bindDi: bindDi,
     bindAllDi: bindAllDi,
@@ -1130,10 +1192,13 @@
       @param {Object} data
     */
     draw: function(data) {
-      if (!this._config) {
-        data = data.original || data;
-        this._config = prepareConfig(this.options(), data);
+      var set_properties = !this._config;
 
+      // On redraw, get original data
+      data = data.original || data;
+      this._config = prepareConfig(this.options(), data);
+
+      if (set_properties) {
         // Set charts and components from config
         utils.each(this._config, function(value, key) {
           if (this[key] && this[key].is_property && this[key].set_from_options)
@@ -1314,7 +1379,7 @@
       positionByZIndex(this.base.selectAll('.chart-layer, .chart-component-layer')[0]);
     },
   });
-  
+
   //
   // Internal
   //
@@ -3389,7 +3454,7 @@
               bottom: 'horizontal',
               left: 'vertical'
             };
-            this.call(stack.bind(this, {direction: direction_by_position[chart.position()], origin: 'top', padding: 5}));
+            this.call(helpers.stack.bind(this, {direction: direction_by_position[chart.position()], origin: 'top', padding: 5}));
           },
           exit: function() {
             this.remove();
@@ -3610,67 +3675,6 @@
   }, {
     layer_type: 'chart'
   });
-
-  /*
-    Stack given array of elements using options
-
-    @example
-    this.call(helpers.stack)
-    this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
-
-    @param {Object} [options]
-    - {String} [direction=vertical] vertical or horizontal
-    - {String} [origin=top] top/bottom for vertical and left/right for horizontal
-  */
-  function stack(options, elements) {
-    if (options && !elements) {
-      elements = options;
-      options = {
-        direction: 'vertical',
-        origin: 'top',
-        padding: 0
-      };
-    }
-
-    function padding(d, i) {
-      return i > 0 && options.padding ? options.padding : 0;
-    }
-
-    if (elements && elements.attr) {
-      var previous = 0;
-      elements
-        .attr('transform', function(d, i) {
-          var dimensions = this.getBBox();
-          var x = 0;
-          var y = 0;
-
-          if (options.direction == 'horizontal') {
-            if (!(options.origin == 'left' || options.origin == 'right'))
-              options.origin = 'left';
-
-            if (options.origin == 'left')
-              x = previous + padding(d, i);
-            else
-              x = previous + dimensions.width + padding(d, i);
-
-            previous = previous + dimensions.width + padding(d, i);
-          }
-          else {
-            if (!(options.origin == 'top' || options.origin == 'bottom'))
-              options.origin = 'top';
-
-            if (options.origin == 'top')
-              y = previous + padding(d, i);
-            else
-              y = previous + dimensions.height + padding(d, i);
-
-            previous = previous + dimensions.height + padding(d, i);
-          }
-
-          return helpers.translate(x, y);
-        });
-    }
-  }
 
 })(d3, d3.compose.helpers);
 

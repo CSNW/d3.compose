@@ -12,6 +12,7 @@
 - __0.12.1__ Complete rename to d3.compose
 - __0.12.2__ Move xy to d3.compose namespace
 - __0.12.3__ Fix version number
+- __0.12.4__ Fix data handling bug in Compose.draw, fix examples, and move `stack` back to helpers
 
 # 0.11.0
 
