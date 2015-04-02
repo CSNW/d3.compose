@@ -63,9 +63,6 @@
       default_value: function(data) { return {}; },
       type: 'Function',
       set: function(options) {
-        // Clear cached config
-        this._config = null;
-
         // If options is plain object,
         // return from generic options function
         if (!utils.isFunction(options)) {
@@ -189,24 +186,20 @@
       @param {Object} data
     */
     draw: function(data) {
-      var set_properties = !this._config;
-
       // On redraw, get original data
       data = data.original || data;
-      this._config = prepareConfig(this.options(), data);
+      var config = prepareConfig(this.options(), data);
 
-      if (set_properties) {
-        // Set charts and components from config
-        utils.each(this._config, function(value, key) {
-          if (this[key] && this[key].is_property && this[key].set_from_options)
-            this[key](value);
-        }, this);
-      }
+      // Set charts and components from config
+      utils.each(config, function(value, key) {
+        if (this[key] && this[key].is_property && this[key].set_from_options)
+          this[key](value);
+      }, this);
 
       // Add config data
       data = {
         original: data,
-        config: this._config.data
+        config: config.data
       };
       this.data(data);
 

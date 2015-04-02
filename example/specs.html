@@ -352,6 +352,42 @@
         });
       </script>
     </section>
+
+    <section class="spec">
+      <span>Should update on scale change</span>
+      <button class="spec-btn" data-run>Run</button>
+      <button class="spec-btn" data-reset>Reset</button>
+
+      <div class="spec-chart" data-chart></div>
+      <script type="text/javascript">
+        spec({
+          chart: function(data) {
+            var scales = {
+              x: {data: data.values, key: 'x'},
+              y: {data: data.values, key: 'y'}
+            };
+
+            return {
+              charts: {
+                line: {type: 'Lines', data: data.values, xScale: scales.x, yScale: scales.y}
+              },
+              components: {
+                'axis.x': {type: 'Axis', position: 'bottom', scale: scales.x, ticks: 5},
+                'axis.y': {type: 'Axis', position: 'left', scale: scales.y}
+              }
+            };
+          },
+          data: 'spec-abc',
+          run: function(options, chart) {
+            data[options.data].values[1].values[0].y = 200;
+            chart.draw(data[options.data]);
+          },
+          reset: function(options) {
+            data[options.data].values[1].values[0].y = 100;
+          }
+        });
+      </script>
+    </section>
   </div>
 
   <script src="../bower_components/d3/d3.js"></script>
