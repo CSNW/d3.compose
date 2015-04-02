@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.5
+/*! d3.compose - v0.12.6
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -2265,7 +2265,9 @@
         },
         events: {
           'merge': function() {
-            this.chart().mergeLabels(this);
+            var chart = this.chart();
+            chart.mergeLabels(this);
+            chart.layoutLabels(this);
           },
           'merge:transition': function() {
             var chart = this.chart();
@@ -2443,12 +2445,14 @@
 
     // (Override for custom labels)
     mergeLabels: function(selection) {
-      var chart = this;
-
       selection.selectAll('text')
         .text(this.labelText);
+    },
 
+    // (Override for custom labels)
+    layoutLabels: function(selection) {
       // Calculate layout
+      var chart = this;
       var labels = [];
       var options = {
         offset: chart.offset(),
