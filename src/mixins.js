@@ -90,7 +90,9 @@
             .data(data, chart.seriesKey);
 
           series.enter()
-            .append('g')
+            .append('g');
+
+          series
             .attr('class', chart.seriesClass)
             .attr('style', chart.itemStyle);
 
