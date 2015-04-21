@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.7
+/*! d3.compose - v0.12.8
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -1653,7 +1653,9 @@
             .data(data, chart.seriesKey);
 
           series.enter()
-            .append('g')
+            .append('g');
+
+          series
             .attr('class', chart.seriesClass)
             .attr('style', chart.itemStyle);
 

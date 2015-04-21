@@ -16,6 +16,7 @@
 - __0.12.5__ Handle `line-height: normal` in `alignText`
 - __0.12.6__ Split merge and layout in labels for better override
 - __0.12.7__ Fix cached config bug
+- __0.12.8__ Fix improperly updating series class/style bug
 
 # 0.11.0
 
