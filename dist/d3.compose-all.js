@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.8
+/*! d3.compose - v0.12.9
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -2251,7 +2251,6 @@
           var chart = this.chart();
 
           var labels = this.append('g')
-            .attr('class', chart.labelClass)
             .on('mouseenter', chart.mouseEnterPoint)
             .on('mouseleave', chart.mouseLeavePoint)
             .call(chart.insertLabels);
@@ -2261,6 +2260,9 @@
         events: {
           'merge': function() {
             var chart = this.chart();
+
+            this.attr('class', chart.labelClass);
+
             chart.mergeLabels(this);
             chart.layoutLabels(this);
           },
@@ -2731,8 +2733,6 @@
           var chart = this.chart();
 
           return this.append('rect')
-            .attr('class', chart.barClass)
-            .attr('style', chart.itemStyle)
             .on('mouseenter', chart.mouseEnterPoint)
             .on('mouseleave', chart.mouseLeavePoint);
         },
@@ -2748,6 +2748,8 @@
             var chart = this.chart();
 
             this
+              .attr('class', chart.barClass)
+              .attr('style', chart.itemStyle)
               .attr('x', chart.barX)
               .attr('width', chart.itemWidth());
           },
@@ -2861,7 +2863,7 @@
   */
   d3.chart('Chart').extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
     initialize: function() {
-      this.lines = [];
+      this.lines = {};
 
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
@@ -2875,7 +2877,6 @@
 
           return this.append('path')
             .classed('chart-line', true)
-            .attr('style', chart.itemStyle)
             .each(chart.createLine);
         },
         events: {
@@ -2889,9 +2890,9 @@
             if (chart.ease())
               this.ease(chart.ease());
 
-            this.attr('d', function(d, i, j) {
-              return chart.lines[j](d);
-            });
+            this
+              .attr('d', chart.lineData)
+              .attr('style', chart.itemStyle);
           }
         }
       });
@@ -2918,13 +2919,23 @@
     ease: property('ease', {type: 'Function'}),
 
     createLine: di(function(chart, d, i, j) {
-      var line = chart.lines[j] = d3.svg.line()
+      var key = chart.lineKey.call(this, d, i, j);
+      var line = chart.lines[key] = d3.svg.line()
         .x(chart.x)
         .y(chart.y);
 
       var interpolate = d.interpolate || chart.interpolate();
       if (interpolate)
         line.interpolate(interpolate);
+    }),
+    lineKey: di(function(chart, d, i, j) {
+      var key = chart.seriesKey(chart.seriesData.call(this, d, i, j));
+      return key != null ? key : chart.seriesIndex.call(this, d, i, j);
+    }),
+    lineData: di(function(chart, d, i, j) {
+      var key = chart.lineKey.call(this, d, i, j);
+      if (chart.lines[key])
+        return chart.lines[key](d);
     })
   }));
 
