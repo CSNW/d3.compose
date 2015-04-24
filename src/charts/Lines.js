@@ -10,7 +10,7 @@
   */
   d3.chart('Chart').extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
     initialize: function() {
-      this.lines = [];
+      this.lines = {};
 
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
@@ -38,9 +38,7 @@
             if (chart.ease())
               this.ease(chart.ease());
 
-            this.attr('d', function(d, i, j) {
-              return chart.lines[j](d);
-            });
+            this.attr('d', chart.lineData);
           }
         }
       });
@@ -67,13 +65,23 @@
     ease: property('ease', {type: 'Function'}),
 
     createLine: di(function(chart, d, i, j) {
-      var line = chart.lines[j] = d3.svg.line()
+      var key = chart.lineKey.call(this, d, i, j);
+      var line = chart.lines[key] = d3.svg.line()
         .x(chart.x)
         .y(chart.y);
 
       var interpolate = d.interpolate || chart.interpolate();
       if (interpolate)
         line.interpolate(interpolate);
+    }),
+    lineKey: di(function(chart, d, i, j) {
+      var key = chart.seriesKey(chart.seriesData.call(this, d, i, j));
+      return key != null ? key : chart.seriesIndex.call(this, d, i, j);
+    }),
+    lineData: di(function(chart, d, i, j) {
+      var key = chart.lineKey.call(this, d, i, j);
+      if (chart.lines[key])
+        return chart.lines[key](d);
     })
   }));
 
