@@ -46,11 +46,11 @@
           'merge:transition': function() {
             var chart = this.chart();
 
-            if (chart.delay && chart.delay())
+            if (chart.delay && !_.isUndefined(chart.delay()))
               this.delay(chart.delay());
-            if (chart.duration && chart.duration())
+            if (chart.duration && !_.isUndefined(chart.duration()))
               this.duration(chart.duration());
-            if (chart.ease && chart.ease())
+            if (chart.ease && !_.isUndefined(chart.ease()))
               this.ease(chart.ease());
 
             // Position labels

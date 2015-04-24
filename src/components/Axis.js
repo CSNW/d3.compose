@@ -60,18 +60,18 @@
             // Render axis (with transition)
             var chart = this.chart();
 
-            if (chart.delay())
+            if (!_.isUndefined(chart.delay()))
               this.delay(chart.delay());
 
             if (chart._skip_transition) {
               this.duration(0);
               chart._skip_transition = undefined;
             }
-            else if (chart.duration()) {
+            else if (!_.isUndefined(chart.duration())) {
               this.duration(chart.duration());
             }
 
-            if (chart.ease())
+            if (!_.isUndefined(chart.ease()))
               this.ease(chart.ease());
 
             this.call(chart.axis);
