@@ -28,7 +28,6 @@
           var chart = this.chart();
 
           var labels = this.append('g')
-            .attr('class', chart.labelClass)
             .on('mouseenter', chart.mouseEnterPoint)
             .on('mouseleave', chart.mouseLeavePoint)
             .call(chart.insertLabels);
@@ -38,6 +37,9 @@
         events: {
           'merge': function() {
             var chart = this.chart();
+
+            this.attr('class', chart.labelClass);
+
             chart.mergeLabels(this);
             chart.layoutLabels(this);
           },

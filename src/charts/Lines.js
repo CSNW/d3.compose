@@ -24,7 +24,6 @@
 
           return this.append('path')
             .classed('chart-line', true)
-            .attr('style', chart.itemStyle)
             .each(chart.createLine);
         },
         events: {
@@ -38,7 +37,9 @@
             if (chart.ease())
               this.ease(chart.ease());
 
-            this.attr('d', chart.lineData);
+            this
+              .attr('d', chart.lineData)
+              .attr('style', chart.itemStyle);
           }
         }
       });

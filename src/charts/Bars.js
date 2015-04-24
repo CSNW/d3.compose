@@ -21,8 +21,6 @@
           var chart = this.chart();
 
           return this.append('rect')
-            .attr('class', chart.barClass)
-            .attr('style', chart.itemStyle)
             .on('mouseenter', chart.mouseEnterPoint)
             .on('mouseleave', chart.mouseLeavePoint);
         },
@@ -38,6 +36,8 @@
             var chart = this.chart();
 
             this
+              .attr('class', chart.barClass)
+              .attr('style', chart.itemStyle)
               .attr('x', chart.barX)
               .attr('width', chart.itemWidth());
           },
