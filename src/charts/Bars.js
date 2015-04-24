@@ -44,11 +44,11 @@
           'merge:transition': function() {
             var chart = this.chart();
 
-            if (!_.isUndefined(chart.delay()))
+            if (!helpers.utils.isUndefined(chart.delay()))
               this.delay(chart.delay());
-            if (!_.isUndefined(chart.duration()))
+            if (!helpers.utils.isUndefined(chart.duration()))
               this.duration(chart.duration());
-            if (!_.isUndefined(chart.ease()))
+            if (!helpers.utils.isUndefined(chart.ease()))
               this.ease(chart.ease());
 
             this

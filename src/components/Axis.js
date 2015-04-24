@@ -60,18 +60,18 @@
             // Render axis (with transition)
             var chart = this.chart();
 
-            if (!_.isUndefined(chart.delay()))
+            if (!helpers.utils.isUndefined(chart.delay()))
               this.delay(chart.delay());
 
             if (chart._skip_transition) {
               this.duration(0);
               chart._skip_transition = undefined;
             }
-            else if (!_.isUndefined(chart.duration())) {
+            else if (!helpers.utils.isUndefined(chart.duration())) {
               this.duration(chart.duration());
             }
 
-            if (!_.isUndefined(chart.ease()))
+            if (!helpers.utils.isUndefined(chart.ease()))
               this.ease(chart.ease());
 
             this.call(chart.axis);
@@ -140,7 +140,7 @@
     position: property('position', {
       default_value: 'bottom',
       validate: function(value) {
-        return _.contains(['top', 'right', 'bottom', 'left', 'x0', 'y0'], value);
+        return helpers.utils.contains(['top', 'right', 'bottom', 'left', 'x0', 'y0'], value);
       },
       set: function() {
         // Update scale -> xScale/yScale when position changes
@@ -209,7 +209,7 @@
     */
     orientation: property('orientation', {
       validate: function(value) {
-        return _.contains(['horizontal', 'vertical'], value);
+        return helpers.utils.contains(['horizontal', 'vertical'], value);
       },
       default_value: function() {
         return {
@@ -254,7 +254,7 @@
 
       // 4. Draw with previous values
       if (this._previous_raw_data) {
-        this.setState(_.extend(state.previous, {duration: 0}));
+        this.setState(helpers.utils.extend(state.previous, {duration: 0}));
 
         this.draw(this._previous_raw_data);
 
@@ -320,12 +320,12 @@
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var array_extensions = ['tickValues'];
-      _.each(extensions, function(key) {
+      helpers.utils.each(extensions, function(key) {
         var value = this[key] && this[key]();
-        if (!_.isUndefined(value)) {
+        if (!helpers.utils.isUndefined(value)) {
           // If value is array, treat as arguments array
           // otherwise, pass in directly
-          if (_.isArray(value) && !_.contains(array_extensions, key))
+          if (helpers.utils.isArray(value) && !helpers.utils.contains(array_extensions, key))
             axis[key].apply(axis, value);
           else
             axis[key](value);
@@ -355,8 +355,8 @@
       });
 
       return {
-        width: _.max(overhangs.width),
-        height: _.max(overhangs.height)
+        width: helpers.utils.max(overhangs.width),
+        height: helpers.utils.max(overhangs.height)
       };
     }
   }), {
