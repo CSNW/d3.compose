@@ -18,6 +18,7 @@
 - __0.12.7__ Fix cached config bug
 - __0.12.8__ Fix improperly updating series class/style bug
 - __0.12.9__ Fix Lines indexing bug and set class/style for charts on merge instead of insert
+- __0.12.10__ Allow 0/null for transition (delay, duration, ease) values
 
 # 0.11.0
 

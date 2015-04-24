@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.9
+/*! d3.compose - v0.12.10
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -2269,11 +2269,11 @@
           'merge:transition': function() {
             var chart = this.chart();
 
-            if (chart.delay && chart.delay())
+            if (chart.delay && !_.isUndefined(chart.delay()))
               this.delay(chart.delay());
-            if (chart.duration && chart.duration())
+            if (chart.duration && !_.isUndefined(chart.duration()))
               this.duration(chart.duration());
-            if (chart.ease && chart.ease())
+            if (chart.ease && !_.isUndefined(chart.ease()))
               this.ease(chart.ease());
 
             // Position labels
@@ -2756,11 +2756,11 @@
           'merge:transition': function() {
             var chart = this.chart();
 
-            if (chart.delay())
+            if (!_.isUndefined(chart.delay()))
               this.delay(chart.delay());
-            if (chart.duration())
+            if (!_.isUndefined(chart.duration()))
               this.duration(chart.duration());
-            if (chart.ease())
+            if (!_.isUndefined(chart.ease()))
               this.ease(chart.ease());
 
             this
@@ -2883,11 +2883,11 @@
           'merge:transition': function() {
             var chart = this.chart();
 
-            if (chart.delay())
+            if (!_.isUndefined(chart.delay()))
               this.delay(chart.delay());
-            if (chart.duration())
+            if (!_.isUndefined(chart.duration()))
               this.duration(chart.duration());
-            if (chart.ease())
+            if (!_.isUndefined(chart.ease()))
               this.ease(chart.ease());
 
             this
@@ -3086,18 +3086,18 @@
             // Render axis (with transition)
             var chart = this.chart();
 
-            if (chart.delay())
+            if (!_.isUndefined(chart.delay()))
               this.delay(chart.delay());
 
             if (chart._skip_transition) {
               this.duration(0);
               chart._skip_transition = undefined;
             }
-            else if (chart.duration()) {
+            else if (!_.isUndefined(chart.duration())) {
               this.duration(chart.duration());
             }
 
-            if (chart.ease())
+            if (!_.isUndefined(chart.ease()))
               this.ease(chart.ease());
 
             this.call(chart.axis);

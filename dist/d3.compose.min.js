@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.9
+/*! d3.compose - v0.12.10
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
