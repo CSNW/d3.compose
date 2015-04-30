@@ -20,6 +20,7 @@
 - __0.12.9__ Fix Lines indexing bug and set class/style for charts on merge instead of insert
 - __0.12.10__ Allow 0/null for transition (delay, duration, ease) values
 - __0.12.11__ Use utils instead of underscore
+- __0.12.12__ Fix label collisions bug
 
 # 0.11.0
 
