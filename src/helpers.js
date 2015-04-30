@@ -10,7 +10,13 @@
     each: _.each,
     extend: _.extend,
     flatten: _.flatten,
-    first: _.first,
+    first: function(array, n) {
+      // Underscore vs. Lo-dash disagree on the implementation for first
+      // use Underscore's
+      if (array == null) return void 0;
+      if (n == null) return array[0];
+      return Array.prototype.slice.call(array, 0, n);
+    },
     has: _.has,
     isArray: _.isArray,
     isBoolean: _.isBoolean,
