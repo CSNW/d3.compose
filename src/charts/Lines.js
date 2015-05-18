@@ -1,4 +1,4 @@
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -8,7 +8,7 @@
 
     @class Lines
   */
-  d3.chart('Chart').extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
+  charts.Lines = charts.Chart.extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
     initialize: function() {
       this.lines = {};
 
@@ -86,4 +86,4 @@
     })
   }));
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

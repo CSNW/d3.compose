@@ -1,4 +1,4 @@
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
   var di = helpers.di;
@@ -34,7 +34,7 @@
 
     @class Legend
   */
-  d3.chart('Component').extend('Legend', {
+  charts.Legend = charts.Component.extend('Legend', {
     initialize: function() {
       this.legend_base = this.base.append('g').classed('chart-legend', true);
 
@@ -301,4 +301,4 @@
     layer_type: 'chart'
   });
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);

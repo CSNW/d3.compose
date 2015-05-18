@@ -1,4 +1,4 @@
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -8,7 +8,7 @@
 
     @class Bars
   */
-  d3.chart('Chart').extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, mixins.Hover, {
+  charts.Bars = charts.Chart.extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, mixins.Hover, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -103,7 +103,7 @@
 
     @class StackedBars
   */
-  d3.chart('Bars').extend('StackedBars', {
+  var stacked_extension = {
     transform: function(data) {
       // Re-initialize bar positions each time data changes
       this.bar_positions = [];
@@ -135,6 +135,7 @@
 
       return new_position;
     })
-  });
+  };
+  charts.StackedBars = charts.Bars.extend('StackedBars', stacked_extension);
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

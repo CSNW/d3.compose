@@ -1,4 +1,4 @@
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -6,7 +6,7 @@
   /**
     @class Title
   */
-  d3.chart('Component').extend('Title', {
+  charts.Title = charts.Component.extend('Title', {
     initialize: function() {
       this.layer('Title', this.base.append('g').classed('chart-title', true), {
         dataBind: function(data) {
@@ -79,4 +79,4 @@
     z_index: 70
   });
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

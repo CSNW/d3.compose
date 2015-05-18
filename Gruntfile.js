@@ -342,7 +342,7 @@ var github = {
         }));
     });
   }
-}
+};
 
 function exec(cmd, cb) {
   require('child_process').exec(cmd, {cwd: process.cwd()}, cb);
