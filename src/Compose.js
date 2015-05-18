@@ -187,7 +187,7 @@
     */
     draw: function(data) {
       // On redraw, get original data
-      data = data.original || data;
+      data = data && data.original || data;
       var config = prepareConfig(this.options(), data);
 
       // Set charts and components from config
