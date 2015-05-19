@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.13
+/*! d3.compose - v0.12.14
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -3915,7 +3915,7 @@
   });
 
   // Create line swatch for Line and LineValues
-  d3.chart('Legend').registerSwatch(['Lines'], function(chart, d, i) {
+  charts.Legend.registerSwatch(['Lines'], function(chart, d, i) {
     var dimensions = chart.swatchDimensions();
 
     return this.append('line')
@@ -3925,7 +3925,7 @@
   });
 
   // Create bars swatch for Bars and StackedBars
-  d3.chart('Legend').registerSwatch(['Bars', 'StackedBars'], function(chart, d, i) {
+  charts.Legend.registerSwatch(['Bars', 'StackedBars', 'HorizontalBars', 'HorizontalStackedBars'], function(chart, d, i) {
     var dimensions = chart.swatchDimensions();
 
     return this.append('rect')
@@ -3939,7 +3939,7 @@
 
     @class InsetLegend
   */
-  d3.chart('Legend').extend('InsetLegend', {
+  charts.InsetLegend = charts.Legend.extend('InsetLegend', {
     initialize: function() {
       this.on('draw', function() {
         // Position legend on draw

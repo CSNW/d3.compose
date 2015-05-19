@@ -22,6 +22,7 @@
 - __0.12.11__ Use utils instead of underscore
 - __0.12.12__ Fix label collisions bug
 - __0.12.13__ Add `HorizontalBar` and `HorizontalStackedBars`; make `Bars`, `Lines`, and `Title` more extensible; fix `undefined` data bug; namespace charts
+- __0.12.14__ Add horizontal bars swatch to legend
 
 # 0.11.0
 
