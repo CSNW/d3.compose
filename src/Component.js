@@ -1,4 +1,4 @@
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -7,7 +7,7 @@
 
     @class Component
   */
-  d3.chart('Base').extend('Component', {
+  charts.Component = charts.Base.extend('Component', {
     initialize: function(options) {
       this.options(options || {});
     },
@@ -130,4 +130,4 @@
     layer_type: 'component'
   });
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);

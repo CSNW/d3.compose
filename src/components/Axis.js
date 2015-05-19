@@ -1,4 +1,4 @@
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -17,7 +17,7 @@
 
     @class Axis
   */
-  d3.chart('Component').extend('Axis', mixin(mixins.XY, {
+  charts.Axis = charts.Component.extend('Axis', mixin(mixins.XY, {
     initialize: function() {
       // Create two axes (so that layout and transitions work)
       // 1. Display and transitions
@@ -364,4 +364,4 @@
     z_index: 60
   });
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

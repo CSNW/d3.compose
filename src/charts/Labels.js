@@ -1,4 +1,4 @@
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var utils = helpers.utils;
   var mixin = helpers.mixin;
   var property = helpers.property;
@@ -7,7 +7,7 @@
   /**
     @class Labels
   */
-  d3.chart('Chart').extend('Labels', mixin(mixins.Series, mixins.XY, mixins.Hover, {
+  charts.Labels = charts.Chart.extend('Labels', mixin(mixins.Series, mixins.XY, mixins.Hover, {
     initialize: function() {
       // Proxy attach to parent for hover
       var parent = this.options().parent;
@@ -27,12 +27,10 @@
         insert: function() {
           var chart = this.chart();
 
-          var labels = this.append('g')
+          return this.append('g')
             .on('mouseenter', chart.mouseEnterPoint)
             .on('mouseleave', chart.mouseLeavePoint)
             .call(chart.insertLabels);
-
-          return labels;
         },
         events: {
           'merge': function() {
@@ -485,4 +483,4 @@
       .attr('opacity', 0);
   }
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

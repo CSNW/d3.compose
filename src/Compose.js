@@ -1,4 +1,4 @@
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -36,7 +36,7 @@
     @class Compose
     @param {Function|Object} [options]
   */
-  d3.chart('Base').extend('Compose', {
+  charts.Compose = charts.Base.extend('Compose', {
     initialize: function(options) {
       // Overriding transform in init jumps it to the top of the transform cascade
       // Therefore, data coming in hasn't been transformed and is raw
@@ -187,7 +187,7 @@
     */
     draw: function(data) {
       // On redraw, get original data
-      data = data.original || data;
+      data = data && data.original || data;
       var config = prepareConfig(this.options(), data);
 
       // Set charts and components from config
@@ -547,4 +547,4 @@
     return overall_layout;
   }
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);

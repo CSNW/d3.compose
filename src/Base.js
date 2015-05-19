@@ -7,7 +7,8 @@
 
     @class Base
   */
-  d3.chart('Base', {
+  d3.compose.charts = d3.compose.charts || {};
+  d3.compose.charts.Base = d3.chart('Base', {
     initialize: function() {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);

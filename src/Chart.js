@@ -1,11 +1,11 @@
-(function(d3) {
+(function(d3, charts) {
 
   /**
     Foundation for building charts with series data
 
     @class Chart
   */
-  d3.chart('Base').extend('Chart', {
+  charts.Chart = charts.Base.extend('Chart', {
     initialize: function(options) {
       this.options(options || {});
     }
@@ -14,4 +14,4 @@
     layer_type: 'chart'
   });
 
-})(d3);
+})(d3, d3.compose.charts);

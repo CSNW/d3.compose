@@ -1,4 +1,4 @@
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -8,38 +8,35 @@
 
     @class Lines
   */
-  d3.chart('Chart').extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
+  charts.Lines = charts.Chart.extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
     initialize: function() {
       this.lines = {};
 
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
-          return this.selectAll('path')
-            .data(function(d, i, j) {
-              return [data.call(this, d, i, j)];
-            });
+          return this.chart().onDataBind(this, data);
         },
         insert: function() {
-          var chart = this.chart();
-
-          return this.append('path')
-            .classed('chart-line', true)
-            .each(chart.createLine);
+          return this.chart().onInsert(this);
         },
         events: {
+          'enter': function() {
+            this.chart().onEnter(this);
+          },
+          'enter:transition': function() {
+            this.chart().onEnterTransition(this);
+          },
+          'merge': function() {
+            this.chart().onMerge(this);
+          },
           'merge:transition': function() {
-            var chart = this.chart();
-
-            if (!helpers.utils.isUndefined(chart.delay()))
-              this.delay(chart.delay());
-            if (!helpers.utils.isUndefined(chart.duration()))
-              this.duration(chart.duration());
-            if (!helpers.utils.isUndefined(chart.ease()))
-              this.ease(chart.ease());
-
-            this
-              .attr('d', chart.lineData)
-              .attr('style', chart.itemStyle);
+            this.chart().onMergeTransition(this);
+          },
+          'exit': function() {
+            this.chart().onExit(this);
+          },
+          'exit:transition': function() {
+            this.chart().onExitTransition(this);
           }
         }
       });
@@ -83,7 +80,43 @@
       var key = chart.lineKey.call(this, d, i, j);
       if (chart.lines[key])
         return chart.lines[key](d);
-    })
+    }),
+
+    onDataBind: function(selection, data) {
+      return selection.selectAll('path')
+        .data(function(d, i, j) {
+          return [data.call(selection, d, i, j)];
+        });
+    },
+
+    onInsert: function(selection) {
+      return selection.append('path')
+        .classed('chart-line', true)
+        .each(this.createLine);
+    },
+
+    onEnter: function(selection) {},
+    
+    onEnterTransition: function(selection) {},
+
+    onMerge: function(selection) {},
+
+    onMergeTransition: function(selection) {
+      if (!helpers.utils.isUndefined(this.delay()))
+        selection.delay(this.delay());
+      if (!helpers.utils.isUndefined(this.duration()))
+        selection.duration(this.duration());
+      if (!helpers.utils.isUndefined(this.ease()))
+        selection.ease(this.ease());
+
+      selection
+        .attr('d', this.lineData)
+        .attr('style', this.itemStyle);
+    },
+
+    onExit: function(selection) {},
+
+    onExitTransition: function(selection) {}
   }));
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
