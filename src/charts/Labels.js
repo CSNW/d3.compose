@@ -27,12 +27,10 @@
         insert: function() {
           var chart = this.chart();
 
-          var labels = this.append('g')
+          return this.append('g')
             .on('mouseenter', chart.mouseEnterPoint)
             .on('mouseleave', chart.mouseLeavePoint)
             .call(chart.insertLabels);
-
-          return labels;
         },
         events: {
           'merge': function() {

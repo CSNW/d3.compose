@@ -177,7 +177,6 @@
       <script type="text/javascript">
         var chart = d3.select('#chart-4')
           .chart('Compose', function(data) {
-            // TODO inverted XY
             var scales = {
               x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
               y: {domain: [0, 200]},
@@ -204,11 +203,87 @@
 
         chart.draw({
           stacked: [
-            {key: 'a', name: 'A', values: [{x: 0, y: 10}]},
-            {key: 'b', name: 'B', values: [{x: 0, y: 20}]},
-            {key: 'c', name: 'C', values: [{x: 0, y: 50}]},
-            {key: 'd', name: 'D', values: [{x: 0, y: 30}]},
-            {key: 'e', name: 'E', values: [{x: 0, y: 40}]}
+            {key: 'a', name: 'A', values: [{x: 0, y: 10}, {x: 1, y: 50}]},
+            {key: 'b', name: 'B', values: [{x: 0, y: 20}, {x: 1, y: 40}]},
+            {key: 'c', name: 'C', values: [{x: 0, y: 50}, {x: 1, y: 30}]},
+            {key: 'd', name: 'D', values: [{x: 0, y: 30}, {x: 1, y: 20}]},
+            {key: 'e', name: 'E', values: [{x: 0, y: 40}, {x: 1, y: 10}]}
+          ]
+        })
+      </script>
+    </section>
+
+    <section class="example">
+      <h2>Horizontal Bars</h2>
+      <svg id="chart-5"></svg>
+
+      <script type="text/javascript">
+        var chart = d3.select('#chart-5')
+          .chart('Compose', function(data) {
+            var scales = {
+              x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
+              y: {data: data, value: function(d, i) { return d; }}
+            };
+
+            return d3.compose.xy({
+              charts: {
+                bars: {
+                  type: 'HorizontalBars',
+                  data: data, xScale: scales.x, yScale: scales.y,
+                  labels: {format: d3.format(',0d')}
+                }
+              },
+              axes: {
+                y: {scale: scales.y, title: 'Results', position: 'bottom'}
+              },
+              title: 'Results'
+            });
+          })
+          .width(600)
+          .height(400);
+
+        chart.draw(data['chart-3']);
+      </script>
+    </section>
+
+    <section class="example">
+      <h2>Horizontal Stacked Bars</h2>
+      <svg id="chart-6"></svg>
+
+      <script type="text/javascript">
+        var chart = d3.select('#chart-6')
+          .chart('Compose', function(data) {
+            var scales = {
+              x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
+              y: {domain: [0, 200]},
+              y2: {domain: [0, 100]}
+            };
+
+            return d3.compose.xy({
+              charts: {
+                stacked: {
+                  type: 'HorizontalStackedBars',
+                  data: data.stacked, xScale: scales.x, yScale: scales.y
+                }
+              },
+              axes: {
+                y: {scale: scales.y, ticks: 5, position: 'bottom'},
+                y2: {scale: scales.y2, ticks: 5, position: 'top'}
+              },
+              legend: true,
+              title: {text: 'Horizontal Stacked Bars', margins: {bottom: 20}}
+            });
+          })
+          .width(600)
+          .height(240);
+
+        chart.draw({
+          stacked: [
+            {key: 'a', name: 'A', values: [{x: 0, y: 10}, {x: 1, y: 50}]},
+            {key: 'b', name: 'B', values: [{x: 0, y: 20}, {x: 1, y: 40}]},
+            {key: 'c', name: 'C', values: [{x: 0, y: 50}, {x: 1, y: 30}]},
+            {key: 'd', name: 'D', values: [{x: 0, y: 30}, {x: 1, y: 20}]},
+            {key: 'e', name: 'E', values: [{x: 0, y: 40}, {x: 1, y: 10}]}
           ]
         })
       </script>
