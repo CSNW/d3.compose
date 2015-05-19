@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.12
+/*! d3.compose - v0.12.13
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -795,7 +795,8 @@
 
     @class Base
   */
-  d3.chart('Base', {
+  d3.compose.charts = d3.compose.charts || {};
+  d3.compose.charts.Base = d3.chart('Base', {
     initialize: function() {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
@@ -864,14 +865,14 @@
 
 })(d3, d3.compose.helpers);
 
-(function(d3) {
+(function(d3, charts) {
 
   /**
     Foundation for building charts with series data
 
     @class Chart
   */
-  d3.chart('Base').extend('Chart', {
+  charts.Chart = charts.Base.extend('Chart', {
     initialize: function(options) {
       this.options(options || {});
     }
@@ -880,9 +881,9 @@
     layer_type: 'chart'
   });
 
-})(d3);
+})(d3, d3.compose.charts);
 
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -891,7 +892,7 @@
 
     @class Component
   */
-  d3.chart('Base').extend('Component', {
+  charts.Component = charts.Base.extend('Component', {
     initialize: function(options) {
       this.options(options || {});
     },
@@ -1014,9 +1015,9 @@
     layer_type: 'component'
   });
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);
 
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -1054,7 +1055,7 @@
     @class Compose
     @param {Function|Object} [options]
   */
-  d3.chart('Base').extend('Compose', {
+  charts.Compose = charts.Base.extend('Compose', {
     initialize: function(options) {
       // Overriding transform in init jumps it to the top of the transform cascade
       // Therefore, data coming in hasn't been transformed and is raw
@@ -1205,7 +1206,7 @@
     */
     draw: function(data) {
       // On redraw, get original data
-      data = data.original || data;
+      data = data && data.original || data;
       var config = prepareConfig(this.options(), data);
 
       // Set charts and components from config
@@ -1565,7 +1566,7 @@
     return overall_layout;
   }
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);
 
 (function(d3, helpers) {
   var property = helpers.property;
@@ -1795,9 +1796,9 @@
     }),
 
     /**
-      Get scaled x-value for given data-point
+      Get scaled y-value for given data-point
 
-      @method x
+      @method y
       @return {Number}
     */
     y: di(function(chart, d, i) {
@@ -1964,6 +1965,79 @@
       });
     }
   });
+  
+  /**
+    mixins for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
+
+    @module InvertedXY
+  */
+  var InvertedXY = {
+    /**
+      Get x-value for plotting (scaled y-value)
+
+      @method x
+      @return {Number}
+    */
+    x: di(function(chart, d, i) {
+      var value = chart.yValue.call(this, d, i);
+      var series_index = chart.seriesIndex && chart.seriesIndex.call(this, d, i) || 0;
+
+      return parseFloat(chart.yScale()(value, series_index));
+    }),
+
+    /**
+      Get y-value for plotting (scaled x-value)
+
+      @method y
+      @return {Number}
+    */
+    y: di(function(chart, d, i) {
+      var value = chart.xValue.call(this, d, i);
+      var series_index = chart.seriesIndex && chart.seriesIndex.call(this, d, i) || 0;
+
+      return parseFloat(chart.xScale()(value, series_index));
+    }),
+
+    /**
+      Get scaled y = 0 value (along x-axis)
+
+      @method x0
+      @return {Number}
+    */
+    x0: function() {
+      return parseFloat(this.yScale()(0));
+    },
+
+    /**
+      Get scaled x = 0 value (along y-axis)
+
+      @method x0
+      @return {Number}
+    */
+    y0: function() {
+      return parseFloat(this.xScale()(0));
+    },
+
+    /**
+      Set range (height, 0) for given x-scale
+
+      @method setXScaleRange
+      @param {d3.scale} x_scale
+    */
+    setXScaleRange: function(x_scale) {
+      x_scale.range([this.height(), 0]);
+    },
+
+    /**
+      Set range(0, width) for given y-scale
+
+      @method setYScaleRange
+      @param {d3.scale} y_scale
+    */
+    setYScaleRange: function(y_scale) {
+      y_scale.range([0, this.width()]);
+    }
+  };
 
   /**
     mixin for handling labels in charts
@@ -2219,6 +2293,7 @@
     Series: Series,
     XY: XY,
     XYValues: XYValues,
+    InvertedXY: InvertedXY,
     Labels: Labels,
     XYLabels: XYLabels,
     Hover: Hover,
@@ -2227,7 +2302,7 @@
 
 })(d3, d3.compose.helpers);
 
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var utils = helpers.utils;
   var mixin = helpers.mixin;
   var property = helpers.property;
@@ -2236,7 +2311,7 @@
   /**
     @class Labels
   */
-  d3.chart('Chart').extend('Labels', mixin(mixins.Series, mixins.XY, mixins.Hover, {
+  charts.Labels = charts.Chart.extend('Labels', mixin(mixins.Series, mixins.XY, mixins.Hover, {
     initialize: function() {
       // Proxy attach to parent for hover
       var parent = this.options().parent;
@@ -2256,12 +2331,10 @@
         insert: function() {
           var chart = this.chart();
 
-          var labels = this.append('g')
+          return this.append('g')
             .on('mouseenter', chart.mouseEnterPoint)
             .on('mouseleave', chart.mouseLeavePoint)
             .call(chart.insertLabels);
-
-          return labels;
         },
         events: {
           'merge': function() {
@@ -2714,67 +2787,46 @@
       .attr('opacity', 0);
   }
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
 
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
+  var isUndefined = helpers.utils.isUndefined;
 
   /**
     Bar graph with centered values data and adjacent display for series
 
     @class Bars
   */
-  d3.chart('Chart').extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, mixins.Hover, {
+  charts.Bars = charts.Chart.extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, mixins.Hover, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
-          var chart = this.chart();
-
-          return this.selectAll('rect')
-            .data(data, chart.key);
+          return this.chart().onDataBind(this, data);
         },
         insert: function() {
-          var chart = this.chart();
-
-          return this.append('rect')
-            .on('mouseenter', chart.mouseEnterPoint)
-            .on('mouseleave', chart.mouseLeavePoint);
+          return this.chart().onInsert(this);
         },
         events: {
           'enter': function() {
-            var chart = this.chart();
-
-            this
-              .attr('y', chart.y0())
-              .attr('height', 0);
+            this.chart().onEnter(this);
+          },
+          'enter:transition': function() {
+            this.chart().onEnterTransition(this);
           },
           'merge': function() {
-            var chart = this.chart();
-
-            this
-              .attr('class', chart.barClass)
-              .attr('style', chart.itemStyle)
-              .attr('x', chart.barX)
-              .attr('width', chart.itemWidth());
+            this.chart().onMerge(this);
           },
           'merge:transition': function() {
-            var chart = this.chart();
-
-            if (!helpers.utils.isUndefined(chart.delay()))
-              this.delay(chart.delay());
-            if (!helpers.utils.isUndefined(chart.duration()))
-              this.duration(chart.duration());
-            if (!helpers.utils.isUndefined(chart.ease()))
-              this.ease(chart.ease());
-
-            this
-              .attr('y', chart.barY)
-              .attr('height', chart.barHeight);
+            this.chart().onMergeTransition(this);
           },
           'exit': function() {
-            this.remove();
+            this.chart().onExit(this);
+          },
+          'exit:transition': function() {
+            this.chart().onExitTransition(this);
           }
         }
       });
@@ -2789,6 +2841,9 @@
     barHeight: di(function(chart, d, i) {
       var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
       return height > 0 ? height : 0;
+    }),
+    barWidth: di(function(chart, d, i) {
+      return chart.itemWidth();
     }),
     barX: di(function(chart, d, i) {
       return chart.x.call(this, d, i) - chart.itemWidth() / 2;
@@ -2805,7 +2860,7 @@
 
     // Shift bars slightly to account for axis thickness
     barOffset: function barOffset() {
-      var axis = this.container && this.container.components()['axis.x'];
+      var axis = this.getOffsetAxis();
       if (axis) {
         var axis_thickness = parseInt(axis.base.select('.domain').style('stroke-width')) || 0;
         return axis_thickness / 2;
@@ -2813,7 +2868,56 @@
       else {
         return 0;
       }
-    }
+    },
+    getOffsetAxis: function getOffsetAxis() {
+      return this.container && this.container.components()['axis.x'];
+    },
+
+    onDataBind: function onDataBind(selection, data) {
+      return selection.selectAll('rect')
+        .data(data, this.key);
+    },
+    
+    onInsert: function onInsert(selection) {
+      return selection.append('rect')
+        .on('mouseenter', this.mouseEnterPoint)
+        .on('mouseleave', this.mouseLeavePoint);
+    },
+
+    onEnter: function onEnter(selection) {
+      selection
+        .attr('y', this.y0())
+        .attr('height', 0);
+    },
+
+    onEnterTransition: function onEnterTransition(selection) {},
+    
+    onMerge: function onMerge(selection) {
+      selection
+        .attr('class', this.barClass)
+        .attr('style', this.itemStyle)
+        .attr('x', this.barX)
+        .attr('width', this.barWidth);
+    },
+    
+    onMergeTransition: function onMergeTransition(selection) {
+      if (!isUndefined(this.delay()))
+        selection.delay(this.delay());
+      if (!isUndefined(this.duration()))
+        selection.duration(this.duration());
+      if (!isUndefined(this.ease()))
+        selection.ease(this.ease());
+
+      selection
+        .attr('y', this.barY)
+        .attr('height', this.barHeight);
+    },
+    
+    onExit: function onExit(selection) {
+      selection.remove();
+    },
+    
+    onExitTransition: function onExitTransition(selection) {}
   }));
 
   /**
@@ -2821,7 +2925,7 @@
 
     @class StackedBars
   */
-  d3.chart('Bars').extend('StackedBars', {
+  charts.StackedBars = charts.Bars.extend('StackedBars', {
     transform: function(data) {
       // Re-initialize bar positions each time data changes
       this.bar_positions = [];
@@ -2832,9 +2936,6 @@
       var height = Math.abs(chart.y0() - chart.y.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
       return height > 0 ? height - offset : 0;
-    }),
-    barX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i) - chart.itemWidth() / 2;
     }),
     barY: di(function(chart, d, i) {
       var y = chart.y.call(this, d, i);
@@ -2855,9 +2956,96 @@
     })
   });
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+  /**
+    Horizontal Bars
 
-(function(d3, helpers, mixins) {
+    @class HorizontalBars
+  */
+  charts.HorizontalBars = charts.Bars.extend('HorizontalBars', mixin(mixins.InvertedXY, {
+    barX: di(function(chart, d, i) {
+      var x = chart.x.call(this, d, i);
+      var x0 = chart.x0();
+
+      return x < x0 ? x : x0 + chart.barOffset();
+    }),
+    barY: di(function(chart, d, i) {
+      return chart.y.call(this, d, i) - chart.itemWidth() / 2;
+    }),
+    barWidth: di(function(chart, d, i) {
+      var width = Math.abs(chart.x0() - chart.x.call(this, d, i)) - chart.barOffset();
+      return width > 0 ? width : 0;
+    }),
+    barHeight: di(function(chart, d, i) {
+      return chart.itemWidth();
+    }),
+
+    onEnter: function onEnter(selection) {
+      selection
+        .attr('x', this.x0())
+        .attr('width', 0);
+    },
+    
+    onMerge: function onMerge(selection) {
+      selection
+        .attr('class', this.barClass)
+        .attr('style', this.itemStyle)
+        .attr('y', this.barY)
+        .attr('height', this.barHeight);
+    },
+    
+    onMergeTransition: function onMergeTransition(selection) {
+      if (!isUndefined(this.delay()))
+        selection.delay(this.delay());
+      if (!isUndefined(this.duration()))
+        selection.duration(this.duration());
+      if (!isUndefined(this.ease()))
+        selection.ease(this.ease());
+
+      selection
+        .attr('x', this.barX)
+        .attr('width', this.barWidth);
+    },
+  }));
+
+  /**
+    Horizontal Stacked Bars
+
+    @class HorizontalStackedBars
+  */
+  charts.HorizontalStackedBars = charts.HorizontalBars.extend('HorizontalStackedBars', {
+    transform: function(data) {
+      // Re-initialize bar positions each time data changes
+      this.bar_positions = [];
+      return data;
+    },
+
+    barWidth: di(function(chart, d, i) {
+      var width = Math.abs(chart.x0() - chart.x.call(this, d, i));
+      var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
+      return width > 0 ? width - offset : 0;
+    }),
+    barX: di(function(chart, d, i) {
+      var x = chart.x.call(this, d, i);
+      var x0 = chart.x0();
+
+      // Only handle positive x-values
+      if (x < x0) return;
+
+      if (chart.bar_positions.length <= i)
+        chart.bar_positions.push(0);
+
+      var previous = chart.bar_positions[i] || x0;
+      var new_position = previous + (x - x0);
+
+      chart.bar_positions[i] = new_position;
+
+      return previous;
+    })
+  });
+
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
+
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -2867,38 +3055,35 @@
 
     @class Lines
   */
-  d3.chart('Chart').extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
+  charts.Lines = charts.Chart.extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
     initialize: function() {
       this.lines = {};
 
       this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
         dataBind: function(data) {
-          return this.selectAll('path')
-            .data(function(d, i, j) {
-              return [data.call(this, d, i, j)];
-            });
+          return this.chart().onDataBind(this, data);
         },
         insert: function() {
-          var chart = this.chart();
-
-          return this.append('path')
-            .classed('chart-line', true)
-            .each(chart.createLine);
+          return this.chart().onInsert(this);
         },
         events: {
+          'enter': function() {
+            this.chart().onEnter(this);
+          },
+          'enter:transition': function() {
+            this.chart().onEnterTransition(this);
+          },
+          'merge': function() {
+            this.chart().onMerge(this);
+          },
           'merge:transition': function() {
-            var chart = this.chart();
-
-            if (!helpers.utils.isUndefined(chart.delay()))
-              this.delay(chart.delay());
-            if (!helpers.utils.isUndefined(chart.duration()))
-              this.duration(chart.duration());
-            if (!helpers.utils.isUndefined(chart.ease()))
-              this.ease(chart.ease());
-
-            this
-              .attr('d', chart.lineData)
-              .attr('style', chart.itemStyle);
+            this.chart().onMergeTransition(this);
+          },
+          'exit': function() {
+            this.chart().onExit(this);
+          },
+          'exit:transition': function() {
+            this.chart().onExitTransition(this);
           }
         }
       });
@@ -2942,12 +3127,48 @@
       var key = chart.lineKey.call(this, d, i, j);
       if (chart.lines[key])
         return chart.lines[key](d);
-    })
+    }),
+
+    onDataBind: function(selection, data) {
+      return selection.selectAll('path')
+        .data(function(d, i, j) {
+          return [data.call(selection, d, i, j)];
+        });
+    },
+
+    onInsert: function(selection) {
+      return selection.append('path')
+        .classed('chart-line', true)
+        .each(this.createLine);
+    },
+
+    onEnter: function(selection) {},
+    
+    onEnterTransition: function(selection) {},
+
+    onMerge: function(selection) {},
+
+    onMergeTransition: function(selection) {
+      if (!helpers.utils.isUndefined(this.delay()))
+        selection.delay(this.delay());
+      if (!helpers.utils.isUndefined(this.duration()))
+        selection.duration(this.duration());
+      if (!helpers.utils.isUndefined(this.ease()))
+        selection.ease(this.ease());
+
+      selection
+        .attr('d', this.lineData)
+        .attr('style', this.itemStyle);
+    },
+
+    onExit: function(selection) {},
+
+    onExitTransition: function(selection) {}
   }));
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
 
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -2955,7 +3176,7 @@
   /**
     @class Title
   */
-  d3.chart('Component').extend('Title', {
+  charts.Title = charts.Component.extend('Title', {
     initialize: function() {
       this.layer('Title', this.base.append('g').classed('chart-title', true), {
         dataBind: function(data) {
@@ -2971,7 +3192,7 @@
             this
               .attr('transform', chart.transformation())
               .attr('style', chart.style())
-              .attr('text-anchor', 'middle')
+              .attr('text-anchor', chart.anchor())
               .attr('class', chart.options()['class'])
               .text(chart.text());
           }
@@ -3008,6 +3229,55 @@
     }),
 
     /**
+      Horizontal text-alignment of title
+
+      @property textAlign
+      @type String
+      @default "center"
+    */
+    textAlign: property('textAlign', {
+      default_value: 'center',
+      validate: function(value) {
+        return helpers.utils.contains(['left', 'center', 'right'], value);
+      }
+    }),
+
+    /**
+      text-anchor for title (start, middle, or end)
+      (default set by textAlign)
+
+      @property anchor
+      @type String
+      @default "middle"
+    */
+    anchor: property('anchor', {
+      default_value: function() {
+        return {
+          left: 'start',
+          center: 'middle',
+          right: 'end'
+        }[this.textAlign()];
+      },
+      validate: function(value) {
+        return helpers.utils.contains(['start', 'middle', 'end', 'inherit'], value);
+      }
+    }),
+
+    /**
+      Vertical aligment for title (top, middle, bottom)
+
+      @property verticalAlign
+      @type String
+      @default "middle"
+    */
+    verticalAlign: property('verticalAlign', {
+      default_value: 'middle',
+      validate: function(value) {
+        return helpers.utils.contains(['top', 'middle', 'bottom']);
+      }
+    }),
+
+    /**
       Style object containing styles for title
 
       @property style
@@ -3015,11 +3285,25 @@
       @default {}
     */
     style: property('style', {
-      default_value: {}
+      default_value: {},
+      get: function(value) {
+        return helpers.style(value) || null;
+      }
     }),
 
     transformation: function() {
-      var translate = helpers.translate(this.width() / 2, this.height() / 2);
+      var x = {
+        left: 0,
+        center: this.width() / 2,
+        right: this.width()
+      }[this.textAlign()];
+      var y = {
+        top: 0,
+        middle: this.height() / 2,
+        bottom: this.height()
+      }[this.verticalAlign()];
+
+      var translate = helpers.translate(x, y);
       var rotate = helpers.rotate(this.rotation());
 
       return translate + ' ' + rotate;
@@ -3028,9 +3312,9 @@
     z_index: 70
   });
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
 
-(function(d3, helpers, mixins) {
+(function(d3, helpers, mixins, charts) {
   var mixin = helpers.mixin;
   var property = helpers.property;
   var di = helpers.di;
@@ -3049,7 +3333,7 @@
 
     @class Axis
   */
-  d3.chart('Component').extend('Axis', mixin(mixins.XY, {
+  charts.Axis = charts.Component.extend('Axis', mixin(mixins.XY, {
     initialize: function() {
       // Create two axes (so that layout and transitions work)
       // 1. Display and transitions
@@ -3396,9 +3680,9 @@
     z_index: 60
   });
 
-})(d3, d3.compose.helpers, d3.compose.mixins);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
 
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
   var di = helpers.di;
@@ -3434,7 +3718,7 @@
 
     @class Legend
   */
-  d3.chart('Component').extend('Legend', {
+  charts.Legend = charts.Component.extend('Legend', {
     initialize: function() {
       this.legend_base = this.base.append('g').classed('chart-legend', true);
 
@@ -3701,7 +3985,7 @@
     layer_type: 'chart'
   });
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);
 
 (function(d3, helpers) {
   var utils = helpers.utils;

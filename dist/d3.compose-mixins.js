@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.12
+/*! d3.compose - v0.12.13
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -795,7 +795,8 @@
 
     @class Base
   */
-  d3.chart('Base', {
+  d3.compose.charts = d3.compose.charts || {};
+  d3.compose.charts.Base = d3.chart('Base', {
     initialize: function() {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
@@ -864,14 +865,14 @@
 
 })(d3, d3.compose.helpers);
 
-(function(d3) {
+(function(d3, charts) {
 
   /**
     Foundation for building charts with series data
 
     @class Chart
   */
-  d3.chart('Base').extend('Chart', {
+  charts.Chart = charts.Base.extend('Chart', {
     initialize: function(options) {
       this.options(options || {});
     }
@@ -880,9 +881,9 @@
     layer_type: 'chart'
   });
 
-})(d3);
+})(d3, d3.compose.charts);
 
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -891,7 +892,7 @@
 
     @class Component
   */
-  d3.chart('Base').extend('Component', {
+  charts.Component = charts.Base.extend('Component', {
     initialize: function(options) {
       this.options(options || {});
     },
@@ -1014,9 +1015,9 @@
     layer_type: 'component'
   });
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);
 
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -1054,7 +1055,7 @@
     @class Compose
     @param {Function|Object} [options]
   */
-  d3.chart('Base').extend('Compose', {
+  charts.Compose = charts.Base.extend('Compose', {
     initialize: function(options) {
       // Overriding transform in init jumps it to the top of the transform cascade
       // Therefore, data coming in hasn't been transformed and is raw
@@ -1205,7 +1206,7 @@
     */
     draw: function(data) {
       // On redraw, get original data
-      data = data.original || data;
+      data = data && data.original || data;
       var config = prepareConfig(this.options(), data);
 
       // Set charts and components from config
@@ -1565,7 +1566,7 @@
     return overall_layout;
   }
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);
 
 (function(d3, helpers) {
   var property = helpers.property;
@@ -1795,9 +1796,9 @@
     }),
 
     /**
-      Get scaled x-value for given data-point
+      Get scaled y-value for given data-point
 
-      @method x
+      @method y
       @return {Number}
     */
     y: di(function(chart, d, i) {
@@ -1964,6 +1965,79 @@
       });
     }
   });
+  
+  /**
+    mixins for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
+
+    @module InvertedXY
+  */
+  var InvertedXY = {
+    /**
+      Get x-value for plotting (scaled y-value)
+
+      @method x
+      @return {Number}
+    */
+    x: di(function(chart, d, i) {
+      var value = chart.yValue.call(this, d, i);
+      var series_index = chart.seriesIndex && chart.seriesIndex.call(this, d, i) || 0;
+
+      return parseFloat(chart.yScale()(value, series_index));
+    }),
+
+    /**
+      Get y-value for plotting (scaled x-value)
+
+      @method y
+      @return {Number}
+    */
+    y: di(function(chart, d, i) {
+      var value = chart.xValue.call(this, d, i);
+      var series_index = chart.seriesIndex && chart.seriesIndex.call(this, d, i) || 0;
+
+      return parseFloat(chart.xScale()(value, series_index));
+    }),
+
+    /**
+      Get scaled y = 0 value (along x-axis)
+
+      @method x0
+      @return {Number}
+    */
+    x0: function() {
+      return parseFloat(this.yScale()(0));
+    },
+
+    /**
+      Get scaled x = 0 value (along y-axis)
+
+      @method x0
+      @return {Number}
+    */
+    y0: function() {
+      return parseFloat(this.xScale()(0));
+    },
+
+    /**
+      Set range (height, 0) for given x-scale
+
+      @method setXScaleRange
+      @param {d3.scale} x_scale
+    */
+    setXScaleRange: function(x_scale) {
+      x_scale.range([this.height(), 0]);
+    },
+
+    /**
+      Set range(0, width) for given y-scale
+
+      @method setYScaleRange
+      @param {d3.scale} y_scale
+    */
+    setYScaleRange: function(y_scale) {
+      y_scale.range([0, this.width()]);
+    }
+  };
 
   /**
     mixin for handling labels in charts
@@ -2219,6 +2293,7 @@
     Series: Series,
     XY: XY,
     XYValues: XYValues,
+    InvertedXY: InvertedXY,
     Labels: Labels,
     XYLabels: XYLabels,
     Hover: Hover,

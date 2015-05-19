@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.12
+/*! d3.compose - v0.12.13
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -795,7 +795,8 @@
 
     @class Base
   */
-  d3.chart('Base', {
+  d3.compose.charts = d3.compose.charts || {};
+  d3.compose.charts.Base = d3.chart('Base', {
     initialize: function() {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
@@ -864,14 +865,14 @@
 
 })(d3, d3.compose.helpers);
 
-(function(d3) {
+(function(d3, charts) {
 
   /**
     Foundation for building charts with series data
 
     @class Chart
   */
-  d3.chart('Base').extend('Chart', {
+  charts.Chart = charts.Base.extend('Chart', {
     initialize: function(options) {
       this.options(options || {});
     }
@@ -880,9 +881,9 @@
     layer_type: 'chart'
   });
 
-})(d3);
+})(d3, d3.compose.charts);
 
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -891,7 +892,7 @@
 
     @class Component
   */
-  d3.chart('Base').extend('Component', {
+  charts.Component = charts.Base.extend('Component', {
     initialize: function(options) {
       this.options(options || {});
     },
@@ -1014,9 +1015,9 @@
     layer_type: 'component'
   });
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);
 
-(function(d3, helpers) {
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -1054,7 +1055,7 @@
     @class Compose
     @param {Function|Object} [options]
   */
-  d3.chart('Base').extend('Compose', {
+  charts.Compose = charts.Base.extend('Compose', {
     initialize: function(options) {
       // Overriding transform in init jumps it to the top of the transform cascade
       // Therefore, data coming in hasn't been transformed and is raw
@@ -1205,7 +1206,7 @@
     */
     draw: function(data) {
       // On redraw, get original data
-      data = data.original || data;
+      data = data && data.original || data;
       var config = prepareConfig(this.options(), data);
 
       // Set charts and components from config
@@ -1565,4 +1566,4 @@
     return overall_layout;
   }
 
-})(d3, d3.compose.helpers);
+})(d3, d3.compose.helpers, d3.compose.charts);

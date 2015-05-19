@@ -103,7 +103,7 @@
     verticalAlign: property('verticalAlign', {
       default_value: 'middle',
       validate: function(value) {
-        return helpers.utils.contains(['top', 'middle', 'bottom'])
+        return helpers.utils.contains(['top', 'middle', 'bottom']);
       }
     }),
 
