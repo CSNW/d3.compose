@@ -7,7 +7,7 @@ scripts: |
 ---
 <div class="docs-sidebar">
   <a class="toc-title" href="#">
-    d3.chart.multi <span class="version">({{ site.version }})</span>
+    d3.compose <span class="version">({{ site.version }})</span>
   </a>
 
   <ul class="toc-section">
@@ -32,18 +32,18 @@ scripts: |
     <li>– <a href="#/examples/custom-component">Custom Component</a></li>
   </ul>
 
-  <a class="toc-title" href="#/Multi/">
-    Multi
+  <a class="toc-title" href="#/Compose/">
+    Compose
   </a>
   <ul class="toc-section">
-    <li>– <a href="#/Multi/options">options</a></li>
-    <li>– <a href="#/Multi/draw">draw</a></li>
-    <li>– <a href="#/Multi/charts">charts</a></li>
-    <li>– <a href="#/Multi/components">components</a></li>
-    <li>– <a href="#/Multi/margins">margins</a></li>
-    <li>– <a href="#/Multi/width">width</a></li>
-    <li>– <a href="#/Multi/height">height</a></li>
-    <li>– <a href="#/Multi/events">events</a></li>
+    <li>– <a href="#/Compose/options">options</a></li>
+    <li>– <a href="#/Compose/draw">draw</a></li>
+    <li>– <a href="#/Compose/charts">charts</a></li>
+    <li>– <a href="#/Compose/components">components</a></li>
+    <li>– <a href="#/Compose/margins">margins</a></li>
+    <li>– <a href="#/Compose/width">width</a></li>
+    <li>– <a href="#/Compose/height">height</a></li>
+    <li>– <a href="#/Compose/events">events</a></li>
   </ul>
 
   <a class="toc-title" href="#/Line/">
@@ -249,10 +249,10 @@ scripts: |
 </div>
 
 <div class="docs-content">
-  <h1>d3.chart.multi</h1>
+  <h1>d3.compose</h1>
 
   <p>
-    d3.chart.multi adds advanced chart layout and composition to d3 and d3.chart.
+    d3.compose adds advanced chart layout and composition to d3 and d3.chart.
     Create rich, data-bound charts by composing charts (like Line and Bars) and components (like Axis, Title, and Legend).
   </p>
 
@@ -263,18 +263,18 @@ scripts: |
 
   <table>
     <tr>
-      <td><a class="punch" href="../d3.chart.multi.js">Development Version ({{ site.version }})</a></td>
+      <td><a class="punch" href="../d3.compose-all.js">Development Version ({{ site.version }})</a></td>
       <td class="text"><i>92kb, Full source with tons of comments</i></td>
     </tr>
     <tr>
-      <td><a class="punch" href="../d3.chart.multi.min.js">Production Version ({{ site.version }})</a></td>
+      <td><a class="punch" href="../d3.compose-all.min.js">Production Version ({{ site.version }})</a></td>
       <td class="text" style="line-height: 16px;">
         <i>9.6kb, Packed and gzipped</i><br>
-        <small>(<a href="../d3.chart.multi.min.js.map">Source Map</a>)</small>
+        <small>(<a href="../d3.compose-all.min.js.map">Source Map</a>)</small>
       </td>
     </tr>
     <tr>
-      <td><a class="punch" href="https://raw.github.com/CSNW/d3.chart.multi/master/dist/d3.chart.multi.js">Edge Version (master)</a></td>
+      <td><a class="punch" href="https://raw.github.com/CSNW/d3.compose/master/dist/d3.compose-all.js">Edge Version (master)</a></td>
       <td>
         <i>Unreleased, use at your own risk</i>
         <!-- TODO
@@ -287,7 +287,7 @@ scripts: |
   </table>
 
   <p>
-    d3.chart.multi depends on the following libraries:
+    d3.compose depends on the following libraries:
 
     <ul>
       <li><a href="http://d3js.org/" target="_blank">D3.js</a> <small>(>= 3.0.0)</small></li>
@@ -304,13 +304,13 @@ scripts: |
   <h2 id="introduction">Introduction</h2>
 
   <p>
-    When creating complex charts with D3.js and d3.chart, laying out and sizing parts of the chart are often manual processes and creating composable and reusable components becomes very difficult. d3.chart.multi creates a standard base that charts and components are built on top of that automatically handles layout and sizing and can be composed and layered to created rich, data-bound charts.
+    When creating complex charts with D3.js and d3.chart, laying out and sizing parts of the chart are often manual processes and creating composable and reusable components becomes very difficult. d3.compose creates a standard base that charts and components are built on top of that automatically handles layout and sizing and can be composed and layered to created rich, data-bound charts.
   </p>
 
   <h2 id="usage">Usage</h2>
 
   <p>
-    Add d3.chart.multi and its dependencies to your page:
+    Add d3.compose and its dependencies to your page:
   </p>
 
 {% highlight html %}
@@ -319,7 +319,7 @@ scripts: |
   <head>
     <!-- ... -->
 
-    <link rel="stylesheet" type="text/css" href="d3.chart.multi.base.css">
+    <link rel="stylesheet" type="text/css" href="d3.compose.css">
   </head>
   <body>
     <div id="chart"></div>
@@ -328,7 +328,7 @@ scripts: |
     <script src="d3.chart.js"></script>
     <script src="underscore.js"></script>
 
-    <script src="d3.chart.multi.js"></script>
+    <script src="d3.compose.js"></script>
 
     <script>
       // Your code
@@ -342,12 +342,12 @@ scripts: |
   <h3 id="/examples/line">Line</h3>
 
   <p>
-    To get started with d3.chart.multi, use <tt>d3.select('...').chart('Multi')</tt> and pass in a options function that takes in the data to be drawn and returns options for the charts and components to be drawn. The below example takes in series data, creates options for scales that are shared between charts and components, sets options for a Line chart, and sets options for axes and title components.
+    To get started with d3.compose, use <tt>d3.select('...').chart('Compose')</tt> and pass in a options function that takes in the data to be drawn and returns options for the charts and components to be drawn. The below example takes in series data, creates options for scales that are shared between charts and components, sets options for a Line chart, and sets options for axes and title components.
   </p>
 
 {% highlight js %}
 var example_1 = d3.select('#js-example-1').append('svg')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     // Manipulate data as needed
 
     // Create options for scales shared between charts and/or components
@@ -415,7 +415,7 @@ example_1.draw([
 
 {% highlight js %}
 var example_2 = d3.select('#js-example-2').append('svg')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     var scales = {
       x: {data: data, key: 'x'},
       y: {data: data, key: 'y'}
@@ -454,7 +454,7 @@ example_2.draw([
 
 {% highlight js %}
 var example_2 = d3.select('#js-example-2').append('svg')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     var input = data.input;
     var results = data.results;
     var scales = {
@@ -512,7 +512,7 @@ example_2.draw({
   <h3 id="/examples/custom-chart">Custom Chart</h3>
 
   <p>
-    d3.chart.multi makes it straightforward to create reusable charts with a common <tt>Chart</tt> base to extend from and helpers and mixins for common functionality.
+    d3.compose makes it straightforward to create reusable charts with a common <tt>Chart</tt> base to extend from and helpers and mixins for common functionality.
   </p>
 
 {% highlight js %}
@@ -558,7 +558,7 @@ d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
 }));
 
 example_3 = d3.select('#js-example-3').append('svg')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     var scales = {
       x: {data: data, key: 'x'},
       y: {data: data, key: 'y'}
@@ -589,7 +589,7 @@ example_3.draw([
   <h3 id="/examples/custom-component">Custom Component</h3>
 
   <p>
-    In addition to custom charts, d3.chart.multi allows you to make custom components with a common <tt>Component</tt> base that includes layout helpers.
+    In addition to custom charts, d3.compose allows you to make custom components with a common <tt>Component</tt> base that includes layout helpers.
   </p>
 
 {% highlight js %}
@@ -617,7 +617,7 @@ d3.chart('Component').extend('Key', {
 });
 
 var example_4 = d3.select('#js-example-4').append('svg')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     var scales = {
       x: {type: 'ordinal', data: data.values, key: 'x'},
       y: {domain: [0, 20]}
@@ -654,20 +654,20 @@ example_4.draw({
   <div class="docs-chart" id="js-example-5"></div>
 
   <!--
-    Multi
+    Compose
     =====
   -->
 
-  <h2 id="/Multi/">Multi</h2>
+  <h2 id="/Compose/">Compose</h2>
 
   <p>
-    <tt>d3.chart('Multi')</tt> allows charts and components to be composed into a rich charts. Using the <tt>options</tt> property,
+    <tt>d3.chart('Compose')</tt> allows charts and components to be composed into a rich charts. Using the <tt>options</tt> property,
     charts and components can be bound to data and customized with options to create intricate and dynamic charts.
   </p>
 
 {% highlight js %}
 d3.select('#chart')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     // Compose charts, components, axes, legend, title into single chart
 
     // Work with given data
@@ -710,10 +710,10 @@ d3.select('#chart')
   });
 {% endhighlight %}
 
-  <p id="/Multi/options">
+  <p id="/Compose/options">
     <b class="docs-header">options</b><code>chart.options([options])</code><br>
 
-    Get/set the options the chart. Can be an <tt>Object</tt> or a <tt>Function</tt> that returns an <tt>Object</tt>. All properties listed below are available as options (charts, components, etc.) and the given values are passed to the matching property. <tt>options</tt> are generally set when creating chart with <tt>d3.select('...').chart('Multi', options)</tt>. Example:
+    Get/set the options the chart. Can be an <tt>Object</tt> or a <tt>Function</tt> that returns an <tt>Object</tt>. All properties listed below are available as options (charts, components, etc.) and the given values are passed to the matching property. <tt>options</tt> are generally set when creating chart with <tt>d3.select('...').chart('Compose', options)</tt>. Example:
   </p>
 
 {% highlight js %}
@@ -738,18 +738,18 @@ chart.options(function(data) {
 
 // Set directly from d3.chart creation
 d3.select('#chart')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     // ...
   });
 {% endhighlight %}
 
-  <p id="/Multi/draw">
+  <p id="/Compose/draw">
     <b class="docs-header">draw</b><code>chart.draw([data])</code><br>
 
     Draw the chart with the given data. <tt>data</tt> is passed to <tt>options</tt> function and child charts and components.
   </p>
 
-  <p id="/Multi/charts">
+  <p id="/Compose/charts">
     <b class="docs-header">charts</b><code>chart.charts([values])</code><br>
 
     Chart options used for composing charts.
@@ -764,7 +764,7 @@ chart.charts({
 });
 {% endhighlight %}
 
-  <p id="/Multi/components">
+  <p id="/Compose/components">
     <b class="docs-header">components</b><code>chart.components([values])</code><br>
 
     Component options used for composing and laying out components.
@@ -779,7 +779,7 @@ chart.components({
 });
 {% endhighlight %}
 
-  <p id="/Multi/margins">
+  <p id="/Compose/margins">
     <b class="docs-header">margins</b><code>chart.margins([values])</code><br>
 
     Set the top, right, bottom, and left margin between the chart layers and the surrounding components.
@@ -788,19 +788,19 @@ chart.components({
 {% highlight js %}
 chart.margins({top: 10, right: 0, bottom: 0, left: 10});{% endhighlight %}
 
-  <p id="/Multi/width">
+  <p id="/Compose/width">
     <b class="docs-header">width</b><code>chart.width([value])</code><br>
 
     Get or explicitly set the chart width.
   </p>
 
-  <p id="/Multi/height">
+  <p id="/Compose/height">
     <b class="docs-header">height</b><code>chart.height([value])</code><br>
 
     Get or explicitly set the the chart height.
   </p>
 
-  <p id="/Multi/events">
+  <p id="/Compose/events">
     <b class="docs-header">events</b>
 
     <tt>on</tt>, <tt>off</tt>, and <tt>trigger</tt> can be used to work with chart events. Available events:
@@ -824,9 +824,9 @@ chart.margins({top: 10, right: 0, bottom: 0, left: 10});{% endhighlight %}
   </p>
 
 {% highlight js %}
-// Use within d3.chart('Multi')
+// Use within d3.chart('Compose')
 d3.select('#chart')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     return {
       charts: {
         a: {
@@ -918,9 +918,9 @@ line.data([
   </p>
 
 {% highlight js %}
-// Use within d3.chart('Multi')
+// Use within d3.chart('Compose')
 d3.select('#chart')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     return {
       charts: {
         a: {
@@ -1007,9 +1007,9 @@ bars.labels({/* options to pass to XYLabels */})
   </p>
 
 {% highlight js %}
-// Use within d3.chart('Multi')
+// Use within d3.chart('Compose')
 d3.select('#chart')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     return {
       charts: {
         // Enable labels within chart (true or options)
@@ -1114,9 +1114,9 @@ labels.format(d3.format('0,000'));
   </p>
 
 {% highlight js %}
-// Use within d3.chart('Multi')
+// Use within d3.chart('Compose')
 d3.select('#chart')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     return {
       // Add using axes helper
       axes: {
@@ -1193,13 +1193,13 @@ axis.position('bottom');
   <h2 id="/Legend/">Legend</h2>
 
   <p>
-    Create legend for chart(s) using series information. Can automatically generate legend for <tt>d3.chart('Multi')</tt>
+    Create legend for chart(s) using series information. Can automatically generate legend for <tt>d3.chart('Compose')</tt>
   </p>
 
   <p id="/Legend/charts/">
     <b class="docs-header">charts</b><code>legend.charts([charts])</code><br>
 
-    When used in conjunction with <tt>d3.chart('Multi')</tt> a subset of charts can be used to generate the legend by passing in an array of the chart keys that should be included in the legend.
+    When used in conjunction with <tt>d3.chart('Compose')</tt> a subset of charts can be used to generate the legend by passing in an array of the chart keys that should be included in the legend.
   </p>
 
   <!--
@@ -1237,7 +1237,7 @@ axis.position('bottom');
   <h2 id="/Chart/">Chart</h2>
 
   <p>
-    d3.chart.multi can use charts created using standard d3.chart or charts extended from <tt>d3.chart('Chart')</tt> that includes some convenience helpers.
+    d3.compose can use charts created using standard d3.chart or charts extended from <tt>d3.chart('Chart')</tt> that includes some convenience helpers.
     <tt>d3.chart('Chart')</tt> includes helpers for <tt>options</tt>, <tt>data</tt>, and <tt>width/height</tt>.
   </p>
 
@@ -1276,7 +1276,7 @@ d3.chart('Chart').extend('Pie', {
   <h2 id="/Component/">Component</h2>
 
   <p>
-    <tt>d3.chart('Component')</tt> contains many helpers and required methods for creating a component for d3.chart.multi.
+    <tt>d3.chart('Component')</tt> contains many helpers and required methods for creating a component for d3.compose.
     Components are position around the chart ("top", "right", "bottom", "left") and include layout calculations for properly laying out components.
   </p>
 
@@ -1364,7 +1364,7 @@ d3.chart('Component').extend('Custom', {
   <h2 id="/extensions/">Extensions</h2>
 
   <p>
-    Extensions are used for defining options for Multi that wrap common behavior, reduce boilerplate, and provide helpers for composing charts and components.
+    Extensions are used for defining options for d3.compose that wrap common behavior, reduce boilerplate, and provide helpers for composing charts and components.
   </p>
 
   <h3 id="/extensions/xy/">d3.chart.xy</h3>
@@ -1375,7 +1375,7 @@ d3.chart('Component').extend('Custom', {
 
 {% highlight js %}
 d3.select('#chart')
-  .chart('Multi', function(data) {
+  .chart('Compose', function(data) {
     var scales = {
       x: {/* ... */},
       y: {/* ... */},
@@ -1423,7 +1423,7 @@ d3.select('#chart')
   <h2 id="/helpers/">helpers</h2>
 
   <p>
-    helpers (exposed as d3.chart.helpers) includes general purpose helpers that are used throughout d3.chart.multi.
+    helpers (exposed as d3.chart.helpers) includes general purpose helpers that are used throughout d3.compose.
     Includes convenience functions for creating charts (<tt>property</tt>, <tt>di</tt>, and <tt>mixin</tt>),
     helpful calculations (<tt>dimensions</tt>, <tt>max</tt>, and <tt>min</tt>), and other common behavior.
   </p>
@@ -1431,7 +1431,7 @@ d3.select('#chart')
   <p id="/helpers/property">
     <b class="docs-header">property</b><code>helpers.property(name, [options])</code><br>
 
-    Used throughout d3.chart.multi, <tt>property</tt> is used to create an get/set property.
+    Used throughout d3.compose, <tt>property</tt> is used to create an get/set property.
     Created properties are called with no arguments for <tt>get</tt> and called with value for <tt>set</tt>.
     <br>
     Options:

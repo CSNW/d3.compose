@@ -1,5 +1,9 @@
+/*! d3.compose - v0.12.14
+ * https://github.com/CSNW/d3.compose
+ * License: MIT
+ */
 /**
-  Base styles for d3.chart.multi
+  Base styles for d3.compose
 
   Includes
   - chart
@@ -9,8 +13,9 @@
   - legend
 */
 
-.chart-multi {
-  background-color: #eee;
+.chart-compose {
+  font-size: 14px;
+  background-color: #fff;
   border: solid 1px #ddd;
 }
 
@@ -37,20 +42,23 @@
 
 /* Labels */
 .chart-label-text {
+  font-size: 0.85em;
   stroke: none;
   fill: black;
 }
 .chart-label-bg {
-  opacity: 0.5;
+  opacity: 0.6;
+  fill: white;
+  stroke: none;
 }
 
 /* Title */
 .chart-title {
-  font-size: 110%;
+  font-size: 1.1em;
   font-weight: bold;
 }
 .chart-title-main {
-  font-size: 120%;
+  font-size: 1.2em;
   font-weight: bold;
 }
 
@@ -59,18 +67,18 @@
   shape-rendering: crispEdges;
 }
 .chart-axis path {
-  stroke-width: 2px;
   fill: none;
+  stroke-width: 2px;
   stroke: black;
 }
 .chart-axis .tick {
-  font-size: 90%;
+  font-size: 0.9em;
 }
 .chart-axis .tick line {
   stroke: black;
 }
 
 /* Legend */
-.chart-legend {
-
+.chart-legend-label {
+  font-size: 0.9em;
 }

@@ -1,7 +1,7 @@
 (function($, _, Backbone, d3, hljs, global) {
 
-var helpers = d3.chart.helpers;
-var mixins = d3.chart.mixins;
+var helpers = d3.compose.helpers;
+var mixins = d3.compose.mixins;
 
 var examples = {};
 
@@ -16,7 +16,7 @@ examples.line.options = function(data) {
   return {
     charts: {
       line: {
-        type: 'Line',
+        type: 'Lines',
         data: data,
         xScale: scales.x,
         yScale: scales.y,
@@ -40,7 +40,8 @@ examples.line.options = function(data) {
         type: 'Title',
         position: 'top',
         text: 'Line Chart',
-        margins: {top: 0.5, bottom: 0.4}
+        'class': 'chart-title-main',
+        margins: {top: 4, bottom: 4}
       }
     }
   };
@@ -64,15 +65,15 @@ examples['line-bar-values'].options = function(data) {
   var input = data.input;
   var results = data.results;
   var scales = {
-    x: {type: 'ordinal', data: input, key: 'x'},
+    x: {type: 'ordinal', data: results, key: 'x', adjacent: true},
     y: {data: input, key: 'y'},
     y2: {data: results, key: 'y', domain: [0, 100]}
   };
 
-  return d3.chart.xy({
+  return d3.compose.xy({
     charts: {
       input: {
-        type: 'LineValues',
+        type: 'Lines',
         data: input,
         xScale: scales.x,
         yScale: scales.y
@@ -86,24 +87,19 @@ examples['line-bar-values'].options = function(data) {
     },
     axes: {
       x: {
-        type: 'AxisValues',
-        position: 'bottom',
         scale: scales.x
       },
       y: {
-        position: 'left',
         scale: scales.y,
         title: 'Input'
       },
       y2: {
-        position: 'right',
         scale: scales.y2,
         title: 'Results'
       }
     },
     title: {
-      text: 'Input vs. Output',
-      margins: {top: 0.5, bottom: 0.5}
+      text: 'Input vs. Output'
     }
   });
 };
@@ -127,7 +123,7 @@ examples['line-bar-values'].data = {
 };
 
 /**
-  Interactive d3.chart.multi example
+  Interactive d3.compose example
 
   Features:
   - Navigate between pre-made examples
@@ -200,8 +196,7 @@ var ChartView = app.ChartView = Backbone.View.extend({
   render: function() {
     if (!this.chart) {
       this.chart = d3.select(this.$el[0]).append('svg')
-        .chart('Multi')
-        .margins({top: 0, right: 15, bottom: 5, left: 5});
+        .chart('Compose');
     }
 
     this.chart.options(this.model.get('options'));
