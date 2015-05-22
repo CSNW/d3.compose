@@ -1,11 +1,24 @@
+(function($) {
+  $(document.body).scrollspy({
+    target: '.docs-sidebar'
+  });
+
+  $('.docs-sidebar').affix({
+    offset: {
+      top: 50
+    }
+  });
+  console.log('started');
+}(jQuery));
+
 (function(d3) {
 
-  var helpers = d3.chart.helpers;
-  var mixins = d3.chart.mixins;
+  var helpers = d3.compose.helpers;
+  var mixins = d3.compose.mixins;
 
   // Example 1: Line
   var example_1 = d3.select('#js-example-1').append('svg')
-    .chart('Multi', function(data) {
+    .chart('Compose', function(data) {
       var scales = {
         x: {data: data, key: 'x'},
         y: {data: data, key: 'y'}
@@ -13,7 +26,7 @@
 
       return {
         charts: {
-          line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y, interpolate: 'monotone'}
+          line: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y, interpolate: 'monotone'}
         },
         components: {
           'axis.x': {type: 'Axis', position: 'bottom', scale: scales.x, ticks: 5},
@@ -39,15 +52,15 @@
 
   // Example 2: XY Extension
   var example_2 = d3.select('#js-example-2').append('svg')
-    .chart('Multi', function(data) {
+    .chart('Compose', function(data) {
       var scales = {
         x: {data: data, key: 'x'},
         y: {data: data, key: 'y'}
       };
 
-      return d3.chart.xy({
+      return d3.compose.xy({
         charts: {
-          line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y, interpolate: 'monotone'}
+          line: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y, interpolate: 'monotone'}
         },
         axes: {
           x: {scale: scales.x, ticks: 5},
@@ -73,7 +86,7 @@
 
   // Example 3: Line-Bar Values
   var example_3 = d3.select('#js-example-3').append('svg')
-    .chart('Multi', function(data) {
+    .chart('Compose', function(data) {
       var input = data.input;
       var results = data.results;
       var scales = {
@@ -82,13 +95,13 @@
         y2: {data: results, key: 'y', domain: [0, 100]}
       };
 
-      return d3.chart.xy({
+      return d3.compose.xy({
         charts: {
-          input: {type: 'LineValues', data: input, xScale: scales.x, yScale: scales.y},
+          input: {type: 'Lines', data: input, xScale: scales.x, yScale: scales.y},
           results: {type: 'Bars', data: results, xScale: scales.x, yScale: scales.y2}
         },
         axes: {
-          x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
+          x: {type: 'Axis', position: 'bottom', scale: scales.x},
           y: {position: 'left', scale: scales.y, title: 'Input'},
           y2: {position: 'right', scale: scales.y2, title: 'Results'}
         },
@@ -154,7 +167,7 @@
   }));
 
   example_4 = d3.select('#js-example-4').append('svg')
-    .chart('Multi', function(data) {
+    .chart('Compose', function(data) {
       var scales = {
         x: {data: data, key: 'x'},
         y: {data: data, key: 'y'}
@@ -162,7 +175,7 @@
 
       return {
         charts: {
-          line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y},
+          line: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y},
           dots: {type: 'Dots', data: data, xScale: scales.x, yScale: scales.y}
         }
       }
@@ -205,18 +218,18 @@
   });
 
   var example_5 = d3.select('#js-example-5').append('svg')
-    .chart('Multi', function(data) {
+    .chart('Compose', function(data) {
       var scales = {
         x: {type: 'ordinal', data: data.values, key: 'x'},
         y: {domain: [0, 20]}
       }
 
-      return d3.chart.xy({
+      return d3.compose.xy({
         charts: {
           bars: {type: 'Bars', data: data.values, xScale: scales.x, yScale: scales.y}
         },
         axes: {
-          x: {type: 'AxisValues', scale: scales.x}
+          x: {type: 'Axis', scale: scales.x}
         },
         components: {
           key: {type: 'Key', data: data.key, position: 'right'}

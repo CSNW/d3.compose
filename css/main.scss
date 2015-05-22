@@ -5,11 +5,19 @@ $screen-xl-min: 1500px;
 $container-padding: 10px;
 $header-height: 60px;
 
+$background-color: #f7f7f7;
+$primary-color: #457abb;
+$primary-color-dark: darken($primary-color, 5%);
+
 @import "bootstrap";
 
 // General styles
+html {
+  background-color: $background-color;
+}
 body {
   overflow-y: scroll;
+  background-color: $background-color;
 }
 
 .container {
@@ -22,10 +30,6 @@ body {
   @media (min-width: $screen-md-min) {
     width: $container-md;
   }
-}
-
-.chart-multi {
-  background-color: transparent;
 }
 
 // Custom components

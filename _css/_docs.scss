@@ -1,60 +1,70 @@
 .docs-sidebar {
-  background: #fff;
-  position: fixed;
-  z-index: 10;
-  top: 60px;
-  bottom: 10px;
-  width: 200px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 15px 15px 15px;
-  border: 1px solid #eee;
-}
+  color: #444;
 
-.toc-title,
-.toc-title:visited {
-  display: block;
-  color: black;
-  font-weight: bold;
-  margin-top: 15px;
-
-  &:hover {
-    text-decoration: underline;
+  &.affix {
+    top: 20px;
   }
-  .version {
-    font-size: 10px;
-    font-weight: normal;
-  }
-}
 
-.toc-section {
-  font-size: 11px;
-  line-height: 14px;
-  margin: 5px 0 0 0;
-  padding-left: 0px;
-  list-style-type: none;
-  font-family: Lucida Grande;
+  .nav a {
+    padding: 4px 0 4px 20px;
+    color: inherit;
+    font-size: 13px;
 
-  & > li {
-    cursor: pointer;
-    margin: 0 0 3px 0;
-
-    & > a {
-      text-decoration: none;
-      color: black;
-
-      &:hover {
-        text-decoration: underline;
-      }
+    &:hover,
+    &:active {
+      padding-left: 18px;
+      border-left: solid 2px $primary-color;
+      color: $primary-color;
+      background-color: transparent;
     }
   }
+
+  .nav.is-nested {
+    display: none;
+  }
+  .nav.is-nested a {
+    padding: 1px 0 1px 30px;
+    font-size: 12px;
+    font-weight: 400;
+
+    &:hover {
+      padding-left: 28px;
+    }
+  }
+
+  .nav > li.active > a {
+    padding-left: 18px;
+    border-left: solid 2px $primary-color;
+  }
+  .nav > li.active > .nav.is-nested {
+    display: block;
+  }
+  .nav.is-nested > li.active > a {
+    padding-left: 28px;
+  }
+
+  .back-to-top {
+    display: block;
+    margin-top: 15px;
+    margin-left: 20px;
+    color: #aaa;
+  }
+
+  hr {
+    padding: 0;
+    margin: 5px 0;
+  }
+}
+
+.docs-section {
+  background-color: #fff;
+  border: solid 1px #eee;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0px 0px 5px 0px #eee;
 }
 
 .docs-content {
-  max-width: 600px;
-  margin-left: 230px;
-
   tt {
     font-family: Monaco, Consolas, "Lucida Console", monospace;
     font-size: 12px;
@@ -67,21 +77,7 @@
   }
 }
 
-.docs-header {
-  font-size: 18px;
-  line-height: 35px;
-}
-
 .docs-chart > svg {
   width: 500px;
   height: 300px;
-}
-
-@media (max-width: $screen-sm-min - 1) {
-  .docs-sidebar {
-    display: none;
-  }
-  .docs-content {
-    margin-left: 0;
-  }
 }
