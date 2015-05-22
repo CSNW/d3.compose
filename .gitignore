@@ -4,7 +4,8 @@ bower_components
 specs/index.html
 npm-debug.log
 example/data
-tmp/
+_tmp/
+_docs/
 
 # gh-pages
 _site/

@@ -12,7 +12,8 @@ exclude:
 - README.md
 - bower_components
 - node_modules
-- tmp
+- _tmp
+- _docs
 
 highlighter: pygments
 markdown: redcarpet
