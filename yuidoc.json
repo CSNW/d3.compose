@@ -7,6 +7,6 @@
     "paths": [
       "src"
     ],
-    "outdir": "docs"
+    "outdir": "_docs"
   }
 }

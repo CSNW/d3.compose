@@ -3,7 +3,8 @@ bower_components
 .grunt
 specs/index.html
 npm-debug.log
-tmp/
+_tmp/
+_docs/
 
 _site/
 .sass-cache

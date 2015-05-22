@@ -43,10 +43,10 @@ module.exports = function(grunt) {
           sourceMap: true
         },
         files: {
-          'tmp/<%= pkg.name %>.js': src.core,
-          'tmp/<%= pkg.name %>-mixins.js': src.core.concat(src.mixins),
-          'tmp/<%= pkg.name %>-all.js': src.core.concat(src.mixins, src.lib),
-          'tmp/<%= pkg.name %>.css': src.css
+          '_tmp/<%= pkg.name %>.js': src.core,
+          '_tmp/<%= pkg.name %>-mixins.js': src.core.concat(src.mixins),
+          '_tmp/<%= pkg.name %>-all.js': src.core.concat(src.mixins, src.lib),
+          '_tmp/<%= pkg.name %>.css': src.css
         }
       },
       release: {
@@ -88,7 +88,7 @@ module.exports = function(grunt) {
       },
 
       temp: {
-        src: 'tmp/<%= pkg.name %>-mixins.js',
+        src: '_tmp/<%= pkg.name %>-mixins.js',
         options: {
           outfile: 'specs/index.html',
           keepRunner: true
@@ -110,7 +110,7 @@ module.exports = function(grunt) {
 
       src: ['src/**/*.js'],
       specs: ['specs/*.spec.js'],
-      temp: ['tmp/<%= pkg.name %>-all.js'],
+      temp: ['_tmp/<%= pkg.name %>-all.js'],
       release: ['dist/<%= pkg.name %>-all.js'],
       grunt: ['Gruntfile.js']
     },
@@ -151,7 +151,7 @@ module.exports = function(grunt) {
       release: {
         cwd: 'dist/',
         src: ['dist/*'],
-        dest: 'tmp/<%= pkg.name %>-v<%= pkg.version %>.zip'
+        dest: '_tmp/<%= pkg.name %>-v<%= pkg.version %>.zip'
       }
     }
   });
@@ -259,7 +259,7 @@ module.exports = function(grunt) {
         var repo = pkg.name;
         var tag = 'v' + version;
         var name = pkg.name + ' ' + tag;
-        var asset_path = path.resolve(__dirname, 'tmp', pkg.name + '-' + tag + '.zip');
+        var asset_path = path.resolve(__dirname, '_tmp', pkg.name + '-' + tag + '.zip');
 
         async.series([
           git.commit.bind(git, tag),
