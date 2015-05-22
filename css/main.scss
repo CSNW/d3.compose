@@ -20,6 +20,37 @@ body {
   background-color: $background-color;
 }
 
+code {
+  padding: 0.1em 0.3em;
+  margin: 0;
+  font-size: 12px;
+  border-radius: 3px;
+  color: #333;
+  font-family: $font-family-monospace;
+}
+pre {
+  border-left: solid 2px lighten($primary-color, 10%);
+  padding: 5px 0 5px 10px;
+  max-width: 50em;
+  line-height: 1.4em;
+  font-family: $font-family-monospace;
+
+  & > code {
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    background: none;
+    border-radius: 0;
+  }
+
+  .hll {
+    background-color: fade-out($primary-color, 0.93);
+    display: block;
+    margin-left: -10px;
+    padding-left: 10px;
+  }
+}
+
 .container {
   @media (min-width: $screen-xl-min) {
     width: (1440px + $grid-gutter-width);

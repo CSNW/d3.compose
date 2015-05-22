@@ -8,7 +8,6 @@
       top: 50
     }
   });
-  console.log('started');
 }(jQuery));
 
 (function(d3) {

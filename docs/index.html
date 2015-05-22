@@ -5,6 +5,9 @@ class: docs
 scripts: |
   <script src="../js/docs.js"></script>
 ---
+
+{% assign classes = site.data.docs.classes %}
+
 <div class="row">
   <div class="col-md-3 col-lg-2" role="complementary">
     <div class="docs-sidebar hidden-print hidden-xs hidden-sm affix-top">
@@ -43,11 +46,15 @@ scripts: |
         <hr>
 
         <li>
-          <a href="#Compose">
+          <a href="#{{classes.Compose.id}}">
             Compose
           </a>
 
           <ul class="nav is-nested">
+            <!-- {% for item in classes.Compose.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %} -->
+
             <li><a href="#Compose-options">options</a></li>
             <li><a href="#Compose-draw">draw</a></li>
             <li><a href="#Compose-charts">charts</a></li>
@@ -58,70 +65,85 @@ scripts: |
             <li><a href="#Compose-events">events</a></li>
           </ul>
         </li>
-        <!--
-        <li>
-          <a href="#Base">
+        
+        <!-- <li>
+          <a href="#{{classes.Base.id}}">
             Base
           </a>
-        </li>
-        -->
+
+          <ul class="nav is-nested">
+            {% for item in classes.Base.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %}
+          </ul>
+        </li> -->
 
         <li>
-          <a href="#Chart">
+          <a href="#{{classes.Chart.id}}">
             Chart
           </a>
 
           <ul class="nav is-nested">
+           <!--  {% for item in classes.Chart.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %} -->
+
             <li><a href="#Chart-extending">extending</a></li>
           </ul>
         </li>
 
         <li>
-          <a href="#Component">
+          <a href="#{{classes.Component.id}}">
             Component
           </a>
 
           <ul class="nav is-nested">
-            <li><a href="#Component-extending">extending</a></li>
-            <li><a href="#Component-prepareLayout">prepareLayout</a></li>
-            <li><a href="#Component-getLayout">getLayout</a></li>
-            <li><a href="#Component-setLayout">setLayout</a></li>
-            <li><a href="#Component-skip_layout">skip_layout</a></li>
+            {% for item in classes.Component.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %}
           </ul>
         </li>
 
         <hr>
 
         <li>
-          <a href="#Lines">
+          <a href="#{{classes.Lines.id}}">
             Lines
           </a>
 
           <ul class="nav is-nested">
-            <!-- TODO -->
+            <!-- {% for item in classes.Lines.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %} -->
+
             <li><a href="#Lines-mixins">mixins</a></li>
-            <!-- TODO <li><a href="#Lines-extending">extending</a></li>-->
           </ul>
         </li>
 
         <li>
-          <a href="#Bars">
+          <a href="#{{classes.Bars.id}}">
             Bars
           </a>
 
           <ul class="nav is-nested">
-            <!-- TODO -->
+            <!-- {% for item in classes.Bars.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %} -->
+
             <li><a href="#Bars-mixins">mixins</a></li>
-            <!-- TODO <li><a href="#Bars-extending">extending</a></li>-->
           </ul>
         </li>
 
         <li>
-          <a href="#Labels">
+          <a href="#{{classes.Labels.id}}">
             Labels
           </a>
 
           <ul class="nav is-nested">
+            <!-- {% for item in classes.Labels.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %} -->
+
             <li><a href="#Labels-labels">labels</a></li>
             <li><a href="#Labels-format">format</a></li>
             <li><a href="#Labels-position">position</a></li>
@@ -131,18 +153,21 @@ scripts: |
             <li><a href="#Labels-alignment">alignment</a></li>
             <li><a href="#Labels-handleCollisions">handleCollisions</a></li>
             <li><a href="#Labels-mixins">mixins</a></li>
-            <!-- TODO <li><a href="#Labels-extending">extending</a></li>-->
           </ul>
         </li>
 
         <hr>
 
         <li>
-          <a href="#Axis">
+          <a href="#{{classes.Axis.id}}">
             Axis
           </a>
 
           <ul class="nav is-nested">
+            <!-- {% for item in classes.Axis.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %} -->
+
             <li><a href="#Axis-scale">scale</a></li>
             <li><a href="#Axis-position">position</a></li>
             <li><a href="#Axis-translation">translation</a></li>
@@ -154,21 +179,29 @@ scripts: |
         </li>
 
         <li>
-          <a href="#Legend">
+          <a href="#{{classes.Legend.id}}">
             Legend
           </a>
 
           <ul class="nav is-nested">
+            <!-- {% for item in classes.Legend.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %} -->
+
             <li><a href="#Legend-charts">charts</a></li>
           </ul>
         </li>
 
         <li>
-          <a href="#Title">
+          <a href="#{{classes.Title.id}}">
             Title
           </a>
 
           <ul class="nav is-nested">
+            <!-- {% for item in classes.Title.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %} -->
+
             <li><a href="#Title-text">text</a></li>
             <li><a href="#Title-rotation">rotation</a></li>
             <li><a href="#Title-position">position</a></li>
@@ -1339,88 +1372,74 @@ d3.chart('Chart').extend('Pie', {
       =========
     -->
     <section class="docs-section">
-      <h2 id="Component">Component</h2>
+      <h2 id="{{classes.Component.id}}">Component</h2>
 
-      <p>
-        <tt>d3.chart('Component')</tt> contains many helpers and required methods for creating a component for d3.compose.
-        Components are position around the chart ("top", "right", "bottom", "left") and include layout calculations for properly laying out components.
-      </p>
+      {%if classes.Component.description %}
+        <div class="docs-description">
+          {{ classes.Component.description | markdownify }}
+        </div>
+      {% endif %}
 
-      <p id="Component-extending">
-        <b class="docs-header">extending</b><br>
+      {% for example in classes.Component.example %}
+        <div class="docs-example">
+          {{ example | markdownify }}
+        </div>
+      {% endfor %}
 
-        <tt>d3.chart('Component')</tt> includes intelligent defaults and there are no required overrides when using it.
-        To adjust layout calculation use: <tt>prepareLayout</tt>, <tt>getLayout</tt>, and/or <tt>setLayout</tt>.
-      </p>
+      {% for item in classes.Component.classitems %}
+        <h3 class="docs-item-header" id="{{item.id}}">
+          {{item.name}}
+          {% if item.code %}
+            <code class="docs-item-code">{{item.code}}</code>
+          {% endif %}
+          {% if item.static %}
+            <span class="label docs-item-static">Static</span>
+          {% endif %}
+        </h3>
 
-      <p id="Component-prepareLayout">
-        <b class="docs-header">prepareLayout</b><code>prepareLayout(data)</code><br>
+        {% if item.params %}
+          <ol class="docs-params">
+            {% for param in item.params %}
+              <li>
+                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
+                (<em class="docs-param-type">{{param.type}}</em>)
 
-        Override this function in the component's prototype to skip pre-draw or use a different preparation.
-      </p>
+                {{param.description}}
 
-{% highlight js %}
-d3.chart('Component').extend('Custom', {
-  prepareLayout: function(data) {
-    // draw is normally called here
-    // so that getLayout has real dimensions
+                {% if param.props %}
+                  <ul class="docs-props">
+                    {% for prop in param.props %}
+                      <li>
+                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
+                        (<em class="docs-param-type">{{prop.type}}</em>)
+                        
+                        {{prop.description}}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ol>
+        {% endif %}
+        {% if item.return %}
+          <div class="docs-return">
+            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
+          </div>
+        {% endif %}
 
-    // -> custom preparation
-  }
-});
-{% endhighlight %}
+        {% if item.description %}
+          <div class="docs-description docs-item-description">
+            {{ item.description | markdownify }}
+          </div>
+        {% endif %}
 
-      <p id="Component-getLayout">
-        <b class="docs-header">getLayout</b><code>getLayout(data) {position, width, height}</code><br>
-
-        By default, calls <tt>prepareLayout</tt> and then calculates the component's position, width, and height.
-        Override this function to customize the calculations for position/width/height.
-        The return must be an object with position, width, and height set.
-      </p>
-
-{% highlight js %}
-d3.chart('Component').extend('Custom', {
-  getLayout: function(data) {
-    // Perform custom calculations...
-    var calculated_width, calculated_height;
-
-    // Must return position, width, and height
-    return {
-      position: this.position(),
-      width: calculated_width,
-      height: calculated_height
-    };
-  }
-});
-{% endhighlight %}
-
-      <p id="Component-setLayout">
-        <b class="docs-header">setLayout</b><code>setLayout(x, y, options)</code><br>
-
-        Called by the containing chart, the x, y are the laid out position of the top-left corner of the component.
-        <tt>options</tt> includes either height for components positioned left/right or width for top/bottom.
-      </p>
-
-{% highlight js %}
-d3.chart('Component').extend('Custom', {
-  setLayout: function(x, y, options) {
-    // options includes height or width
-    // (the following is the default implementation)
-
-    var margins = this.margins();
-    this.base
-      .attr('transform', helpers.translate(x + margins.left, y + margins.top));
-    this.width(options && options.width);
-    this.height(options && options.height);
-  }
-});
-{% endhighlight %}
-
-      <p id="Component-skip_layout">
-        <b class="docs-header">skip_layout</b><br>
-
-        Set <tt>skip_layout</tt> to <tt>false</tt> on the component's prototype / instance to skip that component in layout calculations.
-      </p>
+        {% for example in item.example %}
+          <div class="docs-example docs-item-example">
+            {{ example | markdownify }}
+          </div>
+        {% endfor %}
+      {% endfor %}
     </section>
 
     <!--
