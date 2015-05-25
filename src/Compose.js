@@ -98,10 +98,9 @@
       }
     }),
 
-    /**
+    /*
       Chart position (generally used internally)
 
-      @internal
       @property chartPosition
       @param Object {top, right, bottom, left}
     */

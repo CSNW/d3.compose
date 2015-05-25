@@ -421,7 +421,7 @@
     @param {Object|Function} options
       - (passing in function returns original function with no changes)
       @param {String} [options.type='linear'] Any available d3 scale (linear, ordinal, log, etc.) or time
-      @praam {Array} [options.domain] Domain for scale
+      @param {Array} [options.domain] Domain for scale
       @param {Array} [options.range] Range for scale
       @param {Any} [options.data] Used to dynamically set domain (with given value "di" or key)
       @param {Function} [options.value] "di" for getting value for data
@@ -586,12 +586,14 @@
     Stack given array of elements using options
 
     @example
+    ```js
     this.call(helpers.stack)
     this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
-
+    ```
+    @method stack
     @param {Object} [options]
-    - {String} [direction=vertical] vertical or horizontal
-    - {String} [origin=top] top/bottom for vertical and left/right for horizontal
+      @param {String} [options.direction=vertical] vertical or horizontal
+      @param {String} [options.origin=top] top/bottom for vertical and left/right for horizontal
   */
   function stack(options, elements) {
     if (options && !elements) {
@@ -665,7 +667,6 @@
     this.select('point').attr('cx', chart.x);
     // (d, i) and "this" used from d3, "chart" injected automatically
     ```
-
     @method di
     @param {Function} callback with (chart, d, i) arguments
     @return {Function}

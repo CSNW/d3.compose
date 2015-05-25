@@ -4,12 +4,14 @@
   /**
     XY extension
     Generate d3.chart.multi options for XY charts
-
+  
+    @method xy
+    @for extensions
     @param {Object} options
-    - charts {Object}
-    - axes {Object}
-    - title {String|Object}
-    - legend {Boolean|Object}
+      @param {Object} [options.charts]
+      @param {Object} [options.axes]
+      @param {String|Object} [options.title]
+      @param {Boolean|Object} [options.legend]
   */
   d3.compose.xy = function xy(options) {
     options = options || {};
