@@ -850,39 +850,74 @@ example_4.draw({
       =====
     -->
     <section class="docs-section">
-      <h2 id="Chart">Chart</h2>
+      <h2 id="{{classes.Chart.id}}">Chart</h2>
 
-      <p>
-        d3.compose can use charts created using standard d3.chart or charts extended from <tt>d3.chart('Chart')</tt> that includes some convenience helpers.
-        <tt>d3.chart('Chart')</tt> includes helpers for <tt>options</tt>, <tt>data</tt>, and <tt>width/height</tt>.
-      </p>
+      {%if classes.Chart.description %}
+        <div class="docs-description">
+          {{ classes.Chart.description | markdownify }}
+        </div>
+      {% endif %}
 
-      <p id="Chart-extending">
-        <b class="docs-header">extending</b><br>
+      {% for example in classes.Chart.example %}
+        <div class="docs-example">
+          {{ example | markdownify }}
+        </div>
+      {% endfor %}
 
-        To take advantage of di-binding (automatically injects chart into di methods) and automatically setting properties from options,
-        use <tt>helpers.di</tt> and <tt>helpers.property</tt> when setting up your chart.
-      </p>
+      {% for item in classes.Chart.classitems %}
+        <h3 class="docs-item-header" id="{{item.id}}">
+          {{item.name}}
+          {% if item.code %}
+            <code class="docs-item-code">{{item.code}}</code>
+          {% endif %}
+          {% if item.static %}
+            <span class="label docs-item-static">Static</span>
+          {% endif %}
+        </h3>
 
-{% highlight js %}
-d3.chart('Chart').extend('Pie', {
-  initialize: function() {
-    // same as d3.chart
-  },
-  transform: function(data) {
-    // same as d3.chart
-  },
+        {% if item.params %}
+          <ol class="docs-params">
+            {% for param in item.params %}
+              <li>
+                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
+                (<em class="docs-param-type">{{param.type}}</em>)
 
-  color: helpers.di(function(chart, d, i) {
-    // "di" function with parent chart injected ("this" = element)
-  }),
+                {{param.description}}
 
-  centered: helpers.property('centered', {
-    default_value: true
-    // can be automatically set from options object
-  })
-});
-{% endhighlight %}
+                {% if param.props %}
+                  <ul class="docs-props">
+                    {% for prop in param.props %}
+                      <li>
+                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
+                        (<em class="docs-param-type">{{prop.type}}</em>)
+                        
+                        {{prop.description}}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ol>
+        {% endif %}
+        {% if item.return %}
+          <div class="docs-return">
+            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
+          </div>
+        {% endif %}
+
+        {% if item.description %}
+          <div class="docs-description docs-item-description">
+            {{ item.description | markdownify }}
+          </div>
+        {% endif %}
+
+        {% for example in item.example %}
+          <div class="docs-example docs-item-example">
+            {{ example | markdownify }}
+          </div>
+        {% endfor %}
+      {% endfor %}
     </section>
 
     <!--
