@@ -62,6 +62,10 @@
   padding: 10px 20px;
   margin-bottom: 20px;
   box-shadow: 0px 0px 5px 0px #eee;
+
+  & > h2:first-child {
+    margin-top: 10px;
+  }
 }
 
 .docs-description {}
