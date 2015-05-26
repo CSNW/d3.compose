@@ -51,18 +51,10 @@ scripts: |
           </a>
 
           <ul class="nav is-nested">
-            <!-- {% for item in classes.Compose.classitems %}
+            {% for item in classes.Compose.classitems %}
               <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %} -->
-
-            <li><a href="#Compose-options">options</a></li>
-            <li><a href="#Compose-draw">draw</a></li>
-            <li><a href="#Compose-charts">charts</a></li>
-            <li><a href="#Compose-components">components</a></li>
-            <li><a href="#Compose-margins">margins</a></li>
-            <li><a href="#Compose-width">width</a></li>
-            <li><a href="#Compose-height">height</a></li>
-            <li><a href="#Compose-events">events</a></li>
+            {% endfor %}
+              <li><a href="#Compose-Events">Events</a></li>
           </ul>
         </li>
         
@@ -769,159 +761,88 @@ example_4.draw({
     -->
 
     <section class="docs-section">
-      <h2 id="Compose">Compose</h2>
+      <h2 id="{{classes.Compose.id}}">Compose</h2>
 
-      <p>
-        <tt>d3.chart('Compose')</tt> allows charts and components to be composed into a rich charts. Using the <tt>options</tt> property,
-        charts and components can be bound to data and customized with options to create intricate and dynamic charts.
-      </p>
+      {%if classes.Compose.description %}
+        <div class="docs-description">
+          {{ classes.Compose.description | markdownify }}
+        </div>
+      {% endif %}
 
-{% highlight js %}
-d3.select('#chart')
-  .chart('Compose', function(data) {
-    // Compose charts, components, axes, legend, title into single chart
+      {% for example in classes.Compose.example %}
+        <div class="docs-example">
+          {{ example | markdownify }}
+        </div>
+      {% endfor %}
 
-    // Work with given data
-    var scales = {
-      x: {data: data.input, key: 'x'},
-      y: {data: data.input, key: 'y'},
-      y2: {data: data.output, key: 'y'}
-    };
+      {% for item in classes.Compose.classitems %}
+        <h3 class="docs-item-header" id="{{item.id}}">
+          {{item.name}}
+          {% if item.code %}
+            <code class="docs-item-code">{{item.code}}</code>
+          {% endif %}
+          {% if item.static %}
+            <span class="label docs-item-static">Static</span>
+          {% endif %}
+        </h3>
 
-    return {
-      charts: {
-        // Create Line and Bars charts with given options
-        input: {
-          type: 'Line',
-          data: data.input,
-          xScale: scales.x,
-          yScale: scales.y
-        },
-        output: {
-          type: 'Bars',
-          data: data.output,
-          xScale: scales.x,
-          yScale: scales.y2
-        }
-      },
-      components: {
-        // Create axes with given options
-        'axis.x': {
-          type: 'Axis', scale: scales.x, position: 'bottom'
-        },
-        'axis.y': {
-          type: 'Axis', scale: scales.y, position: 'left'
-        },
-        'axis.y2': {
-          type: 'Axis', scale: scales.y2, position: 'right'
-        },
-        title: {text: 'Input vs. Output'}
-      }
-    };
-  });
-{% endhighlight %}
+        {% if item.params %}
+          <ol class="docs-params">
+            {% for param in item.params %}
+              <li>
+                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
+                (<em class="docs-param-type">{{param.type}}</em>)
 
-      <p id="Compose-options">
-        <b class="docs-header">options</b><code>chart.options([options])</code><br>
+                {{param.description}}
 
-        Get/set the options the chart. Can be an <tt>Object</tt> or a <tt>Function</tt> that returns an <tt>Object</tt>. All properties listed below are available as options (charts, components, etc.) and the given values are passed to the matching property. <tt>options</tt> are generally set when creating chart with <tt>d3.select('...').chart('Compose', options)</tt>. Example:
-      </p>
+                {% if param.props %}
+                  <ul class="docs-props">
+                    {% for prop in param.props %}
+                      <li>
+                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
+                        (<em class="docs-param-type">{{prop.type}}</em>)
+                        
+                        {{prop.description}}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ol>
+        {% endif %}
+        {% if item.return %}
+          <div class="docs-return">
+            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
+          </div>
+        {% endif %}
 
-{% highlight js %}
-// Get
-chart.options();
+        {% if item.description %}
+          <div class="docs-description docs-item-description">
+            {{ item.description | markdownify }}
+          </div>
+        {% endif %}
 
-// Set (Object)
-chart.options({
-  charts: {/*... */},
-  components: {/* ... */}
-});
+        {% for example in item.example %}
+          <div class="docs-example docs-item-example">
+            {{ example | markdownify }}
+          </div>
+        {% endfor %}
+      {% endfor %}
 
-// Set (Function, takes in data and returns object)
-chart.options(function(data) {
-  // Handle data...
+      <h3 class="docs-item-header" id="Compose-Events">
+        Events
+      </h3>
 
-  return {
-    charts: {/*... */},
-    components: {/* ... */}
-  };
-});
-
-// Set directly from d3.chart creation
-d3.select('#chart')
-  .chart('Compose', function(data) {
-    // ...
-  });
-{% endhighlight %}
-
-      <p id="Compose-draw">
-        <b class="docs-header">draw</b><code>chart.draw([data])</code><br>
-
-        Draw the chart with the given data. <tt>data</tt> is passed to <tt>options</tt> function and child charts and components.
-      </p>
-
-      <p id="Compose-charts">
-        <b class="docs-header">charts</b><code>chart.charts([values])</code><br>
-
-        Chart options used for composing charts.
-        Each chart should use a unique key so that updates are passed to the correct chart.
-        The <tt>type</tt> option should be a registered <tt>d3.chart</tt>.
-      </p>
-
-{% highlight js %}
-chart.charts({
-  input: {type: 'Line', /* options to pass to Line chart */},
-  output: {type: 'Bars', /* options to pass to Bars chart */}
-});
-{% endhighlight %}
-
-      <p id="Compose-components">
-        <b class="docs-header">components</b><code>chart.components([values])</code><br>
-
-        Component options used for composing and laying out components.
-        Each component should use a unique key so that updates are passed to the correct component.
-        The <tt>type</tt> option should be a registered <tt>d3.chart</tt> component and all other options are passed to the component.
-      </p>
-
-{% highlight js %}
-chart.components({
-  xAxis: {type: 'Axis', /* options to pass to Axis */},
-  legend: {type: 'Legend', /* options to pass to Legend */}
-});
-{% endhighlight %}
-
-      <p id="Compose-margins">
-        <b class="docs-header">margins</b><code>chart.margins([values])</code><br>
-
-        Set the top, right, bottom, and left margin between the chart layers and the surrounding components.
-      </p>
-
-{% highlight js %}
-chart.margins({top: 10, right: 0, bottom: 0, left: 10});{% endhighlight %}
-
-      <p id="Compose-width">
-        <b class="docs-header">width</b><code>chart.width([value])</code><br>
-
-        Get or explicitly set the chart width.
-      </p>
-
-      <p id="Compose-height">
-        <b class="docs-header">height</b><code>chart.height([value])</code><br>
-
-        Get or explicitly set the the chart height.
-      </p>
-
-      <p id="Compose-events">
-        <b class="docs-header">events</b>
-
-        <tt>on</tt>, <tt>off</tt>, and <tt>trigger</tt> can be used to work with chart events. Available events:
-      </p>
-
-      <ul class="small">
-        <li><b>enter:mouse</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse enters chart</li>
-        <li><b>move:mouse</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse moves within chart</li>
-        <li><b>leave:mouse</b> &mdash; when mouse leaves chart</li>
-      </ul>
+      <div class="docs-description docs-item-description">
+        <p><code>on</code>, <code>off</code>, and <code>trigger</code> can be used to work with chart events. Available events:</p>
+        <ul>
+          <li><b>mouseenter</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse enters chart</li>
+          <li><b>mousemove</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse moves within chart</li>
+          <li><b>mouseleave</b> &mdash; when mouse leaves chart</li>
+        </ul>
+      </div>
+      
     </section>
 
     <!--
