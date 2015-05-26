@@ -81,7 +81,7 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
 
 ## Examples and Docs
 
-See [http://CSNW.github.io/d3.compose](http://CSNW.github.io/d3.compose) for live examples and docs.
+See [http://CSNW.github.io/d3.compose/](http://CSNW.github.io/d3.compose/) for live examples and docs.
 
 ## Development
 
@@ -98,3 +98,14 @@ Install bower (if necessary) `npm install -g bower`
 (With all changes merged to master and on master branch)
 
 1. Build and publish release with `grunt release` or `npm run release`
+
+### Docs
+
+Install yuidoc (if necessary) `npm install -g yuidocjs`
+
+1. On master, run `yuidoc`
+2. Switch to `gh-pages` branch
+3. Navigate to `_tasks` directory (`cd _tasks`)
+4. Run docs task `npm run docs`
+5. Navigate back to root
+6. View site with `bundle exec jekyll serve`
