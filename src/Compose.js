@@ -4,33 +4,46 @@
 
   /**
     d3.compose
-    Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart
+    Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart.
+    Using the `options` property, charts and components can be bound to data and customized to create dynamic charts.
 
     @example
-    ```javascript
+    ```js
     var chart = d3.select('#chart')
       .chart('Compose', function(data) {
         // Process data...
-        var participation = data.participation;
-        var results = data.results;
+        
+        // Create shared scales
         var scales = {
-          x: {data: participation.concat(results), key: 'x', adjacent: true},
-          y: {data: participation, key: 'y'},
-          y2: {data: results, key: 'y'}
+          x: {data: data.input, key: 'x', adjacent: true},
+          y: {data: data.input, key: 'y'},
+          y2: {data: data.output, key: 'y'}
         };
 
         return {
           charts: {
-            participation: {type: 'Bars', data: participation, xScale: scales.x, yScale: scales.y},
-            results: {type: 'Line', data: results, xScale: scales.x, yScale: scales.y2, labels: {position: 'top'}}
+            input: {
+              type: 'Bars', data: data.input, xScale: scales.x, yScale: scales.y
+            },
+            output: {
+              type: 'Lines', data: data.output, xScale: scales.x, yScale: scales.y2}
+            }
           },
           components: {
-            title: {type: 'Title', position: 'top', text: 'd3.compose'}
+            'axis.y': {
+              type: 'Axis', scale: scales.y, position: 'left'
+            },
+            'axis.y2': {
+              type: 'Axis', scale: scales.y2, position: 'right'
+            }
+            title: {
+              type: 'Title', position: 'top', text: 'd3.compose'
+            }
           }
         });
       });
 
-    chart.draw({participation: [...], results: [...]});
+    chart.draw({input: [...], output: [...]});
     ```
 
     @class Compose
@@ -54,8 +67,37 @@
     },
 
     /**
-      Options function that returns {chart,component} for data or static {chart,component}
+      Get/set the options `object/function` for the chart that takes `data` and
+      returns `{charts, components}` for composing child charts and components.
+      All values are passed to the corresponding property (`{components}` sets `components` property).
 
+      @example
+      ```js
+      // get
+      chart.options();
+
+      // set (static)
+      chart.options({
+        charts: {},
+        components: {}
+      });
+
+      // set (dynamic, takes data and returns options)
+      chart.options(function(data) {
+        // process data...
+
+        return {
+          charts: {},
+          components: {}
+        };
+      });
+
+      // Set directly from d3.chart creation
+      d3.select('#chart')
+        .chart('Compose', function(data) {
+          // ...
+        });
+      ```
       @property options
       @type Function|Object
     */
@@ -75,19 +117,19 @@
       }
     }),
 
-    /**
-      Store raw data for container before it has been transformed
-
-      @property rawData
-      @type Any
-    */
+    // Store raw data for container before it has been transformed
     rawData: property('rawData'),
 
     /**
       Margins between edge of container and components/chart
 
+      @example
+      ```js
+      chart.margins({top: 10, right: 20, bottom: 10, left: 20});
+      ```
       @property margins
       @type Object {top, right, bottom, left}
+      @default {top: 10, right: 10, bottom: 10, left: 10}
     */
     margins: property('margins', {
       default_value: {top: 10, right: 10, bottom: 10, left: 10},
@@ -98,12 +140,7 @@
       }
     }),
 
-    /*
-      Chart position (generally used internally)
-
-      @property chartPosition
-      @param Object {top, right, bottom, left}
-    */
+    // Chart position
     chartPosition: property('chartPosition', {
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
       set: function(values) {
@@ -145,9 +182,18 @@
     },
 
     /**
-      Set charts from options or get charts
-      (Set from charts returned from `options` function)
+      Set charts from options or get chart instances.
+      Each chart should use a unique key so that updates are passed to the existing chart
+      (otherwise they are recreated on update).
+      The `type` option must be a registered `d3.chart` and all other options are passed to the chart.
 
+      @example
+      ```js
+      chart.charts({
+        input: {type: 'Bars'}, // options to pass to Bars chart
+        output: {type: 'Lines'} // options to pass to Lines chart
+      });
+      ```
       @property charts
       @type Object
     */
@@ -162,9 +208,18 @@
     }),
 
     /**
-      Set components from options or get components
-      (Set from components returned from `options` function)
+      Set components from options or get components instances.
+      Each component should use a unique key so that updates are passed to the existing chart
+      (otherwise they are recreated on update).
+      The `type` option must be a registered `d3.chart` and all other options are passed to the component.
 
+      @example
+      ```js
+      chart.components({
+        'axis.y': {type: 'Axis'}, // options to pass to Axis component
+        title: {type: 'Title'} // options to pass to Title component
+      })
+      ```
       @property components
       @type Object
     */
@@ -181,8 +236,24 @@
     /**
       Draw chart with given data
 
+      @example
+      ```js
+      var chart = d3.select('#chart')
+        .chart('Compose', function(data) {
+          // ...
+        });
+
+      chart.draw([1, 2, 3]);
+
+      chart.draw({values: [1, 2, 3]});
+      
+      chart.draw([
+        {values: [1, 2, 3]},
+        {values: [4, 5, 6]}
+      ]);
+      ```
       @method draw
-      @param {Object} data
+      @param {Any} data
     */
     draw: function(data) {
       // On redraw, get original data
@@ -236,14 +307,7 @@
         return data.original;
     },
 
-    /**
-      Create chart layer (for laying out with charts)
-
-      @method createChartLayer
-      @param {Object} options
-        @param {Number} options.z_index
-      @return {d3.selection}
-    */
+    // Create chart layer (for laying out charts)
     createChartLayer: function(options) {
       options = utils.defaults({}, options, {
         z_index: d3.chart('Chart').z_index
@@ -254,14 +318,7 @@
         .attr('data-zIndex', options.z_index);
     },
 
-    /**
-      create component layer
-
-      @method createComponentLayer
-      @param {Object} options
-        @param {Number} options.z_index
-      @return {d3.selection}
-    */
+    // Create component layer
     createComponentLayer: function(options) {
       options = utils.defaults({}, options, {
         z_index: d3.chart('Component').z_index
@@ -272,7 +329,7 @@
         .attr('data-zIndex', options.z_index);
     },
 
-    // Layout components and chart for given data
+    // Layout components and charts for given data
     layout: function(data) {
       // 1. Place chart layers
       positionChartLayers(this.base.selectAll('.chart-layer'), this.chartPosition());
@@ -342,6 +399,7 @@
       }
     },
 
+    // Attach chart/component child item with id
     attach: function(id, item) {
       item.id = id;
       item.base.attr('data-id', id);
@@ -353,6 +411,7 @@
         item.trigger('attach');
     },
 
+    // Detach chart/component child item by id
     detach: function(id, item) {
       item.base.remove();
 
@@ -362,6 +421,7 @@
         item.trigger('detach');
     },
 
+    // Position chart and component layers
     positionLayers: function(layout) {
       positionChartLayers(this.base.selectAll('.chart-layer'), this.chartPosition());
       positionComponents(layout, this.chartPosition(), this._width(), this._height());
