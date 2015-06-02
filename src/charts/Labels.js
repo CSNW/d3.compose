@@ -7,249 +7,248 @@
   /**
     @class Labels
   */
-  charts.Labels = charts.Chart.extend('Labels', mixin(mixins.Series, mixins.XY, mixins.Hover, mixins.Transition, {
-    initialize: function() {
-      // Proxy attach to parent for hover
-      var parent = this.options().parent;
-      if (parent) {
-        this.parent = parent;
-        parent.on('attach', function() {
-          this.container = parent.container;
-          this.trigger('attach');
-        }.bind(this));
-      }
+  charts.Labels = charts.Chart.extend('Labels', mixin(
+    mixins.Series,
+    mixins.XY,
+    mixins.Hover,
+    mixins.Transition,
+    mixins.StandardLayer,
+    {
+      initialize: function() {
+        // Proxy attach to parent for hover
+        var parent = this.options().parent;
+        if (parent) {
+          this.parent = parent;
+          parent.on('attach', function() {
+            this.container = parent.container;
+            this.trigger('attach');
+          }.bind(this));
+        }
 
-      this.seriesLayer('Labels', this.base, {
-        dataBind: function(data) {
-          return this.selectAll('g')
-            .data(data, this.chart().key);
-        },
-        insert: function() {
-          var chart = this.chart();
+        // Use StandardLayer for extensibility
+        this.standardSeriesLayer('Labels', this.base);
+      },
 
-          return this.append('g')
-            .on('mouseenter', chart.mouseEnterPoint)
-            .on('mouseleave', chart.mouseLeavePoint)
-            .call(chart.insertLabels);
-        },
-        events: {
-          'merge': function() {
-            var chart = this.chart();
+      transform: function(data) {
+        if (!helpers.isSeriesData(data))
+          data = [{key: 'labels', name: 'Labels', values: data}];
 
-            this.attr('class', chart.labelClass);
+        // TODO Use ticks / domain from xScale
+        // ticks = scale.ticks ? scale.ticks.apply(scale, [10]) : scale.domain()
+        return data;
+      },
 
-            chart.mergeLabels(this);
-            chart.layoutLabels(this);
-          },
-          'merge:transition': function() {
-            var chart = this.chart();
+      /**
+        Formatting function or string (string is passed to d3.format) for label values
 
-            chart.setupTransition(this);
-
-            // Position labels
-            chart.transitionLabels(this);
+        @property format
+        @type String|Function
+      */
+      format: property('format', {
+        type: 'Function',
+        set: function(value) {
+          if (utils.isString(value)) {
+            return {
+              override: d3.format(value)
+            };
           }
         }
-      });
-    },
+      }),
 
-    transform: function(data) {
-      if (!helpers.isSeriesData(data))
-        data = [{key: 'labels', name: 'Labels', values: data}];
+      /**
+        Label position relative to data-point
 
-      // TODO Use ticks / domain from xScale
-      // ticks = scale.ticks ? scale.ticks.apply(scale, [10]) : scale.domain()
-      return data;
-    },
-
-    /**
-      Formatting function or string (string is passed to d3.format) for label values
-
-      @property format
-      @type String|Function
-    */
-    format: property('format', {
-      type: 'Function',
-      set: function(value) {
-        if (utils.isString(value)) {
-          return {
-            override: d3.format(value)
-          };
+        @property position
+        @type String
+        @default top
+      */
+      position: property('position', {
+        default_value: 'top',
+        validate: function(value) {
+          return utils.contains(['top', 'right', 'bottom', 'left'], value);
         }
-      }
-    }),
+      }),
 
-    /**
-      Label position relative to data-point
+      /**
+        Offset between data-point and label
+        (if number is given, offset is set based on position)
 
-      @property position
-      @type String
-      @default top
-    */
-    position: property('position', {
-      default_value: 'top',
-      validate: function(value) {
-        return utils.contains(['top', 'right', 'bottom', 'left'], value);
-      }
-    }),
+        @property offset
+        @type Number|Object
+        @default {x: 0, y: 0}
+      */
+      offset: property('offset', {
+        default_value: {x: 0, y: 0},
+        set: function(offset) {
+          if (utils.isNumber(offset)) {
+            offset = {
+              top: {x: 0, y: -offset},
+              right: {x: offset, y: 0},
+              bottom: {x: 0, y: offset},
+              left: {x: -offset, y: 0}
+            }[this.position()];
 
-    /**
-      Offset between data-point and label
-      (if number is given, offset is set based on position)
+            if (!offset)
+              offset = {x: 0, y: 0};
 
-      @property offset
-      @type Number|Object
-      @default {x: 0, y: 0}
-    */
-    offset: property('offset', {
-      default_value: {x: 0, y: 0},
-      set: function(offset) {
-        if (utils.isNumber(offset)) {
-          offset = {
-            top: {x: 0, y: -offset},
-            right: {x: offset, y: 0},
-            bottom: {x: 0, y: offset},
-            left: {x: -offset, y: 0}
+            return {
+              override: offset
+            };
+          }
+        }
+      }),
+
+      /**
+        Padding between text and label background
+
+        @property padding
+        @type Number
+        @default 0
+      */
+      padding: property('padding', {default_value: 1}),
+
+      /**
+        Define text anchor, start, middle, or end
+        (set by default based on label position)
+
+        @property anchor
+        @type String
+        @default middle
+      */
+      anchor: property('anchor', {
+        default_value: function() {
+          return {
+            'top': 'middle',
+            'right': 'start',
+            'bottom': 'middle',
+            'left': 'end'
           }[this.position()];
-
-          if (!offset)
-            offset = {x: 0, y: 0};
-
-          return {
-            override: offset
-          };
+        },
+        validate: function(value) {
+          return utils.contains(['start', 'middle', 'end'], value);
         }
-      }
-    }),
+      }),
 
-    /**
-      Padding between text and label background
+      /**
+        Define text-aligmment, top, middle, or bottom
+        (set by default based on label position)
 
-      @property padding
-      @type Number
-      @default 0
-    */
-    padding: property('padding', {default_value: 1}),
+        @property alignment
+        @type String
+        @default middle
+      */
+      alignment: property('alignment', {
+        default_value: function() {
+          return {
+            'top': 'bottom',
+            'right': 'middle',
+            'bottom': 'top',
+            'left': 'middle'
+          }[this.position()];
+        },
+        validate: function(value) {
+          return utils.contains(['top', 'middle', 'bottom'], value);
+        }
+      }),
 
-    /**
-      Define text anchor, start, middle, or end
-      (set by default based on label position)
+      /**
+        Get label text for data-point (uses "label" property or y-value)
 
-      @property anchor
-      @type String
-      @default middle
-    */
-    anchor: property('anchor', {
-      default_value: function() {
-        return {
-          'top': 'middle',
-          'right': 'start',
-          'bottom': 'middle',
-          'left': 'end'
-        }[this.position()];
+        @method labelText
+        @return {String}
+      */
+      labelText: di(function(chart, d, i) {
+        var value = helpers.valueOrDefault(d.label, chart.yValue.call(this, d, i));
+        var format = chart.format();
+
+        return format ? format(value) : value;
+      }),
+
+      /**
+        Get class for label group
+
+        @method labelClass
+        @return {String}
+      */
+      labelClass: di(function(chart, d, i) {
+        return 'chart-label' + (d['class'] ? ' ' + d['class'] : '');
+      }),
+
+      onDataBind: function onDataBind(selection, data) {
+        return selection.selectAll('g')
+          .data(data, this.key);
       },
-      validate: function(value) {
-        return utils.contains(['start', 'middle', 'end'], value);
-      }
-    }),
-
-    /**
-      Define text-aligmment, top, middle, or bottom
-      (set by default based on label position)
-
-      @property alignment
-      @type String
-      @default middle
-    */
-    alignment: property('alignment', {
-      default_value: function() {
-        return {
-          'top': 'bottom',
-          'right': 'middle',
-          'bottom': 'top',
-          'left': 'middle'
-        }[this.position()];
+      onInsert: function onInsert(selection) {
+        return selection.append('g')
+          .on('mouseenter', this.mouseEnterPoint)
+          .on('mouseleave', this.mouseLeavePoint)
+          .call(this.insertLabels);
       },
-      validate: function(value) {
-        return utils.contains(['top', 'middle', 'bottom'], value);
-      }
-    }),
+      onMerge: function onMerge(selection) {
+        selection.attr('class', chart.labelClass);
 
-    /**
-      Get label text for data-point (uses "label" property or y-value)
+        this.mergeLabels(selection);
+        this.layoutLabels(selection);
+      },
+      onMergeTransition: function onMergeTransition(selection) {
+        // Transition labels into position
+        this.setupTransition(selection);
+        this.transitionLabels(selection);
+      },
 
-      @method labelText
-      @return {String}
-    */
-    labelText: di(function(chart, d, i) {
-      var value = helpers.valueOrDefault(d.label, chart.yValue.call(this, d, i));
-      var format = chart.format();
+      // (Override for custom labels)
+      insertLabels: function(selection) {
+        selection.append('rect')
+          .attr('class', 'chart-label-bg');
+        selection.append('text')
+          .attr('class', 'chart-label-text');
+      },
 
-      return format ? format(value) : value;
-    }),
+      // (Override for custom labels)
+      mergeLabels: function(selection) {
+        selection.selectAll('text')
+          .text(this.labelText);
+      },
 
-    /**
-      Get class for label group
+      // (Override for custom labels)
+      layoutLabels: function(selection) {
+        // Calculate layout
+        var chart = this;
+        var labels = [];
+        var options = {
+          offset: chart.offset(),
+          padding: chart.padding(),
+          anchor: chart.anchor(),
+          alignment: chart.alignment()
+        };
+        selection.each(function(d, i, j) {
+          if (!labels[j])
+            labels[j] = [];
 
-      @method labelClass
-      @return {String}
-    */
-    labelClass: di(function(chart, d, i) {
-      return 'chart-label' + (d['class'] ? ' ' + d['class'] : '');
-    }),
+          // Store values for label and calculate layout
+          var label = prepareLabel(chart, this, d, i , j);
+          labels[j].push(label);
 
-    // (Override for custom labels)
-    insertLabels: function(selection) {
-      selection.append('rect')
-        .attr('class', 'chart-label-bg');
-      selection.append('text')
-        .attr('class', 'chart-label-text');
-    },
-
-    // (Override for custom labels)
-    mergeLabels: function(selection) {
-      selection.selectAll('text')
-        .text(this.labelText);
-    },
-
-    // (Override for custom labels)
-    layoutLabels: function(selection) {
-      // Calculate layout
-      var chart = this;
-      var labels = [];
-      var options = {
-        offset: chart.offset(),
-        padding: chart.padding(),
-        anchor: chart.anchor(),
-        alignment: chart.alignment()
-      };
-      selection.each(function(d, i, j) {
-        if (!labels[j])
-          labels[j] = [];
-
-        // Store values for label and calculate layout
-        var label = prepareLabel(chart, this, d, i , j);
-        labels[j].push(label);
-
-        calculateLayout(chart, options, label);
-      });
-
-      // Collision detection
-      handleCollisions(chart, labels);
-
-      // Layout labels
-      utils.each(labels, function(series) {
-        utils.each(series, function(label) {
-          setLayout(chart, label);
+          calculateLayout(chart, options, label);
         });
-      });
-    },
 
-    // (Override for custom labels)
-    transitionLabels: function(selection) {
-      selection.attr('opacity', 1);
+        // Collision detection
+        handleCollisions(chart, labels);
+
+        // Layout labels
+        utils.each(labels, function(series) {
+          utils.each(series, function(label) {
+            setLayout(chart, label);
+          });
+        });
+      },
+
+      // (Override for custom labels)
+      transitionLabels: function(selection) {
+        selection.attr('opacity', 1);
+      }
     }
-  }), {
+  ), {
     z_index: 150
   });
 
