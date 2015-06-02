@@ -3,7 +3,12 @@
   var property = helpers.property;
 
   /**
-    Shared functionality between all charts and components
+    Shared functionality between all charts and components.
+    
+    - Set properties automatically from `options`, 
+    - Store fully transformed data
+    - Adds `"before:draw"` and `"draw"` events
+    - Standard `width` and `height` calculations
 
     @class Base
   */
@@ -15,7 +20,7 @@
     },
 
     /**
-      Store fully-transformed data
+      Store fully-transformed data for direct access from the chart
 
       @property data
       @type Any
@@ -23,8 +28,43 @@
     data: property('data'),
 
     /**
-      Overall options for chart/component, automatically setting any matching properties
+      Overall options for chart/component, automatically setting any matching properties.
 
+      @example
+      ```js
+      var property = d3.compose.helpers.property;
+
+      d3.chart('Base').extend('HasProperties', {
+        initialize: function(options) {
+          // Automatically set options
+          this.options(options || {});
+        },
+        a: property('a'),
+        b: property('b', {
+          set: function(value) {
+            return {
+              override: value + '!'
+            };
+          }
+        })
+      });
+
+      var instance = d3.select('#chart')
+        .chart('HasProperties', {
+          a: 123,
+          b: 'Howdy',
+          c: true
+        });
+
+      // Equivalent to:
+      // d3.select(...)
+      //   .chart('HasProperties')
+      //   .options({...});
+
+      console.log(instance.a()); // -> 123
+      console.log(instance.b()); // -> Howdy!
+      console.log(instance.options().c); // -> true
+      ```
       @property options
       @type Object
     */
@@ -39,7 +79,8 @@
     }),
 
     /**
-      Width of chart/component
+      Get width of `this.base`.
+      (Does not include `set` for setting width of `this.base`)
 
       @method width
       @return {Number}
@@ -49,7 +90,8 @@
     },
 
     /**
-      Height of chart/component
+      Get height of `this.base`.
+      (Does not include `set` for setting height of `this.base`)
 
       @method height
       @return {Number}
@@ -58,7 +100,7 @@
       return helpers.dimensions(this.base).height;
     },
 
-    // Store transformed data for reference
+    // Store fully-transformed data for reference
     // (Base is last transform to be called, so stored data has been fully transformed)
     transform: function(data) {
       data = data || [];
@@ -67,7 +109,7 @@
       return data;
     },
 
-    // Add events to draw: before:draw and draw
+    // Add events to draw: "before:draw" and "draw"
     draw: function(data) {
       this.trigger('before:draw', data);
       d3.chart().prototype.draw.apply(this, arguments);
