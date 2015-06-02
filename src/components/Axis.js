@@ -17,79 +17,34 @@
 
     @class Axis
   */
-  charts.Axis = charts.Component.extend('Axis', mixin(mixins.XY, mixins.Transition, {
+  charts.Axis = charts.Component.extend('Axis', mixin(mixins.XY, mixins.Transition, mixins.StandardLayer, {
     initialize: function() {
       // Create two axes (so that layout and transitions work)
       // 1. Display and transitions
       // 2. Layout (draw to get width, but separate so that transitions aren't affected)
       this.axis = d3.svg.axis();
-      this._layout_axis = d3.svg.axis();
 
       this.axis_base = this.base.append('g').attr('class', 'chart-axis');
       this._layout_base = this.base.append('g')
         .attr('class', 'chart-axis chart-layout')
         .attr('style', 'display: none;');
 
-      this.layer('Axis', this.axis_base, {
-        dataBind: function(data) {
-          // Setup axis (scale and properties)
-          var chart = this.chart();
-          chart._setupAxis(chart.axis);
-
-          // Force addition of just one axis with dummy data array
-          // (Axis will be drawn using underlying chart scales)
-          return this.selectAll('g')
-            .data([0]);
-        },
-        insert: function() {
-          return this.append('g');
-        },
-        events: {
-          'enter': function() {
-            // Place and render axis
-            var chart = this.chart();
-
-            this
-              .attr('transform', chart.translation())
-              .call(chart.axis);
-          },
-          'update': function() {
-            this.attr('transform', this.chart().translation());
-          },
-          'update:transition': function() {
-            // Render axis (with transition)
-            var chart = this.chart();
-
-            chart.setupTransition(this);
-
-            if (chart._skip_transition) {
-              this.duration(0);
-              chart._skip_transition = undefined;
-            }
-
-            this.call(chart.axis);
-          },
-          'exit': function() {
-            this.selectAll('g').remove();
-          }
-        }
-      });
+      // Use standard layer for extensibility
+      this.standardLayer('Axis', this.axis_base);
 
       this.layer('_LayoutAxis', this._layout_base, {
         dataBind: function(data) {
-          var chart = this.chart();
-          chart._setupAxis(chart._layout_axis);
           return this.selectAll('g').data([0]);
         },
         insert: function() {
-          return this.append('g');
+          return this.chart().onInsert(this);
         },
         events: {
+          'enter': function() {
+            this.chart().onEnter(this);
+          },
           'merge': function() {
-            var chart = this.chart();
-            this
-              .attr('transform', chart.translation())
-              .call(chart.axis);
+            this.chart().onMerge(this);
           }
         }
       });
@@ -226,6 +181,39 @@
     tickPadding: property('tickPadding', {type: 'Function'}),
     tickFormat: property('tickFormat', {type: 'Function'}),
 
+    onDataBind: function onDataBind(selection, data) {
+      // Setup axis (scale and properties)
+      this._setupAxis(this.axis);
+
+      // Force addition of just one axis with dummy data array
+      // (Axis will be drawn using underlying chart scales)
+      return selection.selectAll('g').data([0]);
+    },
+    onInsert: function onInsert(selection) {
+      return selection.append('g');
+    },
+    onEnter: function onEnter(selection) {
+      // Place and render axis
+      selection.call(this.axis);
+    },
+    onMerge: function onUpdate(selection) {
+      selection.attr('transform', this.translation());
+    },
+    onUpdateTransition: function onUpdateTransition(selection) {
+      // Render axis (with transition)
+      this.setupTransition(selection);
+
+      if (this._skip_transition) {
+        selection.duration(0);
+        this._skip_transition = undefined;
+      }
+
+      selection.call(this.axis);
+    },
+    onExit: function onExit(selection) {
+      selection.selectAll('g').remove();
+    },
+
     getLayout: function(data) {
       // 1. Get previous values to restore after draw for proper transitions
       var state = this.getState();
@@ -303,9 +291,9 @@
     _setupAxis: function(axis) {
       // Setup axis
       if (this.orientation() == 'vertical')
-        this.axis.scale(this.yScale());
+        axis.scale(this.yScale());
       else
-        this.axis.scale(this.xScale());
+        axis.scale(this.xScale());
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var array_extensions = ['tickValues'];
