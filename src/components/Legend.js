@@ -1,7 +1,8 @@
-(function(d3, helpers, charts) {
+(function(d3, helpers, mixins, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
   var di = helpers.di;
+  var mixin = helpers.mixin;
 
   /**
     Legend component that can automatically draw data from charts
@@ -34,58 +35,10 @@
 
     @class Legend
   */
-  charts.Legend = charts.Component.extend('Legend', {
+  charts.Legend = charts.Component.extend('Legend', mixin(mixins.StandardLayer, {
     initialize: function() {
       this.legend_base = this.base.append('g').classed('chart-legend', true);
-
-      this.layer('Legend', this.legend_base, {
-        dataBind: function(data) {
-          return this.selectAll('.chart-legend-group')
-            .data(data, this.chart().itemKey);
-        },
-        insert: function() {
-          var chart = this.chart();
-          var groups = this.append('g')
-            .attr('class', 'chart-legend-group');
-
-          groups.append('g')
-            .attr('width', chart.swatchDimensions().width)
-            .attr('height', chart.swatchDimensions().height)
-            .attr('class', 'chart-legend-swatch');
-          groups.append('text')
-            .attr('class', 'chart-legend-label');
-
-          return groups;
-        },
-        events: {
-          merge: function() {
-            var chart = this.chart();
-            var swatch = chart.swatchDimensions();
-
-            this.select('g').each(chart.createSwatch);
-            this.select('text')
-              .text(chart.itemText)
-              .each(function() {
-                // Vertically center text
-                var offset = helpers.alignText(this, swatch.height);
-                d3.select(this)
-                  .attr('transform', helpers.translate(swatch.width + 5, offset));
-              });
-
-            // Position groups after positioning everything inside
-            var direction_by_position = {
-              top: 'horizontal',
-              right: 'vertical',
-              bottom: 'horizontal',
-              left: 'vertical'
-            };
-            this.call(helpers.stack.bind(this, {direction: direction_by_position[chart.position()], origin: 'top', padding: 5}));
-          },
-          exit: function() {
-            this.remove();
-          }
-        }
-      });
+      this.standardLayer('Legend', this.legend_base);
     },
 
     /**
@@ -197,8 +150,51 @@
         swatches[d.type].call(selection, chart, d, i);
       else if (swatches['default'])
         swatches['default'].call(selection, chart, d, i);
-    })
-  }, {
+    }),
+
+    onDataBind: function onDataBind(selection, data) {
+      return selection.selectAll('.chart-legend-group')
+        .data(data, this.itemKey);
+    },
+    onInsert: function onInsert(selection) {
+      var groups = selection.append('g')
+        .attr('class', 'chart-legend-group');
+
+      groups.append('g')
+        .attr('width', this.swatchDimensions().width)
+        .attr('height', this.swatchDimensions().height)
+        .attr('class', 'chart-legend-swatch');
+      groups.append('text')
+        .attr('class', 'chart-legend-label');
+
+      return groups;
+    },
+    onMerge: function onMerge(selection) {
+      var swatch = this.swatchDimensions();
+
+      selection.select('g').each(this.createSwatch);
+      selection.select('text')
+        .text(this.itemText)
+        .each(function() {
+          // Vertically center text
+          var offset = helpers.alignText(this, swatch.height);
+          d3.select(this)
+            .attr('transform', helpers.translate(swatch.width + 5, offset));
+        });
+
+      // Position groups after positioning everything inside
+      var direction_by_position = {
+        top: 'horizontal',
+        right: 'vertical',
+        bottom: 'horizontal',
+        left: 'vertical'
+      };
+      selection.call(helpers.stack.bind(selection, {direction: direction_by_position[this.position()], origin: 'top', padding: 5}));
+    },
+    onExit: function onExit(selection) {
+      selection.remove();
+    }
+  }), {
     z_index: 200,
     swatches: {
       'default': function(chart, d, i) {
@@ -301,4 +297,4 @@
     layer_type: 'chart'
   });
 
-})(d3, d3.compose.helpers, d3.compose.charts);
+})(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
