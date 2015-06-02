@@ -65,16 +65,12 @@ scripts: |
 
         {% include docs-toc-section.html class=classes.HorizontalStackedBars %}
 
-        <li>
+        <!-- <li>
           <a href="#{{classes.Labels.id}}">
             Labels
           </a>
 
           <ul class="nav is-nested">
-            <!-- {% for item in classes.Labels.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %} -->
-
             <li><a href="#Labels-labels">labels</a></li>
             <li><a href="#Labels-format">format</a></li>
             <li><a href="#Labels-position">position</a></li>
@@ -85,7 +81,9 @@ scripts: |
             <li><a href="#Labels-handleCollisions">handleCollisions</a></li>
             <li><a href="#Labels-mixins">mixins</a></li>
           </ul>
-        </li>
+        </li> -->
+
+        {% include docs-toc-section.html class=classes.Labels %}
 
         <hr>
 
@@ -778,109 +776,8 @@ example_4.draw({
       Labels
       ======
     -->
-    <section class="docs-section">
-      <h2 id="Labels">Labels</h2>
 
-      <p>
-        Display labels for XY data (can be used standalone or within chart).
-      </p>
-
-{% highlight js %}
-// Use within d3.chart('Compose')
-d3.select('#chart')
-  .chart('Compose', function(data) {
-    return {
-      charts: {
-        // Enable labels within chart (true or options)
-        a: {type: 'Line', ..., labels: true}
-
-        // Add labels directly
-        labels: {type: 'Labels', labels: ..., xScale: ..., yScale: ...}
-      }
-    };
-  });
-{% endhighlight %}
-
-      <p id="Labels-labels">
-        <b class="docs-header">labels</b><code>Labels.labels([values])</code><br>
-
-        Explicitly set label values (otherwise, they are drawn from parent chart's data).
-        Use <tt>label</tt> in data to explicitly set label, otherwise y-value with <tt>format</tt> is used.
-      </p>
-
-{% highlight js %}
-Labels.labels([
-  {x: 0, y: 10, label: '10 items'}
-]);
-
-Labels.labels([
-  {key: 'series-a', values: [{x: 0, y: 10}]},
-  {key: 'series-b', values: [{x: 0, y: -10}]}
-])
-{% endhighlight %}
-
-      <p id="Labels-format">
-        <b class="docs-header">format</b><code>Labels.format([value])</code><br>
-
-        Format y-values using <a href="https://github.com/mbostock/d3/wiki/Formatting" target="_blank">d3.format</a>.
-        Can use <tt>d3.format</tt> directly or string, which will be passed to <tt>d3.format</tt>.
-      </p>
-
-{% highlight js %}
-// The following are equivalent
-labels.format('0,000');
-labels.format(d3.format('0,000'));
-{% endhighlight %}
-
-      <p id="Labels-position">
-        <b class="docs-header">position</b><code>Labels.position([value])</code><br>
-
-        How to position label relative to point. Valid values: "top", "right", "bottom", "left".
-      </p>
-
-      <p id="Labels-offset">
-        <b class="docs-header">offset</b><code>Labels.offset([value])</code><br>
-
-        Distance to offset label from point. Can be value or <tt>{x, y}</tt>.
-      </p>
-
-      <p id="Labels-padding">
-        <b class="docs-header">padding</b><code>Labels.padding([value])</code><br>
-
-        Padding between label text and background.
-      </p>
-
-      <p id="Labels-anchor">
-        <b class="docs-header">anchor</b><code>Labels.anchor([value])</code><br>
-
-        Horizontal text anchor for label (default set based on <tt>position</tt>). Valid values: "start", "middle", "end".
-      </p>
-
-      <p id="Labels-alignment">
-        <b class="docs-header">alignment</b><code>Labels.alignment([value])</code><br>
-
-        Vertical alignment for label (default set based on <tt>position</tt>). Valid values: "top", "middle", "bottom".
-      </p>
-
-      <p id="Labels-handleCollisions">
-        <b class="docs-header">handleCollisions</b><code>Labels.handleCollisions([value])</code><br>
-
-        Handle collisions between labels of different series (default is <tt>true</tt>).
-      </p>
-
-      <p id="Labels-mixins">
-        <b class="docs-header">transition</b><br>
-
-        <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the label transitions as data updates.
-      </p>
-
-      <p>
-        <b class="docs-header">XY</b><br>
-
-        Standard XY properties are available: <tt>xKey</tt>, <tt>yKey</tt>, <tt>xScale</tt>, <tt>yScale</tt>, <tt>xMin</tt>, <tt>xMax</tt>, <tt>yMin</tt>, <tt>yMax</tt>.
-        See the <a href="#mixins/XY">XY Mixin</a> for details.
-      </p>
-    </section>
+    {% include docs-section.html class=classes.Labels %}
 
     <!--
       Axis

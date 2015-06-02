@@ -27,6 +27,14 @@ _.each(docs.classes, function(cls, class_name) {
           return code; 
         }).join(', ') + ')';
       }
+      else if (classitem.itemtype == 'property') {
+        var code = '{' + classitem.type + '}';
+
+        if (classitem['default'])
+          code += ' [' + classitem['default'] + ']';
+
+        classitem.code = code;
+      }
 
       return classitem;
     })
