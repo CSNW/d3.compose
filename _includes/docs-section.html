@@ -1,0 +1,70 @@
+<section class="docs-section">
+  <h2 id="{{include.class.id}}">{{include.class.name}}</h2>
+
+  {%if include.class.description %}
+    <div class="docs-description">
+      {{ include.class.description | markdownify }}
+    </div>
+  {% endif %}
+
+  {% for example in include.class.example %}
+    <div class="docs-example">
+      {{ example | markdownify }}
+    </div>
+  {% endfor %}
+
+  {% for item in include.class.classitems %}
+    <h3 class="docs-item-header" id="{{item.id}}">
+      {{item.name}}
+      {% if item.code %}
+        <code class="docs-item-code">{{item.code}}</code>
+      {% endif %}
+      {% if item.static %}
+        <span class="label docs-item-static">Static</span>
+      {% endif %}
+    </h3>
+
+    {% if item.params %}
+      <ol class="docs-params">
+        {% for param in item.params %}
+          <li>
+            <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
+            (<em class="docs-param-type">{{param.type}}</em>)
+
+            {{param.description}}
+
+            {% if param.props %}
+              <ul class="docs-props">
+                {% for prop in param.props %}
+                  <li>
+                    <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
+                    (<em class="docs-param-type">{{prop.type}}</em>)
+                    
+                    {{prop.description}}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    {% endif %}
+    {% if item.return %}
+      <div class="docs-return">
+        <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
+      </div>
+    {% endif %}
+
+    {% if item.description %}
+      <div class="docs-description docs-item-description">
+        {{ item.description | markdownify }}
+      </div>
+    {% endif %}
+
+    {% for example in item.example %}
+      <div class="docs-example docs-item-example">
+        {{ example | markdownify }}
+      </div>
+    {% endfor %}
+  {% endfor %}
+</section>

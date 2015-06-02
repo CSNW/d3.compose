@@ -45,82 +45,25 @@ scripts: |
 
         <hr>
 
-        <li>
-          <a href="#{{classes.Compose.id}}">
-            Compose
-          </a>
+        {% include docs-toc-section.html class=classes.Compose %}
 
-          <ul class="nav is-nested">
-            {% for item in classes.Compose.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %}
-              <li><a href="#Compose-Events">Events</a></li>
-          </ul>
-        </li>
+        {% include docs-toc-section.html class=classes.Chart %}
 
-        <li>
-          <a href="#{{classes.Chart.id}}">
-            Chart
-          </a>
+        {% include docs-toc-section.html class=classes.Component %}
 
-          <ul class="nav is-nested">
-            {% for item in classes.Chart.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %}            
-          </ul>
-        </li>
-
-        <li>
-          <a href="#{{classes.Component.id}}">
-            Component
-          </a>
-
-          <ul class="nav is-nested">
-            {% for item in classes.Component.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %}
-          </ul>
-        </li>
-
-        <li>
-          <a href="#{{classes.Base.id}}">
-            Base
-          </a>
-
-          <ul class="nav is-nested">
-            {% for item in classes.Base.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %}
-          </ul>
-        </li>
+        {% include docs-toc-section.html class=classes.Base %}
 
         <hr>
 
-        <li>
-          <a href="#{{classes.Lines.id}}">
-            Lines
-          </a>
+        {% include docs-toc-section.html class=classes.Lines %}
 
-          <ul class="nav is-nested">
-            {% for item in classes.Lines.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %}
-          </ul>
-        </li>
+        {% include docs-toc-section.html class=classes.Bars %}
 
-        <li>
-          <a href="#{{classes.Bars.id}}">
-            Bars
-          </a>
+        {% include docs-toc-section.html class=classes.StackedBars %}
 
-          <ul class="nav is-nested">
-            <!-- {% for item in classes.Bars.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %} -->
+        {% include docs-toc-section.html class=classes.HorizontalBars %}
 
-            <li><a href="#Bars-mixins">mixins</a></li>
-          </ul>
-        </li>
+        {% include docs-toc-section.html class=classes.HorizontalStackedBars %}
 
         <li>
           <a href="#{{classes.Labels.id}}">
@@ -756,315 +699,43 @@ example_4.draw({
       =====
     -->
 
-    <section class="docs-section">
-      <h2 id="{{classes.Compose.id}}">Compose</h2>
+    {% include docs-section.html class=classes.Compose %}
 
-      {%if classes.Compose.description %}
-        <div class="docs-description">
-          {{ classes.Compose.description | markdownify }}
-        </div>
-      {% endif %}
+    <!-- TODO
+    <h3 class="docs-item-header" id="Compose-Events">
+      Events
+    </h3>
 
-      {% for example in classes.Compose.example %}
-        <div class="docs-example">
-          {{ example | markdownify }}
-        </div>
-      {% endfor %}
-
-      {% for item in classes.Compose.classitems %}
-        <h3 class="docs-item-header" id="{{item.id}}">
-          {{item.name}}
-          {% if item.code %}
-            <code class="docs-item-code">{{item.code}}</code>
-          {% endif %}
-          {% if item.static %}
-            <span class="label docs-item-static">Static</span>
-          {% endif %}
-        </h3>
-
-        {% if item.params %}
-          <ol class="docs-params">
-            {% for param in item.params %}
-              <li>
-                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
-                (<em class="docs-param-type">{{param.type}}</em>)
-
-                {{param.description}}
-
-                {% if param.props %}
-                  <ul class="docs-props">
-                    {% for prop in param.props %}
-                      <li>
-                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
-                        (<em class="docs-param-type">{{prop.type}}</em>)
-                        
-                        {{prop.description}}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </li>
-            {% endfor %}
-          </ol>
-        {% endif %}
-        {% if item.return %}
-          <div class="docs-return">
-            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
-          </div>
-        {% endif %}
-
-        {% if item.description %}
-          <div class="docs-description docs-item-description">
-            {{ item.description | markdownify }}
-          </div>
-        {% endif %}
-
-        {% for example in item.example %}
-          <div class="docs-example docs-item-example">
-            {{ example | markdownify }}
-          </div>
-        {% endfor %}
-      {% endfor %}
-
-      <h3 class="docs-item-header" id="Compose-Events">
-        Events
-      </h3>
-
-      <div class="docs-description docs-item-description">
-        <p><code>on</code>, <code>off</code>, and <code>trigger</code> can be used to work with chart events. Available events:</p>
-        <ul>
-          <li><b>mouseenter</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse enters chart</li>
-          <li><b>mousemove</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse moves within chart</li>
-          <li><b>mouseleave</b> &mdash; when mouse leaves chart</li>
-        </ul>
-      </div>
-      
-    </section>
+    <div class="docs-description docs-item-description">
+      <p><code>on</code>, <code>off</code>, and <code>trigger</code> can be used to work with chart events. Available events:</p>
+      <ul>
+        <li><b>mouseenter</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse enters chart</li>
+        <li><b>mousemove</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse moves within chart</li>
+        <li><b>mouseleave</b> &mdash; when mouse leaves chart</li>
+      </ul>
+    </div>
+    -->
 
     <!--
       Chart
       =====
     -->
-    <section class="docs-section">
-      <h2 id="{{classes.Chart.id}}">Chart</h2>
 
-      {%if classes.Chart.description %}
-        <div class="docs-description">
-          {{ classes.Chart.description | markdownify }}
-        </div>
-      {% endif %}
-
-      {% for example in classes.Chart.example %}
-        <div class="docs-example">
-          {{ example | markdownify }}
-        </div>
-      {% endfor %}
-
-      {% for item in classes.Chart.classitems %}
-        <h3 class="docs-item-header" id="{{item.id}}">
-          {{item.name}}
-          {% if item.code %}
-            <code class="docs-item-code">{{item.code}}</code>
-          {% endif %}
-          {% if item.static %}
-            <span class="label docs-item-static">Static</span>
-          {% endif %}
-        </h3>
-
-        {% if item.params %}
-          <ol class="docs-params">
-            {% for param in item.params %}
-              <li>
-                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
-                (<em class="docs-param-type">{{param.type}}</em>)
-
-                {{param.description}}
-
-                {% if param.props %}
-                  <ul class="docs-props">
-                    {% for prop in param.props %}
-                      <li>
-                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
-                        (<em class="docs-param-type">{{prop.type}}</em>)
-                        
-                        {{prop.description}}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </li>
-            {% endfor %}
-          </ol>
-        {% endif %}
-        {% if item.return %}
-          <div class="docs-return">
-            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
-          </div>
-        {% endif %}
-
-        {% if item.description %}
-          <div class="docs-description docs-item-description">
-            {{ item.description | markdownify }}
-          </div>
-        {% endif %}
-
-        {% for example in item.example %}
-          <div class="docs-example docs-item-example">
-            {{ example | markdownify }}
-          </div>
-        {% endfor %}
-      {% endfor %}
-    </section>
+    {% include docs-section.html class=classes.Chart %}
 
     <!--
       Component
       =========
     -->
-    <section class="docs-section">
-      <h2 id="{{classes.Component.id}}">Component</h2>
-
-      {%if classes.Component.description %}
-        <div class="docs-description">
-          {{ classes.Component.description | markdownify }}
-        </div>
-      {% endif %}
-
-      {% for example in classes.Component.example %}
-        <div class="docs-example">
-          {{ example | markdownify }}
-        </div>
-      {% endfor %}
-
-      {% for item in classes.Component.classitems %}
-        <h3 class="docs-item-header" id="{{item.id}}">
-          {{item.name}}
-          {% if item.code %}
-            <code class="docs-item-code">{{item.code}}</code>
-          {% endif %}
-          {% if item.static %}
-            <span class="label docs-item-static">Static</span>
-          {% endif %}
-        </h3>
-
-        {% if item.params %}
-          <ol class="docs-params">
-            {% for param in item.params %}
-              <li>
-                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
-                (<em class="docs-param-type">{{param.type}}</em>)
-
-                {{param.description}}
-
-                {% if param.props %}
-                  <ul class="docs-props">
-                    {% for prop in param.props %}
-                      <li>
-                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
-                        (<em class="docs-param-type">{{prop.type}}</em>)
-                        
-                        {{prop.description}}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </li>
-            {% endfor %}
-          </ol>
-        {% endif %}
-        {% if item.return %}
-          <div class="docs-return">
-            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
-          </div>
-        {% endif %}
-
-        {% if item.description %}
-          <div class="docs-description docs-item-description">
-            {{ item.description | markdownify }}
-          </div>
-        {% endif %}
-
-        {% for example in item.example %}
-          <div class="docs-example docs-item-example">
-            {{ example | markdownify }}
-          </div>
-        {% endfor %}
-      {% endfor %}
-    </section>
+    
+    {% include docs-section.html class=classes.Component %}
 
     <!--
       Base
       =====
     -->
-    <section class="docs-section">
-      <h2 id="{{classes.Base.id}}">Base</h2>
-
-      {%if classes.Base.description %}
-        <div class="docs-description">
-          {{ classes.Base.description | markdownify }}
-        </div>
-      {% endif %}
-
-      {% for example in classes.Base.example %}
-        <div class="docs-example">
-          {{ example | markdownify }}
-        </div>
-      {% endfor %}
-
-      {% for item in classes.Base.classitems %}
-        <h3 class="docs-item-header" id="{{item.id}}">
-          {{item.name}}
-          {% if item.code %}
-            <code class="docs-item-code">{{item.code}}</code>
-          {% endif %}
-          {% if item.static %}
-            <span class="label docs-item-static">Static</span>
-          {% endif %}
-        </h3>
-
-        {% if item.params %}
-          <ol class="docs-params">
-            {% for param in item.params %}
-              <li>
-                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
-                (<em class="docs-param-type">{{param.type}}</em>)
-
-                {{param.description}}
-
-                {% if param.props %}
-                  <ul class="docs-props">
-                    {% for prop in param.props %}
-                      <li>
-                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
-                        (<em class="docs-param-type">{{prop.type}}</em>)
-                        
-                        {{prop.description}}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </li>
-            {% endfor %}
-          </ol>
-        {% endif %}
-        {% if item.return %}
-          <div class="docs-return">
-            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
-          </div>
-        {% endif %}
-
-        {% if item.description %}
-          <div class="docs-description docs-item-description">
-            {{ item.description | markdownify }}
-          </div>
-        {% endif %}
-
-        {% for example in item.example %}
-          <div class="docs-example docs-item-example">
-            {{ example | markdownify }}
-          </div>
-        {% endfor %}
-      {% endfor %}
-    </section>
+    
+    {% include docs-section.html class=classes.Base %}
 
     <hr>
 
@@ -1072,166 +743,36 @@ example_4.draw({
       Lines
       ====
     -->
-    <section class="docs-section">
-      <h2 id="{{classes.Lines.id}}">Base</h2>
-
-      {%if classes.Lines.description %}
-        <div class="docs-description">
-          {{ classes.Lines.description | markdownify }}
-        </div>
-      {% endif %}
-
-      {% for example in classes.Lines.example %}
-        <div class="docs-example">
-          {{ example | markdownify }}
-        </div>
-      {% endfor %}
-
-      {% for item in classes.Lines.classitems %}
-        <h3 class="docs-item-header" id="{{item.id}}">
-          {{item.name}}
-          {% if item.code %}
-            <code class="docs-item-code">{{item.code}}</code>
-          {% endif %}
-          {% if item.static %}
-            <span class="label docs-item-static">Static</span>
-          {% endif %}
-        </h3>
-
-        {% if item.params %}
-          <ol class="docs-params">
-            {% for param in item.params %}
-              <li>
-                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
-                (<em class="docs-param-type">{{param.type}}</em>)
-
-                {{param.description}}
-
-                {% if param.props %}
-                  <ul class="docs-props">
-                    {% for prop in param.props %}
-                      <li>
-                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
-                        (<em class="docs-param-type">{{prop.type}}</em>)
-                        
-                        {{prop.description}}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </li>
-            {% endfor %}
-          </ol>
-        {% endif %}
-        {% if item.return %}
-          <div class="docs-return">
-            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
-          </div>
-        {% endif %}
-
-        {% if item.description %}
-          <div class="docs-description docs-item-description">
-            {{ item.description | markdownify }}
-          </div>
-        {% endif %}
-
-        {% for example in item.example %}
-          <div class="docs-example docs-item-example">
-            {{ example | markdownify }}
-          </div>
-        {% endfor %}
-      {% endfor %}
-    </section>
+    
+    {% include docs-section.html class=classes.Lines %}
 
     <!--
       Bars
       ====
     -->
-    <section class="docs-section">
-      <h2 id="Bars">Bars</h2>
+    
+    {% include docs-section.html class=classes.Bars %}
 
-      <p>
-        The Bars chart (<tt>d3.chart('Bars')</tt>) is an XYValues chart that can take single or series values data.
-      </p>
+    <!--
+      StackedBars
+      ===========
+    -->
+    
+    {% include docs-section.html class=classes.StackedBars %}
 
-{% highlight js %}
-// Use within d3.chart('Compose')
-d3.select('#chart')
-  .chart('Compose', function(data) {
-    return {
-      charts: {
-        a: {
-          type: 'Bars',
-          data: ...,
-          xScale: ...,
-          yScale: ...,
-          other options...
-        }
-      }
-    };
-  });
-{% endhighlight %}
+    <!--
+      HorizontalBars
+      ==============
+    -->
+    
+    {% include docs-section.html class=classes.HorizontalBars %}
 
-      <p id="Bars-mixins">
-        <b class="docs-header">data</b><code>bars.data([values])</code><br>
-
-        Array or Series of Values data for bars.
-      </p>
-
-{% highlight js %}
-bars.data([10, 20, 30]);
-bars.data([{y: 10}, /* ... */]);
-bars.data([
-  {key: 'series-a', values: [{key: 'a', y: 10}]},
-  {key: 'series-b', values: [{key: 'a', y: -10}]}
-]);
-{% endhighlight %}
-
-      <p>
-        <b class="docs-header">displayAdjacent</b><code>bars.displayAdjacent([value])</code><br>
-
-        For Series data, display bars at same index/key/x next to each other (rather than on top of). Default is <tt>true</tt>.
-      </p>
-
-      <p>
-        <b class="docs-header">itemPadding</b><code>bars.itemPadding([value])</code><br>
-
-        Adjust the padding (in percentage) between bars at different index/key/x.
-      </p>
-
-{% highlight js %}
-bars.itemPadding(0.10);
-// 10% of bar width as padding between bars
-{% endhighlight %}
-
-      <p>
-        <b class="docs-header">labels</b><code>bars.labels([options])</code><br>
-
-        Add labels to chart with given options (Use <tt>true</tt> to add labels with default options).
-      </p>
-
-{% highlight js %}
-// Default labels
-bars.labels(true);
-
-// Labels with options
-bars.labels({/* options to pass to Labels */})
-
-{% endhighlight %}
-
-      <p>
-        <b class="docs-header">transition</b><br>
-
-        <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the bar transitions as data updates.
-      </p>
-
-      <p>
-        <b class="docs-header">Values</b><br>
-
-        Standard Values properties are available: <tt>xKey</tt>, <tt>yKey</tt>, <tt>xScale</tt>, <tt>yScale</tt>, <tt>xMin</tt>, <tt>xMax</tt>, <tt>yMin</tt>, <tt>yMax</tt>.
-        See the <a href="#mixins/XY">XY Mixin</a> for details.
-      </p>
-    </section>
+    <!--
+      HorizontalStackedBars
+      =====================
+    -->
+    
+    {% include docs-section.html class=classes.HorizontalStackedBars %}
 
     <!--
       Labels
