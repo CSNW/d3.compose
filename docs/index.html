@@ -57,18 +57,6 @@ scripts: |
               <li><a href="#Compose-Events">Events</a></li>
           </ul>
         </li>
-        
-        <li>
-          <a href="#{{classes.Base.id}}">
-            Base
-          </a>
-
-          <ul class="nav is-nested">
-            {% for item in classes.Base.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %}
-          </ul>
-        </li>
 
         <li>
           <a href="#{{classes.Chart.id}}">
@@ -76,11 +64,9 @@ scripts: |
           </a>
 
           <ul class="nav is-nested">
-           <!--  {% for item in classes.Chart.classitems %}
+            {% for item in classes.Chart.classitems %}
               <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %} -->
-
-            <li><a href="#Chart-extending">extending</a></li>
+            {% endfor %}            
           </ul>
         </li>
 
@@ -96,6 +82,18 @@ scripts: |
           </ul>
         </li>
 
+        <li>
+          <a href="#{{classes.Base.id}}">
+            Base
+          </a>
+
+          <ul class="nav is-nested">
+            {% for item in classes.Base.classitems %}
+              <li><a href="#{{item.id}}">{{item.name}}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+
         <hr>
 
         <li>
@@ -104,11 +102,9 @@ scripts: |
           </a>
 
           <ul class="nav is-nested">
-            <!-- {% for item in classes.Lines.classitems %}
+            {% for item in classes.Lines.classitems %}
               <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %} -->
-
-            <li><a href="#Lines-mixins">mixins</a></li>
+            {% endfor %}
           </ul>
         </li>
 
@@ -1073,78 +1069,78 @@ example_4.draw({
     <hr>
 
     <!--
-      Line
+      Lines
       ====
     -->
     <section class="docs-section">
-      <h2 id="Lines">Line</h2>
+      <h2 id="{{classes.Lines.id}}">Base</h2>
 
-      <p>
-        The Line chart (<tt>d3.chart('Line')</tt>) is an XY chart that can take single or series data.
-      </p>
+      {%if classes.Lines.description %}
+        <div class="docs-description">
+          {{ classes.Lines.description | markdownify }}
+        </div>
+      {% endif %}
 
-{% highlight js %}
-// Use within d3.chart('Compose')
-d3.select('#chart')
-  .chart('Compose', function(data) {
-    return {
-      charts: {
-        a: {
-          type: 'Line',
-          data: ...,
-          xScale: ...,
-          yScale: ...,
-          other options...
-        }
-      }
-    };
-  });
-{% endhighlight %}
+      {% for example in classes.Lines.example %}
+        <div class="docs-example">
+          {{ example | markdownify }}
+        </div>
+      {% endfor %}
 
-      <p id="Lines-mixins">
-        <b class="docs-header">data</b><code>line.data([values])</code><br>
+      {% for item in classes.Lines.classitems %}
+        <h3 class="docs-item-header" id="{{item.id}}">
+          {{item.name}}
+          {% if item.code %}
+            <code class="docs-item-code">{{item.code}}</code>
+          {% endif %}
+          {% if item.static %}
+            <span class="label docs-item-static">Static</span>
+          {% endif %}
+        </h3>
 
-        Array or Series of <tt>{x, y}</tt> data for line.
-      </p>
+        {% if item.params %}
+          <ol class="docs-params">
+            {% for param in item.params %}
+              <li>
+                <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
+                (<em class="docs-param-type">{{param.type}}</em>)
 
-{% highlight js %}
-line.data([
-  {x: 0, y: 10},
-  /* ... */
-]);
+                {{param.description}}
 
-line.data([
-  {key: 'series-a', values: [{x, 0, y: 10}]},
-  {key: 'series-b', values: [{x: 0, y: -10}]}
-]);
-{% endhighlight %}
+                {% if param.props %}
+                  <ul class="docs-props">
+                    {% for prop in param.props %}
+                      <li>
+                        <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
+                        (<em class="docs-param-type">{{prop.type}}</em>)
+                        
+                        {{prop.description}}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ol>
+        {% endif %}
+        {% if item.return %}
+          <div class="docs-return">
+            <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
+          </div>
+        {% endif %}
 
-      <p>
-        <b class="docs-header">labels</b><code>line.labels([options])</code><br>
+        {% if item.description %}
+          <div class="docs-description docs-item-description">
+            {{ item.description | markdownify }}
+          </div>
+        {% endif %}
 
-        Add labels to chart with given options (Use <tt>true</tt> to add labels with default options).
-      </p>
-
-{% highlight js %}
-// Default labels
-line.labels(true);
-
-// Labels with options
-line.labels({/* options to pass to Labels */})
-{% endhighlight %}
-
-      <p>
-        <b class="docs-header">transition</b><br>
-
-        <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the line transitions as data updates.
-      </p>
-
-      <p>
-        <b class="docs-header">XY</b><br>
-
-        Standard XY properties are available: <tt>xKey</tt>, <tt>yKey</tt>, <tt>xScale</tt>, <tt>yScale</tt>, <tt>xMin</tt>, <tt>xMax</tt>, <tt>yMin</tt>, <tt>yMax</tt>.
-        See the <a href="#mixins/XY">XY Mixin</a> for details.
-      </p>
+        {% for example in item.example %}
+          <div class="docs-example docs-item-example">
+            {{ example | markdownify }}
+          </div>
+        {% endfor %}
+      {% endfor %}
     </section>
 
     <!--
