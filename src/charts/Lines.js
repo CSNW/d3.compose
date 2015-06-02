@@ -4,9 +4,54 @@
   var di = helpers.di;
 
   /**
-    XY Lines graph
+    Create an XY Lines chart with single or series data.
 
+    ### Extending
+
+    Great care has been taken in making the standard charts in d3.compose extensible.
+    To extend the `Lines` chart, the following methods are available:
+
+    - `createLine`
+    - `lineKey`
+    - `lineData`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    View the `Lines.js` source for the default implementation and more information on these methods.
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      return {
+        charts: {
+          input: {
+            type: 'Lines'
+            data: data.input,
+            // xScale: ...,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+  
+    // Single y-values
+    chart.draw([1, 2, 3]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 1}, {x: 0, y: 2}, {x: 0, y: 3}]}
+      {values: [{x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1}]}
+    ]);
+    ```
     @class Lines
+    @extends Chart, Series, XY, XYLabels, Hover, HoverPoints
   */
   charts.Lines = charts.Chart.extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
     initialize: function() {
@@ -47,8 +92,8 @@
     /**
       Set interpolation mode for line
 
-      - See: https://github.com/mbostock/d3/wiki/SVG-Shapes#line_interpolate
-      - Set to null or 'linear' for no interpolation
+      - See: [SVG-Shapes#line_interpolate](https://github.com/mbostock/d3/wiki/SVG-Shapes#line_interpolate)
+      - Set to `null` or `'linear'` for no interpolation
 
       @property interpolate
       @type String
@@ -62,6 +107,7 @@
     duration: property('duration', {type: 'Function'}),
     ease: property('ease', {type: 'Function'}),
 
+    // Create line on insert (keyed by series/index)
     createLine: di(function(chart, d, i, j) {
       var key = chart.lineKey.call(this, d, i, j);
       var line = chart.lines[key] = d3.svg.line()
@@ -72,10 +118,14 @@
       if (interpolate)
         line.interpolate(interpolate);
     }),
+
+    // Get key for line (from series key or index)
     lineKey: di(function(chart, d, i, j) {
       var key = chart.seriesKey(chart.seriesData.call(this, d, i, j));
       return key != null ? key : chart.seriesIndex.call(this, d, i, j);
     }),
+
+    // Get data for line
     lineData: di(function(chart, d, i, j) {
       var key = chart.lineKey.call(this, d, i, j);
       if (chart.lines[key])
