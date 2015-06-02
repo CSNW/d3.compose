@@ -5,9 +5,61 @@
   var isUndefined = helpers.utils.isUndefined;
 
   /**
-    Bar graph with centered values data and adjacent display for series
+    Bars chart with centered or adjacent display for single or series data.
 
+    To display bars for different series next to each other (adjacent),
+    use the `adjacent` option when creating the `xScale` (see example below).
+
+    ### Extending
+
+    To extend the `Bars` chart, the following methods are available:
+
+    - `barHeight`
+    - `barWidth`
+    - `barX`
+    - `barY`
+    - `barClass`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      // Display bars for different series next to each other (adjacent: true)
+      var xScale = {type: 'ordinal', adjacent: true, domain: [0, 1, 2]};
+
+      return {
+        charts: {
+          output: {
+            type: 'Bars',
+            data: data.output,
+            xScale: xScale,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([10, 20, 30]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 10}, {x: 1, y: 20}, {x: 2, y: 30}]},
+      {values: [{x: 0, y: 30}, {x: 1, y: 20}, {x: 2, y: 10}]}
+    ]);
+    ```
     @class Bars
+    @extends Chart, Series, XYValues, XYLabels, Hover, Transition, StandardLayer
   */
   charts.Bars = charts.Chart.extend('Bars', mixin(
     mixins.Series,
@@ -105,9 +157,40 @@
   ));
 
   /**
-    Stacked Bars
+    Bars chart with values stacked on top of each other
 
+    (See `Bars` for extensibility details)
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      // Display bars for different series next to each other (adjacent: true)
+      var xScale = {type: 'ordinal', adjacent: true, domain: [0, 1, 2]};
+
+      return {
+        charts: {
+          stacked_output: {
+            type: 'StackedBars',
+            data: data.output,
+            xScale: xScale,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([10, 20, 30]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 10}, {x: 1, y: 20}, {x: 2, y: 30}]},
+      {values: [{x: 0, y: 30}, {x: 1, y: 20}, {x: 2, y: 10}]}
+    ]);
+    ```
     @class StackedBars
+    @extends Bars
   */
   charts.StackedBars = charts.Bars.extend('StackedBars', {
     transform: function(data) {
@@ -141,9 +224,40 @@
   });
 
   /**
-    Horizontal Bars
+    Bars chart with bars that group from left-to-right
 
+    (See `Bars` for extensibility details)
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      // Display bars for different series next to each other (adjacent: true)
+      var xScale = {type: 'ordinal', adjacent: true, domain: [0, 1, 2]};
+
+      return {
+        charts: {
+          output: {
+            type: 'HorizontalBars',
+            data: data.output,
+            xScale: xScale,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([10, 20, 30]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 10}, {x: 1, y: 20}, {x: 2, y: 30}]},
+      {values: [{x: 0, y: 30}, {x: 1, y: 20}, {x: 2, y: 10}]}
+    ]);
+    ```
     @class HorizontalBars
+    @extends Bars, InvertedXY
   */
   charts.HorizontalBars = charts.Bars.extend('HorizontalBars', mixin(mixins.InvertedXY, {
     barX: di(function(chart, d, i) {
@@ -189,7 +303,38 @@
   /**
     Horizontal Stacked Bars
 
+    (See `Bars` for extensibility details)
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      // Display bars for different series next to each other (adjacent: true)
+      var xScale = {type: 'ordinal', adjacent: true, domain: [0, 1, 2]};
+
+      return {
+        charts: {
+          output: {
+            type: 'HorizontalStackedBars',
+            data: data.output,
+            xScale: xScale,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([10, 20, 30]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 10}, {x: 1, y: 20}, {x: 2, y: 30}]},
+      {values: [{x: 0, y: 30}, {x: 1, y: 20}, {x: 2, y: 10}]}
+    ]);
+    ```
     @class HorizontalStackedBars
+    @extends HorizontalBars
   */
   charts.HorizontalStackedBars = charts.HorizontalBars.extend('HorizontalStackedBars', {
     transform: function(data) {
