@@ -6,28 +6,10 @@
   /**
     @class Title
   */
-  charts.Title = charts.Component.extend('Title', {
+  charts.Title = charts.Component.extend('Title', mixin(mixins.StandardLayer, {
     initialize: function() {
-      this.layer('Title', this.base.append('g').classed('chart-title', true), {
-        dataBind: function(data) {
-          return this.selectAll('text')
-            .data([0]);
-        },
-        insert: function() {
-          return this.append('text');
-        },
-        events: {
-          merge: function() {
-            var chart = this.chart();
-            this
-              .attr('transform', chart.transformation())
-              .attr('style', chart.style())
-              .attr('text-anchor', chart.anchor())
-              .attr('class', chart.options()['class'])
-              .text(chart.text());
-          }
-        }
-      });
+      // Use standard layer for extensibility
+      this.standardLayer('Title', this.base.append('g').classed('chart-title', true));
     },
 
     /**
@@ -121,6 +103,22 @@
       }
     }),
 
+    onDataBind: function onDataBind(selection, data) {
+      return selection.selectAll('text')
+        .data([0]);
+    },
+    onInsert: function onInsert(selection) {
+      return selection.append('text');
+    },
+    onMerge: function onMerge(selection) {
+      selection
+        .attr('transform', this.transformation())
+        .attr('style', this.style())
+        .attr('text-anchor', this.anchor())
+        .attr('class', this.options()['class'])
+        .text(this.text());
+    },
+
     transformation: function() {
       var x = {
         left: 0,
@@ -138,7 +136,7 @@
 
       return translate + ' ' + rotate;
     },
-  }, {
+  }), {
     z_index: 70
   });
 
