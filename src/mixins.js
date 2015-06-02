@@ -2,7 +2,8 @@
   var property = helpers.property;
   var valueOrDefault = helpers.valueOrDefault;
   var di = helpers.di;
-  var isUndefined = helpers.utils.isUndefined;
+  var utils = helpers.utils;
+  var isUndefined = utils.isUndefined;
 
   /**
     mixins for handling series data
@@ -802,16 +803,88 @@
       return createLayer(this, 'series', name, selection);
     },
 
-    onDataBind: function onDataBind() {},
-    onInsert: function onInsert() {},
-    onEnter: function onEnter() {},
-    onEnterTransition: function onEnterTransition() {},
-    onUpdate: function onUpdate() {},
-    onUpdateTransition: function onUpdateTransition() {},
-    onMerge: function onMerge() {},
-    onMergeTransition: function onMergeTransition() {},
-    onExit: function onExit() {},
-    onExitTransition: function onExitTransition() {},
+    /**
+      Called for standard layer's `dataBind`
+
+      @method onDataBind
+      @param {d3.selection} selection
+      @param {Any} data
+      @return {d3.selection}
+    */
+    onDataBind: function onDataBind(selection, data) {},
+
+    /**
+      Called for standard layer's `insert`
+
+      @method onInsert
+      @param {d3.selection} selection
+      @return {d3.selection}
+    */
+    onInsert: function onInsert(selection) {},
+
+    /**
+      Call for standard layer's `events['enter']`
+
+      @method onEnter
+      @param {d3.selection}
+    */
+    onEnter: function onEnter(selection) {},
+
+    /**
+      Call for standard layer's `events['enter:transition']`
+
+      @method onEnterTransition
+      @param {d3.selection}
+    */
+    // onEnterTransition: function onEnterTransition(selection) {},
+
+    /**
+      Call for standard layer's `events['update']`
+
+      @method onUpdate
+      @param {d3.selection}
+    */
+    onUpdate: function onUpdate(selection) {},
+
+    /**
+      Call for standard layer's `events['update']`
+
+      @method onUpdateTransition
+      @param {d3.selection}
+    */
+    // onUpdateTransition: function onUpdateTransition(selection) {},
+
+    /**
+      Call for standard layer's `events['merge']`
+
+      @method onMerge
+      @param {d3.selection}
+    */
+    onMerge: function onMerge(selection) {},
+
+    /**
+      Call for standard layer's `events['merge:transition']`
+
+      @method onMergeTransition
+      @param {d3.selection}
+    */
+    // onMergeTransition: function onMergeTransition(selection) {},
+
+    /**
+      Call for standard layer's `events['exit']`
+
+      @method onExit
+      @param {d3.selection}
+    */
+    onExit: function onExit(selection) {},
+
+    /**
+      Call for standard layer's `events['exit:transition']`
+
+      @method onExitTransition
+      @param {d3.selection}
+    */
+    // onExitTransition: function onExitTransition(selection) {},
   };
 
   function createLayer(chart, type, name, selection) {
@@ -821,6 +894,29 @@
     }[type];
 
     if (layer && chart[layer]) {
+      var events = {};
+      helpers.utils.each([
+        'enter',
+        'enter:transition',
+        'update',
+        'update:transition',
+        'merge',
+        'merge:transition',
+        'exit',
+        'exit:transition'
+      ], function(event) {
+        var method = 'on' + utils.map(event.split(':'), function capitalize(str) {
+          return str.charAt(0).toUpperCase() + str.slice(1);
+        }).join('');
+
+        // Only create events if chart method exists as empty transition events can cause unforeseen issues
+        if (chart[method]) {
+          events[event] = function() {
+            this.chart()[method](this);
+          };
+        }
+      });
+
       return chart[layer](name, selection, {
         dataBind: function(data) {
           return this.chart().onDataBind(this, data);
@@ -828,32 +924,7 @@
         insert: function() {
           return this.chart().onInsert(this);
         },
-        events: {
-          'enter': function() {
-            this.chart().onEnter(this);
-          },
-          'enter:transition': function() {
-            this.chart().onEnterTransition(this);
-          },
-          'update': function() {
-            this.chart().onUpdate(this);
-          },
-          'update:transition': function() {
-            this.chart().onUpdateTransition(this);
-          },
-          'merge': function() {
-            this.chart().onMerge(this);
-          },
-          'merge:transition': function() {
-            this.chart().onMergeTransition(this);
-          },
-          'exit': function() {
-            this.chart().onExit(this);
-          },
-          'exit:transition': function() {
-            this.chart().onExitTransition(this);
-          }
-        }
+        events: events
       });
     }
   }

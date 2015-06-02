@@ -37,7 +37,7 @@
     throttle: _.throttle,
     toArray: _.toArray,
     uniq: _.uniq,
-    value: _.value,
+    value: _.value
   };
 
   /**
