@@ -9,7 +9,7 @@
 
     @class Bars
   */
-  charts.Bars = charts.Chart.extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, mixins.Hover, {
+  charts.Bars = charts.Chart.extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, mixins.Hover, mixins.Transition, {
     initialize: function() {
       this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
         dataBind: function(data) {
@@ -42,10 +42,6 @@
 
       this.attachLabels();
     },
-
-    delay: property('delay', {type: 'Function'}),
-    duration: property('duration', {type: 'Function'}),
-    ease: property('ease', {type: 'Function'}),
 
     barHeight: di(function(chart, d, i) {
       var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
@@ -110,12 +106,7 @@
     },
     
     onMergeTransition: function onMergeTransition(selection) {
-      if (!isUndefined(this.delay()))
-        selection.delay(this.delay());
-      if (!isUndefined(this.duration()))
-        selection.duration(this.duration());
-      if (!isUndefined(this.ease()))
-        selection.ease(this.ease());
+      this.setupTransition(selection);
 
       selection
         .attr('y', this.barY)
@@ -203,12 +194,7 @@
     },
     
     onMergeTransition: function onMergeTransition(selection) {
-      if (!isUndefined(this.delay()))
-        selection.delay(this.delay());
-      if (!isUndefined(this.duration()))
-        selection.duration(this.duration());
-      if (!isUndefined(this.ease()))
-        selection.ease(this.ease());
+      this.setupTransition(selection);
 
       selection
         .attr('x', this.barX)

@@ -2,6 +2,7 @@
   var property = helpers.property;
   var valueOrDefault = helpers.valueOrDefault;
   var di = helpers.di;
+  var isUndefined = helpers.utils.isUndefined;
 
   /**
     mixins for handling series data
@@ -717,6 +718,62 @@
     });
   }
 
+  /**
+    mixin for handling common transition behaviors
+
+    @module Transition
+  */
+  var Transition = {
+    /**
+      Delay start of transition by specified milliseconds.
+
+      @property delay
+      @type Number|Function
+      @default d3 default: 0
+    */
+    delay: property('delay', {type: 'Function'}),
+
+    /**
+      Transition duration in milliseconds.
+
+      @property duration
+      @type Number|Function
+      @default d3 default: 250ms
+    */
+    duration: property('duration', {type: 'Function'}),
+
+    /**
+      Transition ease function
+      
+      - See: [Transitions#ease](https://github.com/mbostock/d3/wiki/Transitions#ease)
+      - Note: arguments to pass to `d3.ease` are not supported
+
+      @property ease
+      @type String|Function
+      @default `d3.ease` default: 'cubic-in-out'
+    */
+    ease: property('ease', {type: 'Function'}),
+
+    /**
+      Setup delay, duration, and ease for transition
+
+      @method setupTransition
+      @param {d3.selection} selection
+    */
+    setupTransition: function setupTransition(selection) {
+      var delay = this.delay();
+      var duration = this.duration();
+      var ease = this.ease();
+
+      if (!isUndefined(delay))
+        selection.delay(delay);
+      if (!isUndefined(duration))
+        selection.duration(duration);
+      if (!isUndefined(ease))
+        selection.ease(ease);
+    }
+  };
+
   // Expose mixins
   d3.compose = d3.compose || {};
   d3.compose.mixins = utils.extend(d3.compose.mixins || {}, {
@@ -727,7 +784,8 @@
     Labels: Labels,
     XYLabels: XYLabels,
     Hover: Hover,
-    HoverPoints: HoverPoints
+    HoverPoints: HoverPoints,
+    Transition: Transition
   });
 
 })(d3, d3.compose.helpers);

@@ -51,9 +51,9 @@
     ]);
     ```
     @class Lines
-    @extends Chart, Series, XY, XYLabels, Hover, HoverPoints
+    @extends Chart, Series, XY, XYLabels, Hover, HoverPoints, Transition
   */
-  charts.Lines = charts.Chart.extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, {
+  charts.Lines = charts.Chart.extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, mixins.Transition, {
     initialize: function() {
       this.lines = {};
 
@@ -103,10 +103,6 @@
       default_value: 'monotone'
     }),
 
-    delay: property('delay', {type: 'Function'}),
-    duration: property('duration', {type: 'Function'}),
-    ease: property('ease', {type: 'Function'}),
-
     // Create line on insert (keyed by series/index)
     createLine: di(function(chart, d, i, j) {
       var key = chart.lineKey.call(this, d, i, j);
@@ -152,12 +148,7 @@
     onMerge: function(selection) {},
 
     onMergeTransition: function(selection) {
-      if (!helpers.utils.isUndefined(this.delay()))
-        selection.delay(this.delay());
-      if (!helpers.utils.isUndefined(this.duration()))
-        selection.duration(this.duration());
-      if (!helpers.utils.isUndefined(this.ease()))
-        selection.ease(this.ease());
+      this.setupTransition(selection);
 
       selection
         .attr('d', this.lineData)

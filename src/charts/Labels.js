@@ -7,7 +7,7 @@
   /**
     @class Labels
   */
-  charts.Labels = charts.Chart.extend('Labels', mixin(mixins.Series, mixins.XY, mixins.Hover, {
+  charts.Labels = charts.Chart.extend('Labels', mixin(mixins.Series, mixins.XY, mixins.Hover, mixins.Transition, {
     initialize: function() {
       // Proxy attach to parent for hover
       var parent = this.options().parent;
@@ -44,12 +44,7 @@
           'merge:transition': function() {
             var chart = this.chart();
 
-            if (chart.delay && !utils.isUndefined(chart.delay()))
-              this.delay(chart.delay());
-            if (chart.duration && !utils.isUndefined(chart.duration()))
-              this.duration(chart.duration());
-            if (chart.ease && !utils.isUndefined(chart.ease()))
-              this.ease(chart.ease());
+            chart.setupTransition(this);
 
             // Position labels
             chart.transitionLabels(this);
@@ -179,10 +174,6 @@
         return utils.contains(['top', 'middle', 'bottom'], value);
       }
     }),
-
-    delay: property('delay', {type: 'Function'}),
-    duration: property('duration', {type: 'Function'}),
-    ease: property('ease', {type: 'Function'}),
 
     /**
       Get label text for data-point (uses "label" property or y-value)

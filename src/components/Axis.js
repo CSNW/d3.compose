@@ -17,7 +17,7 @@
 
     @class Axis
   */
-  charts.Axis = charts.Component.extend('Axis', mixin(mixins.XY, {
+  charts.Axis = charts.Component.extend('Axis', mixin(mixins.XY, mixins.Transition, {
     initialize: function() {
       // Create two axes (so that layout and transitions work)
       // 1. Display and transitions
@@ -60,19 +60,12 @@
             // Render axis (with transition)
             var chart = this.chart();
 
-            if (!helpers.utils.isUndefined(chart.delay()))
-              this.delay(chart.delay());
+            chart.setupTransition(this);
 
             if (chart._skip_transition) {
               this.duration(0);
               chart._skip_transition = undefined;
             }
-            else if (!helpers.utils.isUndefined(chart.duration())) {
-              this.duration(chart.duration());
-            }
-
-            if (!helpers.utils.isUndefined(chart.ease()))
-              this.ease(chart.ease());
 
             this.call(chart.axis);
           },
@@ -101,10 +94,6 @@
         }
       });
     },
-
-    duration: property('duration', {type: 'Function'}),
-    delay: property('delay', {type: 'Function'}),
-    ease: property('ease', {type: 'Function'}),
 
     /**
       Scale to pass to d3.axis
