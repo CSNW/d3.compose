@@ -774,6 +774,90 @@
     }
   };
 
+  /**
+    mixin for create standard layer for extension
+
+    @module StandardLayer
+  */
+  var StandardLayer = {
+    /**
+      extension of `layer()` that uses standard methods on prototype for extensibility.
+
+      @method standardLayer
+      @param {String} name
+      @param {d3.selection} selection
+    */
+    standardLayer: function standardLayer(name, selection) {
+      return createLayer(this, 'layer', name, selection);
+    },
+
+    /**
+      extension of `seriesLayer()` that uses standard methods on prototype for extensibility.
+
+      @method standardSeriesLayer
+      @param {String} name
+      @param {d3.selection} selection
+    */
+    standardSeriesLayer: function standardSeriesLayer(name, selection) {
+      return createLayer(this, 'series', name, selection);
+    },
+
+    onDataBind: function onDataBind() {},
+    onInsert: function onInsert() {},
+    onEnter: function onEnter() {},
+    onEnterTransition: function onEnterTransition() {},
+    onUpdate: function onUpdate() {},
+    onUpdateTransition: function onUpdateTransition() {},
+    onMerge: function onMerge() {},
+    onMergeTransition: function onMergeTransition() {},
+    onExit: function onExit() {},
+    onExitTransition: function onExitTransition() {},
+  };
+
+  function createLayer(chart, type, name, selection) {
+    var layer = {
+      layer: 'layer',
+      series: 'seriesLayer'
+    }[type];
+
+    if (layer && chart[layer]) {
+      return chart[layer](name, selection, {
+        dataBind: function(data) {
+          return this.chart().onDataBind(this, data);
+        },
+        insert: function() {
+          return this.chart().onInsert(this);
+        },
+        events: {
+          'enter': function() {
+            this.chart().onEnter(this);
+          },
+          'enter:transition': function() {
+            this.chart().onEnterTransition(this);
+          },
+          'update': function() {
+            this.chart().onUpdate(this);
+          },
+          'update:transition': function() {
+            this.chart().onUpdateTransition(this);
+          },
+          'merge': function() {
+            this.chart().onMerge(this);
+          },
+          'merge:transition': function() {
+            this.chart().onMergeTransition(this);
+          },
+          'exit': function() {
+            this.chart().onExit(this);
+          },
+          'exit:transition': function() {
+            this.chart().onExitTransition(this);
+          }
+        }
+      });
+    }
+  }
+
   // Expose mixins
   d3.compose = d3.compose || {};
   d3.compose.mixins = utils.extend(d3.compose.mixins || {}, {
@@ -785,7 +869,8 @@
     XYLabels: XYLabels,
     Hover: Hover,
     HoverPoints: HoverPoints,
-    Transition: Transition
+    Transition: Transition,
+    StandardLayer: StandardLayer
   });
 
 })(d3, d3.compose.helpers);

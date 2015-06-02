@@ -51,113 +51,90 @@
     ]);
     ```
     @class Lines
-    @extends Chart, Series, XY, XYLabels, Hover, HoverPoints, Transition
+    @extends Chart, Series, XY, XYLabels, Hover, HoverPoints, Transition, StandardLayer
   */
-  charts.Lines = charts.Chart.extend('Lines', mixin(mixins.Series, mixins.XY, mixins.XYLabels, mixins.Hover, mixins.HoverPoints, mixins.Transition, {
-    initialize: function() {
-      this.lines = {};
+  charts.Lines = charts.Chart.extend('Lines', mixin(
+    mixins.Series, 
+    mixins.XY, 
+    mixins.XYLabels, 
+    mixins.Hover, 
+    mixins.HoverPoints, 
+    mixins.Transition, 
+    mixins.StandardLayer, 
+    {
+      initialize: function() {
+        this.lines = {};
 
-      this.seriesLayer('Lines', this.base.append('g').classed('chart-lines', true), {
-        dataBind: function(data) {
-          return this.chart().onDataBind(this, data);
-        },
-        insert: function() {
-          return this.chart().onInsert(this);
-        },
-        events: {
-          'enter': function() {
-            this.chart().onEnter(this);
-          },
-          'enter:transition': function() {
-            this.chart().onEnterTransition(this);
-          },
-          'merge': function() {
-            this.chart().onMerge(this);
-          },
-          'merge:transition': function() {
-            this.chart().onMergeTransition(this);
-          },
-          'exit': function() {
-            this.chart().onExit(this);
-          },
-          'exit:transition': function() {
-            this.chart().onExitTransition(this);
-          }
-        }
-      });
+        // Use standard series layer for extensibility
+        // (dataBind, insert, and events defined in prototype)
+        this.standardSeriesLayer('Lines', this.base.append('g').classed('chart-lines', true));
 
-      this.attachLabels();
-    },
+        this.attachLabels();
+      },
 
-    /**
-      Set interpolation mode for line
+      /**
+        Set interpolation mode for line
 
-      - See: [SVG-Shapes#line_interpolate](https://github.com/mbostock/d3/wiki/SVG-Shapes#line_interpolate)
-      - Set to `null` or `'linear'` for no interpolation
+        - See: [SVG-Shapes#line_interpolate](https://github.com/mbostock/d3/wiki/SVG-Shapes#line_interpolate)
+        - Set to `null` or `'linear'` for no interpolation
 
-      @property interpolate
-      @type String
-      @default monotone
-    */
-    interpolate: property('interpolate', {
-      default_value: 'monotone'
-    }),
+        @property interpolate
+        @type String
+        @default monotone
+      */
+      interpolate: property('interpolate', {
+        default_value: 'monotone'
+      }),
 
-    // Create line on insert (keyed by series/index)
-    createLine: di(function(chart, d, i, j) {
-      var key = chart.lineKey.call(this, d, i, j);
-      var line = chart.lines[key] = d3.svg.line()
-        .x(chart.x)
-        .y(chart.y);
+      // Create line on insert (keyed by series/index)
+      createLine: di(function(chart, d, i, j) {
+        var key = chart.lineKey.call(this, d, i, j);
+        var line = chart.lines[key] = d3.svg.line()
+          .x(chart.x)
+          .y(chart.y);
 
-      var interpolate = d.interpolate || chart.interpolate();
-      if (interpolate)
-        line.interpolate(interpolate);
-    }),
+        var interpolate = d.interpolate || chart.interpolate();
+        if (interpolate)
+          line.interpolate(interpolate);
+      }),
 
-    // Get key for line (from series key or index)
-    lineKey: di(function(chart, d, i, j) {
-      var key = chart.seriesKey(chart.seriesData.call(this, d, i, j));
-      return key != null ? key : chart.seriesIndex.call(this, d, i, j);
-    }),
+      // Get key for line (from series key or index)
+      lineKey: di(function(chart, d, i, j) {
+        var key = chart.seriesKey(chart.seriesData.call(this, d, i, j));
+        return key != null ? key : chart.seriesIndex.call(this, d, i, j);
+      }),
 
-    // Get data for line
-    lineData: di(function(chart, d, i, j) {
-      var key = chart.lineKey.call(this, d, i, j);
-      if (chart.lines[key])
-        return chart.lines[key](d);
-    }),
+      // Get data for line
+      lineData: di(function(chart, d, i, j) {
+        var key = chart.lineKey.call(this, d, i, j);
+        if (chart.lines[key])
+          return chart.lines[key](d);
+      }),
 
-    onDataBind: function(selection, data) {
-      return selection.selectAll('path')
-        .data(function(d, i, j) {
-          return [data.call(selection, d, i, j)];
-        });
-    },
+      // Override StandardLayer
+      onDataBind: function onDataBind(selection, data) {
+        return selection.selectAll('path')
+          .data(function(d, i, j) {
+            return [data.call(selection, d, i, j)];
+          });
+      },
 
-    onInsert: function(selection) {
-      return selection.append('path')
-        .classed('chart-line', true)
-        .each(this.createLine);
-    },
+      // Override StandardLayer
+      onInsert: function onInsert(selection) {
+        return selection.append('path')
+          .classed('chart-line', true)
+          .each(this.createLine);
+      },
 
-    onEnter: function(selection) {},
-    
-    onEnterTransition: function(selection) {},
+      // Override StandardLayer
+      onMergeTransition: function onMergeTransition(selection) {
+        this.setupTransition(selection);
 
-    onMerge: function(selection) {},
-
-    onMergeTransition: function(selection) {
-      this.setupTransition(selection);
-
-      selection
-        .attr('d', this.lineData)
-        .attr('style', this.itemStyle);
-    },
-
-    onExit: function(selection) {},
-
-    onExitTransition: function(selection) {}
-  }));
+        selection
+          .attr('d', this.lineData)
+          .attr('style', this.itemStyle);
+      }
+    }
+  ));
 
 })(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

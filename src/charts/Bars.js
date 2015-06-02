@@ -9,116 +9,100 @@
 
     @class Bars
   */
-  charts.Bars = charts.Chart.extend('Bars', mixin(mixins.Series, mixins.XYValues, mixins.XYLabels, mixins.Hover, mixins.Transition, {
-    initialize: function() {
-      this.seriesLayer('Bars', this.base.append('g').classed('chart-bars', true), {
-        dataBind: function(data) {
-          return this.chart().onDataBind(this, data);
-        },
-        insert: function() {
-          return this.chart().onInsert(this);
-        },
-        events: {
-          'enter': function() {
-            this.chart().onEnter(this);
-          },
-          'enter:transition': function() {
-            this.chart().onEnterTransition(this);
-          },
-          'merge': function() {
-            this.chart().onMerge(this);
-          },
-          'merge:transition': function() {
-            this.chart().onMergeTransition(this);
-          },
-          'exit': function() {
-            this.chart().onExit(this);
-          },
-          'exit:transition': function() {
-            this.chart().onExitTransition(this);
-          }
+  charts.Bars = charts.Chart.extend('Bars', mixin(
+    mixins.Series,
+    mixins.XYValues,
+    mixins.XYLabels,
+    mixins.Hover,
+    mixins.Transition, 
+    mixins.StandardLayer, 
+    {
+      initialize: function() {
+        // Use standard series layer for extensibility
+        // (dataBind, insert, and events defined in prototype)
+        this.standardSeriesLayer('Bars', this.base.append('g').classed('chart-bars', true));
+        this.attachLabels();
+      },
+
+      barHeight: di(function(chart, d, i) {
+        var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
+        return height > 0 ? height : 0;
+      }),
+      barWidth: di(function(chart, d, i) {
+        return chart.itemWidth();
+      }),
+      barX: di(function(chart, d, i) {
+        return chart.x.call(this, d, i) - chart.itemWidth() / 2;
+      }),
+      barY: di(function(chart, d, i) {
+        var y = chart.y.call(this, d, i);
+        var y0 = chart.y0();
+
+        return y < y0 ? y : y0 + chart.barOffset();
+      }),
+      barClass: di(function(chart, d, i) {
+        return 'chart-bar' + (d['class'] ? ' ' + d['class'] : '');
+      }),
+
+      // Shift bars slightly to account for axis thickness
+      barOffset: function barOffset() {
+        var axis = this.getOffsetAxis();
+        if (axis) {
+          var axis_thickness = parseInt(axis.base.select('.domain').style('stroke-width')) || 0;
+          return axis_thickness / 2;
         }
-      });
+        else {
+          return 0;
+        }
+      },
+      getOffsetAxis: function getOffsetAxis() {
+        return this.container && this.container.components()['axis.x'];
+      },
 
-      this.attachLabels();
-    },
+      // Override StandardLayer
+      onDataBind: function onDataBind(selection, data) {
+        return selection.selectAll('rect')
+          .data(data, this.key);
+      },
+      
+      // Override StandardLayer
+      onInsert: function onInsert(selection) {
+        return selection.append('rect')
+          .on('mouseenter', this.mouseEnterPoint)
+          .on('mouseleave', this.mouseLeavePoint);
+      },
 
-    barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
-      return height > 0 ? height : 0;
-    }),
-    barWidth: di(function(chart, d, i) {
-      return chart.itemWidth();
-    }),
-    barX: di(function(chart, d, i) {
-      return chart.x.call(this, d, i) - chart.itemWidth() / 2;
-    }),
-    barY: di(function(chart, d, i) {
-      var y = chart.y.call(this, d, i);
-      var y0 = chart.y0();
+      // Override StandardLayer
+      onEnter: function onEnter(selection) {
+        selection
+          .attr('y', this.y0())
+          .attr('height', 0);
+      },
 
-      return y < y0 ? y : y0 + chart.barOffset();
-    }),
-    barClass: di(function(chart, d, i) {
-      return 'chart-bar' + (d['class'] ? ' ' + d['class'] : '');
-    }),
+      // Override StandardLayer
+      onMerge: function onMerge(selection) {
+        selection
+          .attr('class', this.barClass)
+          .attr('style', this.itemStyle)
+          .attr('x', this.barX)
+          .attr('width', this.barWidth);
+      },
 
-    // Shift bars slightly to account for axis thickness
-    barOffset: function barOffset() {
-      var axis = this.getOffsetAxis();
-      if (axis) {
-        var axis_thickness = parseInt(axis.base.select('.domain').style('stroke-width')) || 0;
-        return axis_thickness / 2;
+      // Override StandardLayer
+      onMergeTransition: function onMergeTransition(selection) {
+        this.setupTransition(selection);
+
+        selection
+          .attr('y', this.barY)
+          .attr('height', this.barHeight);
+      },
+
+      // Override StandardLayer
+      onExit: function onExit(selection) {
+        selection.remove();
       }
-      else {
-        return 0;
-      }
-    },
-    getOffsetAxis: function getOffsetAxis() {
-      return this.container && this.container.components()['axis.x'];
-    },
-
-    onDataBind: function onDataBind(selection, data) {
-      return selection.selectAll('rect')
-        .data(data, this.key);
-    },
-    
-    onInsert: function onInsert(selection) {
-      return selection.append('rect')
-        .on('mouseenter', this.mouseEnterPoint)
-        .on('mouseleave', this.mouseLeavePoint);
-    },
-
-    onEnter: function onEnter(selection) {
-      selection
-        .attr('y', this.y0())
-        .attr('height', 0);
-    },
-
-    onEnterTransition: function onEnterTransition(selection) {},
-    
-    onMerge: function onMerge(selection) {
-      selection
-        .attr('class', this.barClass)
-        .attr('style', this.itemStyle)
-        .attr('x', this.barX)
-        .attr('width', this.barWidth);
-    },
-    
-    onMergeTransition: function onMergeTransition(selection) {
-      this.setupTransition(selection);
-
-      selection
-        .attr('y', this.barY)
-        .attr('height', this.barHeight);
-    },
-    
-    onExit: function onExit(selection) {
-      selection.remove();
-    },
-    
-    onExitTransition: function onExitTransition(selection) {}
-  }));
+    }
+  ));
 
   /**
     Stacked Bars
