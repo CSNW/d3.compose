@@ -8,6 +8,9 @@
     Using the `options` property, charts and components can be bound to data and customized to create dynamic charts.
 
     @example
+    ```html
+    <div id="#chart"></div>
+    ```
     ```js
     var chart = d3.select('#chart')
       .chart('Compose', function(data) {
@@ -62,7 +65,22 @@
       if (options)
         this.options(options);
 
-      this.base.classed('chart-compose', true);
+      // Responsive svg based on the following approach (embedded + padding hack)
+      // http://tympanus.net/codrops/2014/08/19/making-svgs-responsive-with-css/
+      // (not enabled if selection is svg)
+      if (this.base.node().tagName != 'svg') {
+        this.container = this.base.append('div')
+          .attr('class', 'chart-compose-container');
+
+        this.base = this.container.append('svg')
+          .attr('xlmns', 'http://www.w3.org/2000/svg')
+          .attr('version', '1.1')
+          .attr('class', 'chart-compose');
+      }
+      else {
+        this.base.classed('chart-compose', true);
+      }
+
       this.attachHoverListeners();
     },
 
@@ -174,12 +192,78 @@
 
     _width: function() {
       var width = this.width();
-      return width != null ? width : d3.chart('Base').prototype.width.call(this);
+      return width != null ? width : charts.Base.prototype.width.call(this);
     },
     _height: function() {
       var height = this.height();
-      return height != null ? height : d3.chart('Base').prototype.height.call(this);
+      return height != null ? height : charts.Base.prototype.height.call(this);
     },
+
+    /**
+      @property responsive
+      @type Boolean
+      @default true
+    */
+    responsive: property('responsive', {
+      default_value: true
+    }),
+
+    // Set svg viewBox attribute
+    viewBox: property('viewBox', {
+      default_value: function() {
+        if (this.responsive() && this.width() && this.height())
+          return '0 0 ' + this.width() + ' ' + this.height();
+        else
+          return null;
+      }
+    }),
+
+    // Set svg preserveAspectRatio attribute
+    preserveAspectRatio: property('preserveAspectRatio', {
+      default_value: function() {
+        if (this.responsive())
+          return 'xMidYMid meet';
+        else
+          return null;
+      }
+    }),
+
+    // Set container style
+    containerStyle: property('containerStyle', {
+      default_value: function() {
+        if (this.responsive()) {
+          var aspect_ratio = 1;
+          if (this.width() && this.height())
+            aspect_ratio = this.height() / this.width();
+
+          return helpers.style({
+            width: '100%',
+            height: 0,
+            'padding-top': (aspect_ratio * 100) + '%',
+            position: 'relative'
+          });  
+        }
+        else {
+          return helpers.style({position: 'relative'});
+        }
+      }
+    }),
+
+    // Set base style
+    baseStyle: property('baseStyle', {
+      default_value: function() {
+        if (this.responsive()) {
+          return helpers.style({
+            position: 'absolute',
+            top: 0,
+            left: 0
+          });
+        }
+        else {
+          return null;
+        }
+      }
+    }),
 
     /**
       Set charts from options or get chart instances.
@@ -273,10 +357,24 @@
       };
       this.data(data);
 
-      // Explicitly set width and height of container if width/height is defined
-      this.base
-        .attr('width', this.width() || null)
-        .attr('height', this.height() || null);
+      // Set container and svg dimensions
+      // (if original selection is svg, no container and skip responsiveness)
+      if (this.container) {
+        this.container
+          .attr('style', this.containerStyle());
+
+        this.base
+          .attr('viewBox', this.viewBox())
+          .attr('preserveAspectRatio', this.preserveAspectRatio())
+          .attr('style', this.baseStyle())
+          .attr('width', this.responsive() ? null : this.width() || null)
+          .attr('height', this.responsive() ? null : this.height() || null);  
+      }
+      else {
+        this.base
+          .attr('width', this.width() || null)
+          .attr('height', this.height() || null);
+      }
 
       // Layout components
       this.layout(data);

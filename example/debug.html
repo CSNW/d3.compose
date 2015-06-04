@@ -14,19 +14,21 @@
   <style>
     .container {
       margin: 40px auto 0;
-      width: 900px;
     }
     @media (min-width: 768px) {
       #chart {
         width: 600px;
-        height: 400px;
+        margin-bottom: 10px;
+      }
+      .container {
+        width: 900px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <svg id="chart"></svg>
+    <div id="chart"></div>
 
     <p>Tests:</p>
     <ul>
@@ -53,7 +55,7 @@
   <script src="../bower_components/jquery/dist/jquery.js"></script>
 
   <script type="text/javascript">
-  var chart = d3.select('#chart').chart('Compose');
+  var chart = d3.select('#chart').chart('Compose').width(600).height(400);
   var config = {charts: {}, components: {}};
   var data = {
     increasing: [
