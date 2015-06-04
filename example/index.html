@@ -37,7 +37,7 @@
 
     <section class="example">
       <h2>Line-Bar</h2>
-      <svg id="chart-1"></svg>
+      <div id="chart-1"></div>
 
       <script type="text/javascript">
         var chart = d3.select('#chart-1')
@@ -106,7 +106,7 @@
 
     <section class="example">
       <h2>Lines</h2>
-      <svg id="chart-2"></svg>
+      <div id="chart-2"></div>
 
       <script type="text/javascript">
         var chart = d3.select('#chart-2')
@@ -131,7 +131,8 @@
             });
           })
           .width(600)
-          .height(400);
+          .height(400)
+          .responsive(false);
 
         chart.draw(data['chart-2']);
       </script>
@@ -139,7 +140,7 @@
 
     <section class="example">
       <h2>Bars</h2>
-      <svg id="chart-3"></svg>
+      <div id="chart-3"></div>
 
       <script type="text/javascript">
         var chart = d3.select('#chart-3')
@@ -173,7 +174,7 @@
 
     <section class="example">
       <h2>Stacked Bars</h2>
-      <svg id="chart-4"></svg>
+      <div id="chart-4"></div>
 
       <script type="text/javascript">
         var chart = d3.select('#chart-4')
@@ -216,7 +217,7 @@
 
     <section class="example">
       <h2>Horizontal Bars</h2>
-      <svg id="chart-5"></svg>
+      <div id="chart-5"></div>
 
       <script type="text/javascript">
         var chart = d3.select('#chart-5')
@@ -249,7 +250,7 @@
 
     <section class="example">
       <h2>Horizontal Stacked Bars</h2>
-      <svg id="chart-6"></svg>
+      <div id="chart-6"></div>
 
       <script type="text/javascript">
         var chart = d3.select('#chart-6')

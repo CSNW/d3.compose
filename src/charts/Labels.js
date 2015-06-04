@@ -265,7 +265,7 @@
           .call(this.insertLabels);
       },
       onMerge: function onMerge(selection) {
-        selection.attr('class', chart.labelClass);
+        selection.attr('class', this.labelClass);
 
         this.mergeLabels(selection);
         this.layoutLabels(selection);

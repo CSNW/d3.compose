@@ -3,11 +3,12 @@
   describe('Compose', function() {
     var fixture, selection, Container, container, Chart, charts, Component, components;
     beforeEach(function() {
-      fixture = setFixtures('<svg id="chart"></svg>');
+      fixture = setFixtures('<div id="chart"></div>');
       selection = d3.select('#chart');
 
       Container = d3.chart('Compose').extend('TestContainer');
       container = new Container(selection);
+      container.responsive(false);
       container.margins({});
 
       Chart = d3.chart('Chart').extend('TestChart');
