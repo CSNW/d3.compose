@@ -1,4 +1,4 @@
-/*! d3.compose - v0.12.14
+/*! d3.compose - v0.13.0
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -41,7 +41,7 @@
     throttle: _.throttle,
     toArray: _.toArray,
     uniq: _.uniq,
-    value: _.value,
+    value: _.value
   };
 
   /**
@@ -425,7 +425,7 @@
     @param {Object|Function} options
       - (passing in function returns original function with no changes)
       @param {String} [options.type='linear'] Any available d3 scale (linear, ordinal, log, etc.) or time
-      @praam {Array} [options.domain] Domain for scale
+      @param {Array} [options.domain] Domain for scale
       @param {Array} [options.range] Range for scale
       @param {Any} [options.data] Used to dynamically set domain (with given value "di" or key)
       @param {Function} [options.value] "di" for getting value for data
@@ -590,12 +590,14 @@
     Stack given array of elements using options
 
     @example
+    ```js
     this.call(helpers.stack)
     this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
-
+    ```
+    @method stack
     @param {Object} [options]
-    - {String} [direction=vertical] vertical or horizontal
-    - {String} [origin=top] top/bottom for vertical and left/right for horizontal
+      @param {String} [options.direction=vertical] vertical or horizontal
+      @param {String} [options.origin=top] top/bottom for vertical and left/right for horizontal
   */
   function stack(options, elements) {
     if (options && !elements) {
@@ -669,7 +671,6 @@
     this.select('point').attr('cx', chart.x);
     // (d, i) and "this" used from d3, "chart" injected automatically
     ```
-
     @method di
     @param {Function} callback with (chart, d, i) arguments
     @return {Function}
@@ -791,7 +792,12 @@
   var property = helpers.property;
 
   /**
-    Shared functionality between all charts and components
+    Shared functionality between all charts and components.
+    
+    - Set properties automatically from `options`, 
+    - Store fully transformed data
+    - Adds `"before:draw"` and `"draw"` events
+    - Standard `width` and `height` calculations
 
     @class Base
   */
@@ -803,7 +809,7 @@
     },
 
     /**
-      Store fully-transformed data
+      Store fully-transformed data for direct access from the chart
 
       @property data
       @type Any
@@ -811,8 +817,43 @@
     data: property('data'),
 
     /**
-      Overall options for chart/component, automatically setting any matching properties
+      Overall options for chart/component, automatically setting any matching properties.
 
+      @example
+      ```js
+      var property = d3.compose.helpers.property;
+
+      d3.chart('Base').extend('HasProperties', {
+        initialize: function(options) {
+          // Automatically set options
+          this.options(options || {});
+        },
+        a: property('a'),
+        b: property('b', {
+          set: function(value) {
+            return {
+              override: value + '!'
+            };
+          }
+        })
+      });
+
+      var instance = d3.select('#chart')
+        .chart('HasProperties', {
+          a: 123,
+          b: 'Howdy',
+          c: true
+        });
+
+      // Equivalent to:
+      // d3.select(...)
+      //   .chart('HasProperties')
+      //   .options({...});
+
+      console.log(instance.a()); // -> 123
+      console.log(instance.b()); // -> Howdy!
+      console.log(instance.options().c); // -> true
+      ```
       @property options
       @type Object
     */
@@ -827,7 +868,8 @@
     }),
 
     /**
-      Width of chart/component
+      Get width of `this.base`.
+      (Does not include `set` for setting width of `this.base`)
 
       @method width
       @return {Number}
@@ -837,7 +879,8 @@
     },
 
     /**
-      Height of chart/component
+      Get height of `this.base`.
+      (Does not include `set` for setting height of `this.base`)
 
       @method height
       @return {Number}
@@ -846,7 +889,7 @@
       return helpers.dimensions(this.base).height;
     },
 
-    // Store transformed data for reference
+    // Store fully-transformed data for reference
     // (Base is last transform to be called, so stored data has been fully transformed)
     transform: function(data) {
       data = data || [];
@@ -855,7 +898,7 @@
       return data;
     },
 
-    // Add events to draw: before:draw and draw
+    // Add events to draw: "before:draw" and "draw"
     draw: function(data) {
       this.trigger('before:draw', data);
       d3.chart().prototype.draw.apply(this, arguments);
@@ -868,15 +911,62 @@
 (function(d3, charts) {
 
   /**
-    Foundation for building charts with series data
+    Common base for creating charts.
+    Standard `d3.chart` charts can be used with d3.compose, but extending `d3.chart('Chart')` includes helpers for properties and "di" functions.
 
+    ### Extending
+
+    To take advantage of "di"-binding (automatically injects `chart` into "di" methods)
+    and automatically setting properties from `options`, use `d3.compose.helpers.di`
+    and `d3.compose.helpers.property` when creating your chart.
+
+    @example
+    ```js
+    var helpers = d3.compose.helpers;
+
+    d3.chart('Chart').extend('Pie', {
+      initialize: function() {
+        // same as d3.chart
+      },
+      transform: function(data) {
+        // same as d3.chart
+      },
+
+      color: helpers.di(function(chart, d, i) {
+        // "di" function with parent chart injected ("this" = element)
+      }),
+
+      centered: helpers.property('centered', {
+        default_value: true
+        // can be automatically set from options object
+      })
+    });
+    ```
     @class Chart
+    @extends Base
   */
   charts.Chart = charts.Base.extend('Chart', {
     initialize: function(options) {
       this.options(options || {});
     }
   }, {
+    /**
+      Default z-index for chart
+      (Components are 50 by default, so Chart = 100 is above component by default)
+
+      @example
+      ```js
+      d3.chart('Chart').extend('BelowComponentLayers', {
+        // ...
+      }, {
+        z_index: 40
+      });
+      ```
+      @attribute z_index
+      @static
+      @type Number
+      @default 100
+    */
     z_index: 100,
     layer_type: 'chart'
   });
@@ -888,9 +978,43 @@
   var property = helpers.property;
 
   /**
-    Common component functionality / base for creating components
+    Common base for creating components that includes helpers for positioning and layout.
+    
+    ### Extending
 
+    `d3.chart('Component')` contains intelligent defaults and there are no required overrides.
+    Create a component just like a chart, by creating layers in the `initialize` method in `extend`.
+
+    - To adjust layout calculation, use `prepareLayout`, `getLayout`, and `setLayout`.
+    - To layout a component within the chart, use `skip_layout: false` and the static `layer_type: 'Chart'`
+
+    @example
+    ```js
+    d3.chart('Component').extend('Key', {
+      initialize: function() {
+        this.layer('Key', this.base, {
+          dataBind: function(data) {
+            return this.selectAll('text')
+              .data(data);
+          },
+          insert: function() {
+            return this.append('text');
+          },
+          events: {
+            merge: function() {
+              this.text(this.chart().keyText)
+            }
+          }
+        })
+      },
+
+      keyText: helpers.di(function(chart, d, i) {
+        return d.abbr + ' = ' + d.value;
+      })
+    });
+    ```
     @class Component
+    @extends Base
   */
   charts.Component = charts.Base.extend('Component', {
     initialize: function(options) {
@@ -898,12 +1022,12 @@
     },
 
     /**
-      Component position relative to chart
+      Component's position relative to chart
       (top, right, bottom, left)
 
       @property position
       @type String
-      @default top
+      @default 'top'
     */
     position: property('position', {
       default_value: 'top',
@@ -913,6 +1037,9 @@
     }),
 
     /**
+      Get/set the width of the component (in pixels)
+      (used in layout calculations)
+
       @property width
       @type Number
       @default (actual width)
@@ -924,6 +1051,9 @@
     }),
 
     /**
+      Get/set the height of the component (in pixels)
+      (used in layout calculations)
+
       @property height
       @type Number
       @default (actual height)
@@ -954,6 +1084,12 @@
       Skip component during layout calculations and positioning
       (override in prototype of extension)
 
+      @example
+      ```js
+      d3.chart('Component').extend('NotLaidOut', {
+        skip_layout: true
+      });
+      ```
       @attribute skip_layout
       @type Boolean
       @default false
@@ -964,8 +1100,21 @@
       Perform any layout preparation required before getLayout (default is draw)
       (override in prototype of extension)
 
-      Note: By default, components are double-drawn, which may cause issues with transitions
+      Note: By default, components are double-drawn; 
+      for every draw, they are drawn once to determine the layout size of the component and a second time for display with the calculated layout.
+      This can cause issues if the component uses transitions. See Axis for an example of a Component with transitions.
+      
+      @example
+      ```js
+      d3.chart('Component').extend('Custom', {
+        prepareLayout: function(data) {
+          // default: this.draw(data);
+          // so that getLayout has real dimensions
 
+          // -> custom preparation (if necessary)
+        }
+      })
+      ```
       @method prepareLayout
       @param {Any} data
     */
@@ -977,6 +1126,23 @@
       Get layout details for use when laying out component
       (override in prototype of extension)
 
+      @example
+      ```js
+      d3.chart('Component').extend('Custom', {
+        getLayout: function(data) {
+          var calculated_width, calculated_height;
+
+          // Perform custom calculations...
+  
+          // Must return position, width, and height
+          return {
+            position: this.position(),
+            width: calculated_width,
+            height: calculated_height
+          };
+        }
+      });
+      ```
       @method getLayout
       @param {Any} data
       @return {Object} position, width, and height for layout
@@ -996,6 +1162,21 @@
       Set layout of underlying base
       (override in prototype of extension)
 
+      @example
+      ```js
+      d3.chart('Component').extend('Custom', {
+        setLayout: function(x, y, options) {
+          // Set layout of this.base...
+          // (the following is the default implementation)
+          var margins = this.margins();
+
+          this.base
+            .attr('transform', helpers.translate(x + margins.left, y + margins.top));
+          this.height(options && options.height);
+          this.width(options && options.width);
+        }
+      });
+      ```
       @method setLayout
       @param {Number} x position of base top-left
       @param {Number} y position of base top-left
@@ -1011,7 +1192,42 @@
       this.width(options && options.width);
     }
   }, {
+    /**
+      Default z-index for component
+      (Charts are 100 by default, so Component = 50 is below chart by default)
+
+      @example
+      ```js
+      d3.chart('Component').extend('AboveChartLayers', {
+        // ...
+      }, {
+        z_index: 150
+      });
+      ```
+      @attribute z_index
+      @static
+      @type Number
+      @default 50
+    */
     z_index: 50,
+
+    /**
+      Set to `'chart'` to use chart layer for component.
+      (e.g. Axis uses chart layer to position with charts, but includes layout for ticks)
+
+      @example
+      ```js
+      d3.chart('Component').extend('ChartComponent', {
+        // ...
+      }, {
+        layer_type: 'chart'
+      });
+      ```
+      @attribute layer_type
+      @static
+      @type String
+      @default 'component'
+    */
     layer_type: 'component'
   });
 
@@ -1023,33 +1239,49 @@
 
   /**
     d3.compose
-    Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart
+    Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart.
+    Using the `options` property, charts and components can be bound to data and customized to create dynamic charts.
 
     @example
-    ```javascript
+    ```html
+    <div id="#chart"></div>
+    ```
+    ```js
     var chart = d3.select('#chart')
       .chart('Compose', function(data) {
         // Process data...
-        var participation = data.participation;
-        var results = data.results;
+        
+        // Create shared scales
         var scales = {
-          x: {data: participation.concat(results), key: 'x', adjacent: true},
-          y: {data: participation, key: 'y'},
-          y2: {data: results, key: 'y'}
+          x: {data: data.input, key: 'x', adjacent: true},
+          y: {data: data.input, key: 'y'},
+          y2: {data: data.output, key: 'y'}
         };
 
         return {
           charts: {
-            participation: {type: 'Bars', data: participation, xScale: scales.x, yScale: scales.y},
-            results: {type: 'Line', data: results, xScale: scales.x, yScale: scales.y2, labels: {position: 'top'}}
+            input: {
+              type: 'Bars', data: data.input, xScale: scales.x, yScale: scales.y
+            },
+            output: {
+              type: 'Lines', data: data.output, xScale: scales.x, yScale: scales.y2}
+            }
           },
           components: {
-            title: {type: 'Title', position: 'top', text: 'd3.compose'}
+            'axis.y': {
+              type: 'Axis', scale: scales.y, position: 'left'
+            },
+            'axis.y2': {
+              type: 'Axis', scale: scales.y2, position: 'right'
+            }
+            title: {
+              type: 'Title', position: 'top', text: 'd3.compose'
+            }
           }
         });
       });
 
-    chart.draw({participation: [...], results: [...]});
+    chart.draw({input: [...], output: [...]});
     ```
 
     @class Compose
@@ -1068,13 +1300,57 @@
       if (options)
         this.options(options);
 
-      this.base.classed('chart-compose', true);
+      // Responsive svg based on the following approach (embedded + padding hack)
+      // http://tympanus.net/codrops/2014/08/19/making-svgs-responsive-with-css/
+      // (not enabled if selection is svg)
+      if (this.base.node().tagName != 'svg') {
+        this.container = this.base.append('div')
+          .attr('class', 'chart-compose-container');
+
+        this.base = this.container.append('svg')
+          .attr('xlmns', 'http://www.w3.org/2000/svg')
+          .attr('version', '1.1')
+          .attr('class', 'chart-compose');
+      }
+      else {
+        this.base.classed('chart-compose', true);
+      }
+
       this.attachHoverListeners();
     },
 
     /**
-      Options function that returns {chart,component} for data or static {chart,component}
+      Get/set the options `object/function` for the chart that takes `data` and
+      returns `{charts, components}` for composing child charts and components.
+      All values are passed to the corresponding property (`{components}` sets `components` property).
 
+      @example
+      ```js
+      // get
+      chart.options();
+
+      // set (static)
+      chart.options({
+        charts: {},
+        components: {}
+      });
+
+      // set (dynamic, takes data and returns options)
+      chart.options(function(data) {
+        // process data...
+
+        return {
+          charts: {},
+          components: {}
+        };
+      });
+
+      // Set directly from d3.chart creation
+      d3.select('#chart')
+        .chart('Compose', function(data) {
+          // ...
+        });
+      ```
       @property options
       @type Function|Object
     */
@@ -1094,19 +1370,19 @@
       }
     }),
 
-    /**
-      Store raw data for container before it has been transformed
-
-      @property rawData
-      @type Any
-    */
+    // Store raw data for container before it has been transformed
     rawData: property('rawData'),
 
     /**
       Margins between edge of container and components/chart
 
+      @example
+      ```js
+      chart.margins({top: 10, right: 20, bottom: 10, left: 20});
+      ```
       @property margins
       @type Object {top, right, bottom, left}
+      @default {top: 10, right: 10, bottom: 10, left: 10}
     */
     margins: property('margins', {
       default_value: {top: 10, right: 10, bottom: 10, left: 10},
@@ -1117,13 +1393,7 @@
       }
     }),
 
-    /**
-      Chart position (generally used internally)
-
-      @internal
-      @property chartPosition
-      @param Object {top, right, bottom, left}
-    */
+    // Chart position
     chartPosition: property('chartPosition', {
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
       set: function(values) {
@@ -1157,17 +1427,92 @@
 
     _width: function() {
       var width = this.width();
-      return width != null ? width : d3.chart('Base').prototype.width.call(this);
+      return width != null ? width : charts.Base.prototype.width.call(this);
     },
     _height: function() {
       var height = this.height();
-      return height != null ? height : d3.chart('Base').prototype.height.call(this);
+      return height != null ? height : charts.Base.prototype.height.call(this);
     },
 
     /**
-      Set charts from options or get charts
-      (Set from charts returned from `options` function)
+      @property responsive
+      @type Boolean
+      @default true
+    */
+    responsive: property('responsive', {
+      default_value: true
+    }),
 
+    // Set svg viewBox attribute
+    viewBox: property('viewBox', {
+      default_value: function() {
+        if (this.responsive() && this.width() && this.height())
+          return '0 0 ' + this.width() + ' ' + this.height();
+        else
+          return null;
+      }
+    }),
+
+    // Set svg preserveAspectRatio attribute
+    preserveAspectRatio: property('preserveAspectRatio', {
+      default_value: function() {
+        if (this.responsive())
+          return 'xMidYMid meet';
+        else
+          return null;
+      }
+    }),
+
+    // Set container style
+    containerStyle: property('containerStyle', {
+      default_value: function() {
+        if (this.responsive()) {
+          var aspect_ratio = 1;
+          if (this.width() && this.height())
+            aspect_ratio = this.height() / this.width();
+
+          return helpers.style({
+            width: '100%',
+            height: 0,
+            'padding-top': (aspect_ratio * 100) + '%',
+            position: 'relative'
+          });  
+        }
+        else {
+          return helpers.style({position: 'relative'});
+        }
+      }
+    }),
+
+    // Set base style
+    baseStyle: property('baseStyle', {
+      default_value: function() {
+        if (this.responsive()) {
+          return helpers.style({
+            position: 'absolute',
+            top: 0,
+            left: 0
+          });
+        }
+        else {
+          return null;
+        }
+      }
+    }),
+
+    /**
+      Set charts from options or get chart instances.
+      Each chart should use a unique key so that updates are passed to the existing chart
+      (otherwise they are recreated on update).
+      The `type` option must be a registered `d3.chart` and all other options are passed to the chart.
+
+      @example
+      ```js
+      chart.charts({
+        input: {type: 'Bars'}, // options to pass to Bars chart
+        output: {type: 'Lines'} // options to pass to Lines chart
+      });
+      ```
       @property charts
       @type Object
     */
@@ -1182,9 +1527,18 @@
     }),
 
     /**
-      Set components from options or get components
-      (Set from components returned from `options` function)
+      Set components from options or get components instances.
+      Each component should use a unique key so that updates are passed to the existing chart
+      (otherwise they are recreated on update).
+      The `type` option must be a registered `d3.chart` and all other options are passed to the component.
 
+      @example
+      ```js
+      chart.components({
+        'axis.y': {type: 'Axis'}, // options to pass to Axis component
+        title: {type: 'Title'} // options to pass to Title component
+      })
+      ```
       @property components
       @type Object
     */
@@ -1201,8 +1555,24 @@
     /**
       Draw chart with given data
 
+      @example
+      ```js
+      var chart = d3.select('#chart')
+        .chart('Compose', function(data) {
+          // ...
+        });
+
+      chart.draw([1, 2, 3]);
+
+      chart.draw({values: [1, 2, 3]});
+      
+      chart.draw([
+        {values: [1, 2, 3]},
+        {values: [4, 5, 6]}
+      ]);
+      ```
       @method draw
-      @param {Object} data
+      @param {Any} data
     */
     draw: function(data) {
       // On redraw, get original data
@@ -1222,10 +1592,24 @@
       };
       this.data(data);
 
-      // Explicitly set width and height of container if width/height is defined
-      this.base
-        .attr('width', this.width() || null)
-        .attr('height', this.height() || null);
+      // Set container and svg dimensions
+      // (if original selection is svg, no container and skip responsiveness)
+      if (this.container) {
+        this.container
+          .attr('style', this.containerStyle());
+
+        this.base
+          .attr('viewBox', this.viewBox())
+          .attr('preserveAspectRatio', this.preserveAspectRatio())
+          .attr('style', this.baseStyle())
+          .attr('width', this.responsive() ? null : this.width() || null)
+          .attr('height', this.responsive() ? null : this.height() || null);  
+      }
+      else {
+        this.base
+          .attr('width', this.width() || null)
+          .attr('height', this.height() || null);
+      }
 
       // Layout components
       this.layout(data);
@@ -1256,14 +1640,7 @@
         return data.original;
     },
 
-    /**
-      Create chart layer (for laying out with charts)
-
-      @method createChartLayer
-      @param {Object} options
-        @param {Number} options.z_index
-      @return {d3.selection}
-    */
+    // Create chart layer (for laying out charts)
     createChartLayer: function(options) {
       options = utils.defaults({}, options, {
         z_index: d3.chart('Chart').z_index
@@ -1274,14 +1651,7 @@
         .attr('data-zIndex', options.z_index);
     },
 
-    /**
-      create component layer
-
-      @method createComponentLayer
-      @param {Object} options
-        @param {Number} options.z_index
-      @return {d3.selection}
-    */
+    // Create component layer
     createComponentLayer: function(options) {
       options = utils.defaults({}, options, {
         z_index: d3.chart('Component').z_index
@@ -1292,7 +1662,7 @@
         .attr('data-zIndex', options.z_index);
     },
 
-    // Layout components and chart for given data
+    // Layout components and charts for given data
     layout: function(data) {
       // 1. Place chart layers
       positionChartLayers(this.base.selectAll('.chart-layer'), this.chartPosition());
@@ -1362,6 +1732,7 @@
       }
     },
 
+    // Attach chart/component child item with id
     attach: function(id, item) {
       item.id = id;
       item.base.attr('data-id', id);
@@ -1373,6 +1744,7 @@
         item.trigger('attach');
     },
 
+    // Detach chart/component child item by id
     detach: function(id, item) {
       item.base.remove();
 
@@ -1382,6 +1754,7 @@
         item.trigger('detach');
     },
 
+    // Position chart and component layers
     positionLayers: function(layout) {
       positionChartLayers(this.base.selectAll('.chart-layer'), this.chartPosition());
       positionComponents(layout, this.chartPosition(), this._width(), this._height());

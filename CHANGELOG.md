@@ -1,3 +1,9 @@
+# 0.13.0
+
+- Add responsive support for `div` selections, with `width` and `height` used for `viewBox`
+- Add `StandardLayer` to improve extensibility in standard charts and components
+- Add `Transition` mixin for standard approach to adding `duration`, `delay`, and `ease` to charts/layers
+
 # 0.12.0
 
 - Add `centered` and `adjacent` options for `createScale`
