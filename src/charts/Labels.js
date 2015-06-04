@@ -5,7 +5,80 @@
   var di = helpers.di;
 
   /**
+    Standalone or "embeddable" labels (uses `mixins.Labels` and `attachLabels` to embed in chart)
+
+    ### Extending
+
+    To extend the `Labels` chart, the following methods are available:
+
+    - `insertLabels`
+    - `mergeLabels`
+    - `layoutLabels`
+    - `transitionLabels`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    View the `Labels.js` source for the default implementation and more information on these methods.
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      return {
+        charts: {
+          input: {
+            type: 'Lines',
+            data: data.input,
+            // xScale, yScale, other properties...
+
+            // Show labels with default properties
+            labels: true
+          },
+          output: {
+            type: 'Bars',
+            data: data.output,
+            // xScale, yScale, other properties...
+
+            // Pass options to labels
+            labels: {
+              offset: 2,
+              position: 'top',
+              style: {
+                'font-size': '14px'
+              },
+              format: d3.format(',0d')
+            }
+          },
+          labels: {
+            type: 'Labels',
+            data: data.labels,
+
+            // xScale, yScale, other properties...
+          }
+        }
+      };
+    });
+  
+    chart.draw({
+      input: [1, 2, 3],
+      output: [10, 20, 30],
+      labels: [
+        {x: 0, y: 0},
+        {x: 0, y: 30, label: 'Override (y by default)'},
+        {x: 2, y: 0},
+        {x: 2, y: 30}
+      ]
+    });
+    ```
     @class Labels
+    @extends Chart, Series, XY, Hover, Transition, StandardLayer
   */
   charts.Labels = charts.Chart.extend('Labels', mixin(
     mixins.Series,
@@ -39,7 +112,7 @@
       },
 
       /**
-        Formatting function or string (string is passed to d3.format) for label values
+        Formatting function or string (string is passed to `d3.format`) for label values
 
         @property format
         @type String|Function
@@ -56,7 +129,8 @@
       }),
 
       /**
-        Label position relative to data-point
+        Label position relative to data point
+        (top, right, bottom, or left)
 
         @property position
         @type String
@@ -70,8 +144,8 @@
       }),
 
       /**
-        Offset between data-point and label
-        (if number is given, offset is set based on position)
+        Offset between data point and label
+        (if `Number` is given, offset is set based on position)
 
         @property offset
         @type Number|Object
@@ -103,12 +177,13 @@
 
         @property padding
         @type Number
-        @default 0
+        @default 1
       */
       padding: property('padding', {default_value: 1}),
 
       /**
-        Define text anchor, start, middle, or end
+        Define text anchor (start, middle, or end)
+
         (set by default based on label position)
 
         @property anchor
@@ -130,7 +205,8 @@
       }),
 
       /**
-        Define text-aligmment, top, middle, or bottom
+        Define text-aligmment (top, middle, or bottom)
+        
         (set by default based on label position)
 
         @property alignment
@@ -155,6 +231,8 @@
         Get label text for data-point (uses "label" property or y-value)
 
         @method labelText
+        @param {Any} d
+        @param {Number} i
         @return {String}
       */
       labelText: di(function(chart, d, i) {
@@ -168,6 +246,8 @@
         Get class for label group
 
         @method labelClass
+        @param {Any} d
+        @param {Number} i
         @return {String}
       */
       labelClass: di(function(chart, d, i) {
@@ -253,6 +333,8 @@
   });
 
   /**
+    (in-progress)
+
     @class HoverLabels
   */
   d3.chart('Labels').extend('HoverLabels', mixin(mixins.Hover, {
