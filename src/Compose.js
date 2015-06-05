@@ -451,6 +451,8 @@
     attachHoverListeners: function() {
       var trigger = this.trigger.bind(this);
       var chartPosition = this.chartPosition.bind(this);
+      var container = this.container || this.base;
+      var base = this.base.node();
       var inside, chart_position;
 
       var throttledMouseMove = utils.throttle(function(coordinates) {
@@ -458,17 +460,18 @@
           trigger('mousemove', coordinates);
       }, 50);
 
-      this.base.on('mouseenter', function() {
+      container.on('mouseenter', function() {
         // Calculate chart position on enter and cache during move
         chart_position = chartPosition();
 
         inside = true;
-        trigger('mouseenter', translateToXY(d3.mouse(this), chart_position));
+        trigger('mouseenter', translateToXY(d3.mouse(base), chart_position));
       });
-      this.base.on('mousemove', function() {
-        throttledMouseMove(translateToXY(d3.mouse(this), chart_position));
+      container.on('mousemove', function() {
+        if (inside)
+          trigger('mousemove', translateToXY(d3.mouse(base), chart_position));
       });
-      this.base.on('mouseleave', function() {
+      container.on('mouseleave', function() {
         inside = false;
         trigger('mouseleave');
       });
