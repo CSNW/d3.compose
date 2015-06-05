@@ -408,7 +408,7 @@
     // Create chart layer (for laying out charts)
     createChartLayer: function(options) {
       options = utils.defaults({}, options, {
-        z_index: d3.chart('Chart').z_index
+        z_index: charts.Chart.z_index
       });
 
       return this.base.append('g')
@@ -419,12 +419,21 @@
     // Create component layer
     createComponentLayer: function(options) {
       options = utils.defaults({}, options, {
-        z_index: d3.chart('Component').z_index
+        z_index: charts.Component.z_index
       });
 
       return this.base.append('g')
         .attr('class', 'chart-component-layer')
         .attr('data-zIndex', options.z_index);
+    },
+
+    // Create overlay layer
+    createOverlayLayer: function(options) {
+      if (!this.container)
+        throw new Error('Cannot create overlay layer if original selection "d3.select(...).chart(\'Compose\')" is an svg. Use a div instead for responsive and overlay support.');
+
+      return this.container.append('div')
+        .attr('class', 'chart-overlay-layer');
     },
 
     // Layout components and charts for given data
@@ -454,11 +463,6 @@
       var container = this.container || this.base;
       var base = this.base.node();
       var inside, chart_position;
-
-      var throttledMouseMove = utils.throttle(function(coordinates) {
-        if (inside)
-          trigger('mousemove', coordinates);
-      }, 50);
 
       container.on('mouseenter', function() {
         // Calculate chart position on enter and cache during move
@@ -571,7 +575,16 @@
             throw new Error('No registered d3.chart found for ' + options.type);
 
           var layer_options = {z_index: Item.z_index};
-          var base = Item.layer_type == 'chart' ? context.createChartLayer(layer_options) : context.createComponentLayer(layer_options);
+          var createLayer = {
+            'chart': 'createChartLayer',
+            'component': 'createComponentLayer',
+            'overlay': 'createOverlayLayer'
+          }[Item.layer_type];
+
+          if (!createLayer)
+            throw new Error('Unrecognized layer type "' + Item.layer_type + '" for ' + options.type);
+
+          var base = context[createLayer](layer_options);
 
           item = new Item(base, options);
           item.type = options.type;

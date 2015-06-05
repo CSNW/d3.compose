@@ -7,6 +7,7 @@ module.exports = function(grunt) {
       'src/Base.js',
       'src/Chart.js',
       'src/Component.js',
+      'src/Overlay.js',
       'src/Compose.js'
     ],
     mixins: [
