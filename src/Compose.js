@@ -472,12 +472,27 @@
         trigger('mouseenter', translateToXY(d3.mouse(base), chart_position));
       });
       container.on('mousemove', function() {
-        if (inside)
-          trigger('mousemove', translateToXY(d3.mouse(base), chart_position));
+        if (inside) {
+          // Overlay layers may inadvertently delay mouseleave
+          // so explicity check if mouse is within bounds of svg base element
+          var mouse = d3.mouse(document.documentElement);
+          var bounds = base.getBoundingClientRect();
+          var inside_base = mouse[0] >= bounds.left && mouse[0] <= bounds.right && mouse[1] >= bounds.top && mouse[1] <= bounds.bottom;
+
+          if (inside_base) {
+            trigger('mousemove', translateToXY(d3.mouse(base), chart_position));
+          }
+          else {
+            inside = false;
+            trigger('mouseleave');
+          }
+        }
       });
       container.on('mouseleave', function() {
-        inside = false;
-        trigger('mouseleave');
+        if (inside) {
+          inside = false;
+          trigger('mouseleave');  
+        }
       });
 
       function translateToXY(coordinates, chart_position) {

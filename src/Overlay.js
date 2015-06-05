@@ -21,6 +21,9 @@
     @extends Component
   */
   charts.Overlay = charts.Component.extend('Overlay', {
+    initialize: function() {
+      this.base.attr('style', this.style());
+    },
     skip_layout: true,
     
     /**
