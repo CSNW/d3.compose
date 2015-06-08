@@ -1,6 +1,6 @@
 {
   "name": "d3.compose",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "d3.compose",
   "main": "dist/d3.compose.js",
   "scripts": {

@@ -1,4 +1,4 @@
-/*! d3.compose - v0.13.0
+/*! d3.compose - v0.13.1
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -1234,6 +1234,158 @@
 })(d3, d3.compose.helpers, d3.compose.charts);
 
 (function(d3, helpers, charts) {
+  var property = helpers.property;
+
+  /**
+    Common base for creating overlays that includes helpers for positioning and show/hide.
+
+    ### Extending
+
+    Create an overlay just like a chart, by creating layers in the `initialize` method in `extend`.
+
+    - To adjust positioning, override `position`
+    - To adjust show/hide behavior, override `show`/`hide`
+
+    @example
+    ```js
+    d3.chart('Overlay').extend('ClosestPoints', {
+      // TODO
+    });
+    ```
+    @class Overlay
+    @extends Component
+  */
+  charts.Overlay = charts.Component.extend('Overlay', {
+    initialize: function() {
+      this.base.attr('style', this.style());
+    },
+    skip_layout: true,
+    
+    /**
+      Overlay's top-left x-position in px from left
+
+      @property x
+      @type Number
+      @default 0
+    */
+    x: property('x', {
+      default_value: 0
+    }),
+
+    /**
+      Overlay's top-left y-position in px from top
+
+      @property y
+      @type Number
+      @default 0
+    */
+    y: property('y', {
+      default_value: 0
+    }),
+
+    /**
+      Whether overlay is currently hidden
+
+      @property hidden
+      @type Boolean
+      @default true
+    */
+    hidden: property('hidden', {
+      default_value: true
+    }),
+
+    /**
+      Overlays base styling
+      (default includes position and hidden)
+
+      @property style
+      @type String
+      @default set from x, y, and hidden
+    */
+    style: property('style', {
+      default_value: function() {
+        var styles = {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: helpers.translate(this.x() + 'px', this.y() + 'px')
+        };
+
+        if (this.hidden())
+          styles.display = 'none';
+
+        return helpers.style(styles);
+      }
+    }),
+
+    /**
+      Position overlay layer at given x,y coordinates
+
+      @method position
+      @param {Number} x in px from left
+      @param {Number} y in px from top
+    */
+    position: function(x, y) {
+      this.x(x).y(y);
+      this.base.attr('style', this.style());
+    },
+
+    /**
+      Show overlay (with `display: block`)
+
+      @method show
+    */
+    show: function() {
+      this.hidden(false);
+      this.base.attr('style', this.style());
+    },
+
+    /**
+      Hide overlay (with `display: none`)
+
+      @method hide
+    */
+    hide: function() {
+      this.hidden(true);
+      this.base.attr('style', this.style());
+    },
+
+    /**
+      Get absolute position from container position
+      (needed since container position uses viewBox and needs to be scaled to absolute position)
+
+      @method getAbsolutePosition
+      @param {Object} container_position ({x, y})
+      @return {Object} absolute {x, y} relative to container div
+    */
+    getAbsolutePosition: function(container_position) {
+      var container = this.container && this.container.container;
+
+      if (container) {
+        var dimensions = helpers.dimensions(container);
+        var chart_width = this.container.width();
+        var chart_height = this.container.height();
+        var width_ratio = dimensions.width / chart_width;
+        var height_ratio = dimensions.height / chart_height;
+
+        return {
+          x: width_ratio * container_position.x,
+          y: height_ratio * container_position.y
+        };
+      }
+      else {
+        // Not attached so can't get actual dimensions
+        // fallback to container position
+        return container_position;  
+      }
+    }
+  }, {
+    layer_type: 'overlay'
+  });
+
+})(d3, d3.compose.helpers, d3.compose.charts);
+
+(function(d3, helpers, charts) {
   var utils = helpers.utils;
   var property = helpers.property;
 
@@ -1643,7 +1795,7 @@
     // Create chart layer (for laying out charts)
     createChartLayer: function(options) {
       options = utils.defaults({}, options, {
-        z_index: d3.chart('Chart').z_index
+        z_index: charts.Chart.z_index
       });
 
       return this.base.append('g')
@@ -1654,12 +1806,21 @@
     // Create component layer
     createComponentLayer: function(options) {
       options = utils.defaults({}, options, {
-        z_index: d3.chart('Component').z_index
+        z_index: charts.Component.z_index
       });
 
       return this.base.append('g')
         .attr('class', 'chart-component-layer')
         .attr('data-zIndex', options.z_index);
+    },
+
+    // Create overlay layer
+    createOverlayLayer: function(options) {
+      if (!this.container)
+        throw new Error('Cannot create overlay layer if original selection "d3.select(...).chart(\'Compose\')" is an svg. Use a div instead for responsive and overlay support.');
+
+      return this.container.append('div')
+        .attr('class', 'chart-overlay-layer');
     },
 
     // Layout components and charts for given data
@@ -1686,26 +1847,39 @@
     attachHoverListeners: function() {
       var trigger = this.trigger.bind(this);
       var chartPosition = this.chartPosition.bind(this);
+      var container = this.container || this.base;
+      var base = this.base.node();
       var inside, chart_position;
 
-      var throttledMouseMove = utils.throttle(function(coordinates) {
-        if (inside)
-          trigger('mousemove', coordinates);
-      }, 50);
-
-      this.base.on('mouseenter', function() {
+      container.on('mouseenter', function() {
         // Calculate chart position on enter and cache during move
         chart_position = chartPosition();
 
         inside = true;
-        trigger('mouseenter', translateToXY(d3.mouse(this), chart_position));
+        trigger('mouseenter', translateToXY(d3.mouse(base), chart_position));
       });
-      this.base.on('mousemove', function() {
-        throttledMouseMove(translateToXY(d3.mouse(this), chart_position));
+      container.on('mousemove', function() {
+        if (inside) {
+          // Overlay layers may inadvertently delay mouseleave
+          // so explicity check if mouse is within bounds of svg base element
+          var mouse = d3.mouse(document.documentElement);
+          var bounds = base.getBoundingClientRect();
+          var inside_base = mouse[0] >= bounds.left && mouse[0] <= bounds.right && mouse[1] >= bounds.top && mouse[1] <= bounds.bottom;
+
+          if (inside_base) {
+            trigger('mousemove', translateToXY(d3.mouse(base), chart_position));
+          }
+          else {
+            inside = false;
+            trigger('mouseleave');
+          }
+        }
       });
-      this.base.on('mouseleave', function() {
-        inside = false;
-        trigger('mouseleave');
+      container.on('mouseleave', function() {
+        if (inside) {
+          inside = false;
+          trigger('mouseleave');  
+        }
       });
 
       function translateToXY(coordinates, chart_position) {
@@ -1803,7 +1977,16 @@
             throw new Error('No registered d3.chart found for ' + options.type);
 
           var layer_options = {z_index: Item.z_index};
-          var base = Item.layer_type == 'chart' ? context.createChartLayer(layer_options) : context.createComponentLayer(layer_options);
+          var createLayer = {
+            'chart': 'createChartLayer',
+            'component': 'createComponentLayer',
+            'overlay': 'createOverlayLayer'
+          }[Item.layer_type];
+
+          if (!createLayer)
+            throw new Error('Unrecognized layer type "' + Item.layer_type + '" for ' + options.type);
+
+          var base = context[createLayer](layer_options);
 
           item = new Item(base, options);
           item.type = options.type;
