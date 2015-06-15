@@ -28,19 +28,16 @@
       <ol class="docs-params">
         {% for param in item.params %}
           <li>
-            <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.default %} = {{param.default}}{% endif %}{% if param.optional %}]{% endif %}</code>
+            <code>{% if param.optional %}[{% endif %}{{param.name}}{% if param.optdefault %} = {{param.optdefault}}{% endif %}{% if param.optional %}]{% endif %}</code>
             (<em class="docs-param-type">{{param.type}}</em>)
-
-            {{param.description}}
-
+            <div class="docs-param-description">{{ param.description | markdownify }}</div>
             {% if param.props %}
               <ul class="docs-props">
                 {% for prop in param.props %}
                   <li>
-                    <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.default %} = {{prop.default}}{% endif %}{% if prop.optional %}]{% endif %}</code>
+                    <code>{% if prop.optional %}[{% endif %}{{prop.name}}{% if prop.optdefault %} = {{prop.optdefault}}{% endif %}{% if prop.optional %}]{% endif %}</code>
                     (<em class="docs-param-type">{{prop.type}}</em>)
-                    
-                    {{prop.description}}
+                    <div class="docs-param-description">{{ prop.description | markdownify }}</div>
                   </li>
                 {% endfor %}
               </ul>
@@ -51,7 +48,8 @@
     {% endif %}
     {% if item.return %}
       <div class="docs-return">
-        <small>Returns</small> (<em>{{item.return.type}}</em>) {{item.return.description}}
+        <small>Returns</small> (<em class="docs-param-type">{{item.return.type}}</em>)
+        <div class="docs-param-description">{{ item.return.description | markdownify }}</div>
       </div>
     {% endif %}
 

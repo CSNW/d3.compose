@@ -22,10 +22,10 @@ _.each(docs.classes, function(cls, class_name) {
 
       if (classitem.params) {
         classitem.code = classitem.name + '(' + _.map(classitem.params, function(param) {
-          var code = param.name;
+          var code = param.name.trim();
 
-          if (param['default'])
-            code += '=' + param['default'];
+          if (param['optdefault'])
+            code += ' = ' + param['optdefault'].trim();
 
           if (param.optional)
             code = '[' + code + ']';
