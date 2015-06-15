@@ -5,35 +5,59 @@
   var mixin = helpers.mixin;
 
   /**
-    Legend component that can automatically draw data from charts
+    Legend component that can automatically pull chart and series information from d3.compose
+
+    Notes:
+
+    - To exclude a chart from the legend, use `exclude_from_legend = true` in chart prototype or options
+    - To exclude a series from the legend, use `exclude_from_legend = true` in series object
+    - To add swatch for custom chart, use `Legend.registerSwatch()`
 
     @example
     ```js
-    // (in Multi options)
-    return {
-      charts: {
-        a: {...},
-        b: {...}
-      },
-      components: {
-        legend: {type: 'Legend', charts: ['a', 'b']}
-      }
-    }
-    // -> automatically adds legend with data from charts a and b
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        var input = [{key: 'input', name: 'Input', values: data.input}];
+        var output = [
+          {key: 'output1', name: 'Output 1', values: data.output1},
+          {key: 'output2', name: 'Output 2', values: data.output2}
+        ];
+
+        return {
+          charts: {
+            a: {type: 'Lines', data: input}, // ...
+            b: {type: 'Bars', data: output} // ...
+          },
+          components: {
+            legend: {
+              type: 'Legend',
+              charts: ['a', 'b']
+            }
+          }
+        };
+      });
+
+    // -> automatically creates legend from series data for 'a' and 'b'
+    //    (Lines Swatch) Input
+    //    (Bars Swatch) Output 1
+    //    (Bars Swatch) Output 2
 
     // or, manually set data for legend
     return {
       components: {
-        legend: {type: 'Legend', data: [
-          {text: 'A', key: 'a', type: 'Bars', class: 'legend-blue'},
-          {text: 'B', key: 'b', type: 'Line', class: 'legend-green'},
-          {text: 'C', key: 'c', class: 'legend-red'}
-        ]}
+        legend: {
+          type: 'Legend',
+          data: [
+            {type: 'Lines', text: 'Input', class: 'series-index-0'},
+            {type: 'Bars', text: 'Output 1', class: 'series-index-0'},
+            {type: 'Bars', text: 'Output 2', class: 'series-index-1'},
+          ]
+        }
       }
-    }
+    };
     ```
-
     @class Legend
+    @extends Component, StandardLayer
   */
   charts.Legend = charts.Component.extend('Legend', mixin(mixins.StandardLayer, {
     initialize: function() {
@@ -44,6 +68,25 @@
     /**
       Array of chart keys from container to display in legend
 
+      @example
+      ```js
+      d3.select('#chart')
+      .chart('Compose', function(data) {
+        return {
+          charts: {
+            a: {},
+            b: {},
+            c: {}
+          },
+          components: {
+            legend: {
+              type: 'Legend',
+              charts: ['a', 'c']
+            }
+          }
+        };
+      });
+      ```
       @property charts
       @type Array
     */
@@ -129,11 +172,7 @@
       return d['class'];
     }),
 
-    /**
-      Create swatch (using registered swatches based on type from data)
-
-      @method createSwatch
-    */
+    // Create swatch (using registered swatches based on type from data)
     createSwatch: di(function(chart, d, i) {
       var selection = d3.select(this);
 
@@ -211,9 +250,20 @@
     /**
       Register a swatch create function for the given chart type
 
+      @example
+      ```js
+      d3.chart('Legend').registerSwatch(['Lines'], function(chart, d, i) {
+        var dimensions = chart.swatchDimensions();
+
+        return this.append('line')
+          .attr('x1', 0).attr('y1', dimensions.height / 2)
+          .attr('x2', dimensions.width).attr('y2', dimensions.height / 2)
+          .attr('class', 'chart-line');
+      });
+      ```
       @method registerSwatch
       @static
-      @param {String} type Chart type
+      @param {String|Array} type Chart type
       @param {Function} create "di" function that inserts swatch
     */
     registerSwatch: function(type, create) {
@@ -247,9 +297,10 @@
   });
 
   /**
-    Legend positioned within chart bounds
+    Legend positioned within chart bounds.
 
     @class InsetLegend
+    @extends Legend
   */
   charts.InsetLegend = charts.Legend.extend('InsetLegend', {
     initialize: function() {
@@ -262,10 +313,25 @@
     },
 
     /**
-      Position legend within chart layer {x,y,relative_to}
+      Position legend within chart layer `{x, y, relative_to}`
       Use `relative_to` to use x,y values relative to x-y origin
-      (e.g. left-top is default)
+      (e.g. `"left-top"` is default)
 
+      @example
+      ```js
+      d3.select('#chart')
+        .chart('Compose', function(data) {
+          return {
+            components: {
+              legend: {
+                type: 'InsetLegend',
+                // Position legend 10px away from right-bottom corner of chart
+                translation: {x: 10, y: 10, relative_to: 'right-bottom'}
+              }
+            }
+          }
+        });
+      ```
       @property translation
       @type Object {x,y} translation
       @default {x: 10, y: 10, relative_to: 'left-top'}
