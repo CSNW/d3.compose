@@ -4,18 +4,45 @@
   var di = helpers.di;
 
   /**
-    Axis component for XY data
+    Axis component for XY data (wraps `d3.axis`).
 
     Available d3.axis extensions:
-    - ticks
-    - tickValues
-    - tickSize
-    - innerTickSize
-    - outerTickSize
-    - tickPadding
-    - tickFormat
 
+    - `ticks`
+    - `tickValues`
+    - `tickSize`
+    - `innerTickSize`
+    - `outerTickSize`
+    - `tickPadding`
+    - `tickFormat`
+
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        var scales = {
+          x: {data: data, key: 'x'},
+          y: {data: data, key: 'y'}
+        };
+
+        return {
+          components: {
+            'x.axis': {
+              type: 'Axis',
+              position: 'bottom',
+              scale: scales.x
+            },
+            'y.axis': {
+              type: 'Axis',
+              position: 'left',
+              scale: scales.y
+            }
+          }
+        };
+      });
+    ```
     @class Axis
+    @extends Component, XY, Transition, StandardLayer
   */
   charts.Axis = charts.Component.extend('Axis', mixin(mixins.XY, mixins.Transition, mixins.StandardLayer, {
     initialize: function() {
@@ -52,8 +79,26 @@
 
     /**
       Scale to pass to d3.axis
-      (if Object is given, helpers.createScale is used)
 
+      - If `xScale`/`yScale` are given, `scale` is set automatically based on `position`.
+      - Can be `d3.scale` or, if `Object` is given, `helpers.createScale` is used
+
+      @example
+      ```js
+      // Set with d3.scale directly
+      axis.scale(d3.scale());
+
+      // or with Object passed helpers.createScale
+      axis.scale({data: data, key: 'x'});
+
+      // For x0/y0 position, both xScale and yScale needed
+      // (scale is automatically set by position)
+      axis.xScale({domain: [0, 100]});
+      axis.yScale({domain: [0, 10]});
+      axis.position('y0');
+
+      // -> axis.scale() -> axis.xScale by default
+      ```
       @property scale
       @type Object|d3.scale
     */
