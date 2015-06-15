@@ -1,0 +1,317 @@
+<section class="docs-section">
+  <h2 id="examples">Examples</h2>
+
+  <h3 id="examples-line">Line</h3>
+
+  <p>
+    To get started with d3.compose, use <tt>d3.select('...').chart('Compose')</tt> and pass in a options function that takes in the data to be drawn and returns options for the charts and components to be drawn. The below example takes in series data, creates options for scales that are shared between charts and components, sets options for a Line chart, and sets options for axes and title components.
+  </p>
+
+{% highlight js %}
+var example_1 = d3.select('#js-example-1').append('svg')
+  .chart('Compose', function(data) {
+    // Manipulate data as needed
+
+    // Create options for scales shared between charts and/or components
+    var scales = {
+      x: {data: data, key: 'x'},
+      y: {data: data, key: 'y'}
+    };
+
+    return {
+      charts: {
+        // Add a d3.chart('Line') chart
+        // with given data and scales
+        line: {
+          type: 'Line',
+          data: data,
+
+          // Set options for chart
+          xScale: scales.x,
+          yScale: scales.y,
+          interpolate: 'monotone'
+        }
+      },
+      components: {
+        'axis.x': {
+          type: 'Axis',
+          position: 'bottom',
+          scale: scales.x
+        },
+        'axis.y': {
+          type: 'Axis',
+          position: 'left',
+          scale: scales.y
+        },
+        title: {
+          type: 'Title',
+          position: 'top',
+          text: 'Line Chart'
+        }
+      }
+    };
+  })
+  .margins({top: 0, right: 15, bottom: 5, left: 5});
+
+example_1.draw([
+  {
+    key: 'a', values: [
+      {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
+    ]
+  },
+  {
+    key: 'b', values: [
+      {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
+    ]
+  }
+]);
+{% endhighlight %}
+
+  <div class="docs-chart" id="js-example-1"></div>
+
+  <h3 id="examples-xy-extension">XY Extension</h3>
+
+  <p>
+    Thanks to the flexibility of the options function, you can create extensions that wrap common behavior and reduce boilerplate for composing charts. The <tt>d3.compose.xy</tt> extension includes helpers/default values for axes, titles, and legends that make creating standard XY charts much simpler. Here's the Line example using the <tt>d3.compose.xy</tt> extension:
+  </p>
+
+{% highlight js %}
+var example_2 = d3.select('#js-example-2').append('svg')
+  .chart('Compose', function(data) {
+    var scales = {
+      x: {data: data, key: 'x'},
+      y: {data: data, key: 'y'}
+    };
+
+    // Use xy extension for axes, title, and legend helpers
+    return d3.compose.xy({
+      charts: {
+        line: {
+          // same as above
+        }
+      },
+      axes: {
+        // Add x and y axes
+        x: {scale: scales.x}, // defaults: type: Axis, position: bottom
+        y: {scale: scales.y} // defaults: type: Axis, position: left
+      },
+      // Add chart title
+      title: 'Line Chart'
+    });
+  });
+
+// Draw chart with series data: [{key, values}, {key, values}, ...]
+example_2.draw([
+  // same as above
+]);
+{% endhighlight %}
+
+  <div class="docs-chart" id="js-example-2"></div>
+
+  <h3 id="examples-line-bar-values">Line-Bar Values</h3>
+
+  <p>
+    The next example demonstrates how easy it is to compose are chart out of multiple child charts. Each chart layer is aligned and all components are laid out around the chart layer. This chart uses <tt>XYValues</tt> to center the value at each x-value/key/index and that needs to be specified for the axes with <tt>type: 'AxisValues'</tt>.
+  </p>
+
+{% highlight js %}
+var example_2 = d3.select('#js-example-2').append('svg')
+  .chart('Compose', function(data) {
+    var input = data.input;
+    var results = data.results;
+    var scales = {
+      x: {type: 'ordinal', data: input, key: 'x'},
+      y: {data: input, key: 'y'},
+      y2: {data: results, key: 'y', domain: [0, 100]}
+    };
+
+    return d3.compose.xy({
+      charts: {
+        input: {
+          type: 'LineValues',
+          data: input,
+          xScale: scales.x,
+          yScale: scales.y
+        },
+        results: {
+          type: 'Bars',
+          data: results,
+          xScale: scales.x,
+          yScale: scales.y2
+        }
+      },
+      axes: {
+        x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
+        y: {position: 'left', scale: scales.y, title: 'Input'},
+        y2: {position: 'right', scale: scales.y2, title: 'Results'}
+      },
+      title: 'Input vs. Output'
+    });
+  });
+
+example_2.draw({
+  input: [
+    {
+      key: 'input',
+      values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
+    }
+  ],
+  results: [
+    {
+      key: 'run-1',
+      values: [{x: 'a', y: 10}, {x: 'b', y: 30}, {x: 'c', y: 20}]
+    },
+    {
+      key: 'run-2',
+      values: [{x: 'a', y: 15}, {x: 'b', y: 25}, {x: 'c', y: 20}]
+    }
+  ]
+});
+{% endhighlight %}
+
+  <div class="docs-chart" id="js-example-3"></div>
+
+  <h3 id="examples-custom-chart">Custom Chart</h3>
+
+  <p>
+    d3.compose makes it straightforward to create reusable charts with a common <tt>Chart</tt> base to extend from and helpers and mixins for common functionality.
+  </p>
+
+{% highlight js %}
+var helpers = d3.chart.helpers;
+var mixins = d3.chart.mixins;
+
+d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
+  initialize: function() {
+    var base = this.base.append('g').attr('class', 'chart-dots');
+
+    // seriesLayer wraps series functionality
+    // so that standard layer approach can be used
+    this.seriesLayer('Dots', base, {
+      dataBind: function(data) {
+        return this.selectAll('circle')
+          .data(data, this.chart().keyValue);
+      },
+      insert: function() {
+        return this.append('circle');
+      },
+      events: {
+        merge: function() {
+          var chart = this.chart();
+          this
+            .attr('cx', chart.x)
+            .attr('cy', chart.y)
+            .attr('r', chart.r);
+        }
+      }
+    });
+  },
+
+  // helpers.di binds chart to "di" functions
+  // so that "this" refers to the element (as expected)
+  r: helpers.di(function(chart, d, i) {
+    return chart.rValue();
+  }),
+
+  // helpers.property creates get/set property
+  rValue: helpers.property('rValue', {
+    default_value: 5
+  })
+}));
+
+example_3 = d3.select('#js-example-3').append('svg')
+  .chart('Compose', function(data) {
+    var scales = {
+      x: {data: data, key: 'x'},
+      y: {data: data, key: 'y'}
+    };
+
+    return {
+      charts: {
+        line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y},
+        dots: {type: 'Dots', data: data, xScale: scales.x, yScale: scales.y}
+      }
+    };
+  });
+
+example_3.draw([
+  {
+    key: 'a',
+    values: [{x: 0, y: 10}, {x: 10, y: 100}, {x: 50, y: 0}]
+  },
+  {
+    key: 'b',
+    values: [{x: 50, y: 10}, {x: 30, y: 70}, {x: 0, y: 0}]
+  }
+]);
+{% endhighlight %}
+
+  <div class="docs-chart" id="js-example-4"></div>
+
+  <h3 id="examples-custom-component">Custom Component</h3>
+
+  <p>
+    In addition to custom charts, d3.compose allows you to make custom components with a common <tt>Component</tt> base that includes layout helpers.
+  </p>
+
+{% highlight js %}
+d3.chart('Component').extend('Key', {
+  initialize: function() {
+    this.layer('Key', this.base, {
+      dataBind: function(data) {
+        return this.selectAll('text')
+          .data(data);
+      },
+      insert: function() {
+        return this.append('text');
+      },
+      events: {
+        merge: function() {
+          this.text(this.chart().keyText)
+        }
+      }
+    })
+  },
+
+  keyText: helpers.di(function(chart, d, i) {
+    return d.abbr + ' = ' + d.value;
+  })
+});
+
+var example_4 = d3.select('#js-example-4').append('svg')
+  .chart('Compose', function(data) {
+    var scales = {
+      x: {type: 'ordinal', data: data.values, key: 'x'},
+      y: {domain: [0, 20]}
+    }
+
+    return d3.compose.xy({
+      charts: {
+        bars: {
+          type: 'Bars',
+          data: data.values,
+          xScale: scales.x,
+          yScale: scales.y
+        }
+      },
+      axes: {
+        x: {type: 'AxisValues', scale: scales.x}
+      },
+      components: {
+        key: {type: 'Key', data: data.key, position: 'right'}
+      }
+    });
+  })
+  .margins({top: 10, right: 10, bottom: 10, left: 10});
+
+example_4.draw({
+  values: [{
+    key: 'a',
+    values: [{x: 'js', y: 10}]
+  }],
+  key: [{abbr: 'js', value: 'javascript'}]
+});
+{% endhighlight %}
+
+  <div class="docs-chart" id="js-example-5"></div>
+</section>

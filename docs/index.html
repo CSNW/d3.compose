@@ -46,66 +46,22 @@ scripts: |
         <hr>
 
         {% include docs-toc-section.html class=classes.Compose %}
-
         {% include docs-toc-section.html class=classes.Chart %}
-
         {% include docs-toc-section.html class=classes.Component %}
-
         {% include docs-toc-section.html class=classes.Base %}
 
         <hr>
 
         {% include docs-toc-section.html class=classes.Lines %}
-
         {% include docs-toc-section.html class=classes.Bars %}
-
         {% include docs-toc-section.html class=classes.StackedBars %}
-
         {% include docs-toc-section.html class=classes.HorizontalBars %}
-
         {% include docs-toc-section.html class=classes.HorizontalStackedBars %}
-
-        <!-- <li>
-          <a href="#{{classes.Labels.id}}">
-            Labels
-          </a>
-
-          <ul class="nav is-nested">
-            <li><a href="#Labels-labels">labels</a></li>
-            <li><a href="#Labels-format">format</a></li>
-            <li><a href="#Labels-position">position</a></li>
-            <li><a href="#Labels-offset">offset</a></li>
-            <li><a href="#Labels-padding">padding</a></li>
-            <li><a href="#Labels-anchor">anchor</a></li>
-            <li><a href="#Labels-alignment">alignment</a></li>
-            <li><a href="#Labels-handleCollisions">handleCollisions</a></li>
-            <li><a href="#Labels-mixins">mixins</a></li>
-          </ul>
-        </li> -->
-
         {% include docs-toc-section.html class=classes.Labels %}
 
         <hr>
 
-        <li>
-          <a href="#{{classes.Axis.id}}">
-            Axis
-          </a>
-
-          <ul class="nav is-nested">
-            <!-- {% for item in classes.Axis.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %} -->
-
-            <li><a href="#Axis-scale">scale</a></li>
-            <li><a href="#Axis-position">position</a></li>
-            <li><a href="#Axis-translation">translation</a></li>
-            <li><a href="#Axis-orient">orient</a></li>
-            <li><a href="#Axis-orientation">orientation</a></li>
-            <li><a href="#Axis-axis">axis</a></li>
-            <li><a href="#Axis-transition">transition</a></li>
-          </ul>
-        </li>
+        {% include docs-toc-section.html class=classes.Axis %}
 
         <li>
           <a href="#{{classes.Legend.id}}">
@@ -331,7 +287,7 @@ scripts: |
 
     <!--
       Introduction
-      ============
+      ====
     -->
 
     <section class="docs-section">
@@ -374,330 +330,22 @@ scripts: |
 {% endhighlight %}
     </section>
 
-    <section class="docs-section">
-      <h2 id="examples">Examples</h2>
+    <!--
+      Examples
+      ====
+    -->
 
-      <h3 id="examples-line">Line</h3>
-
-      <p>
-        To get started with d3.compose, use <tt>d3.select('...').chart('Compose')</tt> and pass in a options function that takes in the data to be drawn and returns options for the charts and components to be drawn. The below example takes in series data, creates options for scales that are shared between charts and components, sets options for a Line chart, and sets options for axes and title components.
-      </p>
-
-{% highlight js %}
-var example_1 = d3.select('#js-example-1').append('svg')
-  .chart('Compose', function(data) {
-    // Manipulate data as needed
-
-    // Create options for scales shared between charts and/or components
-    var scales = {
-      x: {data: data, key: 'x'},
-      y: {data: data, key: 'y'}
-    };
-
-    return {
-      charts: {
-        // Add a d3.chart('Line') chart
-        // with given data and scales
-        line: {
-          type: 'Line',
-          data: data,
-
-          // Set options for chart
-          xScale: scales.x,
-          yScale: scales.y,
-          interpolate: 'monotone'
-        }
-      },
-      components: {
-        'axis.x': {
-          type: 'Axis',
-          position: 'bottom',
-          scale: scales.x
-        },
-        'axis.y': {
-          type: 'Axis',
-          position: 'left',
-          scale: scales.y
-        },
-        title: {
-          type: 'Title',
-          position: 'top',
-          text: 'Line Chart'
-        }
-      }
-    };
-  })
-  .margins({top: 0, right: 15, bottom: 5, left: 5});
-
-example_1.draw([
-  {
-    key: 'a', values: [
-      {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
-    ]
-  },
-  {
-    key: 'b', values: [
-      {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
-    ]
-  }
-]);
-{% endhighlight %}
-
-      <div class="docs-chart" id="js-example-1"></div>
-
-      <h3 id="examples-xy-extension">XY Extension</h3>
-
-      <p>
-        Thanks to the flexibility of the options function, you can create extensions that wrap common behavior and reduce boilerplate for composing charts. The <tt>d3.compose.xy</tt> extension includes helpers/default values for axes, titles, and legends that make creating standard XY charts much simpler. Here's the Line example using the <tt>d3.compose.xy</tt> extension:
-      </p>
-
-{% highlight js %}
-var example_2 = d3.select('#js-example-2').append('svg')
-  .chart('Compose', function(data) {
-    var scales = {
-      x: {data: data, key: 'x'},
-      y: {data: data, key: 'y'}
-    };
-
-    // Use xy extension for axes, title, and legend helpers
-    return d3.compose.xy({
-      charts: {
-        line: {
-          // same as above
-        }
-      },
-      axes: {
-        // Add x and y axes
-        x: {scale: scales.x}, // defaults: type: Axis, position: bottom
-        y: {scale: scales.y} // defaults: type: Axis, position: left
-      },
-      // Add chart title
-      title: 'Line Chart'
-    });
-  });
-
-// Draw chart with series data: [{key, values}, {key, values}, ...]
-example_2.draw([
-  // same as above
-]);
-{% endhighlight %}
-
-      <div class="docs-chart" id="js-example-2"></div>
-
-      <h3 id="examples-line-bar-values">Line-Bar Values</h3>
-
-      <p>
-        The next example demonstrates how easy it is to compose are chart out of multiple child charts. Each chart layer is aligned and all components are laid out around the chart layer. This chart uses <tt>XYValues</tt> to center the value at each x-value/key/index and that needs to be specified for the axes with <tt>type: 'AxisValues'</tt>.
-      </p>
-
-{% highlight js %}
-var example_2 = d3.select('#js-example-2').append('svg')
-  .chart('Compose', function(data) {
-    var input = data.input;
-    var results = data.results;
-    var scales = {
-      x: {type: 'ordinal', data: input, key: 'x'},
-      y: {data: input, key: 'y'},
-      y2: {data: results, key: 'y', domain: [0, 100]}
-    };
-
-    return d3.compose.xy({
-      charts: {
-        input: {
-          type: 'LineValues',
-          data: input,
-          xScale: scales.x,
-          yScale: scales.y
-        },
-        results: {
-          type: 'Bars',
-          data: results,
-          xScale: scales.x,
-          yScale: scales.y2
-        }
-      },
-      axes: {
-        x: {type: 'AxisValues', position: 'bottom', scale: scales.x},
-        y: {position: 'left', scale: scales.y, title: 'Input'},
-        y2: {position: 'right', scale: scales.y2, title: 'Results'}
-      },
-      title: 'Input vs. Output'
-    });
-  });
-
-example_2.draw({
-  input: [
-    {
-      key: 'input',
-      values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
-    }
-  ],
-  results: [
-    {
-      key: 'run-1',
-      values: [{x: 'a', y: 10}, {x: 'b', y: 30}, {x: 'c', y: 20}]
-    },
-    {
-      key: 'run-2',
-      values: [{x: 'a', y: 15}, {x: 'b', y: 25}, {x: 'c', y: 20}]
-    }
-  ]
-});
-{% endhighlight %}
-
-      <div class="docs-chart" id="js-example-3"></div>
-
-      <h3 id="examples-custom-chart">Custom Chart</h3>
-
-      <p>
-        d3.compose makes it straightforward to create reusable charts with a common <tt>Chart</tt> base to extend from and helpers and mixins for common functionality.
-      </p>
-
-{% highlight js %}
-var helpers = d3.chart.helpers;
-var mixins = d3.chart.mixins;
-
-d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
-  initialize: function() {
-    var base = this.base.append('g').attr('class', 'chart-dots');
-
-    // seriesLayer wraps series functionality
-    // so that standard layer approach can be used
-    this.seriesLayer('Dots', base, {
-      dataBind: function(data) {
-        return this.selectAll('circle')
-          .data(data, this.chart().keyValue);
-      },
-      insert: function() {
-        return this.append('circle');
-      },
-      events: {
-        merge: function() {
-          var chart = this.chart();
-          this
-            .attr('cx', chart.x)
-            .attr('cy', chart.y)
-            .attr('r', chart.r);
-        }
-      }
-    });
-  },
-
-  // helpers.di binds chart to "di" functions
-  // so that "this" refers to the element (as expected)
-  r: helpers.di(function(chart, d, i) {
-    return chart.rValue();
-  }),
-
-  // helpers.property creates get/set property
-  rValue: helpers.property('rValue', {
-    default_value: 5
-  })
-}));
-
-example_3 = d3.select('#js-example-3').append('svg')
-  .chart('Compose', function(data) {
-    var scales = {
-      x: {data: data, key: 'x'},
-      y: {data: data, key: 'y'}
-    };
-
-    return {
-      charts: {
-        line: {type: 'Line', data: data, xScale: scales.x, yScale: scales.y},
-        dots: {type: 'Dots', data: data, xScale: scales.x, yScale: scales.y}
-      }
-    };
-  });
-
-example_3.draw([
-  {
-    key: 'a',
-    values: [{x: 0, y: 10}, {x: 10, y: 100}, {x: 50, y: 0}]
-  },
-  {
-    key: 'b',
-    values: [{x: 50, y: 10}, {x: 30, y: 70}, {x: 0, y: 0}]
-  }
-]);
-{% endhighlight %}
-
-      <div class="docs-chart" id="js-example-4"></div>
-
-      <h3 id="examples-custom-component">Custom Component</h3>
-
-      <p>
-        In addition to custom charts, d3.compose allows you to make custom components with a common <tt>Component</tt> base that includes layout helpers.
-      </p>
-
-{% highlight js %}
-d3.chart('Component').extend('Key', {
-  initialize: function() {
-    this.layer('Key', this.base, {
-      dataBind: function(data) {
-        return this.selectAll('text')
-          .data(data);
-      },
-      insert: function() {
-        return this.append('text');
-      },
-      events: {
-        merge: function() {
-          this.text(this.chart().keyText)
-        }
-      }
-    })
-  },
-
-  keyText: helpers.di(function(chart, d, i) {
-    return d.abbr + ' = ' + d.value;
-  })
-});
-
-var example_4 = d3.select('#js-example-4').append('svg')
-  .chart('Compose', function(data) {
-    var scales = {
-      x: {type: 'ordinal', data: data.values, key: 'x'},
-      y: {domain: [0, 20]}
-    }
-
-    return d3.compose.xy({
-      charts: {
-        bars: {
-          type: 'Bars',
-          data: data.values,
-          xScale: scales.x,
-          yScale: scales.y
-        }
-      },
-      axes: {
-        x: {type: 'AxisValues', scale: scales.x}
-      },
-      components: {
-        key: {type: 'Key', data: data.key, position: 'right'}
-      }
-    });
-  })
-  .margins({top: 10, right: 10, bottom: 10, left: 10});
-
-example_4.draw({
-  values: [{
-    key: 'a',
-    values: [{x: 'js', y: 10}]
-  }],
-  key: [{abbr: 'js', value: 'javascript'}]
-});
-{% endhighlight %}
-
-      <div class="docs-chart" id="js-example-5"></div>
-    </section>
+    {% include docs-examples.html %}
 
     <!--
-      Compose
-      =====
+      Compose/Chart/Component/Base
+      ====
     -->
 
     {% include docs-section.html class=classes.Compose %}
+    {% include docs-section.html class=classes.Chart %}
+    {% include docs-section.html class=classes.Component %}
+    {% include docs-section.html class=classes.Base %}
 
     <!-- TODO
     <h3 class="docs-item-header" id="Compose-Events">
@@ -714,154 +362,26 @@ example_4.draw({
     </div>
     -->
 
-    <!--
-      Chart
-      =====
-    -->
-
-    {% include docs-section.html class=classes.Chart %}
-
-    <!--
-      Component
-      =========
-    -->
-    
-    {% include docs-section.html class=classes.Component %}
-
-    <!--
-      Base
-      =====
-    -->
-    
-    {% include docs-section.html class=classes.Base %}
-
     <hr>
 
     <!--
-      Lines
+      Charts
       ====
     -->
     
     {% include docs-section.html class=classes.Lines %}
-
-    <!--
-      Bars
-      ====
-    -->
-    
     {% include docs-section.html class=classes.Bars %}
-
-    <!--
-      StackedBars
-      ===========
-    -->
-    
     {% include docs-section.html class=classes.StackedBars %}
-
-    <!--
-      HorizontalBars
-      ==============
-    -->
-    
     {% include docs-section.html class=classes.HorizontalBars %}
-
-    <!--
-      HorizontalStackedBars
-      =====================
-    -->
-    
     {% include docs-section.html class=classes.HorizontalStackedBars %}
-
-    <!--
-      Labels
-      ======
-    -->
-
     {% include docs-section.html class=classes.Labels %}
 
     <!--
-      Axis
+      Components
       ====
     -->
-    <section class="docs-section">
-      <h2 id="Axis">Axis</h2>
 
-      <p>
-        Wrapper for <tt>d3.axis</tt> for adding axis component to charts (use <tt>AxisValues</tt> for XYValues data).
-      </p>
-
-{% highlight js %}
-// Use within d3.chart('Compose')
-d3.select('#chart')
-  .chart('Compose', function(data) {
-    return {
-      // Add using axes helper
-      axes: {
-        x: {scale: ..., position: ...}
-      },
-
-      // Or with components
-      components: {
-        y_axis: {type: 'Axis', ...}
-      }
-    };
-  });
-{% endhighlight %}
-
-      <p id="Axis-scale">
-        <b class="docs-header">scale</b><code>axis.scale([value])</code><br>
-
-        Set scale for axis. If <tt>xScale</tt> and/or <tt>yScale</tt> are given, <tt>scale</tt> is set automatically based on <tt>position</tt>.
-        Can be <tt>d3.scale</tt> instance or scale options.
-      </p>
-
-{% highlight js %}
-axis.scale({data: /* ... */, key: 'x'});
-axis.scale(d3.scale()/* ... */);
-
-axis.xScale(/* ... */);
-axis.yScale(/* ... */);
-axis.position('bottom');
-
-// axis.scale -> axis.xScale by default
-{% endhighlight %}
-
-      <p id="Axis-position">
-        <b class="docs-header">position</b><code>axis.position([value])</code><br>
-
-        How to position axis relative to chart. Valid values: "top", "right", "bottom", "left", "x0", "y0".
-      </p>
-
-      <p id="Axis-translation">
-        <b class="docs-header">translation</b><code>axis.translation([value])</code><br>
-
-        Used internally with <tt>x0</tt> and <tt>y0</tt> positioning, <tt>translation</tt> is used to set <tt>{x, y}</tt> distance from edge of chart.
-      </p>
-
-      <p id="Axis-orient">
-        <b class="docs-header">orient</b><code>axis.orient([value])</code><br>
-
-        Set where labels are positioned relative to axis (default set based on <tt>position</tt>). Valid values: "top", "right", "bottom", "left".
-      </p>
-
-      <p id="Axis-orientation">
-        <b class="docs-header">orientation</b><code>axis.orientation([value])</code><br>
-
-        Set axis vertical/horizontal orientation (default set based on <tt>position</tt>). Valid values: "vertical", "horizontal".
-      </p>
-
-      <p id="Axis-axis">
-        <b class="docs-header">axis</b><br>
-
-        The following <tt>d3.axis</tt> properties are available: <tt>ticks</tt>, <tt>tickValues</tt>, <tt>tickSize</tt>, <tt>innerTickSize</tt>, <tt>outerTickSize</tt>, <tt>tickPadding</tt>, and <tt>tickFormat</tt>.
-      </p>
-
-      <p id="Axis-transition">
-        <b class="docs-header">transition</b><br>
-
-        <tt>delay</tt>, <tt>duration</tt>, and <tt>ease</tt> properties are available for controlling the axis transitions as data updates.
-      </p>
-    </section>
+    {% include docs-section.html class=classes.Axis %}
 
     <!--
       Legend
