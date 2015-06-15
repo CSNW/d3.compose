@@ -62,20 +62,8 @@ scripts: |
         <hr>
 
         {% include docs-toc-section.html class=classes.Axis %}
-
-        <li>
-          <a href="#{{classes.Legend.id}}">
-            Legend
-          </a>
-
-          <ul class="nav is-nested">
-            <!-- {% for item in classes.Legend.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %} -->
-
-            <li><a href="#Legend-charts">charts</a></li>
-          </ul>
-        </li>
+        {% include docs-toc-section.html class=classes.Legend %}
+        {% include docs-toc-section.html class=classes.InsetLegend %}
 
         <li>
           <a href="#{{classes.Title.id}}">
@@ -382,24 +370,8 @@ scripts: |
     -->
 
     {% include docs-section.html class=classes.Axis %}
-
-    <!--
-      Legend
-      ======
-    -->
-    <section class="docs-section">
-      <h2 id="Legend">Legend</h2>
-
-      <p>
-        Create legend for chart(s) using series information. Can automatically generate legend for <tt>d3.chart('Compose')</tt>
-      </p>
-
-      <p id="Legend-charts">
-        <b class="docs-header">charts</b><code>legend.charts([charts])</code><br>
-
-        When used in conjunction with <tt>d3.chart('Compose')</tt> a subset of charts can be used to generate the legend by passing in an array of the chart keys that should be included in the legend.
-      </p>
-    </section>
+    {% include docs-section.html class=classes.Legend %}
+    {% include docs-section.html class=classes.InsetLegend %}
 
     <!--
       Title
