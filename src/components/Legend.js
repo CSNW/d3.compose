@@ -13,6 +13,25 @@
     - To exclude a series from the legend, use `exclude_from_legend = true` in series object
     - To add swatch for custom chart, use `Legend.registerSwatch()`
 
+    ### Extending
+
+    To extend the `Legend` component, the following methods are available:
+
+    - `itemKey`
+    - `itemText`
+    - `swatchClass`
+    - `createSwatch`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
     @example
     ```js
     d3.select('#chart')
@@ -142,32 +161,17 @@
       return data;
     },
 
-    /**
-      Key for legend item (default is key from data)
-
-      @method itemKey
-      @return {Any}
-    */
+    // Key for legend item (default is key from data)
     itemKey: di(function(chart, d, i) {
       return d.key;
     }),
 
-    /**
-      Text for legend item (default is text from data)
-
-      @method itemText
-      @return {String}
-    */
+    // Text for legend item (default is text from data)
     itemText: di(function(chart, d, i) {
       return d.text;
     }),
 
-    /**
-      Class to apply to swatch (default is class from data)
-
-      @method swatchClass
-      @return {String}
-    */
+    // Class to apply to swatch (default is class from data)
     swatchClass: di(function(chart, d, i) {
       return d['class'];
     }),

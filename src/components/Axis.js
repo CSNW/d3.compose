@@ -16,6 +16,20 @@
     - `tickPadding`
     - `tickFormat`
 
+    ### Extending
+
+    To extend the `Axis` component, the following methods are available:
+
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
     @example
     ```js
     d3.select('#chart')

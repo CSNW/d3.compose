@@ -4,7 +4,48 @@
   var di = helpers.di;
 
   /**
+    Add title text to a chart.
+
+    ### Extending
+
+    To extend the `Title` component, the following methods are available:
+
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        return {
+          components: {
+            title: {
+              type: 'Title',
+              position: 'top'
+              text: 'Main Title',
+              textAlign: 'left',
+              'class': 'title-main'
+            },
+            subtitle: {
+              type: 'Title',
+              position: 'bottom',
+              text: 'Subtitle',
+              'class': 'title-subtitle'
+            }
+          }
+        };
+      });
+    ```
     @class Title
+    @extends Component, StandardLayer
   */
   charts.Title = charts.Component.extend('Title', mixin(mixins.StandardLayer, {
     initialize: function() {
@@ -13,21 +54,19 @@
     },
 
     /**
+      Text to display in title
+
       @property text
       @type String
     */
-    text: property('text', {
-      get: function() {
-        return this.options().text;
-      }
-    }),
+    text: property('text'),
 
     /**
-      Rotation of title text
+      Rotation of title text. (Default is `-90` for `position = "right"`, `90` for `position = "left"`, and `0` otherwise).
 
       @property rotation
       @type Number
-      @default (set based on position)
+      @default (set based on `position`)
     */
     rotation: property('rotation', {
       default_value: function() {
@@ -41,7 +80,7 @@
     }),
 
     /**
-      Horizontal text-alignment of title
+      Horizontal text-alignment of title (`"left"`, `"center"`, or `"right"`)
 
       @property textAlign
       @type String
@@ -55,12 +94,11 @@
     }),
 
     /**
-      text-anchor for title (start, middle, or end)
-      (default set by textAlign)
+      text-anchor for title (`"start"`, `"middle"`, or `"end"`)
 
       @property anchor
       @type String
-      @default "middle"
+      @default (set by `textAlign`)
     */
     anchor: property('anchor', {
       default_value: function() {
@@ -76,7 +114,7 @@
     }),
 
     /**
-      Vertical aligment for title (top, middle, bottom)
+      Vertical aligment for title (`"top"`, `"middle"`, `"bottom"`)
 
       @property verticalAlign
       @type String
