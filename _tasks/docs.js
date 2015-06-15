@@ -1,8 +1,14 @@
-var yaml = require('js-yaml');
 var fs = require('fs');
+var path = require('path');
+var yaml = require('js-yaml');
 var _ = require('lodash');
 
-var docs = JSON.parse(fs.readFileSync('../_docs/data.json'));
+var docs_path = process.env.docs_data || path.resolve('../_docs/data.json');
+
+if (!fs.existsSync(docs_path))
+  throw new Error('Docs data not found. Run "yuidoc" on the master branch to generate docs data.');
+
+var docs = JSON.parse(fs.readFileSync(docs_path));
 var formatted = {classes: {}};
 
 _.each(docs.classes, function(cls, class_name) {
