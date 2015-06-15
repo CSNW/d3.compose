@@ -64,22 +64,7 @@ scripts: |
         {% include docs-toc-section.html class=classes.Axis %}
         {% include docs-toc-section.html class=classes.Legend %}
         {% include docs-toc-section.html class=classes.InsetLegend %}
-
-        <li>
-          <a href="#{{classes.Title.id}}">
-            Title
-          </a>
-
-          <ul class="nav is-nested">
-            <!-- {% for item in classes.Title.classitems %}
-              <li><a href="#{{item.id}}">{{item.name}}</a></li>
-            {% endfor %} -->
-
-            <li><a href="#Title-text">text</a></li>
-            <li><a href="#Title-rotation">rotation</a></li>
-            <li><a href="#Title-position">position</a></li>
-          </ul>
-        </li>
+        {% include docs-toc-section.html class=classes.Title %}
 
         <hr>
 
@@ -372,34 +357,7 @@ scripts: |
     {% include docs-section.html class=classes.Axis %}
     {% include docs-section.html class=classes.Legend %}
     {% include docs-section.html class=classes.InsetLegend %}
-
-    <!--
-      Title
-      =====
-    -->
-    <section class="docs-section">
-      <h2 id="Title">Title</h2>
-
-      <p>
-        Add a title to charts/components.
-      </p>
-
-      <p id="Title-text">
-        <b class="docs-header">text</b><code>title.text([value])</code><br>
-      </p>
-
-      <p id="Title-rotation">
-        <b class="docs-header">rotation</b><code>title.rotation([value])</code><br>
-
-        Rotate the title by the given number of degrees. Default is <tt>90</tt> when <tt>position = "right"</tt>, <tt>-90</tt> for <tt>"left"</tt>, and <tt>0</tt> otherwise.
-      </p>
-
-      <p id="Title-position">
-        <b class="docs-header">position</b><code>title.position([value])</code><br>
-
-        How to position axis relative to chart. Valid values: "top", "right", "bottom", "left".
-      </p>
-    </section>
+    {% include docs-section.html class=classes.Title %}
 
     <!--
       Extensions
