@@ -4,7 +4,7 @@ var yaml = require('js-yaml');
 var _ = require('lodash');
 
 var docs_path = process.env.docs_data || path.resolve('../_docs/data.json');
-
+console.log(docs_path, process.env.docs_data);
 if (!fs.existsSync(docs_path))
   throw new Error('Docs data not found. Run "yuidoc" on the master branch to generate docs data.');
 
