@@ -72,5 +72,6 @@ fs.writeFileSync('../d3.compose-all.min.js.map', fs.readFileSync(docs_path + 'ad
 
 fs.writeFileSync('../css/d3.compose.css', fs.readFileSync(docs_path + 'additional/d3.compose.css'));
 
-// 3. Copy changelog to data
+// 3. Copy changelog to includes and package to data
 fs.writeFileSync('../_includes/changelog.md', fs.readFileSync(docs_path + 'additional/CHANGELOG.md'));
+fs.writeFileSync('../_data/package.json', fs.readFileSync(docs_path + 'additional/package.json'));

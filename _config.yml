@@ -3,9 +3,6 @@ baseurl: /d3.compose
 url: http://csnw.github.io/d3.compose/
 github: https://github.com/csnw/d3.compose/
 
-# TODO Load from package.json/bower.json
-version: 0.13.1
-
 exclude:
 - Gemfile
 - Gemfile.lock

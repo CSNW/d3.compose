@@ -11,6 +11,7 @@ _docs/
 _site/
 .sass-cache/
 _tasks/node_modules/
+_taks/npm-debug.log
 
 # OS Junk
 Thumbs.db
