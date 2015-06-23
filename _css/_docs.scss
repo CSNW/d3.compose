@@ -35,6 +35,13 @@
       padding-left: 28px;
     }
   }
+  .nav.is-nested .nav.is-nested a {
+    padding-left: 40px;
+
+    &:hover {
+      padding-left: 38px;
+    }
+  }
 
   .nav > li.active > a {
     padding-left: 18px;
@@ -45,6 +52,9 @@
   }
   .nav.is-nested > li.active > a {
     padding-left: 28px;
+  }
+  .nav.is-nested .nav.is-nested > li.active > a {
+    padding-left: 38px;
   }
 
   .back-to-top {

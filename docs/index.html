@@ -68,29 +68,27 @@ scripts: |
 
         <hr>
 
-        <li>
-          <a href="#extensions">
-            Extensions
-          </a>
-
-          <ul class="nav is-nested">
-            <li><a href="#extensions-xy">d3.compose.xy</a></li>
-          </ul>
-        </li>
+        {% include docs-toc-section.html class=classes.extensions %}
 
         {% include docs-toc-section.html class=classes.helpers %}
 
-        {% include docs-toc-section.html class=classes.Series %}
-        {% include docs-toc-section.html class=classes.XY %}
-        {% include docs-toc-section.html class=classes.XYValues %}
-        {% include docs-toc-section.html class=classes.InvertedXY %}
-        {% include docs-toc-section.html class=classes.Labels %}
-        {% include docs-toc-section.html class=classes.XYLabels %}
-        {% include docs-toc-section.html class=classes.Hover %}
-        {% include docs-toc-section.html class=classes.HoverPoints %}
-        {% include docs-toc-section.html class=classes.Transition %}
-        {% include docs-toc-section.html class=classes.StandardLayer %}
+        <li>
+          <a href="#mixins">
+            mixins
+          </a>
 
+          <ul class="nav is-nested">
+            {% include docs-toc-section.html class=classes.mixins-Series %}
+            {% include docs-toc-section.html class=classes.mixins-XY %}
+            {% include docs-toc-section.html class=classes.mixins-XYValues %}
+            {% include docs-toc-section.html class=classes.mixins-InvertedXY %}
+            {% include docs-toc-section.html class=classes.mixins-Labels %}
+            {% include docs-toc-section.html class=classes.mixins-XYLabels %}
+            {% include docs-toc-section.html class=classes.mixins-Hover %}
+            {% include docs-toc-section.html class=classes.mixins-HoverPoints %}
+            {% include docs-toc-section.html class=classes.mixins-Transition %}
+            {% include docs-toc-section.html class=classes.mixins-StandardLayer %}
+          </ul>
         <li>
           <a href="#changelog">
             Change Log
@@ -256,7 +254,8 @@ scripts: |
       Extensions
       =========
     -->
-    <section class="docs-section">
+    {% include docs-section.html class=classes.extensions %}
+    <!-- <section class="docs-section">
       <h2 id="extensions">Extensions</h2>
 
       <p>
@@ -310,7 +309,7 @@ d3.select('#chart')
     }
   });
 {% endhighlight %}
-    </section>
+    </section> -->
 
     <!--
       helpers
@@ -322,16 +321,20 @@ d3.select('#chart')
       mixins
       ======
     -->
-    {% include docs-section.html class=classes.Series %}
-    {% include docs-section.html class=classes.XY %}
-    {% include docs-section.html class=classes.XYValues %}
-    {% include docs-section.html class=classes.InvertedXY %}
-    {% include docs-section.html class=classes.Labels %}
-    {% include docs-section.html class=classes.XYLabels %}
-    {% include docs-section.html class=classes.Hover %}
-    {% include docs-section.html class=classes.HoverPoints %}
-    {% include docs-section.html class=classes.Transition %}
-    {% include docs-section.html class=classes.StandardLayer %}
+    <section class="docs-section">
+      <h2 id="mixins">mixins</h2>
+
+      {% include docs-section.html class=classes.mixins-Series nested=true %}
+      {% include docs-section.html class=classes.mixins-XY nested=true %}
+      {% include docs-section.html class=classes.mixins-XYValues nested=true %}
+      {% include docs-section.html class=classes.mixins-InvertedXY nested=true %}
+      {% include docs-section.html class=classes.mixins-Labels nested=true %}
+      {% include docs-section.html class=classes.mixins-XYLabels nested=true %}
+      {% include docs-section.html class=classes.mixins-Hover nested=true %}
+      {% include docs-section.html class=classes.mixins-HoverPoints nested=true %}
+      {% include docs-section.html class=classes.mixins-Transition nested=true %}
+      {% include docs-section.html class=classes.mixins-StandardLayer nested=true %}
+    </section>
 
     <!--
       Changelog

@@ -1,5 +1,9 @@
+{% if include.nested %}
+  <h3 id="{{include.class.id}}">{{include.class.name}}</h3>
+{% else %}
 <section class="docs-section">
   <h2 id="{{include.class.id}}">{{include.class.name}}</h2>
+{% endif %}
 
   {%if include.class.description %}
     <div class="docs-description">
@@ -65,4 +69,6 @@
       </div>
     {% endfor %}
   {% endfor %}
+{% unless include.nested %}
 </section>
+{% endunless %}
