@@ -1,0 +1,23 @@
+<tr>
+  <th colspan="2">
+    <h3>{{include.name}}</h3>
+    <p>{{include.description}}</p>
+  </th>
+</tr>
+<tr>
+  <td><a href="{{include.details.dev.path}}">{{include.details.dev.filename}}</a></td>
+  <td><i>{{include.details.dev.size}}kb</i> {{include.dev_notes}}</td>
+</tr>
+<tr>
+  <td><a href="{{include.details.prod.path}}">{{include.details.prod.filename}}</a></td>
+  <td>
+    <i>{{include.details.prod.size}}kb</i> {{include.production_notes}}
+    <small>(<a href="{{include.details.map.path}}">Source Map</a>)</small>
+  </td>
+</tr>
+{% if include.include_css %}
+<tr>
+  <td><a href="{{include.details.css.path}}">{{include.details.css.filename}}</a></td>
+  <td>Base styling for d3.compose charts/components</td>
+</tr>
+{% endif %}

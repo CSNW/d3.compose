@@ -193,6 +193,17 @@
   height: 300px;
 }
 
+.docs-downloads {
+  h3 {
+    font-size: 20px;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+  th {
+    font-weight: normal;
+  }
+}
+
 .changelog-section {
   // h1 from CHANGELOG.md = h3
   h1 {

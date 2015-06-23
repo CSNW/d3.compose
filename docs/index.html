@@ -113,38 +113,21 @@ scripts: |
         <span style="padding-left: 7px; font-size:11px; font-weight: normal;" class="interface">(Right-click, and use "Save As")</span>
       </h2>
 
-      <table>
-        <tr>
-          <td><a class="punch" href="../d3.compose-all.js">Development Version ({{ site.version }})</a></td>
-          <td class="text"><i>92kb, Full source with tons of comments</i></td>
-        </tr>
-        <tr>
-          <td><a class="punch" href="../d3.compose-all.min.js">Production Version ({{ site.version }})</a></td>
-          <td class="text" style="line-height: 16px;">
-            <i>9.6kb, Packed and gzipped</i><br>
-            <small>(<a href="../d3.compose-all.min.js.map">Source Map</a>)</small>
-          </td>
-        </tr>
-        <tr>
-          <td><a class="punch" href="https://raw.github.com/CSNW/d3.compose/master/dist/d3.compose-all.js">Edge Version (master)</a></td>
-          <td>
-            <i>Unreleased, use at your own risk</i>
-            <!-- TODO
-            <a class="travis-badge" href="https://travis-ci.org/jashkenas/backbone">
-              <img src="https://travis-ci.org/jashkenas/backbone.png" />
-            </a>
-            -->
-          </td>
-        </tr>
-      </table>
+      <table class="docs-downloads">
+        {% include docs-downloads.html details=site.data.details.all name="d3.compose-all" dev_notes="Development: Full source with tons of comments." prod_notes="Production: minified and gzipped" description="Includes all charts, components, extensions, and mixins." include_css=true %}
 
+        {% include docs-downloads.html details=site.data.details.mixins name="d3.compose-mixins" dev_notes="Development" prod_notes="Production" description="Use if you're creating your own charts/components and want to use d3.compose's mixins to help." %}
+
+        {% include docs-downloads.html details=site.data.details.src name="d3.compose" dev_notes="Development" prod_notes="Production" description="Use if you're using your own charts/components and don't need mixins, charts, or components provided by d3.compose." %}
+      </table>
+      <br>
       <p>
         d3.compose depends on the following libraries:
 
         <ul>
-          <li><a href="http://d3js.org/" target="_blank">D3.js</a> <small>(>= 3.0.0)</small></li>
-          <li><a href="http://misoproject.com/d3-chart/" target="_blank">d3.chart</a> <small>(>= 0.2.0)</small></li>
-          <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a> <small>(>= 1.5.0)</small></li>
+          <li><a href="http://d3js.org/" target="_blank">D3.js</a> <small>(&ge; 3.0.0)</small></li>
+          <li><a href="http://misoproject.com/d3-chart/" target="_blank">d3.chart</a> <small>(&ge; 0.2.0)</small></li>
+          <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a> <small>(&ge; 1.5.0)</small></li>
         </ul>
       </p>
     </section>

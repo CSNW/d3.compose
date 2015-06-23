@@ -6,8 +6,9 @@
     "docs": "node docs.js"
   },
   "devDependencies": {
-    "uglify-js": "~2.4.16",
+    "gzip-size": "^2.0.3",
     "js-yaml": "~3.3.1",
-    "lodash": "~3.9.2"
+    "lodash": "~3.9.2",
+    "uglify-js": "~2.4.16"
   }
 }
