@@ -2,12 +2,13 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('lodash');
 
-var docs_path = process.env.docs_data || path.resolve('../_docs/data.json');
-console.log(docs_path, process.env.docs_data);
-if (!fs.existsSync(docs_path))
+var docs_path = process.env.docs_path || path.resolve('../_docs/');
+console.log('path', docs_path);
+// 1. Create docs.json
+if (!fs.existsSync(docs_path + 'data.json'))
   throw new Error('Docs data not found. Run "yuidoc" on the master branch to generate docs data.');
 
-var docs = JSON.parse(fs.readFileSync(docs_path));
+var docs = JSON.parse(fs.readFileSync(docs_path + 'data.json'));
 var formatted = {classes: {}};
 
 _.each(docs.classes, function(cls, class_name) {
@@ -63,3 +64,13 @@ _.each(docs.classes, function(cls, class_name) {
 });
 
 fs.writeFileSync('../_data/docs.json', JSON.stringify(formatted));
+
+// 2. Copy d3.compose files
+fs.writeFileSync('../d3.compose-all.js', fs.readFileSync(docs_path + 'additional/d3.compose-all.js'));
+fs.writeFileSync('../d3.compose-all.min.js', fs.readFileSync(docs_path + 'additional/d3.compose-all.min.js'));
+fs.writeFileSync('../d3.compose-all.min.js.map', fs.readFileSync(docs_path + 'additional/d3.compose-all.min.js.map'));
+
+fs.writeFileSync('../css/d3.compose.css', fs.readFileSync(docs_path + 'additional/d3.compose.css'));
+
+// 3. Copy changelog to data
+fs.writeFileSync('../_includes/changelog.md', fs.readFileSync(docs_path + 'additional/CHANGELOG.md'));

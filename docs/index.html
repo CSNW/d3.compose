@@ -202,7 +202,7 @@ scripts: |
     {% include docs-examples.html %}
 
     <!--
-      Compose/Chart/Component/Base
+      Compose, Chart, Component, and Base
       ====
     -->
 
@@ -252,74 +252,19 @@ scripts: |
 
     <!--
       Extensions
-      =========
+      ====
     -->
     {% include docs-section.html class=classes.extensions %}
-    <!-- <section class="docs-section">
-      <h2 id="extensions">Extensions</h2>
-
-      <p>
-        Extensions are used for defining options for d3.compose that wrap common behavior, reduce boilerplate, and provide helpers for composing charts and components.
-      </p>
-
-      <h3 id="extensions-xy">d3.compose.xy</h3>
-
-      <p>
-        The <tt>d3.compose.xy</tt> extension includes helpers for creating XY charts that include a title, axes, and legend. It provides sensible defaults and can reduce the amount of boilerplate needed to create standard XY charts.
-      </p>
-
-{% highlight js %}
-d3.select('#chart')
-  .chart('Compose', function(data) {
-    var scales = {
-      x: {/* ... */},
-      y: {/* ... */},
-      y2: {/* ... */}
-    };
-
-    return d3.compose.xy({
-      // charts and components as normal
-      charts: {/* ... */},
-      components: {/* ... */},
-
-      // Axes:
-      // type: 'Axis'
-      // position: x -> bottom, y -> left, x2 -> top, y2 -> right
-      axes: {
-        x: {scale: scales.x, title: 'X Axis'},
-        y: {scale: scales.y, title: 'Y Axis'},
-        y2: {scale: scales.y2, title: 'Y2 Axis'}
-      },
-      title: 'Chart Title'
-    });
-
-    // Transforms to
-    return {
-      charts: {/* ... */},
-      components: {
-        /* ... */
-        'axis.x': {type: 'Axis', position: 'bottom', scale: scales.x},
-        'axis.x.title': {type: 'Title', position: 'bottom', text: 'X Axis'},
-        'axis.y': {type: 'Axis', position: 'left', scale: scales.y},
-        'axis.y.title': {type: 'Title', position: 'left', text: 'Y Axis'},
-        'axis.y2': {type: 'Axis', position: 'right', scale: scales.y2},
-        'axis.y2.title': {type: 'Title', position: 'right', text: 'Y2 Axis'},
-        title: {type: 'Title', position: 'top', text: 'Chart Title'}
-      }
-    }
-  });
-{% endhighlight %}
-    </section> -->
 
     <!--
       helpers
-      =======
+      =====
     -->
     {% include docs-section.html class=classes.helpers %}
 
     <!--
       mixins
-      ======
+      ====
     -->
     <section class="docs-section">
       <h2 id="mixins">mixins</h2>
@@ -338,71 +283,13 @@ d3.select('#chart')
 
     <!--
       Changelog
-      =========
+      ====
     -->
-    <section class="docs-section">
+    <section class="docs-section changelog-section">
       <h2 id="changelog">Change Log</h2>
 
-      <b class="docs-header">0.12.14</b> &mdash; <small><i>(May 19, 2015)</i></small>
-      <br>
-      <ul style="margin-top: 5px;">
-        <li>Fix data handling bug in Compose.draw</li>
-        <li>Fix examples</li>
-        <li>Move stack back to helpers</li>
-      </ul>
-
-      <b class="docs-header">0.12.4</b> &mdash; <small><i>(Apr. 1, 2015)</i></small>
-      <br>
-      <ul style="margin-top: 5px;">
-        <li>Add HorizontalBar and HorizontalStackedBars</li>
-        <li>Make Bars, Lines, and Title more extensible</li>
-        <li>Fix undefined data bug</li>
-        <li>Namespace charts to make d3.chart collisions less of an issue</li>
-      </ul>
-
-      <b class="docs-header">0.12.0</b> &mdash; <small><i>(Mar. 15, 2015)</i></small>
-      <br>
-      <ul style="margin-top: 5px;">
-        <li>Add centered and adjacent options for createScale</li>
-        <li>Move x calculations for Values to createScale</li>
-        <li>Remove LineValues and AxisValues to use scale instead</li>
-        <li>Rename Line to Lines</li>
-        <li>Bugfixes in Legend, Axis, and Multi</li>
-        <li>Refactor Lines chart</li>
-        <li>Add hover to labels</li>
-        <li>Move hover points into separate HoverPoints mixin</li>
-        <li>Refactor mouse events</li>
-      </ul>
-
-      <b class="docs-header">0.11.0</b> &mdash; <small><i>(Mar. 10, 2015)</i></small>
-      <br>
-      <ul style="margin-top: 5px;">
-        <li>New legend data format</li>
-        <li>Fix creating legend from xy extension</li>
-        <li>New registerSwatch method (move method out of charts)</li>
-        <li>More options</li>
-        <li>Split build into three parts: core, core + mixins, core + mixins + charts/components</li>
-        <li>Simplify and cleanup</li>
-      </ul>
-
-      <b class="docs-header">0.10.0</b> &mdash; <small><i>(Feb. 20, 2015)</i></small>
-      <br>
-      <ul style="margin-top: 5px;">
-        <li>Merge Container and Multi</li>
-        <li>Simplify Multi (remove Axes, Legend, and Title)</li>
-        <li>Add d3.compose.xy extension for axes, legend, and title helpers</li>
-        <li>Bugfix: Layout gets passed demuxed data</li>
-      </ul>
-
-      <b class="docs-header">0.9.0</b> &mdash; <small><i>(Feb. 11, 2015)</i></small>
-      <br>
-      <ul style="margin-top: 5px;">
-        <li>Dramatic labels simplification</li>
-        <li>Add Labels, Hover, and XYHover mixins</li>
-        <li>Remove / simplify helpers (Removed getValue, capitalize, resolveChart, stack, log and simplified property, transform, and others)</li>
-        <li>Simplify mixins: Combine XY/Values series into main XY and Values mixins</li>
-        <li>General cleanup and normalize coding style</li>
-      </ul>
+      {% capture changelog %}{% include changelog.md %}{% endcapture %}
+      {{ changelog | markdownify }}
     </section>
 
     <!-- <p>

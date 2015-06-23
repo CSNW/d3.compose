@@ -192,3 +192,10 @@
   width: 500px;
   height: 300px;
 }
+
+.changelog-section {
+  // h1 from CHANGELOG.md = h3
+  h1 {
+    font-size: 24px;
+  }
+}
