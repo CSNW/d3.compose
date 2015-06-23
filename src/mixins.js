@@ -6,15 +6,18 @@
   var isUndefined = utils.isUndefined;
 
   /**
-    mixins for handling series data
+    Mixin for handling series data
 
-    @module Series
+    @class Series
+    @module mixins
   */
   var Series = {
     /**
       Get key for given series data
 
       @method seriesKey
+      @param {Any} d Series object with `key`
+      @return {Any}
     */
     seriesKey: di(function(chart, d, i) {
       return d.key;
@@ -24,6 +27,8 @@
       Get values for given series data
 
       @method seriesValues
+      @param {Any} d Series object with `values` array
+      @return {Array}
     */
     seriesValues: di(function(chart, d, i) {
       // Store seriesIndex on series
@@ -35,6 +40,9 @@
       Get class for given series data
 
       @method seriesClass
+      @param {Any} d
+      @param {Number} i
+      @return {String}
     */
     seriesClass: di(function(chart, d, i) {
       return 'chart-series chart-index-' + i + (d['class'] ? ' ' + d['class'] : '');
@@ -44,6 +52,8 @@
       Get index for given data-point of series
 
       @method seriesIndex
+      @param {Any} d
+      @param {Number} i
     */
     seriesIndex: di(function(chart, d, i) {
       var series = chart.seriesData.call(this, d, i);
@@ -54,16 +64,20 @@
       Get parent series data for given data-point
 
       @method seriesData
+      @return {Any}
     */
     seriesData: di(function(chart, d, i) {
       return helpers.getParentData(this);
     }),
 
     /**
-      Get style given series data or data-point
+      (di) Get style given series data or data-point
       (Uses "style" object on `d`, if defined)
 
       @method itemStyle
+      @param {Any} d
+      @param {Number} [i]
+      @param {Number} [j]
       @return {String}
     */
     itemStyle: di(function(chart, d, i) {
@@ -71,11 +85,54 @@
     }),
 
     /**
-      extension of layer()
-      - updates dataBind method to access underlying series values
-      - handles appending series groups to chart
-      -> should be used just like layer() would be used without series
+      Get series count for chart
 
+      @method seriesCount
+      @return {Number}
+    */
+    seriesCount: function() {
+      var data = this.data();
+      return (data && helpers.isSeriesData(data)) ? data.length : 1;
+    },
+
+    /**
+      Extension of layer() that handles data-binding and layering for series data.
+
+      - Updates `dataBind` method to access underlying series values
+      - Creates group layer for each series in chart
+      - Should be used just like layer()
+
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(mixins.Series, {
+        initialize: function() {
+          this.seriesLayer('Circles', this.base, {
+            // Create group for each series on this.base
+            // and calls the following for each series item
+            // (entire layer is called twice: series-1 and series-2)
+
+            dataBind: function(data) {
+              // 1. data = [1, 2, 3]
+              // 2. data = [4, 5, 6]
+            },
+            insert: function() {
+              // Same as chart.layer
+              // (where "this" is series group layer)
+            },
+            events: {
+              // Same as chart.layer
+            }
+          });
+        }
+      }));
+
+      // ...
+
+      chart.draw([
+        {key: 'series-1', values: [1, 2, 3]},
+        {key: 'series-2', values: [4, 5, 6]}
+      ]);
+      ```
       @method seriesLayer
       @param {String} name
       @param {Selection} selection
@@ -110,16 +167,6 @@
       return d3.chart().prototype.layer.call(this, name, selection, options);
     },
 
-    /**
-      Get series count
-
-      @method seriesCount
-    */
-    seriesCount: function() {
-      var data = this.data();
-      return (data && helpers.isSeriesData(data)) ? data.length : 1;
-    },
-
     // Ensure data is in series form
     transform: function(data) {
       return !helpers.isSeriesData(data) ? [{values: data}] : data;
@@ -127,9 +174,10 @@
   };
 
   /**
-    mixins for handling XY data
+    Mixin for handling XY data
 
-    @module XY
+    @class XY
+    @module mixins
   */
   var XY = {
     initialize: function() {
@@ -163,7 +211,7 @@
     },
 
     /**
-      Get/set x-scale with d3.scale or with object (uses helpers.createScale)
+      Get/set x-scale with `d3.scale` or with object (uses `helpers.createScale`)
 
       @property xScale
       @type Object|d3.scale
@@ -189,7 +237,7 @@
     }),
 
     /**
-      Get/set yscale with d3.scale or with object (uses helpers.createScale)
+      Get/set yscale with `d3.scale` or with object (uses `helpers.createScale`)
 
       @property xScale
       @type Object|d3.scale
@@ -218,6 +266,8 @@
       Get scaled x-value for given data-point
 
       @method x
+      @param {Any} d
+      @param {Number} i
       @return {Number}
     */
     x: di(function(chart, d, i) {
@@ -231,6 +281,8 @@
       Get scaled y-value for given data-point
 
       @method y
+      @param {Any} d
+      @param {Number} i
       @return {Number}
     */
     y: di(function(chart, d, i) {
@@ -241,9 +293,11 @@
     }),
 
     /**
-      Get key for data-point
+      Get key for data-point. Looks for "key" on `d` first, otherwise uses x-value.
 
       @method key
+      @param {Any} d
+      @param {Number} i
       @return {Any}
     */
     key: di(function(chart, d, i) {
@@ -251,7 +305,7 @@
     }),
 
     /**
-      Get scaled x = 0 value
+      Get scaled `x = 0` value
 
       @method x0
       @return {Number}
@@ -261,7 +315,7 @@
     },
 
     /**
-      Get scaled y = 0 value
+      Get scaled `y = 0` value
 
       @method x0
       @return {Number}
@@ -271,9 +325,15 @@
     },
 
     /**
-      Get x-value for data-point
+      Get x-value for data-point. Checks for "x" on `d` first, otherwise uses `d[0]`.
 
+      @example
+      ```js
+      xValue({x: 10, y: 20}); // -> 10
+      xValue([10, 20]); // -> 10
+      ```
       @method xValue
+      @param {Any} d
       @return {Any}
     */
     xValue: di(function(chart, d, i) {
@@ -282,9 +342,15 @@
     }),
 
     /**
-      Get y-value for data-point
+      Get y-value for data-point. Checks for "y" on `d` first, otherwise uses `d[1]`.
 
+      @example
+      ```js
+      yValue({x: 10, y: 20}); // -> 20
+      yValue([10, 20]); // -> 20
+      ```
       @method yValue
+      @param {Any} d
       @return {Any}
     */
     yValue: di(function(chart, d, i) {
@@ -293,7 +359,7 @@
     }),
 
     /**
-      Set x- and y- scale ranges
+      Set x- and y-scale ranges (using `setXScaleRange` and `setYScaleRange`)
 
       @method setScales
     */
@@ -323,7 +389,7 @@
     },
 
     /**
-      Get default x-scale
+      Get default x-scale: `{data: this.data(), key: 'x'}`
 
       @method getDefaultXScale
       @return {d3.scale}
@@ -336,7 +402,7 @@
     },
 
     /**
-      Get default y-scale
+      Get default y-scale: `{data: this.data(), key: 'y'}`
 
       @method getDefaultYScale
       @return {d3.scale}
@@ -350,15 +416,18 @@
   };
 
   /**
-    mixins for charts of centered key,value data (x: index, y: value, key)
+    Mixin for charts of centered key,value data (x: index, y: value, key)
 
-    @module XYValues
+    @class XYValues
+    @module mixins
+    @extends XY
   */
   var XYValues = utils.extend({}, XY, {
     /**
       Determine width of data-point when displayed adjacent
 
       @method adjacentWidth
+      @return {Number}
     */
     adjacentWidth: function() {
       var series_count = this.seriesCount ? this.seriesCount() : 1;
@@ -369,6 +438,7 @@
       Determine layered width (width of group for adjacent)
 
       @method layeredWidth
+      @return {Number}
     */
     layeredWidth: function() {
       var range_band = this.xScale() && this.xScale().rangeBand && this.xScale().rangeBand();
@@ -381,6 +451,7 @@
       Determine item width based on series display type (adjacent or layered)
 
       @method itemWidth
+      @return {Number}
     */
     itemWidth: function() {
       var scale = this.xScale();
@@ -388,6 +459,12 @@
     },
 
     // Override default x-scale to use ordinal type
+    /**
+      Override default x-scale to use ordinal type: `{type: 'ordinal', data: this.data(), key: 'y', centered: true}`
+
+      @method getDefaultYScale
+      @return {d3.scale}
+    */
     getDefaultXScale: function() {
       return helpers.createScale({
         type: 'ordinal',
@@ -399,15 +476,18 @@
   });
   
   /**
-    mixins for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
+    Mixin for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
 
-    @module InvertedXY
+    @class InvertedXY
+    @module mixins
   */
   var InvertedXY = {
     /**
       Get x-value for plotting (scaled y-value)
 
       @method x
+      @param {Any} d
+      @param {Number} i
       @return {Number}
     */
     x: di(function(chart, d, i) {
@@ -421,6 +501,8 @@
       Get y-value for plotting (scaled x-value)
 
       @method y
+      @param {Any} d
+      @param {Number} i
       @return {Number}
     */
     y: di(function(chart, d, i) {
@@ -461,7 +543,7 @@
     },
 
     /**
-      Set range(0, width) for given y-scale
+      Set range (0, width) for given y-scale
 
       @method setYScaleRange
       @param {d3.scale} y_scale
@@ -472,14 +554,26 @@
   };
 
   /**
-    mixin for handling labels in charts
+    Mixin for handling labels in charts
 
-    @module Labels
+    @class Labels
+    @module mixins
   */
   var Labels = {
     /**
       Call during chart initialization to add labels to chart
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(Labels, {
+        initialize: function() {
+          // this.layer()...
+
+          // Attach labels layer
+          this.attachLabels();
+        }
+      }));
+      ```
       @method attachLabels
     */
     attachLabels: function() {
@@ -509,6 +603,27 @@
     /**
       Options passed to labels chart
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(Labels, {
+        // ...
+      }));
+
+      // ...
+
+      chart.labels(true); // -> display labels with defaults
+      chart.labels(false); // -> hide labels
+      chart.labels({offset: 10}); // -> pass options to labels chart
+
+      d3.select('#chart')
+        .chart('Compose', function(data) {
+          return {
+            charts: {
+              custom: {labels: {offset: 10}}
+            }
+          };
+        });
+      ```
       @property labels
       @type Object
     */
@@ -530,18 +645,23 @@
   };
 
   /**
-    mixin for handling labels in XY charts
+    Mixin for handling labels in XY charts
+    (proxies `x` and `y` to properly place labels for XY charts)
 
-    @module XYLabels
+    @class XYLabels
+    @module mixins
+    @extends Labels
   */
   var XYLabels = utils.extend({}, Labels, {
     proxyLabelMethods: ['x', 'y']
   });
 
   /**
-    mixin for handling common hover behavior
+    Mixin for handling common hover behavior that adds standard `onMouseEnter`, `onMouseMove`, and `onMouseLeave` handlers
+    and `getPoint` helper for adding helpful meta information to raw data point.
 
-    @module Hover
+    @class Hover
+    @module mixins
   */
   var Hover = {
     initialize: function() {
@@ -556,7 +676,10 @@
       Get point information for given data-point
 
       @method getPoint
-      @return {key, series, d, i, j}
+      @param {Any} d
+      @param {Number} i
+      @param {Number} j
+      @return {key, series, d, meta {chart, i, j, x, y}}
     */
     getPoint: di(function(chart, d, i, j) {
       var key = chart.key && chart.key.call(this, d, i, j);
@@ -579,7 +702,29 @@
     /**
       Call to trigger mouseenter:point when mouse enters data-point
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Bars', helpers.mixin(Hover, {
+        initialize: function() {
+          this.layer('bars', this.base, {
+            // dataBind...
+            insert: function() {
+              // Want to trigger enter/leave point
+              // when mouse enter/leaves bar (rect)
+              var chart = this.chart();
+              return this.append('rect')
+                .on('mouseenter', chart.mouseEnterPoint)
+                .on('mouseleave', chart.mouseLeavePoint);
+            }
+            // events...
+          })
+        }
+      }));
+      ```
       @method mouseEnterPoint
+      @param {Any} d
+      @param {Number} i
+      @param {Number} j
     */
     mouseEnterPoint: di(function(chart, d, i, j) {
       chart.container.trigger('mouseenter:point', chart.getPoint.call(this, d, i, j));
@@ -588,7 +733,29 @@
     /**
       Call to trigger mouseleave:point when mouse leaves data-point
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Bars', helpers.mixin(Hover, {
+        initialize: function() {
+          this.layer('bars', this.base, {
+            // dataBind...
+            insert: function() {
+              // Want to trigger enter/leave point
+              // when mouse enter/leaves bar (rect)
+              var chart = this.chart();
+              return this.append('rect')
+                .on('mouseenter', chart.mouseEnterPoint)
+                .on('mouseleave', chart.mouseLeavePoint);
+            }
+            // events...
+          })
+        }
+      }));
+      ```
       @method mouseleavePoint
+      @param {Any} d
+      @param {Number} i
+      @param {Number} j
     */
     mouseLeavePoint: di(function(chart, d, i, j) {
       chart.container.trigger('mouseleave:point', chart.getPoint.call(this, d, i, j));
@@ -599,8 +766,8 @@
 
       @method onMouseEnter
       @param {Object} position (chart and container {x,y} position of mouse)
-        @param {Object} position.chart {x, y} position relative to chart origin
-        @param {Object} position.container {x, y} position relative to container origin
+      @param {Object} position.chart {x, y} position relative to chart origin
+      @param {Object} position.container {x, y} position relative to container origin
     */
     onMouseEnter: function(position) {},
 
@@ -609,8 +776,8 @@
 
       @method onMouseMove
       @param {Object} position (chart and container {x,y} position of mouse)
-        @param {Object} position.chart {x, y} position relative to chart origin
-        @param {Object} position.container {x, y} position relative to container origin
+      @param {Object} position.chart {x, y} position relative to chart origin
+      @param {Object} position.container {x, y} position relative to container origin
     */
     onMouseMove: function(position) {},
 
@@ -622,6 +789,12 @@
     onMouseLeave: function() {}
   };
 
+  /**
+    Mixin for automatically triggering "mouseenter:point"/"mouseleave:point" for chart data points that are within given `hoverTolerance`.
+
+    @class HoverPoints
+    @module mixins
+  */
   var HoverPoints = {
     initialize: function() {
       var points, tolerance, active;
@@ -655,7 +828,7 @@
     },
 
     /**
-      Hover tolerance for calculating close points
+      Hover tolerance (in px) for calculating close points
 
       @property hoverTolerance
       @type Number
@@ -720,9 +893,10 @@
   }
 
   /**
-    mixin for handling common transition behaviors
+    Mixin for handling common transition behaviors
 
-    @module Transition
+    @class Transition
+    @module mixins
   */
   var Transition = {
     /**
@@ -751,13 +925,29 @@
 
       @property ease
       @type String|Function
-      @default `d3.ease` default: 'cubic-in-out'
+      @default d3 default: 'cubic-in-out'
     */
     ease: property('ease', {type: 'Function'}),
 
     /**
       Setup delay, duration, and ease for transition
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(Transition, {
+        initialize: function() {
+          this.layer('circles', this.base, {
+            // ...
+            events: {
+              'merge:transition': function() {
+                // Set delay, duration, and ease from properties
+                this.chart().setupTransition(this);
+              }
+            }
+          });
+        }
+      }));
+      ```
       @method setupTransition
       @param {d3.selection} selection
     */
@@ -776,14 +966,48 @@
   };
 
   /**
-    mixin for create standard layer for extension
+    Mixin to create standard layer to make extending charts straightforward.
 
-    @module StandardLayer
+    @example
+    ```js
+    d3.chart('Chart').extend('Custom', helpers.mixin(StandardLayer, {
+      initialize: function() {
+        this.standardLayer('main', this.base.append('g'))
+        // dataBind, insert, events are defined on prototype
+      },
+
+      onDataBind: function(selection, data) {
+        // ...
+      },
+      onInsert: function(selection) {
+        // ...
+      },
+      onEnter: function(selection) {
+        // ...
+      },
+      onUpdateTransition: function(selection) {
+        // ...
+      },
+      // all d3.chart events are available: onMerge, onExit, ...
+    }));
+    ```
+    @class StandardLayer
+    @module mixins
   */
   var StandardLayer = {
     /**
       extension of `layer()` that uses standard methods on prototype for extensibility.
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(StandardLayer, {
+        initialize: function() {
+          this.standardLayer('circles', this.base.append('g'));
+        }
+
+        // onDataBind, onInsert, etc. work with "circles" layer
+      }));
+      ```
       @method standardLayer
       @param {String} name
       @param {d3.selection} selection
@@ -795,6 +1019,16 @@
     /**
       extension of `seriesLayer()` that uses standard methods on prototype for extensibility.
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(StandardLayer, {
+        initialize: function() {
+          this.standardSeriesLayer('circles', this.base.append('g'));
+        },
+
+        // onDataBind, onInsert, etc. work with "circles" seriesLayer
+      }));
+      ```
       @method standardSeriesLayer
       @param {String} name
       @param {d3.selection} selection
