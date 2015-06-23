@@ -9,7 +9,7 @@
     Mixin for handling series data
 
     @class Series
-    @module mixins
+    @namespace mixins
   */
   var Series = {
     /**
@@ -177,7 +177,7 @@
     Mixin for handling XY data
 
     @class XY
-    @module mixins
+    @namespace mixins
   */
   var XY = {
     initialize: function() {
@@ -419,7 +419,7 @@
     Mixin for charts of centered key,value data (x: index, y: value, key)
 
     @class XYValues
-    @module mixins
+    @namespace mixins
     @extends XY
   */
   var XYValues = utils.extend({}, XY, {
@@ -479,7 +479,7 @@
     Mixin for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
 
     @class InvertedXY
-    @module mixins
+    @namespace mixins
   */
   var InvertedXY = {
     /**
@@ -557,7 +557,7 @@
     Mixin for handling labels in charts
 
     @class Labels
-    @module mixins
+    @namespace mixins
   */
   var Labels = {
     /**
@@ -649,7 +649,7 @@
     (proxies `x` and `y` to properly place labels for XY charts)
 
     @class XYLabels
-    @module mixins
+    @namespace mixins
     @extends Labels
   */
   var XYLabels = utils.extend({}, Labels, {
@@ -661,7 +661,7 @@
     and `getPoint` helper for adding helpful meta information to raw data point.
 
     @class Hover
-    @module mixins
+    @namespace mixins
   */
   var Hover = {
     initialize: function() {
@@ -793,7 +793,7 @@
     Mixin for automatically triggering "mouseenter:point"/"mouseleave:point" for chart data points that are within given `hoverTolerance`.
 
     @class HoverPoints
-    @module mixins
+    @namespace mixins
   */
   var HoverPoints = {
     initialize: function() {
@@ -896,7 +896,7 @@
     Mixin for handling common transition behaviors
 
     @class Transition
-    @module mixins
+    @namespace mixins
   */
   var Transition = {
     /**
@@ -992,7 +992,7 @@
     }));
     ```
     @class StandardLayer
-    @module mixins
+    @namespace mixins
   */
   var StandardLayer = {
     /**

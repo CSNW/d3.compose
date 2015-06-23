@@ -2,16 +2,74 @@
   var utils = helpers.utils;
 
   /**
+    Extensions are used for defining options for d3.compose that wrap common behavior, reduce boilerplate,
+    and provide helpers for composing charts and components.
+
+    @class extensions
+  */
+
+  /**
     XY extension
-    Generate d3.chart.multi options for XY charts
+    Generate d3.compose options for XY charts
   
-    @method xy
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        var scales = {
+          x: {}, // ...
+          y: {}, // ...
+          y2: {} // ...
+        };
+
+        return d3.compose.xy({
+          // charts and components as normal
+          charts: {
+            bars: {type: 'Bars'}, // ...
+            lines: {type: 'Lines'} // ...
+          }, 
+          components: {}, // ...
+
+          // Axes:
+          // type: 'Axis'
+          // position: x -> 'bottom', y -> 'left', x2 -> 'top', y2: 'right'
+          axes: {
+            x: {scale: scales.x, title: 'X Axis'},
+            y: {scale: scales.y, title: 'Y Axis'},
+            y2: {scale: scales.y2, title: 'Y2 Axis'}
+          },
+          title: 'Chart Title',
+          legend: true
+        });
+
+        // transforms to
+        return {
+          charts: {
+            bars: {type: 'Bars'},
+            lines: {type: 'Lines'}
+          },
+          components: {
+            // ...
+            'axis.x': {type: 'Axis', position: 'bottom', scale: scales.x},
+            'axis.x.title': {type: 'Title', position: 'bottom', text: 'X Axis'},
+            'axis.y': {type: 'Axis', position: 'left', scale: scales.y},
+            'axis.y.title': {type: 'Title', position: 'left', text: 'Y Axis'},
+            'axis.y2': {type: 'Axis', position: 'right', scale: scales.y2},
+            'axis.y2.title': {type: 'Title', position: 'right', text: 'Y2 Axis'},
+            title: {type: 'Title', position: 'top', text: 'Chart Title'},
+            legend: {type: 'Legend', position: 'right', charts: ['bars', 'lines']}
+          }
+        };
+      })
+    ```
+    @method d3.compose.xy
     @for extensions
     @param {Object} options
-      @param {Object} [options.charts]
-      @param {Object} [options.axes]
-      @param {String|Object} [options.title]
-      @param {Boolean|Object} [options.legend]
+    @param {Object} [options.charts] Standard d3.compose charts options
+    @param {Object} [options.components] Standard d3.compose components options
+    @param {Object} [options.axes] Set of axes components with defaults (type: 'Axis', position: (by key: x -> 'bottom', y -> 'left', x2 -> 'top', y2: 'right')) and 'title' that creates matched title component
+    @param {String|Object} [options.title] Title text (with defaults) or options
+    @param {Boolean|Object} [options.legend] Show legend (with defaults) or legend options
   */
   d3.compose.xy = function xy(options) {
     options = options || {};
