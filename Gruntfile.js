@@ -67,8 +67,7 @@ module.exports = function(grunt) {
       docs: {
         files: [{
           expand: true,
-          cwd: 'dist/',
-          src: ['d3.compose-all.js', 'd3.compose-all.min.js', 'd3.compose-all.min.js.map', 'd3.compose.css'],
+          src: ['dist/*'],
           dest: '_docs/additional/'
         }, {
           expand: true,
