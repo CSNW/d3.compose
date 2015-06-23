@@ -71,7 +71,8 @@ module.exports = function(grunt) {
           src: ['d3.compose-all.js', 'd3.compose-all.min.js', 'd3.compose-all.min.js.map', 'd3.compose.css'],
           dest: '_docs/additional/'
         }, {
-          src: ['CHANGELOG.md'],
+          expand: true,
+          src: ['package.json', 'CHANGELOG.md'],
           dest: '_docs/additional/'
         }]
       }
