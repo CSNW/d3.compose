@@ -103,11 +103,11 @@ Install bower (if necessary) `npm install -g bower`
 
 Install yuidoc (if necessary) `npm install -g yuidocjs`
 
-1. On master, run `yuidoc`
+1. On master, run `npm run docs`
 2. Switch to `gh-pages` branch
 3. Navigate to `_tasks` directory (`cd _tasks`)
 4. Run docs task `npm run docs`
 5. Navigate back to root
 6. View site with `bundle exec jekyll serve`
 
-Note: For faster iteration, create a separate clone, switch to `gh-pages` branch, set `docs_data` environment variable to original clone (e.g. Windows: `SET docs_data=C:\...\d3.compose\_docs\data.json`), and then run steps 3-6.
+Note: For faster iteration, create a separate clone, switch to `gh-pages` branch, set `docs_path` environment variable to original clone (e.g. Windows: `SET docs_data=C:\...\d3.compose\_docs\`), and then run steps 3-6.

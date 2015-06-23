@@ -63,6 +63,20 @@ module.exports = function(grunt) {
       }
     },
 
+    copy: {
+      docs: {
+        files: [{
+          expand: true,
+          cwd: 'dist/',
+          src: ['d3.compose-all.js', 'd3.compose-all.min.js', 'd3.compose-all.min.js.map', 'd3.compose.css'],
+          dest: '_docs/additional/'
+        }, {
+          src: ['CHANGELOG.md'],
+          dest: '_docs/additional/'
+        }]
+      }
+    },
+
     connect: {
       example: {
         options: {
@@ -182,6 +196,10 @@ module.exports = function(grunt) {
   grunt.registerTask('debug', 'Run example with automatic build and testing', [
     'connect:example',
     'watch:test'
+  ]);
+
+  grunt.registerTask('docs', 'Prepare files for docs', [
+    'copy:docs'
   ]);
 
   grunt.registerTask('release', 'Build a new release of the library', function() {

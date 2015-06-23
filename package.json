@@ -8,7 +8,8 @@
     "jshint": "node -e \"require('grunt').tasks(['jshint']);\"",
     "release": "node -e \"require('grunt').tasks(['release']);\"",
     "test": "node -e \"require('grunt').tasks(['test']);\"",
-    "debug": "node -e \"require('grunt').tasks(['debug']);\""
+    "debug": "node -e \"require('grunt').tasks(['debug']);\"",
+    "docs": "yuidoc && node -e \"require('grunt').tasks(['docs']);\""
   },
   "repository": {
     "type": "git",
@@ -28,18 +29,19 @@
   "homepage": "https://github.com/CSNW/d3.compose",
   "license": "MIT",
   "devDependencies": {
+    "async": "~0.9.0",
     "grunt": "~0.4.5",
     "grunt-contrib-concat": "~0.5.1",
     "grunt-contrib-connect": "~0.9.0",
+    "grunt-contrib-copy": "^0.8.0",
     "grunt-contrib-jasmine": "~0.8.2",
     "grunt-contrib-jshint": "~0.11.0",
     "grunt-contrib-uglify": "~0.8.0",
     "grunt-contrib-watch": "~0.6.1",
-    "load-grunt-tasks": "~3.1.0",
-    "semver": "~4.3.1",
     "grunt-zip": "~0.16.2",
-    "async": "~0.9.0",
+    "inquirer": "~0.8.0",
+    "load-grunt-tasks": "~3.1.0",
     "request": "~2.53.0",
-    "inquirer": "~0.8.0"
+    "semver": "~4.3.1"
   }
 }
