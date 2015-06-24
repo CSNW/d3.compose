@@ -1,0 +1,93 @@
+.editor {
+  background-color: #fff;
+  border: solid 1px #ddd;
+  position: relative;
+  padding: 0;
+}
+
+.editor-chart-container {}
+
+.editor-chart {}
+
+.editor-options {
+  padding-top: 10px;
+
+  pre {
+    border: none;
+  }
+
+  .nav-tabs > li > a {
+    border-radius: 0;
+    line-height: 40px;
+    padding: 0;
+  }
+  .nav-tabs > li:first-child.active > a {
+    border-left-color: transparent;
+  }
+  .nav-tabs > li:last-child.active > a {
+    border-right-color: transparent;
+  }
+}
+
+.editor-customize {
+  display: none; // (for customize)
+}
+
+// Wide layout
+.editor.is-wide {
+  display: flex;
+  flex-direction: row;
+
+  .editor-chart-container {
+    flex: 1;
+
+    background-color: #eee;
+    padding: 10px;
+    // border-left: solid 1px #ddd; (for customize)
+    border-right: solid 1px #ddd;
+
+    .editor-chart {
+      .chart-compose {
+        border: inherit;
+      }
+    }
+  }
+  .editor-options {
+    // flex: 0.7; (for customize)
+    flex: 0.8;
+
+    position: relative;
+
+    .tab-content {
+      position: absolute;
+      top: 52px; // 40px line-height + 10px padding + 2px border
+      bottom: 0;
+      left: 0;
+      right: 0;
+      overflow: auto;
+    }
+  }
+  .editor-customize {
+    order: -1;
+    flex: 0 0 200px;
+  }
+}
+
+// Constrained layout
+.editor.is-constrained {
+  .editor-chart-container {}
+
+  .editor-chart {
+    .chart-compose {
+      border: none;
+    }
+  }
+
+  .editor-options {
+
+  }
+  
+  .editor-customize {
+
+  }
+}

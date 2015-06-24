@@ -3,9 +3,13 @@ layout: default
 title: Example
 class: example
 scripts: |
+  <script type="text/javascript">examples = {};</script>
+  <script src="../js/examples/line.js"></script>
+  <script src="../js/editor.js"></script>
   <script src="../js/examples.js"></script>
 ---
-<div class="row">
+
+<div class="row examples">
   <aside class="col-lg-2" role="complementary">
     <nav class="example-sidebar js-sidebar">
       <ul class="nav">
@@ -14,23 +18,5 @@ scripts: |
       </ul>
     </nav>
   </aside>
-  <section class="col-lg-5">
-    <div class="example-chart js-chart"></div>
-  </section>
-  <section class="col-lg-5">
-    <div role="tabpanel">
-      <ul class="nav nav-tabs" role="tablist">
-        <li class="active" role="presentation"><a href="#tab-options" aria-controls="options" role="tab" data-toggle="tab">Options</a></li>
-        <li role="presentation"><a href="#tab-data" aria-controls="data" role="tab" data-toggle="tab">Data</a></li>
-      </ul>
-      <div class="tab-content js-config">
-        <div class="tab-pane active example-editor js-options" role="tabpanel" id="tab-options">
-          <p class="loading">Loading options...</p>
-        </div>
-        <div class="tab-pane example-editor js-data" role="tabpanel" id="tab-data">
-          <p class="loading">Loading data...</p>
-        </div>
-      </div>
-    </div>
-  </section>
+  <section class="col-lg-10 js-editor"></section>
 </div>

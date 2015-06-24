@@ -1,230 +1,122 @@
-(function($, _, Backbone, d3, hljs, global) {
+(function($, Backbone, d3, hljs, global) {
 
-var helpers = d3.compose.helpers;
-var mixins = d3.compose.mixins;
-
-var examples = {};
-
-// Line
-examples.line = {};
-examples.line.options = function(data) {
-  var scales = {
-    x: {data: data, key: 'x'},
-    y: {data: data, key: 'y'}
-  };
-
-  return {
-    charts: {
-      line: {
-        type: 'Lines',
-        data: data,
-        xScale: scales.x,
-        yScale: scales.y,
-        interpolate: 'monotone'
-      }
-    },
-    components: {
-      'axis.x': {
-        type: 'Axis',
-        position: 'bottom',
-        scale: scales.x,
-        ticks: 5
-      },
-      'axis.y': {
-        type: 'Axis',
-        position: 'left',
-        scale: scales.y,
-        ticks: 5
-      },
-      title: {
-        type: 'Title',
-        position: 'top',
-        text: 'Line Chart',
-        'class': 'chart-title-main',
-        margins: {top: 4, bottom: 4}
-      }
-    }
-  };
-};
-examples.line.data = [
-  {
-    key: 'a', values: [
-      {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
-    ]
-  },
-  {
-    key: 'b', values: [
-      {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
-    ]
+  /**
+    @class Application
+  */
+  function Application() {
+    this.dependencies = {};
   }
-];
 
-// Line-Bar Values
-examples['line-bar-values'] = {};
-examples['line-bar-values'].options = function(data) {
-  var input = data.input;
-  var results = data.results;
-  var scales = {
-    x: {type: 'ordinal', data: results, key: 'x', adjacent: true},
-    y: {data: input, key: 'y'},
-    y2: {data: results, key: 'y', domain: [0, 100]}
-  };
+  _.extend(Application.prototype, Backbone.Events, {
+    start: function start(options) {
+      this.setupRegistry();
 
-  return d3.compose.xy({
-    charts: {
-      input: {
-        type: 'Lines',
-        data: input,
-        xScale: scales.x,
-        yScale: scales.y
-      },
-      results: {
-        type: 'Bars',
-        data: results,
-        xScale: scales.x,
-        yScale: scales.y2
-      }
+      this.trigger('start', this);
+
+      if (!Backbone.history.started)
+        Backbone.history.start();
     },
-    axes: {
-      x: {
-        scale: scales.x
-      },
-      y: {
-        scale: scales.y,
-        title: 'Input'
-      },
-      y2: {
-        scale: scales.y2,
-        title: 'Results'
-      }
+
+    get: function get(name) {
+      if (!this.registry)
+        throw new Error('get() can only be called after Application startup()');
+
+      return this.registry[name];
     },
-    title: {
-      text: 'Input vs. Output'
+    set: function set(name, value) {
+      if (!this.registry)
+        throw new Error('set() can only be called after Application startup()');
+
+      this.registry[name] = value;
+    },
+
+    register: function register(name, value, options) {
+      options = options || {};
+
+      this.dependencies[name] = {
+        value: value,
+        options: {
+          instantiate: 'instantiate' in options ? options.instantiate : true,
+          initialize: 'initialize' in options ? options.initialize : false
+        }
+      };
+    },
+    setupRegistry: function setupRegistry() {
+      this.registry = {};
+
+      _.each(this.dependencies, function(dependency, name) {
+        if (dependency.options.instantiate)
+          this.set(name, new dependency.value());
+        else if (dependency.options.initialize)
+          this.set(name, dependency.value(this));
+        else
+          this.set(name, dependency.value);
+      }, this);
+    },
+
+    error: function() {
+      console.error.apply(console, arguments);
     }
   });
-};
-examples['line-bar-values'].data = {
-  input: [
-    {
-      key: 'input',
-      values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
-    }
-  ],
-  results: [
-    {
-      key: 'run-1',
-      values: [{x: 'a', y: 10}, {x: 'b', y: 30}, {x: 'c', y: 20}]
+
+  // app.js
+  var app = global.app = new Application();
+
+  // Router.js
+  var Router = Backbone.Router.extend({
+    routes: {
+      '': 'example',
+      ':example': 'example'
     },
-    {
-      key: 'run-2',
-      values: [{x: 'a', y: 15}, {x: 'b', y: 25}, {x: 'c', y: 20}]
+
+    example: function example(id, query) {
+      var example = examples[id || 'line'];
+
+      if (example) {
+        if (!this.editor) {
+          this.editor = new Editor();
+
+          // Add dynamic wide attribute for editor
+          var constrained = true;
+          var constrained_width = 1200;
+          var editor = this.editor.$el;
+
+          this.constrain = function constrain() {
+            var width = window.innerWidth;
+
+            if (constrained && width > constrained_width) {
+              editor.removeClass('is-constrained').addClass('is-wide');
+              constrained = false;
+            }
+            else if (!constrained && width <= constrained_width) {
+              editor.addClass('is-constrained').removeClass('is-wide');
+              constrained = true;
+            }
+          }
+
+          $(window).on('resize', this.constrain);
+          this.constrain();
+        }
+
+        this.editor.data = example.data;
+        this.editor.options = example.options;
+
+        $('.js-editor')[0].appendChild(this.editor.el);
+        this.editor.render();
+      }
+      else {
+        app.error('Example not found for ' + id);
+      }
     }
-  ]
-};
-
-/**
-  Interactive d3.compose example
-
-  Features:
-  - Navigate between pre-made examples
-  - Dynamic data and compose for chart
-  - Long-lived chart for transitions
-*/
-var app = global.example = global.example || {};
-
-var Router = example.Router = Backbone.Router.extend({
-  routes: {
-    '': 'example',
-    ':example': 'example'
-  },
-
-  example: function(id, query) {
-    var example = examples[id || 'line'];
-
-    if (example) {
-      app.state.set({
-        active: id,
-        example: example,
-        options: example.options,
-        data: example.data
-      });
-    }
-    else {
-      console.error('Example not found for ' + id);
-    }
-  }
-});
-
-var SidebarView = app.SidebarView = Backbone.View.extend({
-  initialize: function(options) {
-    this.model = options.model;
-    this.listenTo(this.model, 'change', this.render);
-  },
-  render: function() {
-    this.$('.active').removeClass('active');
-    this.$('[href="#/' + this.model.get('active') + '"]').addClass('active');
-  }
-});
-
-var ConfigView = app.ConfigView = Backbone.View.extend({
-  initialize: function(options) {
-    this.model = options.model;
-    this.listenTo(this.model, 'change', this.render);
-  },
-  render: function() {
-    var options_element = this.$('.js-options');
-    var data_element = this.$('.js-data');
-
-    try {
-      var options_html = '<pre><code class="js">' + this.model.get('options').toString() + '</code></pre>';
-      var data_html = '<pre><code class="js">' + JSON.stringify(this.model.get('data'), null, 2) + '</code></pre>';
-
-      options_element.html(options_html || '');
-      data_element.html(data_html || '');
-
-      hljs.highlightBlock(options_element[0]);
-      hljs.highlightBlock(data_element[0]);
-    } catch (ex) {}
-  }
-});
-
-var ChartView = app.ChartView = Backbone.View.extend({
-  initialize: function(options) {
-    this.model = options.model;
-    this.listenTo(this.model, 'change', this.render);
-  },
-  render: function() {
-    if (!this.chart) {
-      this.chart = d3.select(this.$el[0]).append('svg')
-        .chart('Compose');
-    }
-
-    this.chart.options(this.model.get('options'));
-    this.chart.draw(this.model.get('data'));
-  }
-});
-
-app.startup = function() {
-  app.state = new Backbone.Model();
-
-  app.router = new Router();
-
-  app.sidebar = new SidebarView({
-    model: app.state,
-    el: $('.js-sidebar')[0]
-  });
-  app.config = new ConfigView({
-    model: app.state,
-    el: $('.js-config')[0]
-  });
-  app.chart = new ChartView({
-    model: app.state,
-    el: $('.js-chart')[0]
   });
 
-  Backbone.history.start();
-};
+  // main.js
+  app.on('start', function() {
+    app.set('router', new Router());
+  });
 
-$(document).ready(app.startup);
+  $(document).ready(function() {
+    app.start();
+  });
 
-})(jQuery, _, Backbone, d3, hljs, this);
+})(Backbone.$, Backbone, d3, hljs, this);

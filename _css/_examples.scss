@@ -1,17 +1,6 @@
 // Example
 // ----------------------------------------------------- //
 
-.example svg {
-  height: 400px;
-
-  @media (min-width: $screen-lg-min) {
-    width: 460px;
-  }
-  @media (min-width: $screen-xl-min) {
-    width: 580px;
-  }
-}
-
 .example-sidebar {
   .nav > li > a {
     padding: 4px 4px;
@@ -27,23 +16,6 @@
   }
 }
 
-.example-editor {
-  padding: 10px;
-  border-left: solid 1px #ddd;
-
-  & pre {
-    padding: 0;
-    background-color: transparent;
-    border-radius: 0;
-    border: none;
-  }
-
-  .loading {
-    color: #999;
-    margin-top: 10px;
-  }
-}
-
-.example-chart {
-  margin-top: 40px;
+.examples .editor.is-wide {
+  height: calc(100vh - 90px);
 }
