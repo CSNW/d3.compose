@@ -48,6 +48,6 @@
       return '  ' + fn.join('\n  ') + '\n';
     },
 
-    data: examples.data.b
+    data: examples.data.combined
   };
 })(examples);

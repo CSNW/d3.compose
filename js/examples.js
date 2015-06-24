@@ -70,7 +70,12 @@
     },
 
     example: function example(id, query) {
-      var example = examples[id || 'line'];
+      if (!id) {
+        this.navigate('//line', {replace: true});
+        id = 'line';
+      }
+
+      var example = examples[id];
 
       if (example) {
         if (!this.editor) {
@@ -98,8 +103,7 @@
           this.constrain();
         }
 
-        this.editor.data = example.data;
-        this.editor.generate = example.generate;
+        this.editor.setExample(example);
 
         $('.js-editor')[0].appendChild(this.editor.el);
         this.editor.render();

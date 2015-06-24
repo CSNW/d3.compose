@@ -42,23 +42,64 @@
           .height(400);
       }
 
-      var fn = new Function('data', this.generate())
-      this.chart.options(fn);
-      this.chart.draw(this.data);
+      this.chart.options(prepareOptionsFn(this.example, this.getOptions()));
+      this.chart.draw(prepareData(this.example, this.getDataKey()));
     },
 
-    renderOptions: function renderConfig() {
-      renderAndHighlight(this.$('.js-options')[0], 'd3.select(\'#chart\').chart(\'Compose\', function(data) {\n' + this.generate() + '});');
+    renderOptions: function renderOptions() {
+      renderAndHighlight(this.$('.js-options')[0], prepareOptionsString(this.example, this.getOptions()));
     },
 
     renderData: function renderData() {
-      renderAndHighlight(this.$('.js-data')[0], JSON.stringify(this.data, null, 2));
+      renderAndHighlight(this.$('.js-data')[0], prepareDataString(this.example, this.getDataKey()));
     },
 
     renderCustomize: function renderCustomize() {
       // TODO
+    },
+
+    setExample: function setExample(example) {
+      this.example = example;
+
+      // TODO Load from customize form
+      var options = {};      
+      _.each(this.example.options, function(option, key) {
+        options[key] = option.default_value;
+      });
+      this.setOptions(options);
+
+      // TODO Load from data dropdown
+      this.setDataKey('series');
+    },
+
+    getOptions: function getOptions() {
+      return this.options;
+    },
+    setOptions: function setOptions(options) {
+      this.options = options;
+    },
+
+    getDataKey: function getDataKey() {
+      return this.data_key;
+    },
+    setDataKey: function setDataKey(key) {
+      this.data_key = key;
     }
   });
+
+  function prepareOptionsFn(example, options) {
+    return new Function('data', example.generate(options));
+  }
+  function prepareOptionsString(example, options) {
+    return 'd3.select(\'#chart\').chart(\'Compose\', function(data) {\n' + example.generate(options) + '});'
+  }
+
+  function prepareData(example, data_key) {
+    return example.data[data_key];
+  }
+  function prepareDataString(example, data_key) {
+    return JSON.stringify(prepareData(example, data_key), null, 2);
+  }
 
   function renderAndHighlight(el, js) {
     try {
