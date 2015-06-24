@@ -99,7 +99,7 @@
         }
 
         this.editor.data = example.data;
-        this.editor.options = example.options;
+        this.editor.generate = example.generate;
 
         $('.js-editor')[0].appendChild(this.editor.el);
         this.editor.render();

@@ -42,12 +42,13 @@
           .height(400);
       }
 
-      this.chart.options(this.options);
+      var fn = new Function('data', this.generate())
+      this.chart.options(fn);
       this.chart.draw(this.data);
     },
 
     renderOptions: function renderConfig() {
-      renderAndHighlight(this.$('.js-options')[0], this.options.toString());
+      renderAndHighlight(this.$('.js-options')[0], 'd3.select(\'#chart\').chart(\'Compose\', function(data) {\n' + this.generate() + '});');
     },
 
     renderData: function renderData() {
@@ -62,7 +63,7 @@
   function renderAndHighlight(el, js) {
     try {
       var html = '<pre><code class="js">' + js + '</code></pre>';
-      el.innerHTML = html + html;
+      el.innerHTML = html;
       hljs.highlightBlock(el);  
     } catch (ex) {}
   }
