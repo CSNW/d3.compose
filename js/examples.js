@@ -1,4 +1,4 @@
-(function($, Backbone, d3, hljs, global) {
+(function($, Backbone, _, d3, hljs, global) {
 
   /**
     @class Application
@@ -81,7 +81,7 @@
           var constrained_width = 1200;
           var editor = this.editor.$el;
 
-          this.constrain = function constrain() {
+          this.constrain = _.throttle(function constrain() {
             var width = window.innerWidth;
 
             if (constrained && width > constrained_width) {
@@ -92,7 +92,7 @@
               editor.addClass('is-constrained').removeClass('is-wide');
               constrained = true;
             }
-          }
+          }, 100);
 
           $(window).on('resize', this.constrain);
           this.constrain();
@@ -112,11 +112,17 @@
 
   // main.js
   app.on('start', function() {
-    app.set('router', new Router());
+    var router = new Router();
+    app.set('router', router);
+    
+    router.on('route', function() {
+      $('.js-sidebar li').removeClass('active');
+      $('.js-sidebar [href="' + window.location.hash + '"]').parent().addClass('active');
+    })
   });
 
   $(document).ready(function() {
     app.start();
   });
 
-})(Backbone.$, Backbone, d3, hljs, this);
+})(Backbone.$, Backbone, _, d3, hljs, this);
