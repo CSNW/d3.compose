@@ -32,7 +32,7 @@
           "    x: {scale: scales.x, ticks: 5},",
           "    y: {scale: scales.y, ticks: 5}",
           "  },",
-          "  title: 'Line Chart'",
+          "  title: 'Line Chart (d3.compose.xy)'",
           "});"
         ]);
       }

@@ -3,6 +3,15 @@
   global.Editor = Backbone.View.extend({
     className: 'editor is-constrained',
 
+    events: {
+      'click .js-options-toggle': 'onOptionsToggle'
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'onOptionsToggle');
+      this.showing_options = false;
+    },
+
     template: function template(data) {
       var html = '<div class="editor-customize js-customize">Customize...</div>' +
         '<div class="editor-chart-container"><div class="editor-chart js-chart"></div></div>' +
@@ -17,6 +26,12 @@
         '      <div class="tab-pane example-editor js-data" role="tabpanel" id="tab-data"></div>' +
         '    </div>' +
         '  </div>' +
+        '</div>' +
+        '<div class="editor-details">' +
+        '  <a class="editor-show-options js-options-toggle" href="#show-options">Show Options</a>' +
+        '  <!--TODO<div class="editor-data-options">' +
+        '    Data: <select class="js-data-options"><option>Simple</option></select>' +
+        '  </div>-->' +
         '</div>';
 
       return html;
@@ -39,7 +54,8 @@
         this.chart = d3.select(this.$('.js-chart')[0])
           .chart('Compose')
           .width(600)
-          .height(400);
+          .height(400)
+          .margins({top: 10, right: 30, bottom: 20, left: 20});
       }
 
       this.chart.options(prepareOptionsFn(this.example, this.getOptions()));
@@ -64,7 +80,7 @@
       // TODO Load from customize form
       var options = {};      
       _.each(this.example.options, function(option, key) {
-        options[key] = option.default_value;
+        options[key] = !option.default_value;
       });
       this.setOptions(options);
 
@@ -84,6 +100,21 @@
     },
     setDataKey: function setDataKey(key) {
       this.data_key = key;
+    },
+
+    onOptionsToggle: function onShowOptions(e) {
+      e.preventDefault();
+
+      if (!this.showing_options) {
+        this.$('.editor-options').addClass('is-pinned');
+        this.$('.js-options-toggle').text('Hide Options');
+      }
+      else {
+        this.$('.editor-options').removeClass('is-pinned');
+        this.$('.js-options-toggle').text('Show Options');
+      }
+      
+      this.showing_options = !this.showing_options;
     }
   });
 

@@ -10,10 +10,9 @@
 .editor-chart {}
 
 .editor-options {
-  padding-top: 10px;
-
   pre {
     border: none;
+    margin: 0;
   }
 
   .nav-tabs > li > a {
@@ -31,6 +30,20 @@
 
 .editor-customize {
   display: none; // (for customize)
+}
+
+.editor-details {
+  @extend .clearfix;
+}
+
+.editor-show-options {
+  float: left;
+  margin: 10px;
+}
+
+.editor-data-options {
+  float: right;
+  margin: 10px;
 }
 
 // Wide layout
@@ -52,11 +65,12 @@
       }
     }
   }
+
   .editor-options {
     // flex: 0.7; (for customize)
     flex: 0.8;
-
     position: relative;
+    padding-top: 10px;
 
     .tab-content {
       position: absolute;
@@ -67,9 +81,14 @@
       overflow: auto;
     }
   }
+
   .editor-customize {
     order: -1;
     flex: 0 0 200px;
+  }
+
+  .editor-details {
+    display: none;
   }
 }
 
@@ -84,7 +103,30 @@
   }
 
   .editor-options {
+    display: none;
 
+    &.is-pinned {
+      display: block;
+      position: absolute;
+      top: 0;
+      bottom: 40px;
+      left: 0;
+      right: 0;
+
+      .tab-content {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow: auto;
+
+        background-color: rgba(255, 255, 255, 0.95);
+      }
+      .nav {
+        display: none;
+      }
+    }
   }
   
   .editor-customize {

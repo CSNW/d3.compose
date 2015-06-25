@@ -2,7 +2,7 @@
 
   examples.data = {
     single: {
-      simple: [10, 30, 20],
+      simple: [{x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}],
       series: [
         {
           key: 'control', name: 'Control', values: [
@@ -18,8 +18,8 @@
     },
     combined: {
       simple: {
-        input: [10, 30, 20],
-        output: [30, 20, 10]
+        input: [{x: 1, y: 10}, {x: 2, y: 30}, {x: 3, y: 20}],
+        output: [{x: 1, y: 30}, {x: 2, y: 20}, {x: 3, y: 10}]
       },
       series: {
         input: [
