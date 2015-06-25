@@ -1,5 +1,35 @@
 (function(Backbone, hljs, global) {
-  
+
+  function Options(options) {
+    options = options || {}
+    
+    this.options = _.omit(options, 'include');
+    this.include = options.include || {};
+    this.values = {include: {}};
+
+    // Add default values
+    _.each(this.options, function(option, key) {
+      this.values[key] = option.default_value;
+    }, this);
+
+    _.each(this.include, function(include, include_key) {
+      this.values.include[include_key] = include.default_value;
+      
+      if (include.options)
+        this.values[include_key] = {};
+
+      _.each(include.options, function(option, option_key) {
+        this.values[include_key][option_key] = option.default_value;
+      }, this);
+    }, this);
+  };
+
+  var Customizer = Backbone.View.extend({
+    render: function() {
+      this.el.innerHTML = 'TODO';
+    }
+  });
+
   global.Editor = Backbone.View.extend({
     className: 'editor is-constrained',
 
@@ -13,7 +43,7 @@
     },
 
     template: function template(data) {
-      var html = '<div class="editor-customize js-customize">Customize...</div>' +
+      var html = '<div class="editor-customize js-customize"></div>' +
         '<div class="editor-chart-container"><div class="editor-chart js-chart"></div></div>' +
         '<div class="editor-options">' +
         '  <div role="tabpanel">' +
@@ -46,7 +76,7 @@
       this.renderChart();
       this.renderOptions();
       this.renderData();
-      this.renderCustomize();
+      this.renderCustomizer();
     },
 
     renderChart: function renderChart() {
@@ -58,48 +88,50 @@
           .margins({top: 10, right: 30, bottom: 20, left: 20});
       }
 
-      this.chart.options(prepareOptionsFn(this.example, this.getOptions()));
-      this.chart.draw(prepareData(this.example, this.getDataKey()));
+      try {
+        var fn = new Function('options', this.example.generate(this.options.values));
+        var data = prepareData(this.example, this.options, this.data_key);
+
+        this.chart.options(fn);
+        this.chart.draw(data);  
+      } catch (ex) { console.error(ex); }
     },
 
     renderOptions: function renderOptions() {
-      renderAndHighlight(this.$('.js-options')[0], prepareOptionsString(this.example, this.getOptions()));
+      var fn_body = this.example.generate(this.options.values);
+      var fn = 'd3.select(\'#chart\').chart(\'Compose\', function(options) {\n' + fn_body + '\n});'
+      renderAndHighlight(this.$('.js-options')[0], fn);
     },
 
     renderData: function renderData() {
-      renderAndHighlight(this.$('.js-data')[0], prepareDataString(this.example, this.getDataKey()));
+      try {
+        var data = prepareData(this.example, this.options, this.data_key);
+        renderAndHighlight(this.$('.js-data')[0], JSON.stringify(data, null, 2));
+      } catch (ex) { console.error(ex); }
     },
 
-    renderCustomize: function renderCustomize() {
-      // TODO
+    renderCustomizer: function renderCustomizer() {
+      if (!this.customizer) {
+        this.customizer = new Customizer({
+          el: this.$('.js-customize')[0]
+        });
+
+        this.listenTo(this.customizer, 'change', function() {
+          // TODO
+          console.log('changed');
+        });
+      }
+
+      this.customizer.options = this.options;
+      this.customizer.render();
     },
 
     setExample: function setExample(example) {
       this.example = example;
-
-      // TODO Load from customize form
-      var options = {};      
-      _.each(this.example.options, function(option, key) {
-        options[key] = !option.default_value;
-      });
-      this.setOptions(options);
+      this.options = new Options(example.options);
 
       // TODO Load from data dropdown
-      this.setDataKey('series');
-    },
-
-    getOptions: function getOptions() {
-      return this.options;
-    },
-    setOptions: function setOptions(options) {
-      this.options = options;
-    },
-
-    getDataKey: function getDataKey() {
-      return this.data_key;
-    },
-    setDataKey: function setDataKey(key) {
-      this.data_key = key;
+      this.data_key = 'series';
     },
 
     onOptionsToggle: function onShowOptions(e) {
@@ -118,18 +150,10 @@
     }
   });
 
-  function prepareOptionsFn(example, options) {
-    return new Function('data', example.generate(options));
-  }
-  function prepareOptionsString(example, options) {
-    return 'd3.select(\'#chart\').chart(\'Compose\', function(data) {\n' + example.generate(options) + '});'
-  }
-
-  function prepareData(example, data_key) {
-    return example.data[data_key];
-  }
-  function prepareDataString(example, data_key) {
-    return JSON.stringify(prepareData(example, data_key), null, 2);
+  function prepareData(example, options, data_key) {
+    return _.extend({
+      data: example.data[data_key]
+    }, Backbone.$.extend(true, {}, options.values));
   }
 
   function renderAndHighlight(el, js) {
@@ -137,7 +161,7 @@
       var html = '<pre><code class="js">' + js + '</code></pre>';
       el.innerHTML = html;
       hljs.highlightBlock(el);  
-    } catch (ex) {}
+    } catch (ex) { console.error(ex); }
   }
 
 })(Backbone, hljs, this);
