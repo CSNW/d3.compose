@@ -194,7 +194,7 @@
       return buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
-          y: inline(common.scale('y'))  
+          y: inline(common.scale('y', {domain: [0, 120]}))  
         }
       }, extensions.xy({
         charts: {
@@ -238,7 +238,7 @@
       return buildFn({
         scales: {
           x: inline(common.scale('xOrdinal', {adjacent: false})),
-          y: inline(common.scale('y', {domain: [0, 150]}))
+          y: inline(common.scale('y', {domain: [0, 120]}))
         }
       }, extensions.xy({
         charts: {
@@ -248,13 +248,14 @@
           x: inline(common.axis('x')),
           y: inline(common.axis('y'))
         },
-        title: common.title('Stacked Bars')
+        title: common.title('Stacked Bars'),
+        legend: true
       }));
     },
 
     options: {},
     data: examples.data.single
-  }
+  };
 
   //
   // Horizontal Bars
@@ -265,7 +266,7 @@
       return buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
-          y: inline(common.scale('y'))  
+          y: inline(common.scale('y', {domain: [0, 120]}))  
         }
       }, extensions.xy({
         charts: {
@@ -296,6 +297,33 @@
       }
     },
 
+    data: examples.data.single
+  };
+
+  //
+  // Horizontal Stacked Bars
+  //
+
+  examples['horizontal-stacked-bars'] = {
+    generate: function(options) {
+      return buildFn({
+        scales: {
+          x: inline(common.scale('xOrdinal', {adjacent: false})),
+          y: inline(common.scale('y', {domain: [0, 120]}))
+        }
+      }, extensions.xy({
+        charts: {
+          bars: common.chart('HorizontalStackedBars')
+        },
+        axes: {
+          x: inline(common.axis('x', {position: 'left'})),
+          y: inline(common.axis('y', {position: 'bottom'}))
+        },
+        title: common.title('Stacked Bars')
+      }));
+    },
+
+    options: {},
     data: examples.data.single
   };
 
