@@ -98,9 +98,12 @@
     },
 
     renderOptions: function renderOptions() {
-      var fn_body = this.example.generate(this.options.values);
-      var fn = 'd3.select(\'#chart\').chart(\'Compose\', function(options) {\n' + fn_body + '\n});'
-      renderAndHighlight(this.$('.js-options')[0], fn);
+      var generated = this.example.generate(this.options.values);
+      var output = this.example.output || function(generated) {
+        return 'd3.select(\'#chart\').chart(\'Compose\', function(options) {\n' + generated + '\n});';
+      };
+
+      renderAndHighlight(this.$('.js-options')[0], output(generated));
     },
 
     renderData: function renderData() {

@@ -102,11 +102,13 @@
 
   examples.lines = {
     generate: function(options) {
-      if (options.include.xy || true) {
+      if (options.include.xy) {
         return buildFn({
-          x: inline(common.scale('x')),
-          y: inline(common.scale('y'))
-        }, {
+          scales: {
+            x: inline(common.scale('x')),
+            y: inline(common.scale('y'))
+          }
+        }, extensions.xy({
           charts: {
             lines: common.chart('Lines', {
               interpolation: 'monotone'
@@ -117,12 +119,14 @@
             y: inline(common.axis('y'))
           },
           title: common.title()
-        });
+        }));
       }
       else {
         return buildFn({
-          x: inline(common.scale('x')),
-          y: inline(common.scale('y'))
+          scales: {
+            x: inline(common.scale('x')),
+            y: inline(common.scale('y'))
+          }
         }, {
           charts: {
             lines: common.chart('Lines', {
@@ -150,7 +154,7 @@
               margins: inline({top: 4, bottom: 4})
             }
           }
-        }, {xy: false});
+        });
       }
     },
 
@@ -186,9 +190,11 @@
   examples.bars = {
     generate: function(options) {
       return buildFn({
-        x: inline(common.scale('xOrdinal')),
-        y: inline(common.scale('y'))
-      }, {
+        scales: {
+          x: inline(common.scale('xOrdinal')),
+          y: inline(common.scale('y'))  
+        }
+      }, extensions.xy({
         charts: {
           bars: common.chart('Bars')
         },
@@ -198,7 +204,7 @@
         },
         title: common.title(),
         legend: true
-      });
+      }));
     },
 
     options: {
@@ -228,9 +234,11 @@
   examples['horizontal-bars'] = {
     generate: function(options) {
       return buildFn({
-        x: inline(common.scale('xOrdinal')),
-        y: inline(common.scale('y'))
-      }, {
+        scales: {
+          x: inline(common.scale('xOrdinal')),
+          y: inline(common.scale('y'))  
+        }
+      }, extensions.xy({
         charts: {
           bars: common.chart('HorizontalBars')
         },
@@ -239,7 +247,7 @@
           y: inline(common.axis('y', {position: 'bottom'}))
         },
         title: common.title()
-      });
+      }));
     },
 
     options: {
@@ -268,22 +276,18 @@
 
   examples['lines-and-bars'] = {
     generate: function(options) {
-      var output = codes.output;
-      var input = codes.input;
-      var scales = {
-        x: codes.scales.x,
-        y: codes.scales.y,
-        y2: codes.scales.y2
-      };
-
       return buildFn({
-        x: inline(common.scale('xOrdinal', {data: codes.output})),
-        y: inline(common.scale('y', {data: codes.input})),
-        y2: inline(common.scale('y', {data: output, domain: [0, 100]}))
-      }, {
+        input: code('options.data.input'),
+        output: code('options.data.output'),
+        scales: {
+          x: inline(common.scale('xOrdinal', {data: codes.output})),
+          y: inline(common.scale('y', {data: codes.input})),
+          y2: inline(common.scale('y', {data: codes.output, domain: [0, 100]}))
+        }
+      }, extensions.xy({
         charts: {
-          input: common.chart('Lines', {data: input}),
-          output: common.chart('Bars', {data: output, yScale: scales.y2})
+          input: common.chart('Lines', {data: codes.input}),
+          output: common.chart('Bars', {data: codes.output, yScale: codes.scales.y2})
         },
         axes: {
           x: inline(common.axis('x')),
@@ -291,12 +295,7 @@
           y2: inline(common.axis('y2', {title: 'Output'}))
         },
         title: 'Input vs. Output'
-      }, {
-        preface: function() {
-          var input = options.data.input;
-          var output = options.data.output;
-        }
-      });
+      }));
     },
 
     data: examples.data.combined,
@@ -304,24 +303,62 @@
   };
 
   //
+  // dependencies
+  //
+
+  var dependencies = {};
+
+  _.each(dependencies, function(dependency) {
+    dependency();
+  });
+
+  //
+  // extensions
+  //
+
+  var extensions = {
+    xy: function(returns) {
+      var parsed = parseObject(returns);
+      parsed[0] = 'd3.compose.xy(' + parsed[0];
+      parsed[parsed.length - 1] += ')';
+
+      return parsed.join('\n');
+    }
+  };
+
+  //
   // helpers
   //
 
-  function buildFn(scales, config, options) {
-    options = _.defaults({}, options, {
-      xy: true
-    });
+  // Build function for display/execution
+  // - last argument is return
+  // - other arguments: 
+  //   {} -> var key = value;... 
+  //   function() {} -> insert body
+  function buildFn() {
+    var parts = _.toArray(arguments);
+    var returns = parts.pop();
 
-    var fn = '';
-    if (options.preface)
-      fn = fnBody(options.preface) + '\n\n';
+    var fn = _.map(parts, function(part) {
+      if (_.isFunction(part)) {
+        return fnBody(part);
+      }
+      else {
+        return _.map(part, function(value, key) {
+          value = toValue(value);
 
-    fn += 'var scales = ' + parseObject(scales).join('\n') + ';\n\n';
+          if (_.isArray(value))
+            value = value.join('\n');
+          
+          return 'var ' + key + ' = ' + value + ';';
+        }).join('\n');
+      }
+    }).join('\n\n');
 
-    if (options.xy)
-      fn += 'return d3.compose.xy(' + parseObject(config).join('\n') + ');';
-    else
-      fn += 'return ' + parseObject(config).join('\n') + ';';
+    if (fn.length)
+      fn += '\n\n';
+
+    fn += 'return ' + (_.isObject(returns) ? parseObject(returns).join('\n') : returns) + ';';
 
     return '  ' + fn.replace(/\n/g, '\n  ');
   }
@@ -409,5 +446,9 @@
       return line.substring(leading_spaces);
     }).join('\n');
   }
+
+  function wrapGenerated(generated) {
+    return 'd3.select(\'#chart\').chart(\'Compose\', function(options) {\n' + generated + '\n});';
+  };
 
 })(examples);
