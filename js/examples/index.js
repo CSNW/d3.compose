@@ -91,6 +91,8 @@
 
       if (!options)
         return text;
+      else if (_.isString(options))
+        return options
       else
         return _.extend({text: text}, options);
     }
@@ -228,6 +230,33 @@
   };
 
   //
+  // Stacked Bars
+  //
+
+  examples['stacked-bars'] = {
+    generate: function(options) {
+      return buildFn({
+        scales: {
+          x: inline(common.scale('xOrdinal', {adjacent: false})),
+          y: inline(common.scale('y', {domain: [0, 150]}))
+        }
+      }, extensions.xy({
+        charts: {
+          bars: common.chart('StackedBars')
+        },
+        axes: {
+          x: inline(common.axis('x')),
+          y: inline(common.axis('y'))
+        },
+        title: common.title('Stacked Bars')
+      }));
+    },
+
+    options: {},
+    data: examples.data.single
+  }
+
+  //
   // Horizontal Bars
   //
 
@@ -349,7 +378,7 @@
 
           if (_.isArray(value))
             value = value.join('\n');
-          
+
           return 'var ' + key + ' = ' + value + ';';
         }).join('\n');
       }
