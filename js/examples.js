@@ -71,8 +71,8 @@
 
     example: function example(id, query) {
       if (!id) {
-        this.navigate('//line', {replace: true});
-        id = 'line';
+        this.navigate('//lines', {replace: true});
+        id = 'lines';
       }
 
       var example = examples[id];

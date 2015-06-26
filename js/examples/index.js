@@ -46,78 +46,55 @@
   // Common Charts/Components
   //
 
-  var scales = {
-    x: [
-      "{data: options.data, key: 'x'}"
-    ],
-    x_ordinal: [
-      "{type: 'ordinal', data: options.data, key: 'x', adjacent: true}"
-    ],
-    y: [
-      "{data: options.data, key: 'y'}"
-    ]
+  var codes = {
+    data: code('options.data'),
+
+    scales: {
+      x: code('scales.x'),
+      y: code('scales.y'),
+      y2: code('scales.y2') 
+    },
+
+    input: code('input'),
+    output: code('output')
   };
 
-  var charts = {
-    lines: [
-      "{",
-      "  type: 'Lines',",
-      "  data: options.data,",
-      "  xScale: scales.x,",
-      "  yScales: scales.y,",
-      "  interpolate: 'monotone'",
-      "}"
-    ],
-    bars: [
-      "{",
-      "  type: 'Bars',",
-      "  data: options.data,",
-      "  xScale: scales.x,",
-      "  yScale: scales.y",
-      "}"
-    ]
-  };
+  var common = {
+    scale: function(type, options) {
+      var defaults = {
+        x: {data: codes.data, key: 'x'},
+        xOrdinal: {type: 'ordinal', data: codes.data, key: 'x', adjacent: true},
+        y: {data: codes.data, key: 'y'}
+      }[type];
 
-  var components = {
-    'axis.x': [
-      "{",
-      "  type: 'Axis',",
-      "  position: 'bottom',",
-      "  scale: scales.x,",
-      "  ticks: 5",
-      "}"
-    ],
-    'axis.y': [
-      "{",
-      "  type: 'Axis',",
-      "  position: 'left',",
-      "  scale: scales.y,",
-      "  ticks: 5",
-      "}"
-    ],
-    title: [
-      "{",
-      "  type: 'Title',",
-      "  position: 'top',",
-      "  text: options.title.text,",
-      "  'class': 'chart-title-main',",
-      "  margins: {top: 4, bottom: 4}",
-      "}"
-    ]
-  };
+      return _.extend(defaults, options);
+    },
 
-  var axes = {
-    x: [
-      "{scale: scales.x, ticks: 5}"
-    ],
-    y: [
-      "{scale: scales.y, ticks: 5}"
-    ],
-  };
+    chart: function(type, options) {
+      return _.extend({
+        type: type,
+        data: codes.data,
+        xScale: codes.scales.x,
+        yScale: codes.scales.y
+      }, options);
+    },
 
-  var title = [
-    "options.title.text"
-  ];
+    axis: function(type, options) {
+      return _.extend({
+        scale: codes.scales[type],
+        ticks: 5
+      }, options);
+    },
+
+    title: function(options) {
+      var text = code('options.title.text');
+
+      if (!options)
+        return text;
+      else
+        return _.extend({text: text}, options);
+    }
+  };
 
   //
   // Lines
@@ -125,10 +102,56 @@
 
   examples.lines = {
     generate: function(options) {
-      if (options.include.xy)
-        return buildXY({x: scales.x, y: scales.y}, {charts: {lines: charts.lines}, components: _.omit(components, ['axis.x', 'axis.y', 'title']), axes: axes, title: title});
-      else
-        return buildStandard({x: scales.x, y: scales.y}, {charts: {lines: charts.lines}, components: components});
+      if (options.include.xy || true) {
+        return buildFn({
+          x: inline(common.scale('x')),
+          y: inline(common.scale('y'))
+        }, {
+          charts: {
+            lines: common.chart('Lines', {
+              interpolation: 'monotone'
+            })
+          },
+          axes: {
+            x: inline(common.axis('x')),
+            y: inline(common.axis('y'))
+          },
+          title: common.title()
+        });
+      }
+      else {
+        return buildFn({
+          x: inline(common.scale('x')),
+          y: inline(common.scale('y'))
+        }, {
+          charts: {
+            lines: common.chart('Lines', {
+              interpolation: 'monotone'
+            })
+          },
+          components: {
+            'axis.x': {
+              type: 'Axis',
+              position: 'bottom',
+              scale: codes.scales.x,
+              ticks: 5
+            },
+            'axis.y': {
+              type: 'Axis',
+              position: 'left',
+              scale: codes.scales.y,
+              ticks: 5
+            },
+            title: {
+              type: 'Title',
+              position: 'top',
+              text: code('options.title.text'),
+              'class': 'chart-title-main',
+              margins: inline({top: 4, bottom: 4})
+            }
+          }
+        }, {xy: false});
+      }
     },
 
     options: {
@@ -162,7 +185,20 @@
 
   examples.bars = {
     generate: function(options) {
-      return buildXY({x: scales.x_ordinal, y: scales.y}, {charts: {bars: charts.bars}, axes: axes, title: title});
+      return buildFn({
+        x: inline(common.scale('xOrdinal')),
+        y: inline(common.scale('y'))
+      }, {
+        charts: {
+          bars: common.chart('Bars')
+        },
+        axes: {
+          x: inline(common.axis('x')),
+          y: inline(common.axis('y'))
+        },
+        title: common.title(),
+        legend: true
+      });
     },
 
     options: {
@@ -186,58 +222,81 @@
   };
 
   //
+  // Horizontal Bars
+  //
+
+  examples['horizontal-bars'] = {
+    generate: function(options) {
+      return buildFn({
+        x: inline(common.scale('xOrdinal')),
+        y: inline(common.scale('y'))
+      }, {
+        charts: {
+          bars: common.chart('HorizontalBars')
+        },
+        axes: {
+          x: inline(common.axis('x', {position: 'left'})),
+          y: inline(common.axis('y', {position: 'bottom'}))
+        },
+        title: common.title()
+      });
+    },
+
+    options: {
+      include: {
+        title: {
+          name: 'Title',
+          default_value: true,
+
+          options: {
+            text: {
+              name: 'Chart Title Text',
+              type: 'text',
+              default_value: 'Horizontal Bars Chart'
+            }
+          }
+        }
+      }
+    },
+
+    data: examples.data.single
+  };
+
+  //
   // Lines and Bars
   //
 
   examples['lines-and-bars'] = {
     generate: function(options) {
-      return preface([
-        "var input = options.data.input;",
-        "var output = options.data.output;"
-      ], buildXY({
-        x: ["{type: 'ordinal', data: output, key: 'x', adjacent: true}"],
-        y: ["{data: input, key: 'y'}"],
-        y2: ["{data: output, key: 'y', domain: [0, 100]}"]
+      var output = codes.output;
+      var input = codes.input;
+      var scales = {
+        x: codes.scales.x,
+        y: codes.scales.y,
+        y2: codes.scales.y2
+      };
+
+      return buildFn({
+        x: inline(common.scale('xOrdinal', {data: codes.output})),
+        y: inline(common.scale('y', {data: codes.input})),
+        y2: inline(common.scale('y', {data: output, domain: [0, 100]}))
       }, {
         charts: {
-          input: [
-            "{",
-            "  type: 'Lines',",
-            "  data: input,",
-            "  xScale: scales.x,",
-            "  yScale: scales.y",
-            "}"
-          ],
-          output: [
-            "{",
-            "  type: 'Bars',",
-            "  data: output,",
-            "  xScale: scales.x,",
-            "  yScale: scales.y2",
-            "}"
-          ]
+          input: common.chart('Lines', {data: input}),
+          output: common.chart('Bars', {data: output, yScale: scales.y2})
         },
         axes: {
-          x: [
-            "{",
-            "  scale: scales.x",
-            "}"
-          ],
-          y: [
-            "{",
-            "  scale: scales.y,",
-            "  title: 'Input'",
-            "}"
-          ],
-          y2: [
-            "{",
-            "  scale: scales.y2,",
-            "  title: 'Results'",
-            "}"
-          ]
+          x: inline(common.axis('x')),
+          y: inline(common.axis('y', {title: 'Input'})),
+          y2: inline(common.axis('y2', {title: 'Output'}))
         },
-        title: ["'Input vs. Output'"]
-      }));
+        title: 'Input vs. Output'
+      }, {
+        preface: function() {
+          var input = options.data.input;
+          var output = options.data.output;
+        }
+      });
     },
 
     data: examples.data.combined,
@@ -248,105 +307,107 @@
   // helpers
   //
 
-  function buildStandard(scales, options) {
-    var fn = [
-      "var scales = {",
-      indent(buildLines(scales), 2),
-      "};",
-      "",
-      "return {",
-      "  charts: {",
-      indent(buildLines(options.charts), 4),
-      "  },",
-      "  components: {",
-      indent(buildLines(options.components), 4),
-      "  }",
-      "};"
-    ];
+  function buildFn(scales, config, options) {
+    options = _.defaults({}, options, {
+      xy: true
+    });
 
-    // indent function body additional two spaces for formatting 
-    return formatFn(fn);
+    var fn = '';
+    if (options.preface)
+      fn = fnBody(options.preface) + '\n\n';
+
+    fn += 'var scales = ' + parseObject(scales).join('\n') + ';\n\n';
+
+    if (options.xy)
+      fn += 'return d3.compose.xy(' + parseObject(config).join('\n') + ');';
+    else
+      fn += 'return ' + parseObject(config).join('\n') + ';';
+
+    return '  ' + fn.replace(/\n/g, '\n  ');
   }
 
-  function buildXY(scales, options) {
-    var fn = [
-      "var scales = {",
-      indent(buildLines(scales), 2),
-      "};",
-      "",
-      "return d3.compose.xy({",
-      "  charts: {",
-      indent(buildLines(options.charts), 4),
-      "  }"
-    ];
+  function parseObject(obj, inline) {
+    var parsed = _.reduce(obj, function(memo, value, key) {
+      key = toKey(key);
+      value = toValue(value);
 
-    if (options.axes && _.keys(options.axes).length) {
-      fn[fn.length - 1] += ',';
+      if (_.isArray(value)) {
+        value[0] = key + ': ' + value[0];
+        value[value.length - 1] += ','
+        
+        if (!inline)
+          value = _.map(value, function(item) {return '  ' + item; });
 
-      fn = fn.concat([
-        "  axes: {",
-        indent(buildLines(options.axes), 4),
-        "  }"
-      ]);
-    }
+        memo = memo.concat(value);
+      }
+      else {
+        memo.push((inline ? '' : '  ') + key + ': ' + value + ',');
+      }
 
-    if (options.title) {
-      fn[fn.length - 1] += ',';
-
-      fn.push(indent(buildLines({title: options.title}), 2));
-    }
-
-    if (options.legend) {
-      fn[fn.length - 1] += ',';
-
-      fn.push(indent(buildLines({legend: options.legend}), 2));
-    }
-
-    if (options.components && _.keys(options.components).length) {
-      fn[fn.length - 1] += ',';
-
-      fn = fn.concat([
-        "  components: {",
-        indent(buildLines(options.components), 4),
-        "  }"
-      ]);
-    }
-
-    fn.push('});');
-
-    return formatFn(fn);
-  }
-
-  function buildLines(obj) {
-    return _.reduce(obj, function(memo, lines, key) {
-      if (memo.length)
-        memo[memo.length - 1] += ',';
-
-      lines = _.clone(lines);
-      lines[0] = quoteIfNeeded(key) + ': ' + lines[0];
-
-      return memo.concat(lines);
+      return memo;
     }, []);
+
+    // Remove trailing comma
+    if (parsed.length) {
+      var last_item = parsed[parsed.length - 1];
+      parsed[parsed.length - 1] = last_item.substring(0, last_item.length - 1);
+    }
+    
+    // Add brackets depending on format
+    if (inline) {
+      parsed = '{' + parsed.join(' ') + '}';
+    }
+    else {
+      parsed.unshift('{');
+      parsed.push('}');
+    }
+
+    return parsed;
   }
 
-  function indent(lines, num_spaces) {
-    var spaces = Array(num_spaces + 1).join(' ');
-    return spaces + lines.join('\n' + spaces);
+  function inline(obj) {
+    return code(parseObject(obj, true));
   }
 
-  function formatFn(fn) {
-    return '  ' + fn.join('\n').replace(/\n/g, '\n  ');
+  function code(str) {
+    return {
+      _is_code: true,
+      code: str
+    };
   }
 
-  function preface(lines, fn) {
-    return formatFn(lines) + '\n' + fn;
-  }
-
-  function quoteIfNeeded(key) {
+  function toKey(key) {
     if (key.indexOf('.') >= 0 || key == 'class')
       return '\'' + key + '\'';
     else
       return key;
+  }
+
+  function toValue(value) {
+    if (value && value._is_code) {
+      return value.code;
+    }
+    else if (_.isArray(value)) {
+      return '[' + _.map(value, function(item) { return toValue(item); }).join(', ') + ']';
+    }
+    else if (_.isObject(value)) {
+      return parseObject(value);
+    }
+    else if (_.isString(value)) {
+      return '\'' + value + '\'';
+    }
+    else {
+      return value;
+    }
+  }
+
+  function fnBody(fn) {
+    var lines = fn.toString().split('\n').slice(1, -1);
+    var leading_spaces = lines[0].split(/[^ \t\r\n]/)[0].length;
+
+    return _.map(lines, function(line) {
+      return line.substring(leading_spaces);
+    }).join('\n');
   }
 
 })(examples);
