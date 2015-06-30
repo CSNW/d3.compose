@@ -1,0 +1,38 @@
+.masthead {
+  background-color: $primary-color;
+  border-bottom: solid 1px #ddd;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  color: #fff;
+}
+.masthead-content {
+  margin-left: 30px;
+}
+
+.tagline {
+  font-size: 30px;
+  font-weight: normal;
+  margin-top: 50px;
+  margin-bottom: 30px;
+}
+
+.features {
+  font-size: 17px;
+
+  > li {
+    padding-bottom: 2px;  
+  }
+}
+
+.call-to-action {
+  background-color: transparent;
+  border-color: #fff;
+  color: #fff;
+  border-width: 2px;
+  margin-top: 40px;
+
+  &:hover, &:active {
+    background-color: #fff;
+    color: $primary-color;
+  }
+}

@@ -360,6 +360,34 @@
   };
 
   //
+  // Getting Started
+  //
+
+  examples['getting-started'] = {
+    generate: function(options) {
+      return buildFn({
+        scales: {
+          x: inline(common.scale('xOrdinal')),
+          y: inline(common.scale('y', {domain: [0, 120]}))  
+        }
+      }, extensions.xy({
+        charts: {
+          bars: common.chart('Bars')
+        },
+        axes: {
+          x: inline(common.axis('x')),
+          y: inline(common.axis('y'))
+        },
+        title: 'd3.compose',
+        legend: true
+      }));
+    },
+
+    data: examples.data.single,
+    options: {}
+  }
+
+  //
   // dependencies
   //
 

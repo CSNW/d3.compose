@@ -8,31 +8,57 @@
   outline: 1px dotted;
 }
 
-.header {
-  border-bottom: solid 1px #eee;
+.site-header {
   background-color: $primary-color;
   color: #fff;
 
-  & a, 
-  & a:hover, 
-  & a:active,
-  & a:visited {
+  a, 
+  a:hover, 
+  a:active,
+  a:visited {
     color: #fff;
   }
 
-  & .nav > li > a:hover,
-  & .nav > li > a:focus,
-  & .active {
+  .nav > li > a:hover,
+  .nav > li > a:focus,
+  .nav > .active > a {
     background-color: $primary-color-dark;
   }
 
-  & .navbar-brand {
+  .navbar-brand {
     font-size: 1.5em;
   }
-  & .navbar-toggle {
+  .navbar-toggle {
     border-color: #eee;
   }
-  & .icon-bar {
+  .icon-bar {
     background-color: #fff;
+  }
+
+  .home & {
+    margin-bottom: 0;
+
+    .navbar-brand {
+      margin-top: 40px;
+      font-size: 30px;
+    }
+
+    .nav {
+      margin-top: 40px;
+      font-size: 16px;
+    }
+
+    .nav > li > a {
+      padding: 4px 2px;
+      margin: 0 8px;
+      border-bottom: solid 1px transparent;
+    }
+
+    .nav > li > a:hover,
+    .nav > li > a:focus,
+    .nav > .active > a {
+      background-color: inherit;
+      border-bottom-color: #fff;
+    }
   }
 }
