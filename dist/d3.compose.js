@@ -1,8 +1,16 @@
-/*! d3.compose - v0.13.1
+/*! d3.compose - v0.13.2
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
 (function(d3, _) {
+
+  /**
+    `d3.compose.helpers` includes general purpose helpers that are used throughout d3.compose.
+    Includes convenience functions for create charts/components (`property`, `di`, and `mixin`),
+    helpful calculations (`dimensions`, `max`, and `min`) and other common behavior.
+
+    @class helpers
+  */
 
   utils = {
     chain: _.chain,
@@ -45,83 +53,78 @@
   };
 
   /**
-    Property helper
+    Helper for creating properties for charts/components
 
     @example
     ```javascript
-    var obj = {};
-
-    // Create property that's stored internally as 'simple'
-    obj.simple = property('simple');
+    var Custom = d3.chart('Chart').extend('Custom', {
+      // Create property that's stored internally as 'simple'
+      simple: property('simple')
+    });
+    var custom; // = new Custom(...);
 
     // set
-    obj.simple('Howdy');
+    custom.simple('Howdy');
 
     // get
-    console.log(obj.simple()); // -> 'Howdy'
+    console.log(custom.simple()); // -> 'Howdy'
 
     // Advanced
     // --------
     // Default values:
-    obj.advanced = property('advanced', {
+    Custom.prototype.message = property('message', {
       default_value: 'Howdy!'
     });
 
-    console.log(obj.advanced()); // -> 'Howdy!'
-    obj.advanced('Goodbye');
-    console.log(obj.advanced()); // -> 'Goodbye'
+    console.log(custom.message()); // -> 'Howdy!'
+    custom.message('Goodbye');
+    console.log(custom.message()); // -> 'Goodbye'
 
     // Set to undefined to reset to default value
-    obj.advanced(undefined);
-    console.log(obj.advanced()); // -> 'Howdy!'
+    custom.message(undefined);
+    console.log(custom.message()); // -> 'Howdy!'
 
     // Custom getter:
-    obj.advanced = property('advanced', {
+    Custom.prototype.exclaimed = property('exclaimed', {
       get: function(value) {
         // Value is the underlying set value
         return value + '!';
       }
     });
 
-    obj.advanced('Howdy');
-    console.log(obj.advanced()); // -> 'Howdy!'
+    custom.exclaimed('Howdy');
+    console.log(custom.exclaimed()); // -> 'Howdy!'
 
     // Custom setter:
-    obj.advanced = property('advanced', {
+    Custom.prototype.feeling = property('feeling', {
       set: function(value, previous) {
         if (value == 'Hate') {
-          // To override value, return obj with override specified
+          // To override value, return Object with override specified
           return {
             override: 'Love',
 
             // To do something after override, use after callback
             after: function() {
-              console.log('After: ' + this.advanced()); // -> 'After: Love'
+              console.log('After: ' + this.feeling()); // -> 'After: Love'
             }
           };
         }
       }
 
-      obj.advanced('Hate'); // -> 'After: Love'
-      console.log(obj.advanced()); // -> 'Love'
+      custom.feeling('Hate'); // -> 'After: Love'
+      console.log(custom.feeling()); // -> 'Love'
     });
     ```
-
     @method property
     @param {String} name of stored property
-    @param {Object} options
-      @param {Any} options.default_value default value for property (when set value is undefined)
-      @param {Function} options.get function(value) {return ...} getter, where value is the stored value, return desired value
-      @param {Function} options.set: function(value, previous) {return {override, after}}
-        - return override to set stored value and after() to run after set
-      @param {String} [options.type='Function']
-        - 'Function' don't evaluate in get/set
-      @param {Object} [options.context=this] context to evaluate get/set/after functions
-      @param {String} [options.prop_key='__properties'] underlying key on object to store properties on
-
-    @return {Function}
-      - (): get
-      - (value): set
+    @param {Object} [options]
+    @param {Any} [options.default_value] default value for property (when set value is `undefined`)
+    @param {Function} [options.get] `function(value) {return ...}` getter, where `value` is the stored value and return desired value
+    @param {Function} [options.set] `function(value, previous) {return {override, after}}`. Return `override` to override stored value and `after()` to run after set
+    @param {String} [options.type] `get` is evaluated by default, use `"Function"` to skip evaluation
+    @param {Object} [options.context=this] context to evaluate get/set/after functions
+    @param {String} [options.prop_key='__properties'] underlying key on object to store property
+    @return {Function} `()`: get, `(value)`: set
   */
   function property(name, options) {
     options = options || {};
@@ -178,7 +181,7 @@
   }
 
   /**
-    If value isn't undefined, return value, otherwise use default_value
+    If value isn't `undefined`, return `value`, otherwise use `default_value`
 
     @method valueOrDefault
     @param {Any} [value]
@@ -194,7 +197,7 @@
 
     @method dimensions
     @param {d3.Selection} selection
-    @return {Object} {width, height}
+    @return {Object} `{width, height}`
   */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
@@ -255,12 +258,11 @@
 
     @example
     ```javascript
-    transform.translate(10, 15) == 'translate(10, 15)'
-    transform.translate({x: 10, y: 15}) == 'translate(10, 15)'
+    translate(10, 15) == 'translate(10, 15)'
+    translate({x: 10, y: 15}) == 'translate(10, 15)'
     ```
-
     @method translate
-    @param {Number|Object} [x] value or {x, y}
+    @param {Number|Object} [x] value or `{x, y}`
     @param {Number} [y]
     @return {String}
   */
@@ -291,8 +293,20 @@
 
   /**
     Find vertical offset to vertically align text
-    (needed due to lack of alignment-baseline support in Firefox)
+    (needed due to lack of `alignment-baseline` support in Firefox)
 
+    @example
+    ```js
+    var label = d3.select('text');
+
+    // Place label vertically so that origin is top-left
+    var offset = alignText(label);
+    label.attr('transform', translate(0, offset));
+
+    // Center label for line-height of 20px
+    var offset = alignText(label, 20);
+    label.attr('transform', translate(0, offset));
+    ```
     @method alignText
     @param {element} element
     @param {Number} [line_height]
@@ -341,6 +355,14 @@
   /**
     Get max for array/series by value di
 
+    @example
+    ```js
+    var data = [
+      {values: [{y: 1}, {y: 2}, {y: 3}]},
+      {values: [{y: 4}, {y: 2}, {y: 0}]}
+    ];
+    max(data, function(d, i) { return d.y; }); // -> 4
+    ```
     @method max
     @param {Array} data
     @param {Function} getValue di function that returns value for given (d, i)
@@ -370,6 +392,14 @@
   /**
     Get min for array/series by value di
 
+    @example
+    ```js
+    var data = [
+      {values: [{x: 1}, {x: 2}, {x: 3}]},
+      {values: [{x: 4}, {x: 2}, {x: 0}]}
+    ];
+    min(data, function(d, i) { return d.x; }); // -> 0
+    ```
     @method min
     @param {Array} data
     @param {Function} getValue di function that returns value for given (d, i)
@@ -420,25 +450,22 @@
       rangeRoundBands: [[0, 100], 0.1, 0.05]
     });
     ```
-
     @method createScale
-    @param {Object|Function} options
-      - (passing in function returns original function with no changes)
-      @param {String} [options.type='linear'] Any available d3 scale (linear, ordinal, log, etc.) or time
-      @param {Array} [options.domain] Domain for scale
-      @param {Array} [options.range] Range for scale
-      @param {Any} [options.data] Used to dynamically set domain (with given value "di" or key)
-      @param {Function} [options.value] "di" for getting value for data
-      @param {String} [options.key] Data key to extract value
-      @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
-      @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each-other
-        Notes:
-        - Requires series-index as second argument to scale, otherwise centered x-value is used
-        - Requires "data" or "series" options to determine number of series
-      @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
-      @param {Number} [options.padding=0.1] For "ordinal" scales, set padding between different x-values
-        Note: Default = 0.1 for "centered" and "adjacent"
-      @param {Array...} [...] Set any other scale properties with array of arguments to pass to property
+    @param {Object|Function} options (passing in `Function` returns original function with no changes)
+    @param {String} [options.type='linear'] Any available `d3.scale` (`"linear"`, `"ordinal"`, `"log"`, etc.) or `"time"`
+    @param {Array} [options.domain] Domain for scale
+    @param {Array} [options.range] Range for scale
+    @param {Any} [options.data] Used to dynamically set domain (with given value or key)
+    @param {Function} [options.value] "di"-function for getting value for data
+    @param {String} [options.key] Data key to extract value
+    @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
+    @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each other
+    
+    - Requires series-index as second argument to scale, otherwise centered x-value is used
+    - Requires "data" or "series" options to determine number of series
+    @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
+    @param {Number} [options.padding=0.1] For "ordinal" scales, set padding between different x-values
+    @param {Array...} [options....] Set any other scale properties with array of arguments to pass to property
     @return {d3.Scale}
   */
   function createScale(options) {
@@ -564,16 +591,16 @@
     return scale;
   }
 
-  /**
-    Convert key,values to style string
-
-    @example
-    style({color: 'red', display: 'block'}) -> color: red; display: block;
-
-    @method style
-    @param {Object} styles
-    @return {String}
-  */
+  // TODO Look into converting to d3's internal style handling
+  // Convert key,values to style string
+  //
+  // @example
+  // ```js
+  // style({color: 'red', display: 'block'}) -> color: red; display: block;
+  // ```
+  // @method style
+  // @param {Object} styles
+  // @return {String}
   function style(styles) {
     if (!styles)
       return '';
@@ -587,17 +614,25 @@
   }
 
   /**
-    Stack given array of elements using options
+    Stack given array of elements vertically or horizontally
 
     @example
     ```js
-    this.call(helpers.stack)
-    this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
+    // Stack all text elements vertically, from the top, with 0px padding
+    d3.selectAll('text').call(helpers.stack)
+
+    // Stack all text elements horizontally, from the right, with 5px padding
+    d3.selectAll('text').call(helpers.stack.bind(this, {
+      direction: 'horizontal', 
+      origin: 'right',
+      padding: 5
+    }));
     ```
     @method stack
     @param {Object} [options]
-      @param {String} [options.direction=vertical] vertical or horizontal
-      @param {String} [options.origin=top] top/bottom for vertical and left/right for horizontal
+    @param {String} [options.direction=vertical] `"vertical"` or `"horizontal"`
+    @param {String} [options.origin] `"top"`, `"right"`, `"bottom"`, or `"left"` (by default, `"top"` for `"vertical"` and `"left"` for `"horizontal"`)
+    @param {Number} [options.padding=0] padding (in px) between elements
   */
   function stack(options, elements) {
     if (options && !elements) {
@@ -650,29 +685,31 @@
   }
 
   /**
-    Create wrapped (d, i) function that adds chart instance as first argument
-    Wrapped function uses standard d3 arguments and context
+    Create wrapped `(d, i)` function that adds chart instance as first argument.
+    Wrapped function uses standard d3 arguments and context.
 
     Note: in order to pass proper context to di-functions called within di-function
-          use `.call(this, d, i)` (where "this" is d3 context)
+    use `.call(this, d, i)` (where "this" is d3 context)
 
     @example
     ```javascript
-    Chart.prototype.x = helpers.di(function(chart, d, i) {
-      // "this" is traditional d3 context: node
-      return chart._xScale()(chart.xValue.call(this, d, i));
+    d3.chart('Base').extend('Custom', {
+      initialize: function() {
+        this.base.select('point')
+          .attr('cx', this.x);
+        // -> (d, i) and "this" used from d3, "chart" injected automatically
+      },
+
+      x: di(function(chart, d, i) {
+        // "this" is standard d3 context: node
+        return chart.xScale()(chart.xValue.call(this, d, i));
+      })
+
+      // xScale, xValue...
     });
-
-    // In order for chart to be specified, bind to chart
-    chart.x = helpers.bindDi(chart.x, chart);
-    // or
-    helpers.bindAllDi(chart);
-
-    this.select('point').attr('cx', chart.x);
-    // (d, i) and "this" used from d3, "chart" injected automatically
     ```
     @method di
-    @param {Function} callback with (chart, d, i) arguments
+    @param {Function} callback with `(chart, d, i)` arguments
     @return {Function}
   */
   function di(callback) {
@@ -702,8 +739,28 @@
 
 
   /**
-    Get parent data for element
+    Get parent data for element (used to get parent series for data point)
 
+    @example
+    ```js
+    var data = [{
+      name: 'Input',
+      values: [1, 2, 3]
+    }];
+
+    d3.selectAll('g')
+      .data(data)
+      .enter().append('g')
+        .selectAll('text')
+          .data(function(d) { return d.values; })
+          .enter().append('text')
+            .text(function(d) {
+              var series_data = getParentData(this);
+              return series_data.name + ': ' + d;
+            });
+
+    // Input: 1, Input: 2, Input: 3
+    ```
     @method getParentData
     @param {Element} element
     @return {Any}
@@ -721,13 +778,32 @@
   }
 
   /**
-    Mixin into prototype
+    Mix prototypes into single combined prototype for chart/component
 
-    Designed specifically to work with d3.chart
+    Designed specifically to work with d3.chart:
+
     - transform is called from last to first
     - initialize is called from first to last
     - remaining are overriden from first to last
 
+    @example
+    ```js
+    var a = {transform: function() {}, a: 1};
+    var b = {initialize: function() {}, b: 2};
+    var c = {c: 3};
+
+    d3.chart('Chart').extend('Custom', mixin(a, b, c, {
+      initialize: function() {
+        // d
+      },
+      transform: function() {
+        // d
+      }
+    }));
+
+    // initialize: Chart -> b -> d
+    // transform: d -> a -> Chart
+    ```
     @method mixin
     @param {Array|Object...} mixins... Array of mixins or mixins as separate arguments
     @return {Object}

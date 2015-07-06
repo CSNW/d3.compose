@@ -4,6 +4,7 @@
 - Add `StandardLayer` to improve extensibility in standard charts and components
 - Add `Transition` mixin for standard approach to adding `duration`, `delay`, and `ease` to charts/layers
 - __0.13.1__ Add `Overlay` component and layer type
+- __0.13.2__ Add `xKey` and `yKey` to `mixins.XY` and lots of docs updates
 
 # 0.12.0
 

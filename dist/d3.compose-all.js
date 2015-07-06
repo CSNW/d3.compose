@@ -1,8 +1,16 @@
-/*! d3.compose - v0.13.1
+/*! d3.compose - v0.13.2
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
 (function(d3, _) {
+
+  /**
+    `d3.compose.helpers` includes general purpose helpers that are used throughout d3.compose.
+    Includes convenience functions for create charts/components (`property`, `di`, and `mixin`),
+    helpful calculations (`dimensions`, `max`, and `min`) and other common behavior.
+
+    @class helpers
+  */
 
   utils = {
     chain: _.chain,
@@ -45,83 +53,78 @@
   };
 
   /**
-    Property helper
+    Helper for creating properties for charts/components
 
     @example
     ```javascript
-    var obj = {};
-
-    // Create property that's stored internally as 'simple'
-    obj.simple = property('simple');
+    var Custom = d3.chart('Chart').extend('Custom', {
+      // Create property that's stored internally as 'simple'
+      simple: property('simple')
+    });
+    var custom; // = new Custom(...);
 
     // set
-    obj.simple('Howdy');
+    custom.simple('Howdy');
 
     // get
-    console.log(obj.simple()); // -> 'Howdy'
+    console.log(custom.simple()); // -> 'Howdy'
 
     // Advanced
     // --------
     // Default values:
-    obj.advanced = property('advanced', {
+    Custom.prototype.message = property('message', {
       default_value: 'Howdy!'
     });
 
-    console.log(obj.advanced()); // -> 'Howdy!'
-    obj.advanced('Goodbye');
-    console.log(obj.advanced()); // -> 'Goodbye'
+    console.log(custom.message()); // -> 'Howdy!'
+    custom.message('Goodbye');
+    console.log(custom.message()); // -> 'Goodbye'
 
     // Set to undefined to reset to default value
-    obj.advanced(undefined);
-    console.log(obj.advanced()); // -> 'Howdy!'
+    custom.message(undefined);
+    console.log(custom.message()); // -> 'Howdy!'
 
     // Custom getter:
-    obj.advanced = property('advanced', {
+    Custom.prototype.exclaimed = property('exclaimed', {
       get: function(value) {
         // Value is the underlying set value
         return value + '!';
       }
     });
 
-    obj.advanced('Howdy');
-    console.log(obj.advanced()); // -> 'Howdy!'
+    custom.exclaimed('Howdy');
+    console.log(custom.exclaimed()); // -> 'Howdy!'
 
     // Custom setter:
-    obj.advanced = property('advanced', {
+    Custom.prototype.feeling = property('feeling', {
       set: function(value, previous) {
         if (value == 'Hate') {
-          // To override value, return obj with override specified
+          // To override value, return Object with override specified
           return {
             override: 'Love',
 
             // To do something after override, use after callback
             after: function() {
-              console.log('After: ' + this.advanced()); // -> 'After: Love'
+              console.log('After: ' + this.feeling()); // -> 'After: Love'
             }
           };
         }
       }
 
-      obj.advanced('Hate'); // -> 'After: Love'
-      console.log(obj.advanced()); // -> 'Love'
+      custom.feeling('Hate'); // -> 'After: Love'
+      console.log(custom.feeling()); // -> 'Love'
     });
     ```
-
     @method property
     @param {String} name of stored property
-    @param {Object} options
-      @param {Any} options.default_value default value for property (when set value is undefined)
-      @param {Function} options.get function(value) {return ...} getter, where value is the stored value, return desired value
-      @param {Function} options.set: function(value, previous) {return {override, after}}
-        - return override to set stored value and after() to run after set
-      @param {String} [options.type='Function']
-        - 'Function' don't evaluate in get/set
-      @param {Object} [options.context=this] context to evaluate get/set/after functions
-      @param {String} [options.prop_key='__properties'] underlying key on object to store properties on
-
-    @return {Function}
-      - (): get
-      - (value): set
+    @param {Object} [options]
+    @param {Any} [options.default_value] default value for property (when set value is `undefined`)
+    @param {Function} [options.get] `function(value) {return ...}` getter, where `value` is the stored value and return desired value
+    @param {Function} [options.set] `function(value, previous) {return {override, after}}`. Return `override` to override stored value and `after()` to run after set
+    @param {String} [options.type] `get` is evaluated by default, use `"Function"` to skip evaluation
+    @param {Object} [options.context=this] context to evaluate get/set/after functions
+    @param {String} [options.prop_key='__properties'] underlying key on object to store property
+    @return {Function} `()`: get, `(value)`: set
   */
   function property(name, options) {
     options = options || {};
@@ -178,7 +181,7 @@
   }
 
   /**
-    If value isn't undefined, return value, otherwise use default_value
+    If value isn't `undefined`, return `value`, otherwise use `default_value`
 
     @method valueOrDefault
     @param {Any} [value]
@@ -194,7 +197,7 @@
 
     @method dimensions
     @param {d3.Selection} selection
-    @return {Object} {width, height}
+    @return {Object} `{width, height}`
   */
   function dimensions(selection) {
     var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
@@ -255,12 +258,11 @@
 
     @example
     ```javascript
-    transform.translate(10, 15) == 'translate(10, 15)'
-    transform.translate({x: 10, y: 15}) == 'translate(10, 15)'
+    translate(10, 15) == 'translate(10, 15)'
+    translate({x: 10, y: 15}) == 'translate(10, 15)'
     ```
-
     @method translate
-    @param {Number|Object} [x] value or {x, y}
+    @param {Number|Object} [x] value or `{x, y}`
     @param {Number} [y]
     @return {String}
   */
@@ -291,8 +293,20 @@
 
   /**
     Find vertical offset to vertically align text
-    (needed due to lack of alignment-baseline support in Firefox)
+    (needed due to lack of `alignment-baseline` support in Firefox)
 
+    @example
+    ```js
+    var label = d3.select('text');
+
+    // Place label vertically so that origin is top-left
+    var offset = alignText(label);
+    label.attr('transform', translate(0, offset));
+
+    // Center label for line-height of 20px
+    var offset = alignText(label, 20);
+    label.attr('transform', translate(0, offset));
+    ```
     @method alignText
     @param {element} element
     @param {Number} [line_height]
@@ -341,6 +355,14 @@
   /**
     Get max for array/series by value di
 
+    @example
+    ```js
+    var data = [
+      {values: [{y: 1}, {y: 2}, {y: 3}]},
+      {values: [{y: 4}, {y: 2}, {y: 0}]}
+    ];
+    max(data, function(d, i) { return d.y; }); // -> 4
+    ```
     @method max
     @param {Array} data
     @param {Function} getValue di function that returns value for given (d, i)
@@ -370,6 +392,14 @@
   /**
     Get min for array/series by value di
 
+    @example
+    ```js
+    var data = [
+      {values: [{x: 1}, {x: 2}, {x: 3}]},
+      {values: [{x: 4}, {x: 2}, {x: 0}]}
+    ];
+    min(data, function(d, i) { return d.x; }); // -> 0
+    ```
     @method min
     @param {Array} data
     @param {Function} getValue di function that returns value for given (d, i)
@@ -420,25 +450,22 @@
       rangeRoundBands: [[0, 100], 0.1, 0.05]
     });
     ```
-
     @method createScale
-    @param {Object|Function} options
-      - (passing in function returns original function with no changes)
-      @param {String} [options.type='linear'] Any available d3 scale (linear, ordinal, log, etc.) or time
-      @param {Array} [options.domain] Domain for scale
-      @param {Array} [options.range] Range for scale
-      @param {Any} [options.data] Used to dynamically set domain (with given value "di" or key)
-      @param {Function} [options.value] "di" for getting value for data
-      @param {String} [options.key] Data key to extract value
-      @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
-      @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each-other
-        Notes:
-        - Requires series-index as second argument to scale, otherwise centered x-value is used
-        - Requires "data" or "series" options to determine number of series
-      @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
-      @param {Number} [options.padding=0.1] For "ordinal" scales, set padding between different x-values
-        Note: Default = 0.1 for "centered" and "adjacent"
-      @param {Array...} [...] Set any other scale properties with array of arguments to pass to property
+    @param {Object|Function} options (passing in `Function` returns original function with no changes)
+    @param {String} [options.type='linear'] Any available `d3.scale` (`"linear"`, `"ordinal"`, `"log"`, etc.) or `"time"`
+    @param {Array} [options.domain] Domain for scale
+    @param {Array} [options.range] Range for scale
+    @param {Any} [options.data] Used to dynamically set domain (with given value or key)
+    @param {Function} [options.value] "di"-function for getting value for data
+    @param {String} [options.key] Data key to extract value
+    @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
+    @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each other
+    
+    - Requires series-index as second argument to scale, otherwise centered x-value is used
+    - Requires "data" or "series" options to determine number of series
+    @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
+    @param {Number} [options.padding=0.1] For "ordinal" scales, set padding between different x-values
+    @param {Array...} [options....] Set any other scale properties with array of arguments to pass to property
     @return {d3.Scale}
   */
   function createScale(options) {
@@ -564,16 +591,16 @@
     return scale;
   }
 
-  /**
-    Convert key,values to style string
-
-    @example
-    style({color: 'red', display: 'block'}) -> color: red; display: block;
-
-    @method style
-    @param {Object} styles
-    @return {String}
-  */
+  // TODO Look into converting to d3's internal style handling
+  // Convert key,values to style string
+  //
+  // @example
+  // ```js
+  // style({color: 'red', display: 'block'}) -> color: red; display: block;
+  // ```
+  // @method style
+  // @param {Object} styles
+  // @return {String}
   function style(styles) {
     if (!styles)
       return '';
@@ -587,17 +614,25 @@
   }
 
   /**
-    Stack given array of elements using options
+    Stack given array of elements vertically or horizontally
 
     @example
     ```js
-    this.call(helpers.stack)
-    this.call(helpers.stack.bind(this, {direction: 'horizontal', origin: 'left'}))
+    // Stack all text elements vertically, from the top, with 0px padding
+    d3.selectAll('text').call(helpers.stack)
+
+    // Stack all text elements horizontally, from the right, with 5px padding
+    d3.selectAll('text').call(helpers.stack.bind(this, {
+      direction: 'horizontal', 
+      origin: 'right',
+      padding: 5
+    }));
     ```
     @method stack
     @param {Object} [options]
-      @param {String} [options.direction=vertical] vertical or horizontal
-      @param {String} [options.origin=top] top/bottom for vertical and left/right for horizontal
+    @param {String} [options.direction=vertical] `"vertical"` or `"horizontal"`
+    @param {String} [options.origin] `"top"`, `"right"`, `"bottom"`, or `"left"` (by default, `"top"` for `"vertical"` and `"left"` for `"horizontal"`)
+    @param {Number} [options.padding=0] padding (in px) between elements
   */
   function stack(options, elements) {
     if (options && !elements) {
@@ -650,29 +685,31 @@
   }
 
   /**
-    Create wrapped (d, i) function that adds chart instance as first argument
-    Wrapped function uses standard d3 arguments and context
+    Create wrapped `(d, i)` function that adds chart instance as first argument.
+    Wrapped function uses standard d3 arguments and context.
 
     Note: in order to pass proper context to di-functions called within di-function
-          use `.call(this, d, i)` (where "this" is d3 context)
+    use `.call(this, d, i)` (where "this" is d3 context)
 
     @example
     ```javascript
-    Chart.prototype.x = helpers.di(function(chart, d, i) {
-      // "this" is traditional d3 context: node
-      return chart._xScale()(chart.xValue.call(this, d, i));
+    d3.chart('Base').extend('Custom', {
+      initialize: function() {
+        this.base.select('point')
+          .attr('cx', this.x);
+        // -> (d, i) and "this" used from d3, "chart" injected automatically
+      },
+
+      x: di(function(chart, d, i) {
+        // "this" is standard d3 context: node
+        return chart.xScale()(chart.xValue.call(this, d, i));
+      })
+
+      // xScale, xValue...
     });
-
-    // In order for chart to be specified, bind to chart
-    chart.x = helpers.bindDi(chart.x, chart);
-    // or
-    helpers.bindAllDi(chart);
-
-    this.select('point').attr('cx', chart.x);
-    // (d, i) and "this" used from d3, "chart" injected automatically
     ```
     @method di
-    @param {Function} callback with (chart, d, i) arguments
+    @param {Function} callback with `(chart, d, i)` arguments
     @return {Function}
   */
   function di(callback) {
@@ -702,8 +739,28 @@
 
 
   /**
-    Get parent data for element
+    Get parent data for element (used to get parent series for data point)
 
+    @example
+    ```js
+    var data = [{
+      name: 'Input',
+      values: [1, 2, 3]
+    }];
+
+    d3.selectAll('g')
+      .data(data)
+      .enter().append('g')
+        .selectAll('text')
+          .data(function(d) { return d.values; })
+          .enter().append('text')
+            .text(function(d) {
+              var series_data = getParentData(this);
+              return series_data.name + ': ' + d;
+            });
+
+    // Input: 1, Input: 2, Input: 3
+    ```
     @method getParentData
     @param {Element} element
     @return {Any}
@@ -721,13 +778,32 @@
   }
 
   /**
-    Mixin into prototype
+    Mix prototypes into single combined prototype for chart/component
 
-    Designed specifically to work with d3.chart
+    Designed specifically to work with d3.chart:
+
     - transform is called from last to first
     - initialize is called from first to last
     - remaining are overriden from first to last
 
+    @example
+    ```js
+    var a = {transform: function() {}, a: 1};
+    var b = {initialize: function() {}, b: 2};
+    var c = {c: 3};
+
+    d3.chart('Chart').extend('Custom', mixin(a, b, c, {
+      initialize: function() {
+        // d
+      },
+      transform: function() {
+        // d
+      }
+    }));
+
+    // initialize: Chart -> b -> d
+    // transform: d -> a -> Chart
+    ```
     @method mixin
     @param {Array|Object...} mixins... Array of mixins or mixins as separate arguments
     @return {Object}
@@ -2132,15 +2208,18 @@
   var isUndefined = utils.isUndefined;
 
   /**
-    mixins for handling series data
+    Mixin for handling series data
 
-    @module Series
+    @class Series
+    @namespace mixins
   */
   var Series = {
     /**
       Get key for given series data
 
       @method seriesKey
+      @param {Any} d Series object with `key`
+      @return {Any}
     */
     seriesKey: di(function(chart, d, i) {
       return d.key;
@@ -2150,6 +2229,8 @@
       Get values for given series data
 
       @method seriesValues
+      @param {Any} d Series object with `values` array
+      @return {Array}
     */
     seriesValues: di(function(chart, d, i) {
       // Store seriesIndex on series
@@ -2161,6 +2242,9 @@
       Get class for given series data
 
       @method seriesClass
+      @param {Any} d
+      @param {Number} i
+      @return {String}
     */
     seriesClass: di(function(chart, d, i) {
       return 'chart-series chart-index-' + i + (d['class'] ? ' ' + d['class'] : '');
@@ -2170,6 +2254,8 @@
       Get index for given data-point of series
 
       @method seriesIndex
+      @param {Any} d
+      @param {Number} i
     */
     seriesIndex: di(function(chart, d, i) {
       var series = chart.seriesData.call(this, d, i);
@@ -2180,16 +2266,20 @@
       Get parent series data for given data-point
 
       @method seriesData
+      @return {Any}
     */
     seriesData: di(function(chart, d, i) {
       return helpers.getParentData(this);
     }),
 
     /**
-      Get style given series data or data-point
+      (di) Get style given series data or data-point
       (Uses "style" object on `d`, if defined)
 
       @method itemStyle
+      @param {Any} d
+      @param {Number} [i]
+      @param {Number} [j]
       @return {String}
     */
     itemStyle: di(function(chart, d, i) {
@@ -2197,11 +2287,54 @@
     }),
 
     /**
-      extension of layer()
-      - updates dataBind method to access underlying series values
-      - handles appending series groups to chart
-      -> should be used just like layer() would be used without series
+      Get series count for chart
 
+      @method seriesCount
+      @return {Number}
+    */
+    seriesCount: function() {
+      var data = this.data();
+      return (data && helpers.isSeriesData(data)) ? data.length : 1;
+    },
+
+    /**
+      Extension of layer() that handles data-binding and layering for series data.
+
+      - Updates `dataBind` method to access underlying series values
+      - Creates group layer for each series in chart
+      - Should be used just like layer()
+
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(mixins.Series, {
+        initialize: function() {
+          this.seriesLayer('Circles', this.base, {
+            // Create group for each series on this.base
+            // and calls the following for each series item
+            // (entire layer is called twice: series-1 and series-2)
+
+            dataBind: function(data) {
+              // 1. data = [1, 2, 3]
+              // 2. data = [4, 5, 6]
+            },
+            insert: function() {
+              // Same as chart.layer
+              // (where "this" is series group layer)
+            },
+            events: {
+              // Same as chart.layer
+            }
+          });
+        }
+      }));
+
+      // ...
+
+      chart.draw([
+        {key: 'series-1', values: [1, 2, 3]},
+        {key: 'series-2', values: [4, 5, 6]}
+      ]);
+      ```
       @method seriesLayer
       @param {String} name
       @param {Selection} selection
@@ -2236,16 +2369,6 @@
       return d3.chart().prototype.layer.call(this, name, selection, options);
     },
 
-    /**
-      Get series count
-
-      @method seriesCount
-    */
-    seriesCount: function() {
-      var data = this.data();
-      return (data && helpers.isSeriesData(data)) ? data.length : 1;
-    },
-
     // Ensure data is in series form
     transform: function(data) {
       return !helpers.isSeriesData(data) ? [{values: data}] : data;
@@ -2253,9 +2376,10 @@
   };
 
   /**
-    mixins for handling XY data
+    Mixin for handling XY data
 
-    @module XY
+    @class XY
+    @namespace mixins
   */
   var XY = {
     initialize: function() {
@@ -2289,7 +2413,7 @@
     },
 
     /**
-      Get/set x-scale with d3.scale or with object (uses helpers.createScale)
+      Get/set x-scale with `d3.scale` or with object (uses `helpers.createScale`)
 
       @property xScale
       @type Object|d3.scale
@@ -2315,7 +2439,7 @@
     }),
 
     /**
-      Get/set yscale with d3.scale or with object (uses helpers.createScale)
+      Get/set yscale with `d3.scale` or with object (uses `helpers.createScale`)
 
       @property xScale
       @type Object|d3.scale
@@ -2341,9 +2465,33 @@
     }),
 
     /**
+      Key on data object for x-value
+
+      @property xKey
+      @type String
+      @default 'x'
+    */
+    xKey: property('xKey', {
+      default_value: 'x'
+    }),
+
+    /**
+      Key on data object for y-value
+
+      @property yKey
+      @type String
+      @default 'y'
+    */
+    yKey: property('yKey', {
+      default_value: 'y'
+    }),
+
+    /**
       Get scaled x-value for given data-point
 
       @method x
+      @param {Any} d
+      @param {Number} i
       @return {Number}
     */
     x: di(function(chart, d, i) {
@@ -2357,6 +2505,8 @@
       Get scaled y-value for given data-point
 
       @method y
+      @param {Any} d
+      @param {Number} i
       @return {Number}
     */
     y: di(function(chart, d, i) {
@@ -2367,9 +2517,11 @@
     }),
 
     /**
-      Get key for data-point
+      Get key for data-point. Looks for "key" on `d` first, otherwise uses x-value.
 
       @method key
+      @param {Any} d
+      @param {Number} i
       @return {Any}
     */
     key: di(function(chart, d, i) {
@@ -2377,7 +2529,7 @@
     }),
 
     /**
-      Get scaled x = 0 value
+      Get scaled `x = 0` value
 
       @method x0
       @return {Number}
@@ -2387,7 +2539,7 @@
     },
 
     /**
-      Get scaled y = 0 value
+      Get scaled `y = 0` value
 
       @method x0
       @return {Number}
@@ -2397,29 +2549,43 @@
     },
 
     /**
-      Get x-value for data-point
+      Get x-value for data-point. Checks for `xKey()` on `d` first, otherwise uses `d[0]`.
 
+      @example
+      ```js
+      xValue({x: 10, y: 20}); // -> 10
+      xValue([10, 20]); // -> 10
+      ```
       @method xValue
+      @param {Any} d
       @return {Any}
     */
     xValue: di(function(chart, d, i) {
+      var key = chart.xKey();
       if (d)
-        return 'x' in d ? d.x : d[0];
+        return key in d ? d[key] : d[0];
     }),
 
     /**
-      Get y-value for data-point
+      Get y-value for data-point. Checks for `yKey()` on `d` first, otherwise uses `d[1]`.
 
+      @example
+      ```js
+      yValue({x: 10, y: 20}); // -> 20
+      yValue([10, 20]); // -> 20
+      ```
       @method yValue
+      @param {Any} d
       @return {Any}
     */
     yValue: di(function(chart, d, i) {
+      var key = chart.yKey();
       if (d)
-        return 'y' in d ? d.y : d[1];
+        return key in d ? d[key] : d[1];
     }),
 
     /**
-      Set x- and y- scale ranges
+      Set x- and y-scale ranges (using `setXScaleRange` and `setYScaleRange`)
 
       @method setScales
     */
@@ -2449,7 +2615,7 @@
     },
 
     /**
-      Get default x-scale
+      Get default x-scale: `{data: this.data(), key: 'x'}`
 
       @method getDefaultXScale
       @return {d3.scale}
@@ -2462,7 +2628,7 @@
     },
 
     /**
-      Get default y-scale
+      Get default y-scale: `{data: this.data(), key: 'y'}`
 
       @method getDefaultYScale
       @return {d3.scale}
@@ -2476,15 +2642,18 @@
   };
 
   /**
-    mixins for charts of centered key,value data (x: index, y: value, key)
+    Mixin for charts of centered key,value data (x: index, y: value, key)
 
-    @module XYValues
+    @class XYValues
+    @namespace mixins
+    @extends XY
   */
   var XYValues = utils.extend({}, XY, {
     /**
       Determine width of data-point when displayed adjacent
 
       @method adjacentWidth
+      @return {Number}
     */
     adjacentWidth: function() {
       var series_count = this.seriesCount ? this.seriesCount() : 1;
@@ -2495,6 +2664,7 @@
       Determine layered width (width of group for adjacent)
 
       @method layeredWidth
+      @return {Number}
     */
     layeredWidth: function() {
       var range_band = this.xScale() && this.xScale().rangeBand && this.xScale().rangeBand();
@@ -2507,6 +2677,7 @@
       Determine item width based on series display type (adjacent or layered)
 
       @method itemWidth
+      @return {Number}
     */
     itemWidth: function() {
       var scale = this.xScale();
@@ -2514,6 +2685,12 @@
     },
 
     // Override default x-scale to use ordinal type
+    /**
+      Override default x-scale to use ordinal type: `{type: 'ordinal', data: this.data(), key: 'y', centered: true}`
+
+      @method getDefaultYScale
+      @return {d3.scale}
+    */
     getDefaultXScale: function() {
       return helpers.createScale({
         type: 'ordinal',
@@ -2525,15 +2702,18 @@
   });
   
   /**
-    mixins for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
+    Mixin for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
 
-    @module InvertedXY
+    @class InvertedXY
+    @namespace mixins
   */
   var InvertedXY = {
     /**
       Get x-value for plotting (scaled y-value)
 
       @method x
+      @param {Any} d
+      @param {Number} i
       @return {Number}
     */
     x: di(function(chart, d, i) {
@@ -2547,6 +2727,8 @@
       Get y-value for plotting (scaled x-value)
 
       @method y
+      @param {Any} d
+      @param {Number} i
       @return {Number}
     */
     y: di(function(chart, d, i) {
@@ -2587,7 +2769,7 @@
     },
 
     /**
-      Set range(0, width) for given y-scale
+      Set range (0, width) for given y-scale
 
       @method setYScaleRange
       @param {d3.scale} y_scale
@@ -2598,14 +2780,26 @@
   };
 
   /**
-    mixin for handling labels in charts
+    Mixin for handling labels in charts
 
-    @module Labels
+    @class Labels
+    @namespace mixins
   */
   var Labels = {
     /**
       Call during chart initialization to add labels to chart
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(Labels, {
+        initialize: function() {
+          // this.layer()...
+
+          // Attach labels layer
+          this.attachLabels();
+        }
+      }));
+      ```
       @method attachLabels
     */
     attachLabels: function() {
@@ -2635,6 +2829,27 @@
     /**
       Options passed to labels chart
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(Labels, {
+        // ...
+      }));
+
+      // ...
+
+      chart.labels(true); // -> display labels with defaults
+      chart.labels(false); // -> hide labels
+      chart.labels({offset: 10}); // -> pass options to labels chart
+
+      d3.select('#chart')
+        .chart('Compose', function(data) {
+          return {
+            charts: {
+              custom: {labels: {offset: 10}}
+            }
+          };
+        });
+      ```
       @property labels
       @type Object
     */
@@ -2656,18 +2871,23 @@
   };
 
   /**
-    mixin for handling labels in XY charts
+    Mixin for handling labels in XY charts
+    (proxies `x` and `y` to properly place labels for XY charts)
 
-    @module XYLabels
+    @class XYLabels
+    @namespace mixins
+    @extends Labels
   */
   var XYLabels = utils.extend({}, Labels, {
     proxyLabelMethods: ['x', 'y']
   });
 
   /**
-    mixin for handling common hover behavior
+    Mixin for handling common hover behavior that adds standard `onMouseEnter`, `onMouseMove`, and `onMouseLeave` handlers
+    and `getPoint` helper for adding helpful meta information to raw data point.
 
-    @module Hover
+    @class Hover
+    @namespace mixins
   */
   var Hover = {
     initialize: function() {
@@ -2682,7 +2902,10 @@
       Get point information for given data-point
 
       @method getPoint
-      @return {key, series, d, i, j}
+      @param {Any} d
+      @param {Number} i
+      @param {Number} j
+      @return {key, series, d, meta {chart, i, j, x, y}}
     */
     getPoint: di(function(chart, d, i, j) {
       var key = chart.key && chart.key.call(this, d, i, j);
@@ -2705,7 +2928,29 @@
     /**
       Call to trigger mouseenter:point when mouse enters data-point
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Bars', helpers.mixin(Hover, {
+        initialize: function() {
+          this.layer('bars', this.base, {
+            // dataBind...
+            insert: function() {
+              // Want to trigger enter/leave point
+              // when mouse enter/leaves bar (rect)
+              var chart = this.chart();
+              return this.append('rect')
+                .on('mouseenter', chart.mouseEnterPoint)
+                .on('mouseleave', chart.mouseLeavePoint);
+            }
+            // events...
+          })
+        }
+      }));
+      ```
       @method mouseEnterPoint
+      @param {Any} d
+      @param {Number} i
+      @param {Number} j
     */
     mouseEnterPoint: di(function(chart, d, i, j) {
       chart.container.trigger('mouseenter:point', chart.getPoint.call(this, d, i, j));
@@ -2714,7 +2959,29 @@
     /**
       Call to trigger mouseleave:point when mouse leaves data-point
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Bars', helpers.mixin(Hover, {
+        initialize: function() {
+          this.layer('bars', this.base, {
+            // dataBind...
+            insert: function() {
+              // Want to trigger enter/leave point
+              // when mouse enter/leaves bar (rect)
+              var chart = this.chart();
+              return this.append('rect')
+                .on('mouseenter', chart.mouseEnterPoint)
+                .on('mouseleave', chart.mouseLeavePoint);
+            }
+            // events...
+          })
+        }
+      }));
+      ```
       @method mouseleavePoint
+      @param {Any} d
+      @param {Number} i
+      @param {Number} j
     */
     mouseLeavePoint: di(function(chart, d, i, j) {
       chart.container.trigger('mouseleave:point', chart.getPoint.call(this, d, i, j));
@@ -2725,8 +2992,8 @@
 
       @method onMouseEnter
       @param {Object} position (chart and container {x,y} position of mouse)
-        @param {Object} position.chart {x, y} position relative to chart origin
-        @param {Object} position.container {x, y} position relative to container origin
+      @param {Object} position.chart {x, y} position relative to chart origin
+      @param {Object} position.container {x, y} position relative to container origin
     */
     onMouseEnter: function(position) {},
 
@@ -2735,8 +3002,8 @@
 
       @method onMouseMove
       @param {Object} position (chart and container {x,y} position of mouse)
-        @param {Object} position.chart {x, y} position relative to chart origin
-        @param {Object} position.container {x, y} position relative to container origin
+      @param {Object} position.chart {x, y} position relative to chart origin
+      @param {Object} position.container {x, y} position relative to container origin
     */
     onMouseMove: function(position) {},
 
@@ -2748,6 +3015,12 @@
     onMouseLeave: function() {}
   };
 
+  /**
+    Mixin for automatically triggering "mouseenter:point"/"mouseleave:point" for chart data points that are within given `hoverTolerance`.
+
+    @class HoverPoints
+    @namespace mixins
+  */
   var HoverPoints = {
     initialize: function() {
       var points, tolerance, active;
@@ -2781,7 +3054,7 @@
     },
 
     /**
-      Hover tolerance for calculating close points
+      Hover tolerance (in px) for calculating close points
 
       @property hoverTolerance
       @type Number
@@ -2846,9 +3119,10 @@
   }
 
   /**
-    mixin for handling common transition behaviors
+    Mixin for handling common transition behaviors
 
-    @module Transition
+    @class Transition
+    @namespace mixins
   */
   var Transition = {
     /**
@@ -2877,13 +3151,29 @@
 
       @property ease
       @type String|Function
-      @default `d3.ease` default: 'cubic-in-out'
+      @default d3 default: 'cubic-in-out'
     */
     ease: property('ease', {type: 'Function'}),
 
     /**
       Setup delay, duration, and ease for transition
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(Transition, {
+        initialize: function() {
+          this.layer('circles', this.base, {
+            // ...
+            events: {
+              'merge:transition': function() {
+                // Set delay, duration, and ease from properties
+                this.chart().setupTransition(this);
+              }
+            }
+          });
+        }
+      }));
+      ```
       @method setupTransition
       @param {d3.selection} selection
     */
@@ -2902,14 +3192,48 @@
   };
 
   /**
-    mixin for create standard layer for extension
+    Mixin to create standard layer to make extending charts straightforward.
 
-    @module StandardLayer
+    @example
+    ```js
+    d3.chart('Chart').extend('Custom', helpers.mixin(StandardLayer, {
+      initialize: function() {
+        this.standardLayer('main', this.base.append('g'))
+        // dataBind, insert, events are defined on prototype
+      },
+
+      onDataBind: function(selection, data) {
+        // ...
+      },
+      onInsert: function(selection) {
+        // ...
+      },
+      onEnter: function(selection) {
+        // ...
+      },
+      onUpdateTransition: function(selection) {
+        // ...
+      },
+      // all d3.chart events are available: onMerge, onExit, ...
+    }));
+    ```
+    @class StandardLayer
+    @namespace mixins
   */
   var StandardLayer = {
     /**
       extension of `layer()` that uses standard methods on prototype for extensibility.
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(StandardLayer, {
+        initialize: function() {
+          this.standardLayer('circles', this.base.append('g'));
+        }
+
+        // onDataBind, onInsert, etc. work with "circles" layer
+      }));
+      ```
       @method standardLayer
       @param {String} name
       @param {d3.selection} selection
@@ -2921,6 +3245,16 @@
     /**
       extension of `seriesLayer()` that uses standard methods on prototype for extensibility.
 
+      @example
+      ```js
+      d3.chart('Chart').extend('Custom', helpers.mixin(StandardLayer, {
+        initialize: function() {
+          this.standardSeriesLayer('circles', this.base.append('g'));
+        },
+
+        // onDataBind, onInsert, etc. work with "circles" seriesLayer
+      }));
+      ```
       @method standardSeriesLayer
       @param {String} name
       @param {d3.selection} selection
@@ -4151,7 +4485,48 @@
   var di = helpers.di;
 
   /**
+    Add title text to a chart.
+
+    ### Extending
+
+    To extend the `Title` component, the following methods are available:
+
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        return {
+          components: {
+            title: {
+              type: 'Title',
+              position: 'top'
+              text: 'Main Title',
+              textAlign: 'left',
+              'class': 'title-main'
+            },
+            subtitle: {
+              type: 'Title',
+              position: 'bottom',
+              text: 'Subtitle',
+              'class': 'title-subtitle'
+            }
+          }
+        };
+      });
+    ```
     @class Title
+    @extends Component, StandardLayer
   */
   charts.Title = charts.Component.extend('Title', mixin(mixins.StandardLayer, {
     initialize: function() {
@@ -4160,21 +4535,19 @@
     },
 
     /**
+      Text to display in title
+
       @property text
       @type String
     */
-    text: property('text', {
-      get: function() {
-        return this.options().text;
-      }
-    }),
+    text: property('text'),
 
     /**
-      Rotation of title text
+      Rotation of title text. (Default is `-90` for `position = "right"`, `90` for `position = "left"`, and `0` otherwise).
 
       @property rotation
       @type Number
-      @default (set based on position)
+      @default (set based on `position`)
     */
     rotation: property('rotation', {
       default_value: function() {
@@ -4188,7 +4561,7 @@
     }),
 
     /**
-      Horizontal text-alignment of title
+      Horizontal text-alignment of title (`"left"`, `"center"`, or `"right"`)
 
       @property textAlign
       @type String
@@ -4202,12 +4575,11 @@
     }),
 
     /**
-      text-anchor for title (start, middle, or end)
-      (default set by textAlign)
+      text-anchor for title (`"start"`, `"middle"`, or `"end"`)
 
       @property anchor
       @type String
-      @default "middle"
+      @default (set by `textAlign`)
     */
     anchor: property('anchor', {
       default_value: function() {
@@ -4223,7 +4595,7 @@
     }),
 
     /**
-      Vertical aligment for title (top, middle, bottom)
+      Vertical aligment for title (`"top"`, `"middle"`, `"bottom"`)
 
       @property verticalAlign
       @type String
@@ -4295,18 +4667,59 @@
   var di = helpers.di;
 
   /**
-    Axis component for XY data
+    Axis component for XY data (wraps `d3.axis`).
 
     Available d3.axis extensions:
-    - ticks
-    - tickValues
-    - tickSize
-    - innerTickSize
-    - outerTickSize
-    - tickPadding
-    - tickFormat
 
+    - `ticks`
+    - `tickValues`
+    - `tickSize`
+    - `innerTickSize`
+    - `outerTickSize`
+    - `tickPadding`
+    - `tickFormat`
+
+    ### Extending
+
+    To extend the `Axis` component, the following methods are available:
+
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        var scales = {
+          x: {data: data, key: 'x'},
+          y: {data: data, key: 'y'}
+        };
+
+        return {
+          components: {
+            'x.axis': {
+              type: 'Axis',
+              position: 'bottom',
+              scale: scales.x
+            },
+            'y.axis': {
+              type: 'Axis',
+              position: 'left',
+              scale: scales.y
+            }
+          }
+        };
+      });
+    ```
     @class Axis
+    @extends Component, XY, Transition, StandardLayer
   */
   charts.Axis = charts.Component.extend('Axis', mixin(mixins.XY, mixins.Transition, mixins.StandardLayer, {
     initialize: function() {
@@ -4343,8 +4756,26 @@
 
     /**
       Scale to pass to d3.axis
-      (if Object is given, helpers.createScale is used)
 
+      - If `xScale`/`yScale` are given, `scale` is set automatically based on `position`.
+      - Can be `d3.scale` or, if `Object` is given, `helpers.createScale` is used
+
+      @example
+      ```js
+      // Set with d3.scale directly
+      axis.scale(d3.scale());
+
+      // or with Object passed helpers.createScale
+      axis.scale({data: data, key: 'x'});
+
+      // For x0/y0 position, both xScale and yScale needed
+      // (scale is automatically set by position)
+      axis.xScale({domain: [0, 100]});
+      axis.yScale({domain: [0, 10]});
+      axis.position('y0');
+
+      // -> axis.scale() -> axis.xScale by default
+      ```
       @property scale
       @type Object|d3.scale
     */
@@ -4641,35 +5072,78 @@
   var mixin = helpers.mixin;
 
   /**
-    Legend component that can automatically draw data from charts
+    Legend component that can automatically pull chart and series information from d3.compose
+
+    Notes:
+
+    - To exclude a chart from the legend, use `exclude_from_legend = true` in chart prototype or options
+    - To exclude a series from the legend, use `exclude_from_legend = true` in series object
+    - To add swatch for custom chart, use `Legend.registerSwatch()`
+
+    ### Extending
+
+    To extend the `Legend` component, the following methods are available:
+
+    - `itemKey`
+    - `itemText`
+    - `swatchClass`
+    - `createSwatch`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
 
     @example
     ```js
-    // (in Multi options)
-    return {
-      charts: {
-        a: {...},
-        b: {...}
-      },
-      components: {
-        legend: {type: 'Legend', charts: ['a', 'b']}
-      }
-    }
-    // -> automatically adds legend with data from charts a and b
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        var input = [{key: 'input', name: 'Input', values: data.input}];
+        var output = [
+          {key: 'output1', name: 'Output 1', values: data.output1},
+          {key: 'output2', name: 'Output 2', values: data.output2}
+        ];
+
+        return {
+          charts: {
+            a: {type: 'Lines', data: input}, // ...
+            b: {type: 'Bars', data: output} // ...
+          },
+          components: {
+            legend: {
+              type: 'Legend',
+              charts: ['a', 'b']
+            }
+          }
+        };
+      });
+
+    // -> automatically creates legend from series data for 'a' and 'b'
+    //    (Lines Swatch) Input
+    //    (Bars Swatch) Output 1
+    //    (Bars Swatch) Output 2
 
     // or, manually set data for legend
     return {
       components: {
-        legend: {type: 'Legend', data: [
-          {text: 'A', key: 'a', type: 'Bars', class: 'legend-blue'},
-          {text: 'B', key: 'b', type: 'Line', class: 'legend-green'},
-          {text: 'C', key: 'c', class: 'legend-red'}
-        ]}
+        legend: {
+          type: 'Legend',
+          data: [
+            {type: 'Lines', text: 'Input', class: 'series-index-0'},
+            {type: 'Bars', text: 'Output 1', class: 'series-index-0'},
+            {type: 'Bars', text: 'Output 2', class: 'series-index-1'},
+          ]
+        }
       }
-    }
+    };
     ```
-
     @class Legend
+    @extends Component, StandardLayer
   */
   charts.Legend = charts.Component.extend('Legend', mixin(mixins.StandardLayer, {
     initialize: function() {
@@ -4680,6 +5154,25 @@
     /**
       Array of chart keys from container to display in legend
 
+      @example
+      ```js
+      d3.select('#chart')
+      .chart('Compose', function(data) {
+        return {
+          charts: {
+            a: {},
+            b: {},
+            c: {}
+          },
+          components: {
+            legend: {
+              type: 'Legend',
+              charts: ['a', 'c']
+            }
+          }
+        };
+      });
+      ```
       @property charts
       @type Array
     */
@@ -4735,41 +5228,22 @@
       return data;
     },
 
-    /**
-      Key for legend item (default is key from data)
-
-      @method itemKey
-      @return {Any}
-    */
+    // Key for legend item (default is key from data)
     itemKey: di(function(chart, d, i) {
       return d.key;
     }),
 
-    /**
-      Text for legend item (default is text from data)
-
-      @method itemText
-      @return {String}
-    */
+    // Text for legend item (default is text from data)
     itemText: di(function(chart, d, i) {
       return d.text;
     }),
 
-    /**
-      Class to apply to swatch (default is class from data)
-
-      @method swatchClass
-      @return {String}
-    */
+    // Class to apply to swatch (default is class from data)
     swatchClass: di(function(chart, d, i) {
       return d['class'];
     }),
 
-    /**
-      Create swatch (using registered swatches based on type from data)
-
-      @method createSwatch
-    */
+    // Create swatch (using registered swatches based on type from data)
     createSwatch: di(function(chart, d, i) {
       var selection = d3.select(this);
 
@@ -4847,9 +5321,20 @@
     /**
       Register a swatch create function for the given chart type
 
+      @example
+      ```js
+      d3.chart('Legend').registerSwatch(['Lines'], function(chart, d, i) {
+        var dimensions = chart.swatchDimensions();
+
+        return this.append('line')
+          .attr('x1', 0).attr('y1', dimensions.height / 2)
+          .attr('x2', dimensions.width).attr('y2', dimensions.height / 2)
+          .attr('class', 'chart-line');
+      });
+      ```
       @method registerSwatch
       @static
-      @param {String} type Chart type
+      @param {String|Array} type Chart type
       @param {Function} create "di" function that inserts swatch
     */
     registerSwatch: function(type, create) {
@@ -4883,9 +5368,10 @@
   });
 
   /**
-    Legend positioned within chart bounds
+    Legend positioned within chart bounds.
 
     @class InsetLegend
+    @extends Legend
   */
   charts.InsetLegend = charts.Legend.extend('InsetLegend', {
     initialize: function() {
@@ -4898,12 +5384,27 @@
     },
 
     /**
-      Position legend within chart layer {x,y,relative_to}
+      Position legend within chart layer `{x, y, relative_to}`
       Use `relative_to` to use x,y values relative to x-y origin
-      (e.g. left-top is default)
+      (e.g. `"left-top"` is default)
 
+      @example
+      ```js
+      d3.select('#chart')
+        .chart('Compose', function(data) {
+          return {
+            components: {
+              legend: {
+                type: 'InsetLegend',
+                // Position legend 10px away from right-bottom corner of chart
+                translation: {x: 10, y: 10, relative_to: 'right-bottom'}
+              }
+            }
+          }
+        });
+      ```
       @property translation
-      @type Object {x,y} translation
+      @type Object {x,y}
       @default {x: 10, y: 10, relative_to: 'left-top'}
     */
     translation: property('translation', {
@@ -4939,16 +5440,74 @@
   var utils = helpers.utils;
 
   /**
+    Extensions are used for defining options for d3.compose that wrap common behavior, reduce boilerplate,
+    and provide helpers for composing charts and components.
+
+    @class extensions
+  */
+
+  /**
     XY extension
-    Generate d3.chart.multi options for XY charts
+    Generate d3.compose options for XY charts
   
-    @method xy
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        var scales = {
+          x: {}, // ...
+          y: {}, // ...
+          y2: {} // ...
+        };
+
+        return d3.compose.xy({
+          // charts and components as normal
+          charts: {
+            bars: {type: 'Bars'}, // ...
+            lines: {type: 'Lines'} // ...
+          }, 
+          components: {}, // ...
+
+          // Axes:
+          // type: 'Axis'
+          // position: x -> 'bottom', y -> 'left', x2 -> 'top', y2: 'right'
+          axes: {
+            x: {scale: scales.x, title: 'X Axis'},
+            y: {scale: scales.y, title: 'Y Axis'},
+            y2: {scale: scales.y2, title: 'Y2 Axis'}
+          },
+          title: 'Chart Title',
+          legend: true
+        });
+
+        // transforms to
+        return {
+          charts: {
+            bars: {type: 'Bars'},
+            lines: {type: 'Lines'}
+          },
+          components: {
+            // ...
+            'axis.x': {type: 'Axis', position: 'bottom', scale: scales.x},
+            'axis.x.title': {type: 'Title', position: 'bottom', text: 'X Axis'},
+            'axis.y': {type: 'Axis', position: 'left', scale: scales.y},
+            'axis.y.title': {type: 'Title', position: 'left', text: 'Y Axis'},
+            'axis.y2': {type: 'Axis', position: 'right', scale: scales.y2},
+            'axis.y2.title': {type: 'Title', position: 'right', text: 'Y2 Axis'},
+            title: {type: 'Title', position: 'top', text: 'Chart Title'},
+            legend: {type: 'Legend', position: 'right', charts: ['bars', 'lines']}
+          }
+        };
+      })
+    ```
+    @method d3.compose.xy
     @for extensions
     @param {Object} options
-      @param {Object} [options.charts]
-      @param {Object} [options.axes]
-      @param {String|Object} [options.title]
-      @param {Boolean|Object} [options.legend]
+    @param {Object} [options.charts] Standard d3.compose charts options
+    @param {Object} [options.components] Standard d3.compose components options
+    @param {Object} [options.axes] Set of axes components with defaults (type: 'Axis', position: (by key: x -> 'bottom', y -> 'left', x2 -> 'top', y2: 'right')) and 'title' that creates matched title component
+    @param {String|Object} [options.title] Title text (with defaults) or options
+    @param {Boolean|Object} [options.legend] Show legend (with defaults) or legend options
   */
   d3.compose.xy = function xy(options) {
     options = options || {};
