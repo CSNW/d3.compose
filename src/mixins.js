@@ -263,6 +263,28 @@
     }),
 
     /**
+      Key on data object for x-value
+
+      @property xKey
+      @type String
+      @default 'x'
+    */
+    xKey: property('xKey', {
+      default_value: 'x'
+    }),
+
+    /**
+      Key on data object for y-value
+
+      @property yKey
+      @type String
+      @default 'y'
+    */
+    yKey: property('yKey', {
+      default_value: 'y'
+    }),
+
+    /**
       Get scaled x-value for given data-point
 
       @method x
@@ -325,7 +347,7 @@
     },
 
     /**
-      Get x-value for data-point. Checks for "x" on `d` first, otherwise uses `d[0]`.
+      Get x-value for data-point. Checks for `xKey()` on `d` first, otherwise uses `d[0]`.
 
       @example
       ```js
@@ -337,12 +359,13 @@
       @return {Any}
     */
     xValue: di(function(chart, d, i) {
+      var key = chart.xKey();
       if (d)
-        return 'x' in d ? d.x : d[0];
+        return key in d ? d[key] : d[0];
     }),
 
     /**
-      Get y-value for data-point. Checks for "y" on `d` first, otherwise uses `d[1]`.
+      Get y-value for data-point. Checks for `yKey()` on `d` first, otherwise uses `d[1]`.
 
       @example
       ```js
@@ -354,8 +377,9 @@
       @return {Any}
     */
     yValue: di(function(chart, d, i) {
+      var key = chart.yKey();
       if (d)
-        return 'y' in d ? d.y : d[1];
+        return key in d ? d[key] : d[1];
     }),
 
     /**

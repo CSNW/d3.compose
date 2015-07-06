@@ -147,6 +147,12 @@
           expect(chart.yValue(test_case[1])).toEqual(10);
         });
       });
+
+      it('should use xKey and yKey', function() {
+        chart.xKey('_x').yKey('_y');
+        expect(chart.xValue({_x: 1, _y: 10})).toEqual(1);
+        expect(chart.yValue({_x: 1, _y: 10})).toEqual(10);
+      });
     });
 
     describe('XYValues', function() {
