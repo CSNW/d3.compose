@@ -337,7 +337,7 @@
         });
       ```
       @property translation
-      @type Object {x,y} translation
+      @type Object {x,y}
       @default {x: 10, y: 10, relative_to: 'left-top'}
     */
     translation: property('translation', {
