@@ -76,11 +76,17 @@
                   }
                 }
               },
+              components: {
+                'x-axis-title': {
+                  type: 'Title',
+                  position: 'bottom',
+                  text: 'X Title'
+                }
+              },
               axes: {
                 x: {
                   type: 'Axis',
-                  title: 'X Title',
-                  scale: scales.x
+                  scale: scales.x,
                 },
                 y: {
                   title: 'Y1 Title',

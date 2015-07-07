@@ -74,7 +74,7 @@
   d3.compose.xy = function xy(options) {
     options = options || {};
     var charts = utils.extend({}, options.charts);
-    var components = utils.extend({}, options.components);
+    var components = {};
     var default_margin = 8;
     var default_margins = {top: default_margin, right: default_margin, bottom: default_margin, left: default_margin};
 
@@ -154,7 +154,7 @@
 
     return {
       charts: charts,
-      components: components
+      components: utils.extend(components, options.components)
     };
   };
 
