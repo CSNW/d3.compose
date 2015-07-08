@@ -34,7 +34,7 @@ scripts: |
   <h2>Getting Started</h2>
 
   <div class="row">
-    <div class="getting-started-steps col-md-8">
+    <div class="col-md-7">
       <!-- Currently needed for scrollspy to work properly -->
       <div class="getting-started-nav">
         <ul class="nav">
@@ -78,7 +78,10 @@ scripts: |
 </html>
 {% endhighlight %}
       </section>
-
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-7">
       <section>
         <h3 id="2-chart"><span class="step-number">2.</span> Add Chart</h3>
 
@@ -163,13 +166,13 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
 {% endhighlight %}
       </section>
 
-      <section style="height: calc(50vh)"></section>
+      <section style="height: calc(25vh)"></section>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-5">
       <div class="getting-started-chart-container">
         <div id="getting-started-chart" class="editor is-constrained">
-          {% include editor-placeholder.html width=600 height=400 %}
+          {% include editor-placeholder.html width=450 height=340 hide_controls=true %}
         </div>
       </div>
     </div>

@@ -37,32 +37,44 @@
       'click .js-options-toggle': 'onOptionsToggle'
     },
 
-    initialize: function() {
+    initialize: function(options) {
+      options = options || {};
       _.bindAll(this, 'onOptionsToggle');
+
+      this.include_controls = 'include_controls' in options ? options.include_controls : true;
+      this.dimensions = _.defaults({}, options.dimensions, {
+        width: 600,
+        height: 400,
+        margins: {top: 10, right: 30, bottom: 20, left: 20}
+      });
+
       this.showing_options = false;
     },
 
     template: function template(data) {
       var html = '<div class="editor-customize js-customize"></div>' +
-        '<div class="editor-chart-container"><div class="editor-chart js-chart"></div></div>' +
-        '<div class="editor-options">' +
-        '  <div role="tabpanel">' +
-        '    <ul class="nav nav-tabs nav-justified" role="tablist">' +
-        '      <li class="active" role="presentation"><a href="#tab-options" aria-controls="options" role="tab" data-toggle="tab">Options</a></li>' +
-        '      <li role="presentation"><a href="#tab-data" aria-controls="data" role="tab" data-toggle="tab">Data</a></li>' +
-        '    </ul>' +
-        '    <div class="tab-content js-config">' +
-        '      <div class="tab-pane active example-editor js-options" role="tabpanel" id="tab-options"></div>' +
-        '      <div class="tab-pane example-editor js-data" role="tabpanel" id="tab-data"></div>' +
-        '    </div>' +
-        '  </div>' +
-        '</div>' +
-        '<div class="editor-details">' +
-        '  <a class="editor-show-options js-options-toggle" href="#show-options">Show Options</a>' +
-        '  <!--TODO<div class="editor-data-options">' +
-        '    Data: <select class="js-data-options"><option>Simple</option></select>' +
-        '  </div>-->' +
-        '</div>';
+        '<div class="editor-chart-container"><div class="editor-chart js-chart"></div></div>';
+
+      if (this.include_controls) {
+        html += '<div class="editor-options">' +
+          '  <div role="tabpanel">' +
+          '    <ul class="nav nav-tabs nav-justified" role="tablist">' +
+          '      <li class="active" role="presentation"><a href="#tab-options" aria-controls="options" role="tab" data-toggle="tab">Options</a></li>' +
+          '      <li role="presentation"><a href="#tab-data" aria-controls="data" role="tab" data-toggle="tab">Data</a></li>' +
+          '    </ul>' +
+          '    <div class="tab-content js-config">' +
+          '      <div class="tab-pane active example-editor js-options" role="tabpanel" id="tab-options"></div>' +
+          '      <div class="tab-pane example-editor js-data" role="tabpanel" id="tab-data"></div>' +
+          '    </div>' +
+          '  </div>' +
+          '</div>' +
+          '<div class="editor-details">' +
+          '  <a class="editor-show-options js-options-toggle" href="#show-options">Show Options</a>' +
+          '  <!--TODO<div class="editor-data-options">' +
+          '    Data: <select class="js-data-options"><option>Simple</option></select>' +
+          '  </div>-->' +
+          '</div>';
+      }
 
       return html;
     },
@@ -74,18 +86,21 @@
       }
 
       this.renderChart();
-      this.renderOptions();
-      this.renderData();
-      this.renderCustomizer();
+
+      if (this.include_controls) {
+        this.renderOptions();
+        this.renderData();
+        this.renderCustomizer();
+      }
     },
 
     renderChart: function renderChart() {
       if (!this.chart) {
         this.chart = d3.select(this.$('.js-chart')[0])
           .chart('Compose')
-          .width(600)
-          .height(400)
-          .margins({top: 10, right: 30, bottom: 20, left: 20});
+          .width(this.dimensions.width)
+          .height(this.dimensions.height)
+          .margins(this.dimensions.margins);
       }
 
       try {

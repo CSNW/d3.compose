@@ -44,10 +44,10 @@
 .getting-started-chart-container {
   // Set width explicitly from col-width to overcome position: fixed issues
   @media (min-width: $screen-md) {
-    width: 1/3*$container-md;
+    width: (41 + 1/3)/100*$container-md - $grid-gutter-width;
   }
   @media (min-width: $screen-lg) {
-    width: 1/3*$container-lg;
+    width: (41 + 1/3)/100*$container-lg - $grid-gutter-width;
   }
 
   &.affix {
