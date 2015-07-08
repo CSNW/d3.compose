@@ -1,22 +1,22 @@
-.masthead {
+.home-masthead {
   background-color: $primary-color;
   border-bottom: solid 1px #ddd;
   padding-top: 50px;
   padding-bottom: 50px;
   color: #fff;
 }
-.masthead-content {
+.home-masthead-content {
   margin-left: 30px;
 }
 
-.tagline {
+.home-tagline {
   font-size: 30px;
   font-weight: normal;
   margin-top: 50px;
   margin-bottom: 30px;
 }
 
-.features {
+.home-features {
   font-size: 17px;
 
   > li {
@@ -24,7 +24,7 @@
   }
 }
 
-.call-to-action {
+.home-call-to-action {
   background-color: transparent;
   border-color: #fff;
   color: #fff;
@@ -35,4 +35,8 @@
     background-color: #fff;
     color: $primary-color;
   }
+}
+
+.getting-started {
+  
 }

@@ -2,7 +2,7 @@
 
   $(document).ready(function() {
     var editor = new Editor({
-      el: '#main-chart'
+      el: '#home-chart'
     });
 
     editor.setExample(examples['getting-started']);

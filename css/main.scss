@@ -55,11 +55,11 @@ pre {
   @media (min-width: $screen-xl-min) {
     width: (1440px + $grid-gutter-width);
   }
-}
 
-.narrow .content-container {
-  @media (min-width: $screen-md-min) {
-    width: $container-md;
+  .layout-narrow & {
+    @media (min-width: $screen-xl-min) {
+      width: $container-lg;
+    }
   }
 }
 
