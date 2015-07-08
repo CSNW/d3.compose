@@ -52,7 +52,7 @@
     scales: {
       x: code('scales.x'),
       y: code('scales.y'),
-      y2: code('scales.y2') 
+      y2: code('scales.y2')
     },
 
     input: code('input'),
@@ -194,7 +194,7 @@
       return buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
-          y: inline(common.scale('y', {domain: [0, 120]}))  
+          y: inline(common.scale('y', {domain: [0, 120]}))
         }
       }, extensions.xy({
         charts: {
@@ -266,7 +266,7 @@
       return buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
-          y: inline(common.scale('y', {domain: [0, 120]}))  
+          y: inline(common.scale('y', {domain: [0, 120]}))
         }
       }, extensions.xy({
         charts: {
@@ -360,15 +360,15 @@
   };
 
   //
-  // Getting Started
+  // Getting Started: Masthead
   //
 
-  examples['getting-started'] = {
+  examples['masthead'] = {
     generate: function(options) {
       return buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
-          y: inline(common.scale('y', {domain: [0, 120]}))  
+          y: inline(common.scale('y', {domain: [0, 120]}))
         }
       }, extensions.xy({
         charts: {
@@ -385,7 +385,102 @@
 
     data: examples.data.single,
     options: {}
-  }
+  };
+
+  //
+  // Getting Started: Steps
+  //
+
+  examples['getting-started-1'] = {
+    generate: function(options) {
+      return '';
+    },
+
+    data: examples.data.single,
+    options: {}
+  };
+
+  examples['getting-started-2'] = {
+    generate: function(options) {
+      return buildFn({
+        charts: {
+          lines: {type: 'Lines', data: code('options.data')}
+        }
+      });
+    },
+
+    data: {series: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]},
+    options: {}
+  };
+
+  examples['getting-started-3'] = {
+    generate: function(options) {
+      return buildFn({
+        charts: {
+          lines: inline({type: 'Lines', data: code('options.data')})
+        },
+        components: {
+          yAxis: {
+            type: 'Axis',
+            position: 'left'
+          }
+        }
+      });
+    },
+
+    data: {series: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]},
+    options: {}
+  };
+
+  examples['getting-started-3'] = {
+    generate: function(options) {
+      return buildFn({
+        charts: {
+          lines: inline({type: 'Lines', data: code('options.data')})
+        },
+        components: {
+          yAxis: {
+            type: 'Axis',
+            position: 'left',
+            scale: {domain: [0, 90]}
+          }
+        }
+      });
+    },
+
+    data: {series: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]},
+    options: {}
+  };
+
+  examples['getting-started-4'] = {
+    generate: function(options) {
+      return buildFn({
+        scales: {
+          x: inline({data: code('options.data'), key: 'x'}),
+          y: inline({domain: [0, 100]})
+        }
+      }, {
+        charts: {
+          lines: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
+        },
+        components: {
+          xAxis: {
+            type: 'Axis',
+            position: 'bottom',
+            scale: code('scales.x')
+          },
+          yAxis: {
+            type: 'Axis',
+            position: 'left',
+            scale: code('scales.y')
+          }
+        }
+      });
+    },
+
+    data: {series: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]},
+    options: {}
+  };
 
   //
   // dependencies
@@ -417,8 +512,8 @@
 
   // Build function for display/execution
   // - last argument is return
-  // - other arguments: 
-  //   {} -> var key = value;... 
+  // - other arguments:
+  //   {} -> var key = value;...
   //   function() {} -> insert body
   function buildFn() {
     var parts = _.toArray(arguments);
@@ -456,7 +551,7 @@
       if (_.isArray(value)) {
         value[0] = key + ': ' + value[0];
         value[value.length - 1] += ','
-        
+
         if (!inline)
           value = _.map(value, function(item) {return '  ' + item; });
 
@@ -474,7 +569,7 @@
       var last_item = parsed[parsed.length - 1];
       parsed[parsed.length - 1] = last_item.substring(0, last_item.length - 1);
     }
-    
+
     // Add brackets depending on format
     if (inline) {
       parsed = '{' + parsed.join(' ') + '}';

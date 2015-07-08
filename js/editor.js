@@ -2,7 +2,7 @@
 
   function Options(options) {
     options = options || {}
-    
+
     this.options = _.omit(options, 'include');
     this.include = options.include || {};
     this.values = {include: {}};
@@ -14,7 +14,7 @@
 
     _.each(this.include, function(include, include_key) {
       this.values.include[include_key] = include.default_value;
-      
+
       if (include.options)
         this.values[include_key] = {};
 
@@ -26,7 +26,7 @@
 
   var Customizer = Backbone.View.extend({
     render: function() {
-      this.el.innerHTML = 'TODO';
+      this.el.innerHTML = '';
     }
   });
 
@@ -93,14 +93,18 @@
         var data = prepareData(this.example, this.options, this.data_key);
 
         this.chart.options(fn);
-        this.chart.draw(data);  
+        this.chart.draw(data);
       } catch (ex) { console.error(ex); }
     },
 
     renderOptions: function renderOptions() {
       var generated = this.example.generate(this.options.values);
       var output = this.example.output || function(generated) {
-        return 'd3.select(\'#chart\').chart(\'Compose\', function(options) {\n' + generated + '\n});';
+        var fn = '';
+        if (generated)
+          fn = ', function(options) {\n' + generated + '\n}';
+
+        return 'd3.select(\'#chart\').chart(\'Compose\'' + fn + ');';
       };
 
       renderAndHighlight(this.$('.js-options')[0], output(generated));
@@ -148,7 +152,7 @@
         this.$('.editor-options').removeClass('is-pinned');
         this.$('.js-options-toggle').text('Show Options');
       }
-      
+
       this.showing_options = !this.showing_options;
     }
   });
@@ -163,7 +167,7 @@
     try {
       var html = '<pre><code class="js">' + js + '</code></pre>';
       el.innerHTML = html;
-      hljs.highlightBlock(el);  
+      hljs.highlightBlock(el);
     } catch (ex) { console.error(ex); }
   }
 

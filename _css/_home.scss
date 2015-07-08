@@ -20,7 +20,7 @@
   font-size: 17px;
 
   > li {
-    padding-bottom: 2px;  
+    padding-bottom: 2px;
   }
 }
 
@@ -38,5 +38,19 @@
 }
 
 .getting-started {
-  
+
+}
+
+.getting-started-chart-container {
+  // Set width explicitly from col-width to overcome position: fixed issues
+  @media (min-width: $screen-md) {
+    width: 1/3*$container-md;
+  }
+  @media (min-width: $screen-lg) {
+    width: 1/3*$container-lg;
+  }
+
+  &.affix {
+    top: 50px;
+  }
 }

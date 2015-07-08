@@ -5,7 +5,7 @@ class: home layout-narrow
 scripts: |
   <script type="text/javascript">examples = {};</script>
   <script src="js/examples/index.js"></script>
-  
+
   <script src="js/editor.js"></script>
   <script src="js/getting-started.js"></script>
 ---
@@ -16,6 +16,7 @@ scripts: |
       <div id="home-chart" class="editor is-constrained">
         <!-- Statically load empty editor to avoid load flash -->
         {% include editor-placeholder.html width=600 height=400 %}
+      </div>
     </div>
     <div class="col-md-5 home-masthead-content">
       <h1 class="home-tagline">Compose complex, data-driven visualizations from reusable charts and components with d3.</h1>
@@ -32,16 +33,145 @@ scripts: |
 <main class="container getting-started">
   <h2>Getting Started</h2>
 
+  <div class="row">
+    <div class="getting-started-steps col-md-8">
+      <!-- Currently needed for scrollspy to work properly -->
+      <div class="getting-started-nav">
+        <ul class="nav">
+          <li><a href="#1-download">Download</a></li>
+          <li><a href="#2-chart">Add Chart</a></li>
+          <li><a href="#3-component">Add Component</a></li>
+          <li><a href="#4-scales">Add Scales</a></li>
+        </ul>
+      </div>
+
+      <section>
+        <h3 id="1-download"><span class="step-number">1.</span> Download</h3>
+
+        <p>
+          <a href="{{ site.baseurl }}/docs/#downloads">Download</a> and add d3.compose (and its dependencies: d3, d3.chart, and underscore) to your page.
+        </p>
+
+{% highlight html %}
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="d3.compose.css">
+    <title>d3.compose</title>
+  </head>
+  <body>
+    <div id="chart"></div>
+
+    <script src="d3.js"></script>
+    <script src="d3.chart.js"></script>
+    <script src="underscore.js"></script>
+
+    <script src="d3.compose-all.js"></script>
+
+    <script type="text/javascript">
+      var data = [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}];
+      var chart = d3.select('#chart').chart('Compose');
+
+      chart.draw(data);
+    </script>
+  </body>
+</html>
+{% endhighlight %}
+      </section>
+
+      <section>
+        <h3 id="2-chart"><span class="step-number">2.</span> Add Chart</h3>
+
+        <p>
+          Add chart...
+        </p>
+
+{% highlight js %}
+var data = [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}];
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  return {
+    charts: {
+      lines: {
+        type: 'Lines',
+        data: data
+      }
+    }
+  };
+});
+
+chart.draw(data);
+{% endhighlight %}
+      </section>
+
+      <section>
+        <h3 id="3-component"><span class="step-number">3.</span> Add Component</h3>
+
+        <p>
+          Add component...
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  return {
+    charts: {
+      lines: {type: 'Lines', data: data}
+    },
+    components: {
+      yAxis: {
+        type: 'Axis',
+        position: 'left',
+        scale: {domain: [0, 90]}
+      }
+    }
+  };
+});
+{% endhighlight %}
+      </section>
+
+      <section>
+        <h3 id="4-scales"><span class="step-number">4.</span> Add Scales</h3>
+
+        <p>
+          Add scales...
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  var scales = {
+    x: {data: data, key: 'x'}
+    y: {domain: [0, 100]}
+  };
+
+  return {
+    charts: {
+      lines: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y}
+    },
+    components: {
+      xAxis: {
+        type: 'Axis',
+        position: 'bottom',
+        scale: scales.x
+      },
+      yAxis: {
+        type: 'Axis',
+        position: 'left',
+        scale: scales.y
+      }
+    }
+  };
+});
+{% endhighlight %}
+      </section>
+
+      <section style="height: calc(50vh)"></section>
+    </div>
+
+    <div class="col-md-4">
+      <div class="getting-started-chart-container">
+        <div id="getting-started-chart" class="editor is-constrained">
+          {% include editor-placeholder.html width=600 height=400 %}
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
-
-<!-- <section class="getting-started">
-
-  <h2 id="1-lines"><span class="getting-started-number">1.</span>Lines</h2>
-  <h2 id="2-axes"><span class="getting-started-number">2.</span>Axes</h2>
-  <h2 id="2-axes"><span class="getting-started-number">3.</span>Title</h2>
-  <h2 id="2-axes"><span class="getting-started-number">4.</span>Legend</h2>
-  <h2 id="2-axes"><span class="getting-started-number">5.</span>Dots (custom chart)</h2>
-  <h2 id="2-axes"><span class="getting-started-number">6.</span>(custom component)</h2>
-  <h2 id="2-axes"><span class="getting-started-number">7.</span>Bars</h2>
-
-</section> -->
