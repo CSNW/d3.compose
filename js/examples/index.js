@@ -391,15 +391,6 @@
   // Getting Started: Steps
   //
 
-  examples['getting-started-1'] = {
-    generate: function(options) {
-      return '';
-    },
-
-    data: examples.data.single,
-    options: {}
-  };
-
   examples['getting-started-2'] = {
     generate: function(options) {
       return buildFn({
