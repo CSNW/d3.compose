@@ -120,6 +120,10 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
 
 chart.draw(data);
 {% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
       </section>
 
       <section>
@@ -145,6 +149,10 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
   };
 });
 {% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
       </section>
 
       <section>
@@ -180,6 +188,10 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
   };
 });
 {% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
       </section>
 
       <section>
@@ -204,6 +216,10 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
 
 chart.draw(data);
 {% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
       </section>
 
       <section>
@@ -244,6 +260,10 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
   };
 });
 {% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
       </section>
 
       <section>
@@ -289,6 +309,10 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
   };
 });
 {% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
       </section>
 
       <section>
@@ -309,38 +333,21 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
     charts: {
       results: {type: 'Bars', data: data, xScale: scales.x, yScale: scales.y}
     },
-    components: {
-      xAxis: {
-        type: 'Axis',
-        position: 'bottom',
-        scale: scales.x
-      },
-      yAxis: {
-        type: 'Axis',
-        position: 'left',
-        scale: scales.y
-      },
-      legend: {
-        type: 'Legend',
-        position: 'right',
-        charts: ['results']
-      },
-      title: {
-        type: 'Title',
-        text: 'd3.compose',
-        'class': 'chart-title-main'
-      }
-    }
+    // Everything stays the same...
   };
 });
 {% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
       </section>
 
-      <!-- <section style="height: calc(25vh)"></section> -->
+      <section style="height: calc(25vh)"></section>
     </div>
 
     <div class="col-md-5">
-      <div class="getting-started-chart-container">
+      <div class="getting-started-chart-container hidden-xs hidden-sm">
         <div id="getting-started-chart" class="editor is-constrained">
           {% include editor-placeholder.html width=450 height=340 hide_controls=true %}
         </div>

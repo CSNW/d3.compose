@@ -1,3 +1,6 @@
+{% if include.wrap %}
+<div class="editor is-constrained">
+{% endif %}
 <div class="editor-customize"></div>
 <div class="editor-chart-container">
   <div class="editor-chart">
@@ -12,3 +15,6 @@
   <a class="editor-show-options" style="color: #666;">Loading...</a>
 </div>
 {% endunless %}
+{% if include.wrap %}
+</div>
+{% endif %}
