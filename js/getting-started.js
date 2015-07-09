@@ -43,35 +43,42 @@
   function scrollspy(editor) {
     $(document.body).scrollspy({
       target: '.getting-started-nav',
-      offset: 50
+      offset: 300
     }).on('activate.bs.scrollspy', setActiveExample.bind(null, editor));
   }
 
   function setActiveExample(editor) {
     var step = getActiveStep();
-    var example = examples['getting-started-' + step];
+    var example = examples['getting-started-' + step.number];
 
     if (example) {
       editor.setExample(example);
       editor.render();
+
+      $('.getting-started section').removeClass('is-active');
+      $('#' + step.id).parent().addClass('is-active');
     }
     else {
-      console.error('No example found for step ' + step);
+      console.error('No example found for step ' + JSON.stringify(step));
     }
   }
 
   function getActiveStep() {
     var active = $('.getting-started-nav').find('.active a')[0];
-    var step = 2;
+    var id, number;
 
-    if (active)
-      step = active.href.split('#')[1].split('-')[0];
+    if (active) {
+      id = active.href.split('#')[1];
+      number = id.split('-')[0];
+    }
 
     // Start at step 2 by default (1 is empty)
-    if (step < 2)
-      step = 2;
+    if (!id || number < 2) {
+      id = '2-chart';
+      number = 2;
+    }
 
-    return step;
+    return {number: number, id: id};
   }
 
 })(jQuery, d3, examples, Editor);

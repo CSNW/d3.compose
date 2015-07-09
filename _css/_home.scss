@@ -38,7 +38,9 @@
 }
 
 .getting-started {
-
+  section.is-active pre {
+    border-left-color: $brand-warning;
+  }
 }
 
 .getting-started-chart-container {
