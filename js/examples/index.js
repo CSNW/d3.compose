@@ -395,12 +395,12 @@
     generate: function(options) {
       return buildFn({
         charts: {
-          lines: {type: 'Lines', data: code('options.data')}
+          results: {type: 'Lines', data: code('options.data')}
         }
       });
     },
 
-    data: {series: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]},
+    data: {series: examples.data.single.series[0].values},
     options: {}
   };
 
@@ -408,38 +408,19 @@
     generate: function(options) {
       return buildFn({
         charts: {
-          lines: inline({type: 'Lines', data: code('options.data')})
-        },
-        components: {
-          yAxis: {
-            type: 'Axis',
-            position: 'left'
-          }
-        }
-      });
-    },
-
-    data: {series: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]},
-    options: {}
-  };
-
-  examples['getting-started-3'] = {
-    generate: function(options) {
-      return buildFn({
-        charts: {
-          lines: inline({type: 'Lines', data: code('options.data')})
+          results: inline({type: 'Lines', data: code('options.data')})
         },
         components: {
           yAxis: {
             type: 'Axis',
             position: 'left',
-            scale: {domain: [0, 90]}
+            scale: {domain: [0, 100]}
           }
         }
       });
     },
 
-    data: {series: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]},
+    data: {series: examples.data.single.series[0].values},
     options: {}
   };
 
@@ -448,11 +429,11 @@
       return buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
-          y: inline({domain: [0, 100]})
+          y: inline({domain: [0, 120]})
         }
       }, {
         charts: {
-          lines: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
+          results: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
         },
         components: {
           xAxis: {
@@ -469,7 +450,152 @@
       });
     },
 
-    data: {series: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]},
+    data: {series: examples.data.single.series[0].values},
+    options: {}
+  };
+
+  examples['getting-started-5'] = {
+    generate: function(options) {
+      return buildFn({
+        scales: {
+          x: inline({data: code('options.data'), key: 'x'}),
+          y: inline({domain: [0, 120]})
+        }
+      }, {
+        charts: {
+          results: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
+        },
+        components: {
+          xAxis: {
+            type: 'Axis',
+            position: 'bottom',
+            scale: code('scales.x')
+          },
+          yAxis: {
+            type: 'Axis',
+            position: 'left',
+            scale: code('scales.y')
+          }
+        }
+      });
+    },
+
+    data: examples.data.single,
+    options: {}
+  };
+
+  examples['getting-started-6'] = {
+    generate: function(options) {
+      return buildFn({
+        scales: {
+          x: inline({data: code('options.data'), key: 'x'}),
+          y: inline({domain: [0, 120]})
+        }
+      }, {
+        charts: {
+          results: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
+        },
+        components: {
+          xAxis: {
+            type: 'Axis',
+            position: 'bottom',
+            scale: code('scales.x')
+          },
+          yAxis: {
+            type: 'Axis',
+            position: 'left',
+            scale: code('scales.y')
+          },
+          legend: {
+            type: 'Legend',
+            position: 'right',
+            charts: ['results']
+          }
+        }
+      });
+    },
+
+    data: examples.data.single,
+    options: {}
+  };
+
+  examples['getting-started-7'] = {
+    generate: function(options) {
+      return buildFn({
+        scales: {
+          x: inline({data: code('options.data'), key: 'x'}),
+          y: inline({domain: [0, 120]})
+        }
+      }, {
+        charts: {
+          results: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
+        },
+        components: {
+          xAxis: {
+            type: 'Axis',
+            position: 'bottom',
+            scale: code('scales.x')
+          },
+          yAxis: {
+            type: 'Axis',
+            position: 'left',
+            scale: code('scales.y')
+          },
+          legend: {
+            type: 'Legend',
+            position: 'right',
+            charts: ['results']
+          },
+          title: {
+            type: 'Title',
+            text: 'd3.compose',
+            'class': 'chart-title-main'
+          }
+        }
+      });
+    },
+
+    data: examples.data.single,
+    options: {}
+  };
+
+  examples['getting-started-8'] = {
+    generate: function(options) {
+      return buildFn({
+        scales: {
+          x: inline({data: code('options.data'), key: 'x', type: 'ordinal', adjacent: true}),
+          y: inline({domain: [0, 120]})
+        }
+      }, {
+        charts: {
+          results: inline({type: 'Bars', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
+        },
+        components: {
+          xAxis: {
+            type: 'Axis',
+            position: 'bottom',
+            scale: code('scales.x')
+          },
+          yAxis: {
+            type: 'Axis',
+            position: 'left',
+            scale: code('scales.y')
+          },
+          legend: {
+            type: 'Legend',
+            position: 'right',
+            charts: ['results']
+          },
+          title: {
+            type: 'Title',
+            text: 'd3.compose',
+            'class': 'chart-title-main'
+          }
+        }
+      });
+    },
+
+    data: examples.data.single,
     options: {}
   };
 

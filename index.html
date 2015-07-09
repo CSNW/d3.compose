@@ -30,18 +30,34 @@ scripts: |
   </div>
 </div></section>
 
+<!--
+  Goal: Create chart at top, iteratively
+
+  1. Download
+  2. Add Line
+  3. Add Axis
+  4. Add Scale (and x-axis)
+  5. Add Series
+  6. Add Legend
+  7. Add Title
+  8. Switch to bars
+-->
 <main class="container getting-started">
   <h2>Getting Started</h2>
 
   <div class="row">
     <div class="col-md-7">
       <!-- Currently needed for scrollspy to work properly -->
-      <div class="getting-started-nav">
+      <div class="getting-started-nav" style="visibility: hidden; height: 0">
         <ul class="nav">
           <li><a href="#1-download">Download</a></li>
           <li><a href="#2-chart">Add Chart</a></li>
           <li><a href="#3-component">Add Component</a></li>
           <li><a href="#4-scales">Add Scales</a></li>
+          <li><a href="#5-series">Add Series</a></li>
+          <li><a href="#6-legend">Add Legend</a></li>
+          <li><a href="#7-title">Add Title</a></li>
+          <li><a href="#8-bars">Switch to Bars</a></li>
         </ul>
       </div>
 
@@ -94,7 +110,7 @@ var data = [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}];
 var chart = d3.select('#chart').chart('Compose', function(data) {
   return {
     charts: {
-      lines: {
+      results: {
         type: 'Lines',
         data: data
       }
@@ -117,7 +133,7 @@ chart.draw(data);
 var chart = d3.select('#chart').chart('Compose', function(data) {
   return {
     charts: {
-      lines: {type: 'Lines', data: data}
+      results: {type: 'Lines', data: data}
     },
     components: {
       yAxis: {
@@ -147,7 +163,7 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
 
   return {
     charts: {
-      lines: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y}
+      results: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y}
     },
     components: {
       xAxis: {
@@ -166,7 +182,161 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
 {% endhighlight %}
       </section>
 
-      <section style="height: calc(25vh)"></section>
+      <section>
+        <h3 id="5-series"><span class="step-number">5.</span> Add Series</h3>
+
+        <p>
+          Add series...
+        </p>
+
+{% highlight js %}
+var data = [
+  {
+    values: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]
+  },
+  {
+    values: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, {x: 3, y: 90}]
+  }
+];
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  // Everything stays the same...
+});
+
+chart.draw(data);
+{% endhighlight %}
+      </section>
+
+      <section>
+        <h3 id="6-legend"><span class="step-number">6.</span> Add Legend</h3>
+
+        <p>
+          Add legend...
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  var scales = {
+    x: {data: data, key: 'x'}
+    y: {domain: [0, 100]}
+  };
+
+  return {
+    charts: {
+      results: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y}
+    },
+    components: {
+      xAxis: {
+        type: 'Axis',
+        position: 'bottom',
+        scale: scales.x
+      },
+      yAxis: {
+        type: 'Axis',
+        position: 'left',
+        scale: scales.y
+      },
+      legend: {
+        type: 'Legend',
+        position: 'right',
+        charts: ['results']
+      }
+    }
+  };
+});
+{% endhighlight %}
+      </section>
+
+      <section>
+        <h3 id="7-title"><span class="step-number">7.</span> Add Title</h3>
+
+        <p>
+          Add Title
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  var scales = {
+    x: {data: data, key: 'x'}
+    y: {domain: [0, 100]}
+  };
+
+  return {
+    charts: {
+      results: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y}
+    },
+    components: {
+      xAxis: {
+        type: 'Axis',
+        position: 'bottom',
+        scale: scales.x
+      },
+      yAxis: {
+        type: 'Axis',
+        position: 'left',
+        scale: scales.y
+      },
+      legend: {
+        type: 'Legend',
+        position: 'right',
+        charts: ['results']
+      },
+      title: {
+        type: 'Title',
+        text: 'd3.compose',
+        'class': 'chart-title-main'
+      }
+    }
+  };
+});
+{% endhighlight %}
+      </section>
+
+      <section>
+        <h3 id="8-bars"><span class="step-number">8.</span> Switch to Bars</h3>
+
+        <p>
+          Switch to Bars...
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  var scales = {
+    x: {data: data, key: 'x', type: 'ordinal', adjacent: true}
+    y: {domain: [0, 100]}
+  };
+
+  return {
+    charts: {
+      results: {type: 'Bars', data: data, xScale: scales.x, yScale: scales.y}
+    },
+    components: {
+      xAxis: {
+        type: 'Axis',
+        position: 'bottom',
+        scale: scales.x
+      },
+      yAxis: {
+        type: 'Axis',
+        position: 'left',
+        scale: scales.y
+      },
+      legend: {
+        type: 'Legend',
+        position: 'right',
+        charts: ['results']
+      },
+      title: {
+        type: 'Title',
+        text: 'd3.compose',
+        'class': 'chart-title-main'
+      }
+    }
+  };
+});
+{% endhighlight %}
+      </section>
+
+      <!-- <section style="height: calc(25vh)"></section> -->
     </div>
 
     <div class="col-md-5">
