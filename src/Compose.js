@@ -53,7 +53,7 @@
     @param {Function|Object} [options]
   */
   charts.Compose = charts.Base.extend('Compose', {
-    initialize: function(options) {
+    initialize: function() {
       // Overriding transform in init jumps it to the top of the transform cascade
       // Therefore, data coming in hasn't been transformed and is raw
       // (Save raw data for redraw)
@@ -61,9 +61,6 @@
         this.rawData(data);
         return data;
       };
-
-      if (options)
-        this.options(options);
 
       // Responsive svg based on the following approach (embedded + padding hack)
       // http://tympanus.net/codrops/2014/08/19/making-svgs-responsive-with-css/

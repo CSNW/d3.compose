@@ -14,9 +14,12 @@
   */
   d3.compose.charts = d3.compose.charts || {};
   d3.compose.charts.Base = d3.chart('Base', {
-    initialize: function() {
+    initialize: function(options) {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
+
+      if (options)
+        this.options(options);
     },
 
     /**
@@ -35,10 +38,6 @@
       var property = d3.compose.helpers.property;
 
       d3.chart('Base').extend('HasProperties', {
-        initialize: function(options) {
-          // Automatically set options
-          this.options(options || {});
-        },
         a: property('a'),
         b: property('b', {
           set: function(value) {

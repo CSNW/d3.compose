@@ -35,11 +35,7 @@
     @class Chart
     @extends Base
   */
-  charts.Chart = charts.Base.extend('Chart', {
-    initialize: function(options) {
-      this.options(options || {});
-    }
-  }, {
+  charts.Chart = charts.Base.extend('Chart', {}, {
     /**
       Default z-index for chart
       (Components are 50 by default, so Chart = 100 is above component by default)
