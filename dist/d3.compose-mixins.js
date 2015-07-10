@@ -1,4 +1,4 @@
-/*! d3.compose - v0.13.3
+/*! d3.compose - v0.13.4
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -152,13 +152,13 @@
 
       function set(value) {
         // Validate
-        if (utils.isFunction(options.validate) && !options.validate.call(this, value))
+        if (utils.isFunction(options.validate) && !utils.isUndefined(value) && !options.validate.call(this, value))
           throw new Error('Invalid value for ' + name + ': ' + JSON.stringify(value));
 
         getSet.previous = properties[name];
         properties[name] = value;
 
-        if (utils.isFunction(options.set)) {
+        if (utils.isFunction(options.set) && !utils.isUndefined(value)) {
           var response = options.set.call(context, value, getSet.previous);
 
           if (response && utils.has(response, 'override'))
@@ -864,7 +864,7 @@
 })(d3, _);
 
 (function(d3, helpers) {
-  var each = helpers.utils.each;
+  var utils = helpers.utils;
   var property = helpers.property;
 
   /**
@@ -879,9 +879,12 @@
   */
   d3.compose.charts = d3.compose.charts || {};
   d3.compose.charts.Base = d3.chart('Base', {
-    initialize: function() {
+    initialize: function(options) {
       // Bind all di-functions to this chart
       helpers.bindAllDi(this);
+
+      if (options)
+        this.options(options);
     },
 
     /**
@@ -900,10 +903,6 @@
       var property = d3.compose.helpers.property;
 
       d3.chart('Base').extend('HasProperties', {
-        initialize: function(options) {
-          // Automatically set options
-          this.options(options || {});
-        },
         a: property('a'),
         b: property('b', {
           set: function(value) {
@@ -935,11 +934,24 @@
     */
     options: property('options', {
       default_value: {},
-      set: function(options) {
-        each(options, function setFromOptions(value, key) {
-          if (this[key] && this[key].is_property && this[key].set_from_options)
+      set: function(options, previous) {
+        // Clear all unset options, except for data and options
+        if (previous) {
+          var unset = utils.difference(utils.keys(previous), utils.keys(options));
+          utils.each(unset, function(key) {
+            if (key != 'data' && key != 'options' && isProperty(this, key))
+              this[key](undefined); 
+          }, this);
+        }
+
+        utils.each(options, function setFromOptions(value, key) {
+          if (isProperty(this, key))
             this[key](value);
         }, this);
+
+        function isProperty(chart, key) {
+          return chart[key] && chart[key].is_property && chart[key].set_from_options;
+        }
       }
     }),
 
@@ -1021,11 +1033,7 @@
     @class Chart
     @extends Base
   */
-  charts.Chart = charts.Base.extend('Chart', {
-    initialize: function(options) {
-      this.options(options || {});
-    }
-  }, {
+  charts.Chart = charts.Base.extend('Chart', {}, {
     /**
       Default z-index for chart
       (Components are 50 by default, so Chart = 100 is above component by default)
@@ -1093,10 +1101,6 @@
     @extends Base
   */
   charts.Component = charts.Base.extend('Component', {
-    initialize: function(options) {
-      this.options(options || {});
-    },
-
     /**
       Component's position relative to chart
       (top, right, bottom, left)
@@ -1516,7 +1520,7 @@
     @param {Function|Object} [options]
   */
   charts.Compose = charts.Base.extend('Compose', {
-    initialize: function(options) {
+    initialize: function() {
       // Overriding transform in init jumps it to the top of the transform cascade
       // Therefore, data coming in hasn't been transformed and is raw
       // (Save raw data for redraw)
@@ -1524,9 +1528,6 @@
         this.rawData(data);
         return data;
       };
-
-      if (options)
-        this.options(options);
 
       // Responsive svg based on the following approach (embedded + padding hack)
       // http://tympanus.net/codrops/2014/08/19/making-svgs-responsive-with-css/
@@ -2817,6 +2818,8 @@
 
       this.on('draw', function(data) {
         options = this.labels();
+        options.parent = this;
+        
         labels.options(options);
 
         if (options.display !== false)

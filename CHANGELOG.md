@@ -6,6 +6,7 @@
 - __0.13.1__ Add `Overlay` component and layer type
 - __0.13.2__ Add `xKey` and `yKey` to `mixins.XY` and lots of docs updates
 - __0.13.3__ For `xy`, add given components after generated
+- __0.13.4__ Clear unset options on set and fix axis layout issue for inverted
 
 # 0.12.0
 
