@@ -85,16 +85,19 @@
         this.rendered = true;
       }
 
-      this.renderChart();
+      var generated = this.example.generate(this.options.values);
+      generated.data = prepareData(this.example, this.options, this.data_key);
+
+      this.renderChart(generated);
 
       if (this.include_controls) {
-        this.renderOptions();
-        this.renderData();
+        this.renderOptions(generated);
+        this.renderData(generated);
         this.renderCustomizer();
       }
     },
 
-    renderChart: function renderChart() {
+    renderChart: function renderChart(generated) {
       if (!this.chart) {
         this.chart = d3.select(this.$('.js-chart')[0])
           .chart('Compose')
@@ -104,31 +107,18 @@
       }
 
       try {
-        var fn = new Function('options', this.example.generate(this.options.values));
-        var data = prepareData(this.example, this.options, this.data_key);
-
-        this.chart.options(fn);
-        this.chart.draw(data);
+        this.chart.options(generated.fn);
+        this.chart.draw(generated.data);
       } catch (ex) { console.error(ex); }
     },
 
-    renderOptions: function renderOptions() {
-      var generated = this.example.generate(this.options.values);
-      var output = this.example.output || function(generated) {
-        var fn = '';
-        if (generated)
-          fn = ', function(options) {\n' + generated + '\n}';
-
-        return 'd3.select(\'#chart\').chart(\'Compose\'' + fn + ');';
-      };
-
-      renderAndHighlight(this.$('.js-options')[0], output(generated));
+    renderOptions: function renderOptions(generated) {
+      renderAndHighlight(this.$('.js-options')[0], generated.output);
     },
 
-    renderData: function renderData() {
+    renderData: function renderData(generated) {
       try {
-        var data = prepareData(this.example, this.options, this.data_key);
-        renderAndHighlight(this.$('.js-data')[0], JSON.stringify(data, null, 2));
+        renderAndHighlight(this.$('.js-data')[0], JSON.stringify(generated.data, null, 2));
       } catch (ex) { console.error(ex); }
     },
 
@@ -140,7 +130,7 @@
 
         this.listenTo(this.customizer, 'change', function() {
           // TODO
-          console.log('changed');
+          // console.log('changed');
         });
       }
 

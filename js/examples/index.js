@@ -105,7 +105,7 @@
   examples.lines = {
     generate: function(options) {
       if (options.include.xy) {
-        return buildFn({
+        var fn = buildFn({
           scales: {
             x: inline(common.scale('x')),
             y: inline(common.scale('y'))
@@ -124,7 +124,7 @@
         }));
       }
       else {
-        return buildFn({
+        var fn = buildFn({
           scales: {
             x: inline(common.scale('x')),
             y: inline(common.scale('y'))
@@ -158,6 +158,11 @@
           }
         });
       }
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     options: {
@@ -191,7 +196,7 @@
 
   examples.bars = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
           y: inline(common.scale('y', {domain: [0, 120]}))
@@ -207,6 +212,11 @@
         title: common.title(),
         legend: true
       }));
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     options: {
@@ -235,7 +245,7 @@
 
   examples['stacked-bars'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline(common.scale('xOrdinal', {adjacent: false})),
           y: inline(common.scale('y', {domain: [0, 120]}))
@@ -251,6 +261,11 @@
         title: common.title('Stacked Bars'),
         legend: true
       }));
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     options: {},
@@ -263,7 +278,7 @@
 
   examples['horizontal-bars'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
           y: inline(common.scale('y', {domain: [0, 120]}))
@@ -278,6 +293,11 @@
         },
         title: common.title()
       }));
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     options: {
@@ -306,7 +326,7 @@
 
   examples['horizontal-stacked-bars'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline(common.scale('xOrdinal', {adjacent: false})),
           y: inline(common.scale('y', {domain: [0, 120]}))
@@ -321,6 +341,11 @@
         },
         title: common.title('Stacked Bars')
       }));
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     options: {},
@@ -333,7 +358,7 @@
 
   examples['lines-and-bars'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         input: code('options.data.input'),
         output: code('options.data.output'),
         scales: {
@@ -353,9 +378,98 @@
         },
         title: 'Input vs. Output'
       }));
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: examples.data.combined,
+    options: {}
+  };
+
+  //
+  // Custom Chart
+  //
+
+  examples['custom-chart'] = {
+    generate: function(options) {
+      var fn = buildFn({
+        scales: {
+          x: inline(common.scale('x')),
+          y: inline(common.scale('y'))
+        }
+      }, extensions.xy({
+        charts: {
+          input: common.chart('Lines'),
+          dots: common.chart('Dots', {rValue: 5})
+        },
+        axes: {
+          x: inline(common.axis('x')),
+          y: inline(common.axis('y')),
+        },
+        title: 'Custom Chart'
+      }));
+
+      return {
+        output: fnBody(dependencies.dots) + '\n\n' + wrapFn(fn),
+        fn: new Function('options', fn)
+      };
+    },
+
+    data: examples.data.single,
+    options: {}
+  };
+
+  //
+  // Custom Component
+  //
+
+  examples['custom-component'] = {
+    generate: function(options) {
+      var fn = buildFn({
+        scales: {
+          x: inline(common.scale('x')),
+          y: inline(common.scale('y'))
+        }
+      }, extensions.xy({
+        charts: {
+          input: common.chart('Lines'),
+          label: {
+            type: 'Labels',
+            xScale: code('scales.x'),
+            yScale: code('scales.y'),
+            position: 'right',
+            offset: inline({x: 5, y: 5}),
+            data: [
+              inline({x: 14.5, y: 100, label: 'x = 14.5'})
+            ]
+          }
+        },
+        axes: {
+          x: inline(common.axis('x')),
+          y: inline(common.axis('y')),
+        },
+        components: {
+          overlay: {
+            type: 'OverlayLine',
+            value: 14.5,
+            orientation: 'vertical',
+            xScale: code('scales.x'),
+            yScale: code('scales.y')
+          }
+        },
+        title: 'Custom Component'
+      }));
+
+      return {
+        output: fnBody(dependencies.overlay) + '\n\n' + wrapFn(fn),
+        fn: new Function('options', fn)
+      };
+    },
+
+    data: examples.data.single,
     options: {}
   };
 
@@ -603,7 +717,117 @@
   // dependencies
   //
 
-  var dependencies = {};
+  var dependencies = {
+    dots: function() {
+      var helpers = d3.compose.helpers;
+      var mixins = d3.compose.mixins;
+
+      d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
+        initialize: function() {
+          var base = this.base.append('g').attr('class', 'chart-dots');
+
+          // seriesLayer wraps series functionality
+          // so that standard layer approach can be used
+          this.seriesLayer('Dots', base, {
+            dataBind: function(data) {
+              return this.selectAll('circle')
+                .data(data, this.chart().key);
+            },
+            insert: function() {
+              return this.append('circle');
+            },
+            events: {
+              merge: function() {
+                var chart = this.chart();
+                this
+                  .attr('cx', chart.x)
+                  .attr('cy', chart.y)
+                  .attr('r', chart.r);
+              }
+            }
+          });
+        },
+
+        // helpers.property creates get/set property
+        // that is set automatically from Compose options
+        rValue: helpers.property('rValue', {
+          default_value: 2
+        }),
+
+        // helpers.di binds chart to "di" functions
+        // so that "this" refers to the element (as expected)
+        r: helpers.di(function(chart, d, i) {
+          return chart.rValue();
+        })
+      }));
+    },
+
+    overlay: function() {
+      var helpers = d3.compose.helpers;
+      var mixins = d3.compose.mixins;
+
+      d3.chart('Component').extend('OverlayLine', helpers.mixin(mixins.XY, {
+        initialize: function() {
+          var base = this.base.append('g').attr('class', 'chart-overlay');
+          this.line = d3.svg.line().x(this.x).y(this.y);
+
+          this.layer('Overlay', base, {
+            dataBind: function() {
+              return this.selectAll('path').data([0]);
+            },
+            insert: function() {
+              return this.append('path')
+                .style('stroke', '#999');
+            },
+            events: {
+              merge: function() {
+                var chart = this.chart();
+                this.attr('d', function(d, i) {
+                  return chart.line(chart.points.call(this, d, i));
+                })
+              }
+            }
+          });
+        },
+
+        // helpers.property creates get/set property
+        // that is set automatically from Compose options
+        value: helpers.property('value'),
+        
+        orientation: helpers.property('orientation', {
+          default_value: 'vertical',
+          validate: function(value) {
+            return value == 'vertical' || value == 'horizontal';
+          }
+        }),
+
+        // helpers.di binds chart to "di" functions
+        // so that "this" refers to the element (as expected)
+        points: helpers.di(function(chart, d, i) {
+          var points = [{}, {}];
+
+          if (chart.orientation() == 'horizontal') {
+            points[0].y = points[1].y = chart.value();
+            points[0].x = chart.xScale().domain()[0];
+            points[1].x = chart.xScale().domain()[1];
+          }
+          else {
+            points[0].x = points[1].x = chart.value();
+            points[0].y = chart.yScale().domain()[0];
+            points[1].y = chart.yScale().domain()[1];
+          }
+
+          return points;
+        }),
+
+        // Position overlay as chart layer,
+        // skipping standard component layout
+        skip_layout: true
+      }), {
+        layer_type: 'chart'
+      });
+    }
+  };
 
   _.each(dependencies, function(dependency) {
     dependency();
@@ -744,8 +968,8 @@
     }).join('\n');
   }
 
-  function wrapGenerated(generated) {
-    return 'd3.select(\'#chart\').chart(\'Compose\', function(options) {\n' + generated + '\n});';
+  function wrapFn(fn) {
+    return 'd3.select(\'#chart\').chart(\'Compose\', function(options) {\n' + fn + '\n});';
   };
 
 })(examples);
