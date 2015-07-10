@@ -1,4 +1,4 @@
-/*! d3.compose - v0.13.4
+/*! d3.compose - v0.13.5
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -22,6 +22,7 @@
     each: _.each,
     extend: _.extend,
     flatten: _.flatten,
+    find: _.find,
     first: function(array, n) {
       // Underscore vs. Lo-dash disagree on the implementation for first
       // use Underscore's
@@ -4040,6 +4041,10 @@
     mixins.StandardLayer, 
     {
       initialize: function() {
+        this.on('before:draw', function() {
+          this.offset_axis = this.getOffsetAxis();
+        }.bind(this));
+
         // Use standard series layer for extensibility
         // (dataBind, insert, and events defined in prototype)
         this.standardSeriesLayer('Bars', this.base.append('g').classed('chart-bars', true));
@@ -4068,17 +4073,21 @@
 
       // Shift bars slightly to account for axis thickness
       barOffset: function barOffset() {
-        var axis = this.getOffsetAxis();
-        if (axis) {
-          var axis_thickness = parseInt(axis.base.select('.domain').style('stroke-width')) || 0;
+        if (this.offset_axis) {
+          var axis_thickness = parseInt(this.offset_axis.base.select('.domain').style('stroke-width')) || 0;
           return axis_thickness / 2;
         }
         else {
           return 0;
         }
       },
+
       getOffsetAxis: function getOffsetAxis() {
-        return this.container && this.container.components()['axis.x'];
+        var components = this.container && this.container.components();
+        return utils.find(components, function(component, id) {
+          if (component.type == 'Axis' && component.position() == 'bottom')
+            return component;
+        });
       },
 
       // Override StandardLayer
@@ -4246,6 +4255,14 @@
     barHeight: di(function(chart, d, i) {
       return chart.itemWidth();
     }),
+
+    getOffsetAxis: function getOffsetAxis() {
+      var components = this.container && this.container.components();
+      return utils.find(components, function(component, id) {
+        if (component.type == 'Axis' && component.position() == 'left')
+          return component;
+      });
+    },
 
     onEnter: function onEnter(selection) {
       selection

@@ -1,4 +1,4 @@
-/*! d3.compose - v0.13.4
+/*! d3.compose - v0.13.5
  * https://github.com/CSNW/d3.compose
  * License: MIT
  */
@@ -22,6 +22,7 @@
     each: _.each,
     extend: _.extend,
     flatten: _.flatten,
+    find: _.find,
     first: function(array, n) {
       // Underscore vs. Lo-dash disagree on the implementation for first
       // use Underscore's
