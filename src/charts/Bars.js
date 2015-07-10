@@ -96,6 +96,11 @@
 
         return y < y0 ? y : y0 + chart.barOffset();
       }),
+      bar0: di(function(chart, d, i) {
+        var y0 = chart.y0();
+        var offset = chart.barOffset();
+        return chart.y.call(this, d, i) <= y0 ? y0 - offset : y0 + offset;
+      }),
       barClass: di(function(chart, d, i) {
         return 'chart-bar' + (d['class'] ? ' ' + d['class'] : '');
       }),
@@ -135,7 +140,7 @@
       // Override StandardLayer
       onEnter: function onEnter(selection) {
         selection
-          .attr('y', this.y0())
+          .attr('y', this.bar0)
           .attr('height', 0);
       },
 
@@ -284,6 +289,11 @@
     barHeight: di(function(chart, d, i) {
       return chart.itemWidth();
     }),
+    bar0: di(function(chart, d, i) {
+      var x0 = chart.x0();
+      var offset = chart.barOffset();
+      return chart.x.call(this, d, i) >= x0 ? x0 + offset : x0 - offset;
+    }),
 
     getOffsetAxis: function getOffsetAxis() {
       var components = this.container && this.container.components();
@@ -295,7 +305,7 @@
 
     onEnter: function onEnter(selection) {
       selection
-        .attr('x', this.x0())
+        .attr('x', this.bar0)
         .attr('width', 0);
     },
     
@@ -374,7 +384,7 @@
       if (chart.bar_positions.length <= i)
         chart.bar_positions.push(0);
 
-      var previous = chart.bar_positions[i] || x0;
+      var previous = chart.bar_positions[i] || (x0 + chart.barOffset());
       var new_position = previous + (x - x0);
 
       chart.bar_positions[i] = new_position;
