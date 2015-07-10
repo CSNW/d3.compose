@@ -148,13 +148,13 @@
 
       function set(value) {
         // Validate
-        if (utils.isFunction(options.validate) && !options.validate.call(this, value))
+        if (utils.isFunction(options.validate) && !utils.isUndefined(value) && !options.validate.call(this, value))
           throw new Error('Invalid value for ' + name + ': ' + JSON.stringify(value));
 
         getSet.previous = properties[name];
         properties[name] = value;
 
-        if (utils.isFunction(options.set)) {
+        if (utils.isFunction(options.set) && !utils.isUndefined(value)) {
           var response = options.set.call(context, value, getSet.previous);
 
           if (response && utils.has(response, 'override'))

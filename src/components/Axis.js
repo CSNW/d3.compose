@@ -119,15 +119,17 @@
     scale: property('scale', {
       type: 'Function',
       set: function(value) {
-        var scale = helpers.createScale(value);
-
-        if (this.orientation() == 'vertical')
-          this.yScale(scale);
-        else
-          this.xScale(scale);
+        if (this.orientation() == 'vertical') {
+          this.yScale(value);
+          value = this.yValue();
+        }
+        else {
+          this.xScale(value);
+          value = this.xScale();
+        }
 
         return {
-          override: scale
+          override: value
         };
       }
     }),

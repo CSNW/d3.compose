@@ -615,6 +615,8 @@
 
       this.on('draw', function(data) {
         options = this.labels();
+        options.parent = this;
+        
         labels.options(options);
 
         if (options.display !== false)

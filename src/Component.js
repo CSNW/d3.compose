@@ -42,10 +42,6 @@
     @extends Base
   */
   charts.Component = charts.Base.extend('Component', {
-    initialize: function(options) {
-      this.options(options || {});
-    },
-
     /**
       Component's position relative to chart
       (top, right, bottom, left)
