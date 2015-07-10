@@ -8,6 +8,7 @@
 - __0.13.3__ For `xy`, add given components after generated
 - __0.13.4__ Clear unset options on set and fix axis layout issue for inverted
 - __0.13.5__ Fix bars axis offset issue
+- __0.13.6__ Additional bar offset tweaks
 
 # 0.12.0
 
