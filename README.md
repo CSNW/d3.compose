@@ -110,4 +110,4 @@ Install yuidoc (if necessary) `npm install -g yuidocjs`
 5. Navigate back to root
 6. View site with `bundle exec jekyll serve`
 
-Note: For faster iteration, create a separate clone, switch to `gh-pages` branch, set `docs_path` environment variable to original clone (e.g. Windows: `SET docs_data=C:\...\d3.compose\_docs\`), and then run steps 3-6.
+Note: For faster iteration, create a separate clone, switch to `gh-pages` branch, set `docs_path` environment variable to original clone (e.g. Windows: `SET docs_path=C:\...\d3.compose\_docs\`), and then run steps 3-6.

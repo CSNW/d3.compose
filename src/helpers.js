@@ -154,7 +154,7 @@
         getSet.previous = properties[name];
         properties[name] = value;
 
-        if (utils.isFunction(options.set)) {
+        if (utils.isFunction(options.set) && !utils.isUndefined(value)) {
           var response = options.set.call(context, value, getSet.previous);
 
           if (response && utils.has(response, 'override'))
