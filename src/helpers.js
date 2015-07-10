@@ -18,6 +18,7 @@
     each: _.each,
     extend: _.extend,
     flatten: _.flatten,
+    find: _.find,
     first: function(array, n) {
       // Underscore vs. Lo-dash disagree on the implementation for first
       // use Underscore's
