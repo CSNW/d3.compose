@@ -479,7 +479,7 @@
 
   examples['masthead'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
           y: inline(common.scale('y', {domain: [0, 120]}))
@@ -495,6 +495,11 @@
         title: 'd3.compose',
         legend: true
       }));
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: examples.data.single,
@@ -507,11 +512,16 @@
 
   examples['getting-started-2'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         charts: {
           results: {type: 'Lines', data: code('options.data')}
         }
       });
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: {series: examples.data.single.series[0].values},
@@ -520,7 +530,7 @@
 
   examples['getting-started-3'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         charts: {
           results: inline({type: 'Lines', data: code('options.data')})
         },
@@ -532,6 +542,11 @@
           }
         }
       });
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: {series: examples.data.single.series[0].values},
@@ -540,7 +555,7 @@
 
   examples['getting-started-4'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
           y: inline({domain: [0, 120]})
@@ -562,6 +577,11 @@
           }
         }
       });
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: {series: examples.data.single.series[0].values},
@@ -570,7 +590,7 @@
 
   examples['getting-started-5'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
           y: inline({domain: [0, 120]})
@@ -592,6 +612,11 @@
           }
         }
       });
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: examples.data.single,
@@ -600,7 +625,7 @@
 
   examples['getting-started-6'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
           y: inline({domain: [0, 120]})
@@ -627,6 +652,11 @@
           }
         }
       });
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: examples.data.single,
@@ -635,7 +665,7 @@
 
   examples['getting-started-7'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
           y: inline({domain: [0, 120]})
@@ -667,6 +697,11 @@
           }
         }
       });
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: examples.data.single,
@@ -675,7 +710,7 @@
 
   examples['getting-started-8'] = {
     generate: function(options) {
-      return buildFn({
+      var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x', type: 'ordinal', adjacent: true}),
           y: inline({domain: [0, 120]})
@@ -707,6 +742,11 @@
           }
         }
       });
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
     },
 
     data: examples.data.single,
