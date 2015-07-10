@@ -1,5 +1,5 @@
 (function(d3, helpers) {
-  var each = helpers.utils.each;
+  var utils = helpers.utils;
   var property = helpers.property;
 
   /**
@@ -69,11 +69,24 @@
     */
     options: property('options', {
       default_value: {},
-      set: function(options) {
-        each(options, function setFromOptions(value, key) {
-          if (this[key] && this[key].is_property && this[key].set_from_options)
+      set: function(options, previous) {
+        // Clear all unset options, except for data and options
+        if (previous) {
+          var unset = utils.difference(utils.keys(previous), utils.keys(options));
+          utils.each(unset, function(key) {
+            if (key != 'data' && key != 'options' && isProperty(this, key))
+              this[key](undefined); 
+          }, this);
+        }
+
+        utils.each(options, function setFromOptions(value, key) {
+          if (isProperty(this, key))
             this[key](value);
         }, this);
+
+        function isProperty(chart, key) {
+          return chart[key] && chart[key].is_property && chart[key].set_from_options;
+        }
       }
     }),
 

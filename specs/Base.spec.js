@@ -14,6 +14,23 @@
       expect(base.options().b).toEqual(456);
     });
 
+    it('should clear existing properties for new options', function() {
+      var HasProperties = Base.extend('HasProperties', {
+        a: helpers.property('a'),
+        b: helpers.property('b')
+      });
+      var base = new HasProperties();
+      base.options({a: 123, b: 456});
+
+      expect(base.a()).toEqual(123);
+      expect(base.b()).toEqual(456);
+
+      base.options({a: 789});
+
+      expect(base.a()).toEqual(789);
+      expect(base.b()).toEqual(undefined);
+    });
+
     it('should store fully-transformed data', function() {
       var A = Base.extend('A', {
         transform: function(data) {

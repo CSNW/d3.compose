@@ -148,7 +148,7 @@
 
       function set(value) {
         // Validate
-        if (utils.isFunction(options.validate) && !options.validate.call(this, value))
+        if (utils.isFunction(options.validate) && !utils.isUndefined(value) && !options.validate.call(this, value))
           throw new Error('Invalid value for ' + name + ': ' + JSON.stringify(value));
 
         getSet.previous = properties[name];
