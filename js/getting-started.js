@@ -12,8 +12,13 @@
       el: '#home-chart'
     });
 
-    masthead.setExample(examples['masthead']);
+    masthead.setExample(examples['masthead'][0]);
     masthead.render();
+
+    var carousel = createCarousel(masthead);
+
+    $(document).on('click', '.home-masthead-carousel[data-prev]', carousel.prev);
+    $(document).on('click', '.home-masthead-carousel[data-next]', carousel.next);
 
     return masthead;
   }
@@ -166,6 +171,40 @@
 
     chart.setExample(example);
     chart.render();
+  }
+
+  function createCarousel(chart) {
+    var loop = setInterval(next, 2000);
+    var choices = examples['masthead'];
+    var current_index = 0;
+
+    return {
+      next: function() {
+        clearInterval(loop);
+        next();
+      },
+      prev: function() {
+        clearInterval(loop);
+        prev();
+      }
+    }
+
+    function next() {
+      current_index += 1;
+      if (current_index >= choices.length)
+        current_index = 0;
+
+      chart.setExample(choices[current_index]);
+      chart.render();
+    }
+    function prev() {
+      current_index -= 1;
+      if (current_index < 0)
+        current_index = choices.length - 1;
+
+      chart.setExample(choices[current_index]);
+      chart.render();
+    }
   }
 
 })(jQuery, d3, examples, Editor);

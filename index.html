@@ -12,11 +12,19 @@ scripts: |
 
 <section class="home-masthead"><div class="container">
   <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-7 home-masthead-carousel-container">
+      <a class="home-masthead-carousel" href="#" data-prev>
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
       <div id="home-chart" class="editor is-constrained">
         <!-- Statically load empty editor to avoid load flash -->
         {% include editor-placeholder.html width=600 height=400 %}
       </div>
+      <a class="home-masthead-carousel" href="#" data-next>
+        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+      </a>
     </div>
     <div class="col-md-5 home-masthead-content">
       <h1 class="home-tagline">Compose complex, data-driven visualizations from reusable charts and components with d3.</h1>

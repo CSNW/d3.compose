@@ -13,6 +13,67 @@
 .home-masthead-content {
   
 }
+.home-masthead-carousel-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  @media (min-width: $screen-md) {
+    margin-left: -30px;
+  }
+}
+.home-masthead-carousel {
+  flex: 0 0 35px;
+  margin-top: 30%;
+  font-size: 30px;
+  opacity: 0.3;
+  color: #fff;
+
+  &:active,
+  &:visited {
+    color: #fff;    
+  }
+  &:hover {
+    color: #fff;
+    opacity: 1;
+  }
+
+  @media (max-width: $screen-sm) {
+    flex: none;
+    width: 50%;
+    margin-top: 0;
+    padding: 5px 10px 3px 10px;
+    font-size: 20px;
+    line-height: 1.5;
+    opacity: 1;
+    background-color: #fff;
+    color: $primary-color;
+    border: solid 1px #ddd;
+    border-top: none;
+
+    &[data-prev] {
+      order: 1;
+    }
+    &[data-next] {
+      order: 2;
+      text-align: right;
+      border-left: none;
+    }
+    &:active,
+    &:visited {
+      color: $primary-color;
+    }
+    &:hover {
+      color: $primary-color-dark;
+    }
+  }
+}
+#home-chart {
+  flex: 0 0 100%;
+
+  @media (min-width: $screen-sm) {
+    flex: 1;  
+  }
 }
 
 .home-tagline {

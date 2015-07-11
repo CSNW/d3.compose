@@ -477,7 +477,7 @@
   // Getting Started: Masthead
   //
 
-  examples['masthead'] = {
+  examples['masthead'] = [{
     generate: function(options) {
       var fn = buildFn({
         scales: {
@@ -504,7 +504,7 @@
 
     data: examples.data.single,
     options: {}
-  };
+  }, examples['lines-and-bars']];
 
   //
   // Getting Started: Steps
