@@ -34,18 +34,35 @@
   .icon-bar {
     background-color: #fff;
   }
+  .navbar-header {
+    @media (max-width: $screen-sm) {
+      margin-top: 10px;
+    }
+  }
 
   .home & {
     margin-bottom: 0;
 
     .navbar-brand {
-      margin-top: 40px;
+      margin-top: 30px;
       font-size: 30px;
+
+      @media (max-width: $screen-sm) {
+        margin-top: 0;
+      }
+    }
+
+    .navbar-collapse {
+      box-shadow: none;
     }
 
     .nav {
       margin-top: 40px;
       font-size: 16px;
+
+      @media (max-width: $screen-sm) {
+        margin-top: 0;
+      }
     }
 
     .nav > li > a {
@@ -54,11 +71,17 @@
       border-bottom: solid 1px transparent;
     }
 
+     
     .nav > li > a:hover,
     .nav > li > a:focus,
     .nav > .active > a {
       background-color: inherit;
-      border-bottom-color: #fff;
+      text-decoration: underline;
+
+      @media (min-width: $screen-sm) {
+        border-bottom-color: #fff;
+        text-decoration: none;
+      }
     }
   }
 }

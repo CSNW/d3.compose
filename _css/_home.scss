@@ -1,12 +1,18 @@
 .home-masthead {
   background-color: $primary-color;
   border-bottom: solid 1px #ddd;
-  padding-top: 50px;
+  padding-top: 30px;
   padding-bottom: 50px;
   color: #fff;
+
+  @media (max-width: $screen-sm) {
+    padding-top: 10px;
+    padding-bottom: 20px;
+  }
 }
 .home-masthead-content {
-  margin-left: 30px;
+  
+}
 }
 
 .home-tagline {
@@ -14,6 +20,13 @@
   font-weight: normal;
   margin-top: 50px;
   margin-bottom: 30px;
+
+  @media (max-width: $screen-sm) {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 14px;
+    line-height: 1.2;
+  }
 }
 
 .home-features {
@@ -21,6 +34,10 @@
 
   > li {
     padding-bottom: 2px;
+  }
+
+  @media (max-width: $screen-sm) {
+    padding-left: 1.5em;
   }
 }
 
@@ -34,6 +51,11 @@
   &:hover, &:active {
     background-color: #fff;
     color: $primary-color;
+  }
+
+  @media (max-width: $screen-sm) {
+    margin-top: 20px;
+    width: 100%;
   }
 }
 
