@@ -368,13 +368,13 @@
         }
       }, extensions.xy({
         charts: {
-          input: common.chart('Lines', {data: codes.input}),
-          output: common.chart('Bars', {data: codes.output, yScale: codes.scales.y2})
+          input: common.chart('Lines', {data: codes.input, duration: 1000}),
+          output: common.chart('Bars', {data: codes.output, yScale: codes.scales.y2, duration: 1000})
         },
         axes: {
-          x: inline(common.axis('x')),
-          y: inline(common.axis('y', {title: 'Input'})),
-          y2: inline(common.axis('y2', {title: 'Output'}))
+          x: inline(common.axis('x', {duration: 1000})),
+          y: inline(common.axis('y', {title: 'Input', duration: 1000})),
+          y2: inline(common.axis('y2', {title: 'Output', duration: 1000}))
         },
         title: 'Input vs. Output'
       }));
@@ -486,11 +486,11 @@
         }
       }, extensions.xy({
         charts: {
-          bars: common.chart('Bars')
+          bars: common.chart('Bars', {duration: 1000})
         },
         axes: {
-          x: inline(common.axis('x')),
-          y: inline(common.axis('y'))
+          x: inline(common.axis('x', {duration: 1000})),
+          y: inline(common.axis('y', {duration: 1000}))
         },
         title: 'd3.compose',
         legend: true
@@ -708,7 +708,7 @@
     options: {}
   };
 
-  examples['getting-started-8'] = {
+  examples['getting-started-1'] = examples['getting-started-8'] = {
     generate: function(options) {
       var fn = buildFn({
         scales: {

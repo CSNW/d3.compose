@@ -107,15 +107,13 @@
     var active = $('.getting-started-nav').find('.active a')[0];
     var details;
 
-    if (active) {
+    if (active)
       details = getDetailsFromLink(active);
-    }
 
-    // Start at step 2 by default (1 is empty)
-    if (!details || details.number < 2) {
+    if (!details) {
       details = {
-        id: '2-chart',
-        number: 2
+        id: '1-download',
+        number: 1
       };
     }
 
@@ -132,10 +130,7 @@
     var steps = [];
     $('.getting-started-nav a').each(function(i) {
       var details = getDetailsFromLink(this);
-
-      // Start at step 2 by default (1 is empty)
-      if (details.number >= 2)
-        steps.push(details);
+      steps.push(details);
     });
 
     return steps;
@@ -174,7 +169,7 @@
   }
 
   function createCarousel(chart) {
-    var loop = setInterval(next, 2000);
+    var loop = setInterval(next, 3000);
     var choices = examples['masthead'];
     var current_index = 0;
 
