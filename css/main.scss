@@ -9,6 +9,9 @@ $background-color: #f7f7f7;
 $primary-color: #457abb;
 $primary-color-dark: darken($primary-color, 5%);
 $icon-font-path: "fonts/";
+$font-family-sans-serif: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+$headings-font-weight: 700;
+$font-size-h1: 34px;
 
 @import "bootstrap";
 
@@ -19,6 +22,7 @@ html {
 body {
   overflow-y: scroll;
   background-color: $background-color;
+  line-height: 1.6;
 }
 
 code {
