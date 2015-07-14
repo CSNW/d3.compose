@@ -19,68 +19,61 @@
     color: #fff;
   }
 
+  .nav > li > a {
+    padding: 4px 2px;
+    margin: 11px 8px 0 8px;
+    border-bottom: solid 1px transparent;
+
+    @media (max-width: $screen-sm) {
+      margin-top: 0;
+    }
+  }
+
   .nav > li > a:hover,
   .nav > li > a:focus,
   .nav > .active > a {
-    background-color: $primary-color-dark;
+    background-color: inherit;
+    text-decoration: underline;
+
+    @media (min-width: $screen-sm) {
+      border-bottom-color: #fff;
+      text-decoration: none;
+    }
   }
 
   .navbar-brand {
-    font-size: 1.5em;
-  }
-  .navbar-toggle {
-    border-color: #eee;
-  }
-  .icon-bar {
-    background-color: #fff;
-  }
-  .navbar-header {
+    font-size: 24px;
+
     @media (max-width: $screen-sm) {
-      margin-top: 10px;
+      height: 44px;
     }
+  }
+
+  .nav {
+    margin-right: 0;
+
+    @media (max-width: $screen-sm) {
+      padding-left: 5px;
+      margin-top: 0;
+    }
+  }
+
+  .navbar-nav > li {
+    float: left;
   }
 
   .home & {
     margin-bottom: 0;
 
-    .navbar-brand {
-      margin-top: 30px;
-      font-size: 30px;
-
-      @media (max-width: $screen-sm) {
-        margin-top: 0;
+    @media (min-width: $screen-sm) {
+      .navbar-brand {
+        margin-top: 30px;
+        font-size: 30px;
       }
-    }
 
-    .navbar-collapse {
-      box-shadow: none;
-    }
-
-    .nav {
-      margin-top: 40px;
-      font-size: 16px;
-
-      @media (max-width: $screen-sm) {
-        margin-top: 0;
-      }
-    }
-
-    .nav > li > a {
-      padding: 4px 2px;
-      margin: 0 8px;
-      border-bottom: solid 1px transparent;
-    }
-
-     
-    .nav > li > a:hover,
-    .nav > li > a:focus,
-    .nav > .active > a {
-      background-color: inherit;
-      text-decoration: underline;
-
-      @media (min-width: $screen-sm) {
-        border-bottom-color: #fff;
-        text-decoration: none;
+      .nav {
+        margin-top: 34px;
+        font-size: 16px;
       }
     }
   }
