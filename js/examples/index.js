@@ -1,41 +1,75 @@
 (function(examples) {
 
+  function sequence(range, step) {
+    var sequenced = [];
+
+    for (var i = range[0]; i < range[1]; i += step) {
+      sequenced.push(i);
+    }
+    sequenced.push(range[1]);
+
+    return sequenced;
+  }
+
+  function generate(sequence, fn) {
+    return sequence.map(function(x, i) {
+      return {
+        x: x,
+        y: fn(x, i, sequence)
+      };
+    });
+  }
+
+  function random(range) {
+    return Math.round(range[0] + Math.random() * (range[1] - range[0]))
+  }
+
+  function randomize(range) {
+    return function() {
+      return random(range);
+    }
+  }
+
+  function increasing(min, step) {
+    var value = min || 0;
+    step = step || 10;
+
+    return function(x) {
+      value = random([value - (step / 4), value + (step / 4 * 3)]);
+      return value;
+    };
+  }
+
   examples.data = {
     single: {
-      simple: [{x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}],
       series: [
         {
-          key: 'control', name: 'Control', values: [
-            {x: 0, y: 10}, {x: 10, y: 20}, {x: 20, y: 50}, {x: 30, y: 100}
-          ]
+          key: 'control', name: 'Control', values: generate(sequence([0, 100], 10), randomize([0, 25]))
         },
         {
-          key: 'results', name: 'Results', values: [
-            {x: 0, y: 50}, {x: 10, y: 45}, {x: 20, y: 15}, {x: 30, y: 10}
-          ]
+          key: 'results', name: 'Results', values: generate(sequence([0, 100], 10), function(x) { return 100 - 0.03 * Math.pow(x - 50, 2); })
         }
       ]
     },
     combined: {
-      simple: {
-        input: [{x: 1, y: 10}, {x: 2, y: 30}, {x: 3, y: 20}],
-        output: [{x: 1, y: 30}, {x: 2, y: 20}, {x: 3, y: 10}]
-      },
       series: {
         input: [
           {
             key: 'input',
-            values: [{x: 'a', y: 100}, {x: 'b', y: 200}, {x: 'c', y: 300}]
+            name: 'Input',
+            values: generate(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], increasing(150, 25))
           }
         ],
         output: [
           {
-            key: 'run-1',
-            values: [{x: 'a', y: 10}, {x: 'b', y: 30}, {x: 'c', y: 20}]
+            key: 'control',
+            name: 'Control',
+            values: generate(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], randomize([0, 25]))
           },
           {
-            key: 'run-2',
-            values: [{x: 'a', y: 15}, {x: 'b', y: 25}, {x: 'c', y: 20}]
+            key: 'results',
+            name: 'Results',
+            values: generate(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], randomize([0, 75]))
           }
         ]
       }
@@ -285,11 +319,11 @@
         }
       }, extensions.xy({
         charts: {
-          bars: common.chart('HorizontalBars')
+          bars: common.chart('HorizontalBars', {duration: 1000})
         },
         axes: {
-          x: inline(common.axis('x', {position: 'left'})),
-          y: inline(common.axis('y', {position: 'bottom'}))
+          x: inline(common.axis('x', {position: 'left', duration: 1000})),
+          y: inline(common.axis('y', {position: 'bottom', duration: 1000}))
         },
         title: common.title()
       }));
@@ -310,7 +344,7 @@
             text: {
               name: 'Chart Title Text',
               type: 'text',
-              default_value: 'Horizontal Bars Chart'
+              default_value: 'Horizontal Bars'
             }
           }
         }
@@ -372,11 +406,12 @@
           output: common.chart('Bars', {data: codes.output, yScale: codes.scales.y2, duration: 1000})
         },
         axes: {
-          x: inline(common.axis('x', {duration: 1000})),
+          x: inline(common.axis('x', {title: 'Trial', duration: 1000})),
           y: inline(common.axis('y', {title: 'Input', duration: 1000})),
           y2: inline(common.axis('y2', {title: 'Output', duration: 1000}))
         },
-        title: 'Input vs. Output'
+        title: 'Multiple Charts',
+        // legend: {position: 'bottom'}
       }));
 
       return {
@@ -489,8 +524,8 @@
           bars: common.chart('Bars', {duration: 1000})
         },
         axes: {
-          x: inline(common.axis('x', {duration: 1000})),
-          y: inline(common.axis('y', {duration: 1000}))
+          x: inline(common.axis('x', {title: 'Input', duration: 1000})),
+          y: inline(common.axis('y', {title: 'Output', duration: 1000}))
         },
         title: 'd3.compose',
         legend: true
@@ -504,7 +539,34 @@
 
     data: examples.data.single,
     options: {}
-  }, examples['lines-and-bars']];
+  }, examples['lines-and-bars'], {
+    generate: function(options) {
+      var fn = buildFn({
+        scales: {
+          x: inline(common.scale('x', {domain: [-10, 110]})),
+          y: inline(common.scale('y', {domain: [0, 120]}))
+        }
+      }, extensions.xy({
+        charts: {
+          bars: common.chart('Lines', {labels: true, duration: 1000})
+        },
+        axes: {
+          x: inline(common.axis('x', {title: 'Input', duration: 1000})),
+          y: inline(common.axis('y', {title: 'Output', duration: 1000}))
+        },
+        title: 'Labels',
+        legend: true
+      }));
+
+      return {
+        output: wrapFn(fn),
+        fn: new Function('options', fn)
+      };
+    },
+
+    data: examples.data.single,
+    options: {}
+  }, examples['horizontal-bars']];
 
   //
   // Getting Started: Steps
@@ -524,7 +586,7 @@
       };
     },
 
-    data: {series: examples.data.single.series[0].values},
+    data: {series: examples.data.single.series[1].values},
     options: {}
   };
 
@@ -549,7 +611,7 @@
       };
     },
 
-    data: {series: examples.data.single.series[0].values},
+    data: {series: examples.data.single.series[1].values},
     options: {}
   };
 
@@ -584,7 +646,7 @@
       };
     },
 
-    data: {series: examples.data.single.series[0].values},
+    data: {series: examples.data.single.series[1].values},
     options: {}
   };
 
@@ -694,6 +756,16 @@
             type: 'Title',
             text: 'd3.compose',
             'class': 'chart-title-main'
+          },
+          xAxisTitle: {
+            type: 'Title',
+            position: 'bottom',
+            text: 'Input'
+          },
+          yAxisTitle: {
+            type: 'Title',
+            position: 'left',
+            text: 'Results'
           }
         }
       });
@@ -739,6 +811,16 @@
             type: 'Title',
             text: 'd3.compose',
             'class': 'chart-title-main'
+          },
+          xAxisTitle: {
+            type: 'Title',
+            position: 'bottom',
+            text: 'Input'
+          },
+          yAxisTitle: {
+            type: 'Title',
+            position: 'left',
+            text: 'Results'
           }
         }
       });

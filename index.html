@@ -147,7 +147,7 @@ scripts: |
         </p>
 
 {% highlight js %}
-var data = [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, /* ... */];
+var data = [{x: 0, y: 25}, {x: 10, y: 52}, {x: 20, y: 73}, /* ... */];
 var chart = d3.select('#chart').chart('Compose', function(data) {
   // Options function:
   // Gets evaluated on each draw and takes in data and returns options
@@ -264,7 +264,7 @@ var data = [
     // optional: key, name
     key: 'results',
     name: 'Results', // (used in legend later)
-    values: [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 40}, /* ... */]
+    values: [{x: 0, y: 25}, {x: 10, y: 52}, {x: 20, y: 73}, /* ... */]
   },
   {
     key: 'control',
@@ -357,12 +357,12 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
       xAxisTitle: {
         type: 'Title', 
         position: 'bottom', 
-        text: 'Experiment #'
+        text: 'Input'
       },
       yAxisTitle: {
         type: 'Title', 
         position: 'left', 
-        text: 'Result (units)'
+        text: 'Results'
       }
     }
   };
