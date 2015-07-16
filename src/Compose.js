@@ -633,7 +633,7 @@
         config.data.charts[id] = options.data;
 
         // Remove data from options
-        options = utils.clone(options);
+        options = utils.extend({}, options);
         delete options.data;
         config.charts[id] = options;
       }
@@ -645,7 +645,7 @@
         config.data.components[id] = options.data;
 
         // Remove data from options
-        options = utils.clone(options);
+        options = utils.extend({}, options);
         delete options.data;
         config.components[id] = options;
       }

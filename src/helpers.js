@@ -10,7 +10,6 @@
 
   var slice = Array.prototype.slice;
   utils = {
-    clone: _.clone,
     contains: _.contains,
     compact: _.compact,
     difference: _.difference,
