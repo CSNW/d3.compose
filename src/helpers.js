@@ -15,7 +15,7 @@
   var toString = Object.prototype.toString;
 
   function extend(target, extensions, undefined_only) {
-    for (var i = 0, l = extensions.length; i < l; i++) {
+    for (var i = 0, length = extensions.length; i < length; i++) {
       for (var key in extensions[i]) {
         if (!undefined_only || target[key] === void 0)
           target[key] = extensions[i][key];
@@ -96,7 +96,14 @@
         return obj[key];
       });
     },
-    uniq: _.uniq
+    uniq: function(arr) {
+      var result = [];
+      for (var i = 0, length = arr.length; i < length; i++) {
+        if (result.indexOf(arr[i]) < 0)
+          result.push(arr[i]);
+      }
+      return result;
+    }
   };
 
   if (typeof /./ != 'function' && typeof Int8Array != 'object') {
