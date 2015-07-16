@@ -609,7 +609,7 @@
       var labels = this._labels = new Labels(base, options);
 
       // Proxy x and y to parent chart
-      utils.each(this.proxyLabelMethods, function(method) {
+      this.proxyLabelMethods.forEach(function(method) {
         labels[method] = this[method];
       }, this);
 
@@ -1154,7 +1154,7 @@
 
     if (layer && chart[layer]) {
       var events = {};
-      helpers.utils.each([
+      [
         'enter',
         'enter:transition',
         'update',
@@ -1163,7 +1163,7 @@
         'merge:transition',
         'exit',
         'exit:transition'
-      ], function(event) {
+      ].forEach(function(event) {
         var method = 'on' + utils.map(event.split(':'), function capitalize(str) {
           return str.charAt(0).toUpperCase() + str.slice(1);
         }).join('');

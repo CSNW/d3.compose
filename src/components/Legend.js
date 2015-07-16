@@ -274,7 +274,7 @@
       if (!utils.isArray(type))
         type = [type];
 
-      utils.each(type, function(type) {
+      type.forEach(function(type) {
         this.swatches[type] = create;
       }, this);
     }

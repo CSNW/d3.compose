@@ -444,7 +444,7 @@
       // 3. Set chart position from layout
       var chart_position = utils.extend({}, this.margins());
       utils.each(layout, function(parts, key) {
-        utils.each(parts, function(part) {
+        parts.forEach(function(part) {
           chart_position[key] += part.offset || 0;
         });
       });
@@ -556,7 +556,7 @@
 
     // Remove charts that are no longer needed
     var remove_ids = utils.difference(utils.keys(container), utils.keys(items));
-    utils.each(remove_ids, function(remove_id) {
+    remove_ids.forEach(function(remove_id) {
       context.detach(remove_id, container[remove_id]);
       delete container[remove_id];
     });
@@ -705,7 +705,7 @@
     });
 
     // Move layers to z-index order
-    utils.each(layers, function(layer) {
+    layers.forEach(function(layer) {
       if (layer && layer.parentNode && layer.parentNode.appendChild)
         layer.parentNode.appendChild(layer);
     });

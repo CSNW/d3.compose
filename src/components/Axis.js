@@ -358,7 +358,7 @@
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var array_extensions = ['tickValues'];
-      helpers.utils.each(extensions, function(key) {
+      extensions.forEach(function(key) {
         var value = this[key] && this[key]();
         if (!helpers.utils.isUndefined(value)) {
           // If value is array, treat as arguments array

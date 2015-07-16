@@ -8,7 +8,7 @@
     function processData(data) {
       return utils.map(data, function(series, index) {
         // Add series index to values for mocking
-        utils.each(chart.seriesValues(series, index), function(value) {
+        chart.seriesValues(series, index).forEach(function(value) {
           value.series = series;
         });
 
@@ -135,12 +135,12 @@
       });
 
       it('should handle varying data formats', function() {
-        utils.each([
+        [
           [0, 10, 20],
           [{y: 0}, {y: 10}, {y: 20}],
           [[0, 0], [1, 10], [2, 20]],
           [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 20}]
-        ], function(test_case, i) {
+        ].forEach(function(test_case, i) {
           test_case = mixins.XY.transform(test_case);
 
           expect(chart.xValue(test_case[1])).toEqual(1);

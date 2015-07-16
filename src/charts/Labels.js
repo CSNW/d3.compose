@@ -316,8 +316,8 @@
         handleCollisions(chart, labels);
 
         // Layout labels
-        utils.each(labels, function(series) {
-          utils.each(series, function(label) {
+        labels.forEach(function(series) {
+          series.forEach(function(label) {
             setLayout(chart, label);
           });
         });
@@ -447,11 +447,11 @@
   }
 
   function handleCollisions(chart, labels) {
-    utils.each(labels, function(series, seriesIndex) {
+    labels.forEach(function(series, seriesIndex) {
       // Check through remaining series for collisions
-      utils.each(labels.slice(seriesIndex + 1), function(compareSeries) {
-        utils.each(compareSeries, function(compareLabel) {
-          utils.each(series, function(label) {
+      labels.slice(seriesIndex + 1).forEach(function(compareSeries) {
+        compareSeries.forEach(function(compareLabel) {
+          series.forEach(function(label) {
             if (checkForOverlap(label, compareLabel))
               groupLabels(label, compareLabel);
           });
@@ -520,9 +520,9 @@
         return label.y;
       }
 
-      var byY = utils.sortBy(utils.each(group.labels, reset), sort).reverse();
+      var byY = utils.sortBy(group.labels.forEach(reset), sort).reverse();
 
-      utils.each(byY, function(label, index) {
+      byY.forEach(function(label, index) {
         var prev = utils.first(byY, index);
         var overlap;
 

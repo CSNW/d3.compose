@@ -806,7 +806,7 @@
       mixed.initialize = function initialize() {
         var args = slice.call(arguments);
 
-        utils.each(mixins, function(extension) {
+        mixins.forEach(function(extension) {
           if (extension.initialize)
             extension.initialize.apply(this, args);
         }, this);
