@@ -306,26 +306,200 @@
             labels[j] = [];
 
           // Store values for label and calculate layout
-          var label = prepareLabel(chart, this, d, i , j);
+          var label = chart._prepareLabel(chart, this, d, i , j);
           labels[j].push(label);
 
-          calculateLayout(chart, options, label);
+          chart._calculateLayout(chart, options, label);
         });
 
         // Collision detection
-        handleCollisions(chart, labels);
+        this._handleCollisions(chart, labels);
 
         // Layout labels
         labels.forEach(function(series) {
           series.forEach(function(label) {
-            setLayout(chart, label);
-          });
-        });
+            this._setLayout(chart, label);
+          }, this);
+        }, this);
       },
 
       // (Override for custom labels)
       transitionLabels: function(selection) {
         selection.attr('opacity', 1);
+      },
+
+      //
+      // Internal
+      //
+
+      _prepareLabel: function(chart, element, d, i, j) {
+        var selection = d3.select(element);
+        var text = selection.select('text');
+        var bg = selection.select('rect');
+
+        return {
+          x: chart.x.call(element, d, i),
+          y: chart.y.call(element, d, i),
+          element: element,
+          selection: selection,
+          text: {
+            element: text.node(),
+            selection: text
+          },
+          bg: {
+            element: bg.node(),
+            selection: bg
+          }
+        };
+      },
+
+      _calculateLayout: function(chart, options, label) {
+        var text_bounds = label.text.element.getBBox();
+
+        // Need to adjust text for line-height
+        var text_y_adjustment = helpers.alignText(label.text.element);
+
+        // Position background
+        var layout = label.bg.layout = {
+          x: options.offset.x,
+          y: options.offset.y,
+          width: text_bounds.width + 2*options.padding,
+          height: text_bounds.height + 2*options.padding
+        };
+
+        // Set width / height of label
+        label.width = layout.width;
+        label.height = layout.height;
+
+        if (options.anchor == 'end')
+          layout.x -= layout.width;
+        else if (options.anchor == 'middle')
+          layout.x -= (layout.width / 2);
+
+        if (options.alignment == 'bottom')
+          layout.y -= layout.height;
+        else if (options.alignment == 'middle')
+          layout.y -= (layout.height / 2);
+
+        // Center text in background
+        label.text.layout = {
+          x: layout.x + (layout.width / 2) - (text_bounds.width / 2),
+          y: layout.y + (layout.height / 2) - (text_bounds.height / 2) + text_y_adjustment
+        };
+      },
+
+      _handleCollisions: function(chart, labels) {
+        labels.forEach(function(series, seriesIndex) {
+          // Check through remaining series for collisions
+          labels.slice(seriesIndex + 1).forEach(function(compareSeries) {
+            compareSeries.forEach(function(compareLabel) {
+              series.forEach(function(label) {
+                if (checkForOverlap(label, compareLabel))
+                  groupLabels(label, compareLabel);
+              });
+            });
+          });
+        });
+
+        function checkForOverlap(labelA, labelB) {
+          var a = getEdges(labelA);
+          var b = getEdges(labelB);
+
+          var contained_LR = (b.left < a.left && b.right > a.right);
+          var contained_TB = (b.bottom < a.bottom && b.top > a.top);
+          var overlap_LR = (b.left >= a.left && b.left < a.right) || (b.right > a.left && b.right <= a.right) || contained_LR;
+          var overlap_TB = (b.top >= a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom <= a.bottom) || contained_TB;
+
+          return overlap_LR && overlap_TB;
+
+          function getEdges(label) {
+            return {
+              left: label.x,
+              right: label.x + label.width,
+              top: label.y,
+              bottom: label.y + label.height
+            };
+          }
+        }
+
+        function groupLabels(labelA, labelB) {
+          if (labelA.group && labelB.group) {
+            // Move labelB group labels into labelA group
+            utils.objectEach(labelB.group.labels, function(label) {
+              labelA.group.labels.push(label);
+              label.group = labelA.group;
+            });
+
+            updateGroupPositions(labelA.group);
+          }
+          else if (labelA.group) {
+            addLabelToGroup(labelB, labelA.group);
+          }
+          else if (labelB.group) {
+            addLabelToGroup(labelA, labelB.group);
+          }
+          else {
+            var group = {labels: []};
+            addLabelToGroup(labelA, group);
+            addLabelToGroup(labelB, group);
+          }
+        }
+
+        function addLabelToGroup(label, group) {
+          group.labels.push(label);
+          label.group = group;
+          label.originalY = label.y;
+
+          updateGroupPositions(group);
+        }
+
+        function updateGroupPositions(group) {
+          function reset(label) {
+            // Reset to original y
+            label.y = label.originalY;
+            return label;
+          }
+          function sortY(a, b) {
+            if (a.y < b.y)
+              return -1;
+            else if (a.y > b.y)
+              return 1;
+            else
+              return 0;
+          }
+
+          var byY = group.labels.map(reset).sort(sortY).reverse();
+
+          byY.forEach(function(label, index) {
+            var prev = utils.first(byY, index);
+            var overlap;
+
+            for (var i = prev.length - 1; i >= 0; i--) {
+              if (checkForOverlap(label, prev[i])) {
+                overlap = prev[i];
+                break;
+              }
+            }
+
+            if (overlap)
+              label.y = overlap.y - label.height;
+          });
+        }
+      },
+
+      _setLayout: function(chart, label) {
+        label.bg.selection
+          .attr('transform', helpers.translate(label.bg.layout.x, label.bg.layout.y))
+          .attr('width', label.bg.layout.width)
+          .attr('height', label.bg.layout.height);
+
+        label.text.selection
+          .attr('transform', helpers.translate(label.text.layout.x, label.text.layout.y));
+
+        // Position label and set opacity to fade-in
+        label.selection
+          .attr('transform', helpers.translate(label.x, label.y))
+          .attr('opacity', 0);
       }
     }
   ), {
@@ -389,175 +563,5 @@
       return label;
     }
   }));
-
-  function prepareLabel(chart, element, d, i, j) {
-    var selection = d3.select(element);
-    var text = selection.select('text');
-    var bg = selection.select('rect');
-
-    return {
-      x: chart.x.call(element, d, i),
-      y: chart.y.call(element, d, i),
-      element: element,
-      selection: selection,
-      text: {
-        element: text.node(),
-        selection: text
-      },
-      bg: {
-        element: bg.node(),
-        selection: bg
-      }
-    };
-  }
-
-  function calculateLayout(chart, options, label) {
-    var text_bounds = label.text.element.getBBox();
-
-    // Need to adjust text for line-height
-    var text_y_adjustment = helpers.alignText(label.text.element);
-
-    // Position background
-    var layout = label.bg.layout = {
-      x: options.offset.x,
-      y: options.offset.y,
-      width: text_bounds.width + 2*options.padding,
-      height: text_bounds.height + 2*options.padding
-    };
-
-    // Set width / height of label
-    label.width = layout.width;
-    label.height = layout.height;
-
-    if (options.anchor == 'end')
-      layout.x -= layout.width;
-    else if (options.anchor == 'middle')
-      layout.x -= (layout.width / 2);
-
-    if (options.alignment == 'bottom')
-      layout.y -= layout.height;
-    else if (options.alignment == 'middle')
-      layout.y -= (layout.height / 2);
-
-    // Center text in background
-    label.text.layout = {
-      x: layout.x + (layout.width / 2) - (text_bounds.width / 2),
-      y: layout.y + (layout.height / 2) - (text_bounds.height / 2) + text_y_adjustment
-    };
-  }
-
-  function handleCollisions(chart, labels) {
-    labels.forEach(function(series, seriesIndex) {
-      // Check through remaining series for collisions
-      labels.slice(seriesIndex + 1).forEach(function(compareSeries) {
-        compareSeries.forEach(function(compareLabel) {
-          series.forEach(function(label) {
-            if (checkForOverlap(label, compareLabel))
-              groupLabels(label, compareLabel);
-          });
-        });
-      });
-    });
-
-    function checkForOverlap(labelA, labelB) {
-      var a = getEdges(labelA);
-      var b = getEdges(labelB);
-
-      var contained_LR = (b.left < a.left && b.right > a.right);
-      var contained_TB = (b.bottom < a.bottom && b.top > a.top);
-      var overlap_LR = (b.left >= a.left && b.left < a.right) || (b.right > a.left && b.right <= a.right) || contained_LR;
-      var overlap_TB = (b.top >= a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom <= a.bottom) || contained_TB;
-
-      return overlap_LR && overlap_TB;
-
-      function getEdges(label) {
-        return {
-          left: label.x,
-          right: label.x + label.width,
-          top: label.y,
-          bottom: label.y + label.height
-        };
-      }
-    }
-
-    function groupLabels(labelA, labelB) {
-      if (labelA.group && labelB.group) {
-        // Move labelB group labels into labelA group
-        utils.objectEach(labelB.group.labels, function(label) {
-          labelA.group.labels.push(label);
-          label.group = labelA.group;
-        });
-
-        updateGroupPositions(labelA.group);
-      }
-      else if (labelA.group) {
-        addLabelToGroup(labelB, labelA.group);
-      }
-      else if (labelB.group) {
-        addLabelToGroup(labelA, labelB.group);
-      }
-      else {
-        var group = {labels: []};
-        addLabelToGroup(labelA, group);
-        addLabelToGroup(labelB, group);
-      }
-    }
-
-    function addLabelToGroup(label, group) {
-      group.labels.push(label);
-      label.group = group;
-      label.originalY = label.y;
-
-      updateGroupPositions(group);
-    }
-
-    function updateGroupPositions(group) {
-      function reset(label) {
-        // Reset to original y
-        label.y = label.originalY;
-        return label;
-      }
-      function sortY(a, b) {
-        if (a.y < b.y)
-          return -1;
-        else if (a.y > b.y)
-          return 1;
-        else
-          return 0;
-      }
-
-      var byY = group.labels.map(reset).sort(sortY).reverse();
-
-      byY.forEach(function(label, index) {
-        var prev = utils.first(byY, index);
-        var overlap;
-
-        for (var i = prev.length - 1; i >= 0; i--) {
-          if (checkForOverlap(label, prev[i])) {
-            overlap = prev[i];
-            break;
-          }
-        }
-
-        if (overlap)
-          label.y = overlap.y - label.height;
-      });
-    }
-  }
-
-  function setLayout(chart, label) {
-    label.bg.selection
-      .attr('transform', helpers.translate(label.bg.layout.x, label.bg.layout.y))
-      .attr('width', label.bg.layout.width)
-      .attr('height', label.bg.layout.height);
-
-    label.text.selection
-      .attr('transform', helpers.translate(label.text.layout.x, label.text.layout.y));
-
-    // Position label and set opacity to fade-in
-    label.selection
-      .attr('transform', helpers.translate(label.x, label.y))
-      .attr('opacity', 0);
-  }
 
 })(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
