@@ -43,7 +43,6 @@
     reduce: _.reduce,
     reduceRight: _.reduceRight,
     sortBy: _.sortBy,
-    throttle: _.throttle,
     uniq: _.uniq
   };
 
