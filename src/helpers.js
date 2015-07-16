@@ -12,6 +12,8 @@
   // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 
   var slice = Array.prototype.slice;
+  var toString = Object.prototype.toString;
+
   utils = {
     contains: function(arr, item) {
       return arr.indexOf(item) >= 0;
@@ -57,16 +59,35 @@
       return Array.prototype.slice.call(array, 0, n);
     },
     has: _.has,
-    isBoolean: _.isBoolean,
-    isFunction: _.isFunction,
-    isObject: _.isObject,
-    isNumber: _.isNumber,
-    isString: _.isString,
-    isUndefined: _.isUndefined,
+    isBoolean: function(obj) {
+      return obj === true || obj === false;
+    },
+    isFunction: function(obj) {
+      return toString.call(obj) === '[object Function]';
+    },
+    isObject: function(obj) {
+      var type = typeof obj;
+      return type === 'function' || type === 'object' && !!obj;
+    },
+    isNumber: function(obj) {
+      return toString.call(obj) === '[object Number]';
+    },
+    isString: function(obj) {
+      return toString.call(obj) === '[object String]';
+    },
+    isUndefined: function(obj) {
+      return obj === void 0;
+    },
     pluck: _.pluck,
     sortBy: _.sortBy,
     uniq: _.uniq
   };
+
+  if (typeof /./ != 'function' && typeof Int8Array != 'object') {
+    utils.isFunction = function(obj) {
+      return typeof obj == 'function' || false;
+    };
+  }
 
   /**
     Helper for creating properties for charts/components
