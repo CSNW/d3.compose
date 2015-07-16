@@ -1,4 +1,4 @@
-(function(d3, _) {
+(function(d3) {
 
   /**
     `d3.compose.helpers` includes general purpose helpers that are used throughout d3.compose.
@@ -918,4 +918,4 @@
     getParentData: getParentData,
     mixin: mixin
   });
-})(d3, _);
+})(d3);

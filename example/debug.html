@@ -49,7 +49,6 @@
 
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
-  <script src="../bower_components/underscore/underscore.js"></script>
   <script src="../_tmp/d3.compose-all.js"></script>
 
   <script src="../bower_components/jquery/dist/jquery.js"></script>
@@ -57,6 +56,7 @@
   <script type="text/javascript">
   var chart = d3.select('#chart').chart('Compose').width(600).height(400);
   var config = {charts: {}, components: {}};
+  var utils = d3.compose.helpers.utils;
   var data = {
     increasing: [
       {key: 'a', name: 'A', values: [1, 2, 3, 4, 5]},
@@ -81,13 +81,13 @@
       config.components.axis = {type: 'Axis', position: 'left', scale: scales.y};
 
       if (options.charts == 'add')
-        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: _.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true};
+        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: utils.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true};
       else if (options.charts == 'change')
         config.charts['chart_2'] = {type: 'Lines', data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true};
       else if (options.charts == 'remove')
         delete config.charts['chart_2'];
       else if (config.charts['chart_2'] && config.charts['chart_2'].type == 'Bars')
-        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: _.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true};
+        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: utils.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true};
       else if (config.charts['chart_2'])
         config.charts['chart_2'] = {type: 'Lines', data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true};
 
@@ -149,12 +149,12 @@
 
     var count = Math.round(Math.random() * 5 + 5);
 
-    _.each(data, function(set, key) {
-      _.each(set, function(series) {
+    data.forEach(function(set, key) {
+      set.forEach(function(series) {
         series.values = [];
-        _.times(count, function() {
+        for (var i = 0; i < 5; i++) {
           series.values.push(Math.round(Math.random() * 25));
-        });
+        }
       });
     });
 

@@ -25,7 +25,6 @@
 
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
-  <script src="../bower_components/underscore/underscore.js"></script>
 
   <script src="../_tmp/d3.compose-all.js"></script>
 
@@ -40,6 +39,7 @@
       <div id="chart-1"></div>
 
       <script type="text/javascript">
+        var utils = d3.compose.helpers.utils;
         var chart = d3.select('#chart-1')
           .chart('Compose', function(data) {
             var scales = {
@@ -53,7 +53,7 @@
                 bars: {
                   type: 'Bars',
                   data: data.results,
-                  xScale: _.extend({adjacent: true, series: 2}, scales.x),
+                  xScale: utils.extend({adjacent: true, series: 2}, scales.x),
                   yScale: scales.y,
 
                   labels: {

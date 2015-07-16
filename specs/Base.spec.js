@@ -34,14 +34,14 @@
     it('should store fully-transformed data', function() {
       var A = Base.extend('A', {
         transform: function(data) {
-          return _.map(data, function(value) {
+          return data.map(function(value) {
             return value += 10;
           });
         }
       });
       var B = A.extend('B', {
         transform: function(data) {
-          return _.map(data, function(value) {
+          return data.map(function(value) {
             return value += 20;
           });
         }

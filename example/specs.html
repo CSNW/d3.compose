@@ -392,7 +392,6 @@
 
   <script src="../bower_components/d3/d3.js"></script>
   <script src="../bower_components/d3.chart/d3.chart.js"></script>
-  <script src="../bower_components/underscore/underscore.js"></script>
 
   <script src="../_tmp/d3.compose-all.js"></script>
 
@@ -400,8 +399,9 @@
   <script type="text/javascript">
     // Startup examples
     var charts = [];
-    _.each(specs, function(options) {
-      options = _.defaults(options, {resizable: false, margins: true});
+    var utils = d3.compose.helpers.utils;
+    specs.forEach(function(options) {
+      options = utils.defaults(options, {resizable: false, margins: true});
 
       var chart;
       function create() {
@@ -422,12 +422,12 @@
 
       create();
 
-      if (_.isFunction(options.run) || _.isFunction(options.reset)) {
+      if (utils.isFunction(options.run) || utils.isFunction(options.reset)) {
         var $run = $(options.elements.run);
         var $reset = $(options.elements.reset);
 
         $reset.prop('disabled', true);
-        if (_.isFunction(options.run)) {
+        if (utils.isFunction(options.run)) {
           $run.on('click', function() {
             if ($run.attr('disabled'))
               return;
@@ -443,7 +443,7 @@
             return;
 
           $(options.elements.chart).empty();
-          if (_.isFunction(options.reset))
+          if (utils.isFunction(options.reset))
             options.reset(options);
 
           create();
