@@ -186,16 +186,18 @@
     },
 
     transform: function(data) {
+      data = data || [];
+
       // Transform series data from values to x,y
       if (helpers.isSeriesData(data)) {
-        data = utils.map(data, function(series) {
+        data = data.map(function(series) {
           return utils.extend({}, series, {
-            values: utils.map(series.values, normalizeData)
+            values: series.values.map(normalizeData)
           });
         });
       }
-      else {
-        data = utils.map(data, normalizeData);
+      else if (utils.isArray(data)) {
+        data = data.map(normalizeData);
       }
 
       return data;
@@ -870,8 +872,8 @@
       if (!helpers.isSeriesData(data))
         data = [{values: data}];
 
-      return utils.map(data, function(series, j) {
-        return utils.map(series.values, function(d, i) {
+      return data.map(function(series, j) {
+        return series.values.map(function(d, i) {
           return chart.getPoint.call({_parent_data: series}, d, i, j);
         }).sort(function(a, b) {
           // Sort by x
@@ -882,7 +884,7 @@
   }
 
   function getClosestPoints(points, position, tolerance) {
-    return utils.compact(utils.map(points, function(series) {
+    return utils.compact(points.map(function(series) {
       function distance(point) {
         point.distance = getDistance(point.meta, position);
         return point;
@@ -891,7 +893,7 @@
         return point.distance < tolerance;
       }
 
-      var by_distance = utils.sortBy(utils.filter(utils.map(series, distance), close), 'distance');
+      var by_distance = utils.sortBy(utils.filter(series.map(distance), close), 'distance');
 
       return by_distance[0];
     }));
@@ -1164,7 +1166,7 @@
         'exit',
         'exit:transition'
       ].forEach(function(event) {
-        var method = 'on' + utils.map(event.split(':'), function capitalize(str) {
+        var method = 'on' + event.split(':').map(function capitalize(str) {
           return str.charAt(0).toUpperCase() + str.slice(1);
         }).join('');
 

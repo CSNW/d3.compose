@@ -51,7 +51,6 @@
     isNumber: _.isNumber,
     isString: _.isString,
     isUndefined: _.isUndefined,
-    map: _.map,
     pluck: _.pluck,
     sortBy: _.sortBy,
     uniq: _.uniq
@@ -515,9 +514,9 @@
       var domain;
       if (options.type == 'ordinal') {
         // Domain for ordinal is array of unique values
-        domain = utils.uniq(utils.flatten(utils.map(data, function(series) {
+        domain = utils.uniq(utils.flatten(data.map(function(series) {
           if (series && series.values)
-            return utils.map(series.values, getValue);
+            return series.values.map(getValue);
         })));
       }
       else {
@@ -606,10 +605,11 @@
     if (!styles)
       return '';
 
-    styles = utils.map(styles, function(value, key) {
-      return key + ': ' + value;
+    var keyValues = [];
+    utils.eachObject(styles, function(value, key) {
+      keyValues.push(key + ': ' + value);
     });
-    styles = styles.join('; ');
+    styles = keyValues.join('; ');
 
     return styles ? styles + ';' : '';
   }

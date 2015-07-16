@@ -6,7 +6,7 @@
 
     // Process data to mimic actual data that is passed to (d, i) methods
     function processData(data) {
-      return utils.map(data, function(series, index) {
+      return data.map(function(series, index) {
         // Add series index to values for mocking
         chart.seriesValues(series, index).forEach(function(value) {
           value.series = series;

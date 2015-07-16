@@ -137,7 +137,7 @@
           if (!helpers.isSeriesData(chart_data))
             chart_data = [chart_data];
 
-          var legend_data = utils.compact(utils.map(chart_data, function(series, index) {
+          var legend_data = utils.compact(chart_data.map(function(series, index) {
             // Check for exclude from legend option on series
             if (!series || series.exclude_from_legend) return;
 
