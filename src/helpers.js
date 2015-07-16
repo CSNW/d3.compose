@@ -13,7 +13,11 @@
     contains: function(arr, item) {
       return arr.indexOf(item) >= 0;
     },
-    compact: _.compact,
+    compact: function(arr) {
+      return arr.filter(function(item) {
+        return item;
+      });
+    },
     difference: _.difference,
     defaults: _.defaults,
     eachObject: function(obj, fn, context) {
