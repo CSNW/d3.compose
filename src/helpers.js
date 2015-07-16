@@ -56,8 +56,6 @@
     },
     find: _.find,
     first: function(array, n) {
-      // Underscore vs. Lo-dash disagree on the implementation for first
-      // use Underscore's
       if (array == null) return void 0;
       if (n == null) return array[0];
       return Array.prototype.slice.call(array, 0, n);
@@ -81,7 +79,12 @@
     isUndefined: function(obj) {
       return obj === void 0;
     },
-    pluck: _.pluck,
+    pluck: function(objs, key) {
+      if (!objs) return [];
+      return objs.map(function(obj) {
+        return obj[key];
+      });
+    },
     sortBy: _.sortBy,
     uniq: _.uniq
   };
