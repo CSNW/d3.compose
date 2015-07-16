@@ -23,7 +23,11 @@
         return item;
       });
     },
-    difference: _.difference,
+    difference: function(a, b) {
+      return a.filter(function(value) {
+        return b.indexOf(value) < 0;
+      });
+    },
     defaults: _.defaults,
     objectEach: function(obj, fn, context) {
       if (!obj) return;
