@@ -196,7 +196,7 @@
           });
         });
       }
-      else if (utils.isArray(data)) {
+      else if (Array.isArray(data)) {
         data = data.map(normalizeData);
       }
 
@@ -205,7 +205,7 @@
       function normalizeData(point, index) {
         if (!utils.isObject(point))
           point = {x: index, y: point};
-        else if (!utils.isArray(point) && utils.isUndefined(point.x))
+        else if (!Array.isArray(point) && utils.isUndefined(point.x))
           point.x = index;
 
         return point;

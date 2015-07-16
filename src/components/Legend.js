@@ -271,7 +271,7 @@
       @param {Function} create "di" function that inserts swatch
     */
     registerSwatch: function(type, create) {
-      if (!utils.isArray(type))
+      if (!Array.isArray(type))
         type = [type];
 
       type.forEach(function(type) {

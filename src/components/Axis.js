@@ -363,7 +363,7 @@
         if (!helpers.utils.isUndefined(value)) {
           // If value is array, treat as arguments array
           // otherwise, pass in directly
-          if (helpers.utils.isArray(value) && !helpers.utils.contains(array_extensions, key))
+          if (Array.isArray(value) && !helpers.utils.contains(array_extensions, key))
             axis[key].apply(axis, value);
           else
             axis[key](value);

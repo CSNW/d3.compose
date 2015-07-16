@@ -43,7 +43,6 @@
       return Array.prototype.slice.call(array, 0, n);
     },
     has: _.has,
-    isArray: _.isArray,
     isBoolean: _.isBoolean,
     isFunction: _.isFunction,
     isObject: _.isObject,
@@ -352,7 +351,7 @@
   */
   function isSeriesData(data) {
     var first = utils.first(data);
-    return first && utils.isObject(first) && utils.isArray(first.values);
+    return first && utils.isObject(first) && Array.isArray(first.values);
   }
 
   /**
@@ -378,7 +377,7 @@
 
     if (isSeriesData(data)) {
       return data.reduce(function(memo, series, index) {
-        if (series && utils.isArray(series.values)) {
+        if (series && Array.isArray(series.values)) {
           var series_max = getMax(series.values);
           return series_max > memo ? series_max : memo;
         }
@@ -415,7 +414,7 @@
 
     if (isSeriesData(data)) {
       return data.reduce(function(memo, series, index) {
-        if (series && utils.isArray(series.values)) {
+        if (series && Array.isArray(series.values)) {
           var series_min = getMin(series.values);
           return series_min < memo ? series_min : memo;
         }
@@ -809,7 +808,7 @@
     @return {Object}
   */
   function mixin(mixins) {
-    mixins = utils.isArray(mixins) ? mixins : slice.call(arguments);
+    mixins = Array.isArray(mixins) ? mixins : slice.call(arguments);
     var mixed = utils.extend.apply(null, [{}].concat(mixins));
 
     // Don't mixin constructor with prototype
