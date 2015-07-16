@@ -512,16 +512,15 @@
     }
 
     function updateGroupPositions(group) {
-      var byY = utils.chain(group.labels)
-        .each(function(label) {
-          // Reset to original y
-          label.y = label.originalY;
-        })
-        .sortBy(function(label) {
-          return label.y;
-        })
-        .reverse()
-        .value();
+      function reset(label) {
+        // Reset to original y
+        label.y = label.originalY;
+      }
+      function sort(label) {
+        return label.y;
+      }
+
+      var byY = utils.sortBy(utils.each(group.labels, reset), sort).reverse();
 
       utils.each(byY, function(label, index) {
         var prev = utils.first(byY, index);

@@ -9,7 +9,6 @@
   */
 
   utils = {
-    chain: _.chain,
     clone: _.clone,
     contains: _.contains,
     compact: _.compact,
@@ -18,6 +17,7 @@
     each: _.each,
     extend: _.extend,
     flatten: _.flatten,
+    filter: _.filter,
     find: _.find,
     first: function(array, n) {
       // Underscore vs. Lo-dash disagree on the implementation for first
@@ -41,12 +41,10 @@
     pluck: _.pluck,
     reduce: _.reduce,
     reduceRight: _.reduceRight,
-    reverse: _.reverse,
     sortBy: _.sortBy,
     throttle: _.throttle,
     toArray: _.toArray,
-    uniq: _.uniq,
-    value: _.value
+    uniq: _.uniq
   };
 
   /**
@@ -507,14 +505,10 @@
       var domain;
       if (options.type == 'ordinal') {
         // Domain for ordinal is array of unique values
-        domain = utils.chain(data)
-          .map(function(series) {
-            if (series && series.values)
-              return utils.map(series.values, getValue);
-          })
-          .flatten()
-          .uniq()
-          .value();
+        domain = utils.uniq(utils.flatten(utils.map(data, function(series) {
+          if (series && series.values)
+            return utils.map(series.values, getValue);
+        })));
       }
       else {
         var min_value = min(data, getValue);
