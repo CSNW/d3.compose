@@ -10,7 +10,9 @@
 
   var slice = Array.prototype.slice;
   utils = {
-    contains: _.contains,
+    contains: function(arr, item) {
+      return arr.indexOf(item) >= 0;
+    },
     compact: _.compact,
     difference: _.difference,
     defaults: _.defaults,
