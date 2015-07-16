@@ -316,8 +316,8 @@
         handleCollisions(chart, labels);
 
         // Layout labels
-        utils.each(labels, function(series) {
-          utils.each(series, function(label) {
+        labels.forEach(function(series) {
+          series.forEach(function(label) {
             setLayout(chart, label);
           });
         });
@@ -447,11 +447,11 @@
   }
 
   function handleCollisions(chart, labels) {
-    utils.each(labels, function(series, seriesIndex) {
+    labels.forEach(function(series, seriesIndex) {
       // Check through remaining series for collisions
-      utils.each(labels.slice(seriesIndex + 1), function(compareSeries) {
-        utils.each(compareSeries, function(compareLabel) {
-          utils.each(series, function(label) {
+      labels.slice(seriesIndex + 1).forEach(function(compareSeries) {
+        compareSeries.forEach(function(compareLabel) {
+          series.forEach(function(label) {
             if (checkForOverlap(label, compareLabel))
               groupLabels(label, compareLabel);
           });
@@ -483,7 +483,7 @@
     function groupLabels(labelA, labelB) {
       if (labelA.group && labelB.group) {
         // Move labelB group labels into labelA group
-        utils.each(labelB.group.labels, function(label) {
+        utils.objectEach(labelB.group.labels, function(label) {
           labelA.group.labels.push(label);
           label.group = labelA.group;
         });
@@ -512,18 +512,23 @@
     }
 
     function updateGroupPositions(group) {
-      var byY = utils.chain(group.labels)
-        .each(function(label) {
-          // Reset to original y
-          label.y = label.originalY;
-        })
-        .sortBy(function(label) {
-          return label.y;
-        })
-        .reverse()
-        .value();
+      function reset(label) {
+        // Reset to original y
+        label.y = label.originalY;
+        return label;
+      }
+      function sortY(a, b) {
+        if (a.y < b.y)
+          return -1;
+        else if (a.y > b.y)
+          return 1;
+        else
+          return 0;
+      }
 
-      utils.each(byY, function(label, index) {
+      var byY = group.labels.map(reset).sort(sortY).reverse();
+
+      byY.forEach(function(label, index) {
         var prev = utils.first(byY, index);
         var overlap;
 

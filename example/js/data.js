@@ -1,4 +1,4 @@
-(function(global, _) {
+(function(global) {
   'use strict';
 
   global.data = {
@@ -173,4 +173,4 @@
     }
   };
 
-})(this, _);
+})(this);

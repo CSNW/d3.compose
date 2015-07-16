@@ -342,7 +342,7 @@
       var config = prepareConfig(this.options(), data);
 
       // Set charts and components from config
-      utils.each(config, function(value, key) {
+      utils.objectEach(config, function(value, key) {
         if (this[key] && this[key].is_property && this[key].set_from_options)
           this[key](value);
       }, this);
@@ -443,8 +443,8 @@
 
       // 3. Set chart position from layout
       var chart_position = utils.extend({}, this.margins());
-      utils.each(layout, function(parts, key) {
-        utils.each(parts, function(part) {
+      utils.objectEach(layout, function(parts, key) {
+        parts.forEach(function(part) {
           chart_position[key] += part.offset || 0;
         });
       });
@@ -555,14 +555,14 @@
     container = container || {};
 
     // Remove charts that are no longer needed
-    var remove_ids = utils.difference(utils.keys(container), utils.keys(items));
-    utils.each(remove_ids, function(remove_id) {
+    var remove_ids = utils.difference(Object.keys(container), Object.keys(items));
+    remove_ids.forEach(function(remove_id) {
       context.detach(remove_id, container[remove_id]);
       delete container[remove_id];
     });
 
     // Create or update charts
-    utils.each(items, function(options, id) {
+    utils.objectEach(items, function(options, id) {
       var item = container[id];
 
       if (options instanceof d3.chart()) {
@@ -627,25 +627,25 @@
       components: {}
     };
 
-    utils.each(config.charts, function(options, id) {
+    utils.objectEach(config.charts, function(options, id) {
       if (options.data) {
         // Store data for draw later
         config.data.charts[id] = options.data;
 
         // Remove data from options
-        options = utils.clone(options);
+        options = utils.extend({}, options);
         delete options.data;
         config.charts[id] = options;
       }
     });
 
-    utils.each(config.components, function(options, id) {
+    utils.objectEach(config.components, function(options, id) {
       if (options.data) {
         // Store data for draw later
         config.data.components[id] = options.data;
 
         // Remove data from options
-        options = utils.clone(options);
+        options = utils.extend({}, options);
         delete options.data;
         config.components[id] = options;
       }
@@ -662,14 +662,14 @@
   }
 
   function positionComponents(layout, chart, width, height) {
-    utils.reduce(layout.top, function(previous, part, index, parts) {
+    layout.top.reduce(function(previous, part, index, parts) {
       var y = previous - part.offset;
       setLayout(part.component, chart.left, y, {width: chart.width});
 
       return y;
     }, chart.top);
 
-    utils.reduce(layout.right, function(previous, part, index, parts) {
+    layout.right.reduce(function(previous, part, index, parts) {
       var previousPart = parts[index - 1] || {offset: 0};
       var x = previous + previousPart.offset;
       setLayout(part.component, x, chart.top, {height: chart.height});
@@ -677,7 +677,7 @@
       return x;
     }, width - chart.right);
 
-    utils.reduce(layout.bottom, function(previous, part, index, parts) {
+    layout.bottom.reduce(function(previous, part, index, parts) {
       var previousPart = parts[index - 1] || {offset: 0};
       var y = previous + previousPart.offset;
       setLayout(part.component, chart.left, y, {width: chart.width});
@@ -685,7 +685,7 @@
       return y;
     }, height - chart.bottom);
 
-    utils.reduce(layout.left, function(previous, part, index, parts) {
+    layout.left.reduce(function(previous, part, index, parts) {
       var x = previous - part.offset;
       setLayout(part.component, x, chart.top, {height: chart.height});
 
@@ -700,12 +700,28 @@
 
   function positionByZIndex(layers) {
     // Sort by z-index
-    layers = utils.sortBy(layers, function(layer) {
-      return parseInt(d3.select(layer).attr('data-zIndex')) || 0;
-    });
+    function setZIndex(layer) {
+      return {
+        layer: layer,
+        zIndex: parseInt(d3.select(layer).attr('data-zIndex')) || 0
+      };
+    }
+    function sortZIndex(a, b) {
+      if (a.zIndex < b.zIndex)
+        return -1;
+      else if (a.zIndex > b.zIndex)
+        return 1;
+      else
+        return 0;
+    }
+    function getLayer(wrapped) {
+      return wrapped.layer;
+    }
+
+    layers = layers.map(setZIndex).sort(sortZIndex).map(getLayer);
 
     // Move layers to z-index order
-    utils.each(layers, function(layer) {
+    layers.forEach(function(layer) {
       if (layer && layer.parentNode && layer.parentNode.appendChild)
         layer.parentNode.appendChild(layer);
     });
@@ -713,7 +729,7 @@
 
   function extractLayout(components, data, demux) {
     var overall_layout = {top: [], right: [], bottom: [], left: []};
-    utils.each(components, function(component, id) {
+    utils.objectEach(components, function(component, id) {
       if (component.skip_layout)
         return;
 

@@ -1,4 +1,4 @@
-(function(d3, _) {
+(function(d3) {
 
   /**
     `d3.compose.helpers` includes general purpose helpers that are used throughout d3.compose.
@@ -8,46 +8,109 @@
     @class helpers
   */
 
+  // Many utils inlined from Underscore.js
+  // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+
+  var slice = Array.prototype.slice;
+  var toString = Object.prototype.toString;
+
+  function extend(target, extensions, undefined_only) {
+    for (var i = 0, length = extensions.length; i < length; i++) {
+      for (var key in extensions[i]) {
+        if (!undefined_only || target[key] === void 0)
+          target[key] = extensions[i][key];
+      }
+    }
+
+    return target;
+  }
+
   utils = {
-    chain: _.chain,
-    clone: _.clone,
-    contains: _.contains,
-    compact: _.compact,
-    difference: _.difference,
-    defaults: _.defaults,
-    each: _.each,
-    extend: _.extend,
-    flatten: _.flatten,
-    find: _.find,
+    contains: function(arr, item) {
+      return arr.indexOf(item) >= 0;
+    },
+    compact: function(arr) {
+      return arr.filter(function(item) {
+        return item;
+      });
+    },
+    difference: function(a, b) {
+      return a.filter(function(value) {
+        return b.indexOf(value) < 0;
+      });
+    },
+    defaults: function(target) {
+      return extend(target, slice.call(arguments, 1), true);
+    },
+    extend: function(target) {
+      return extend(target, slice.call(arguments, 1));
+    },
+    flatten: function(arr) {
+      // Assumes all items in arr are arrays and only flattens one level
+      return arr.reduce(function(memo, item) {
+        return memo.concat(item);
+      }, []);
+    },
     first: function(array, n) {
-      // Underscore vs. Lo-dash disagree on the implementation for first
-      // use Underscore's
       if (array == null) return void 0;
       if (n == null) return array[0];
       return Array.prototype.slice.call(array, 0, n);
     },
-    has: _.has,
-    isArray: _.isArray,
-    isBoolean: _.isBoolean,
-    isFunction: _.isFunction,
-    isObject: _.isObject,
-    isNumber: _.isNumber,
-    isString: _.isString,
-    isUndefined: _.isUndefined,
-    keys: _.keys,
-    map: _.map,
-    min: _.min,
-    max: _.max,
-    pluck: _.pluck,
-    reduce: _.reduce,
-    reduceRight: _.reduceRight,
-    reverse: _.reverse,
-    sortBy: _.sortBy,
-    throttle: _.throttle,
-    toArray: _.toArray,
-    uniq: _.uniq,
-    value: _.value
+    isBoolean: function(obj) {
+      return obj === true || obj === false;
+    },
+    isFunction: function(obj) {
+      return toString.call(obj) === '[object Function]';
+    },
+    isObject: function(obj) {
+      var type = typeof obj;
+      return type === 'function' || type === 'object' && !!obj;
+    },
+    isNumber: function(obj) {
+      return toString.call(obj) === '[object Number]';
+    },
+    isString: function(obj) {
+      return toString.call(obj) === '[object String]';
+    },
+    isUndefined: function(obj) {
+      return obj === void 0;
+    },
+    objectEach: function(obj, fn, context) {
+      if (!obj) return;
+      var keys = Object.keys(obj);
+      for (var i = 0, length = keys.length; i < length; i++) {
+        fn.call(context, obj[keys[i]], keys[i], obj);
+      }
+    },
+    objectFind: function(obj, fn, context) {
+      if (!obj) return;
+      var keys = Object.keys(obj);
+      for (var i = 0, length = keys.length; i < length; i++) {
+        if (fn.call(context, obj[keys[i]], keys[i], obj))
+          return obj[keys[i]];
+      }
+    },
+    pluck: function(objs, key) {
+      if (!objs) return [];
+      return objs.map(function(obj) {
+        return obj[key];
+      });
+    },
+    uniq: function(arr) {
+      var result = [];
+      for (var i = 0, length = arr.length; i < length; i++) {
+        if (result.indexOf(arr[i]) < 0)
+          result.push(arr[i]);
+      }
+      return result;
+    }
   };
+
+  if (typeof /./ != 'function' && typeof Int8Array != 'object') {
+    utils.isFunction = function(obj) {
+      return typeof obj == 'function' || false;
+    };
+  }
 
   /**
     Helper for creating properties for charts/components
@@ -158,7 +221,7 @@
         if (utils.isFunction(options.set) && !utils.isUndefined(value)) {
           var response = options.set.call(context, value, getSet.previous);
 
-          if (response && utils.has(response, 'override'))
+          if (response && 'override' in response)
             properties[name] = response.override;
           if (response && utils.isFunction(response.after))
             response.after.call(context, properties[name]);
@@ -244,8 +307,8 @@
       // Size set by svg -> attr override or bounding_box
       // -> Take maximum
       return {
-        width: utils.max([client.width, attr.width || bbox.width]) || 0,
-        height: utils.max([client.height, attr.height || bbox.height]) || 0
+        width: d3.max([client.width, attr.width || bbox.width]) || 0,
+        height: d3.max([client.height, attr.height || bbox.height]) || 0
       };
     }
   }
@@ -346,7 +409,7 @@
   */
   function isSeriesData(data) {
     var first = utils.first(data);
-    return first && utils.isObject(first) && utils.isArray(first.values);
+    return first && utils.isObject(first) && Array.isArray(first.values);
   }
 
   /**
@@ -371,8 +434,8 @@
     };
 
     if (isSeriesData(data)) {
-      return utils.reduce(data, function(memo, series, index) {
-        if (series && utils.isArray(series.values)) {
+      return data.reduce(function(memo, series, index) {
+        if (series && Array.isArray(series.values)) {
           var series_max = getMax(series.values);
           return series_max > memo ? series_max : memo;
         }
@@ -408,8 +471,8 @@
     };
 
     if (isSeriesData(data)) {
-      return utils.reduce(data, function(memo, series, index) {
-        if (series && utils.isArray(series.values)) {
+      return data.reduce(function(memo, series, index) {
+        if (series && Array.isArray(series.values)) {
           var series_min = getMin(series.values);
           return series_min < memo ? series_min : memo;
         }
@@ -481,7 +544,7 @@
     else
       scale = d3.scale.linear();
 
-    utils.each(options, function(value, key) {
+    utils.objectEach(options, function(value, key) {
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments
@@ -507,14 +570,10 @@
       var domain;
       if (options.type == 'ordinal') {
         // Domain for ordinal is array of unique values
-        domain = utils.chain(data)
-          .map(function(series) {
-            if (series && series.values)
-              return utils.map(series.values, getValue);
-          })
-          .flatten()
-          .uniq()
-          .value();
+        domain = utils.uniq(utils.flatten(data.map(function(series) {
+          if (series && series.values)
+            return series.values.map(getValue);
+        })));
       }
       else {
         var min_value = min(data, getValue);
@@ -602,10 +661,11 @@
     if (!styles)
       return '';
 
-    styles = utils.map(styles, function(value, key) {
-      return key + ': ' + value;
+    var keyValues = [];
+    utils.objectEach(styles, function(value, key) {
+      keyValues.push(key + ': ' + value);
     });
-    styles = styles.join('; ');
+    styles = keyValues.join('; ');
 
     return styles ? styles + ';' : '';
   }
@@ -806,7 +866,7 @@
     @return {Object}
   */
   function mixin(mixins) {
-    mixins = utils.isArray(mixins) ? mixins : utils.toArray(arguments);
+    mixins = Array.isArray(mixins) ? mixins : slice.call(arguments);
     var mixed = utils.extend.apply(null, [{}].concat(mixins));
 
     // Don't mixin constructor with prototype
@@ -814,9 +874,9 @@
 
     if (mixed.initialize) {
       mixed.initialize = function initialize() {
-        var args = utils.toArray(arguments);
+        var args = slice.call(arguments);
 
-        utils.each(mixins, function(extension) {
+        mixins.forEach(function(extension) {
           if (extension.initialize)
             extension.initialize.apply(this, args);
         }, this);
@@ -824,12 +884,12 @@
     }
     if (mixed.transform) {
       mixed.transform = function transform(data) {
-        return utils.reduceRight(mixins, function(data, extension) {
+        return mixins.reduceRight(function(data, extension) {
           if (extension && extension.transform)
             return extension.transform.call(this, data);
           else
             return data;
-        }, data, this);
+        }.bind(this), data);
       };
     }
 
@@ -858,4 +918,4 @@
     getParentData: getParentData,
     mixin: mixin
   });
-})(d3, _);
+})(d3);

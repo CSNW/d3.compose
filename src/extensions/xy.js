@@ -95,7 +95,7 @@
     }
 
     // Axes
-    utils.each(options.axes, function(axis_options, key) {
+    utils.objectEach(options.axes, function(axis_options, key) {
       var positionByKey = {
         x: 'bottom',
         y: 'left',
@@ -147,7 +147,7 @@
 
       // By default, use all charts for legend
       if (!legend_options.data && !legend_options.charts)
-        legend_options.charts = utils.keys(charts);
+        legend_options.charts = Object.keys(charts);
 
       components.legend = legend_options;
     }

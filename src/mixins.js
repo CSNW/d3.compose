@@ -186,16 +186,18 @@
     },
 
     transform: function(data) {
+      data = data || [];
+
       // Transform series data from values to x,y
       if (helpers.isSeriesData(data)) {
-        data = utils.map(data, function(series) {
+        data = data.map(function(series) {
           return utils.extend({}, series, {
-            values: utils.map(series.values, normalizeData)
+            values: series.values.map(normalizeData)
           });
         });
       }
-      else {
-        data = utils.map(data, normalizeData);
+      else if (Array.isArray(data)) {
+        data = data.map(normalizeData);
       }
 
       return data;
@@ -203,7 +205,7 @@
       function normalizeData(point, index) {
         if (!utils.isObject(point))
           point = {x: index, y: point};
-        else if (!utils.isArray(point) && utils.isUndefined(point.x))
+        else if (!Array.isArray(point) && utils.isUndefined(point.x))
           point.x = index;
 
         return point;
@@ -609,7 +611,7 @@
       var labels = this._labels = new Labels(base, options);
 
       // Proxy x and y to parent chart
-      utils.each(this.proxyLabelMethods, function(method) {
+      this.proxyLabelMethods.forEach(function(method) {
         labels[method] = this[method];
       }, this);
 
@@ -870,8 +872,8 @@
       if (!helpers.isSeriesData(data))
         data = [{values: data}];
 
-      return utils.map(data, function(series, j) {
-        return utils.map(series.values, function(d, i) {
+      return data.map(function(series, j) {
+        return series.values.map(function(d, i) {
           return chart.getPoint.call({_parent_data: series}, d, i, j);
         }).sort(function(a, b) {
           // Sort by x
@@ -882,17 +884,24 @@
   }
 
   function getClosestPoints(points, position, tolerance) {
-    return utils.compact(utils.map(points, function(series) {
-      var by_distance = utils.chain(series)
-        .map(function(point) {
-          point.distance = getDistance(point.meta, position);
-          return point;
-        })
-        .filter(function(point) {
-          return point.distance < tolerance;
-        })
-        .sortBy('distance')
-        .value();
+    return utils.compact(points.map(function(series) {
+      function setDistance(point) {
+        point.distance = getDistance(point.meta, position);
+        return point;
+      }
+      function closePoints(point) {
+        return point.distance < tolerance;
+      }
+      function sortPoints(a, b) {
+        if (a.distance < b.distance)
+          return -1;
+        else if (a.distance > b.distance)
+          return 1;
+        else
+          return 0;
+      }
+
+      var by_distance = series.map(setDistance).filter(closePoints).sort(sortPoints);
 
       return by_distance[0];
     }));
@@ -906,13 +915,13 @@
     var active_keys = utils.pluck(active, 'key');
     var closest_keys = utils.pluck(closest, 'key');
 
-    utils.each(closest, function(point) {
+    utils.objectEach(closest, function(point) {
       if (utils.contains(active_keys, point.key))
         container.trigger('mousemove:point', point);
       else
         container.trigger('mouseenter:point', point);
     });
-    utils.each(active, function(point) {
+    utils.objectEach(active, function(point) {
       if (!utils.contains(closest_keys, point.key))
         container.trigger('mouseleave:point', point);
     });
@@ -1155,7 +1164,7 @@
 
     if (layer && chart[layer]) {
       var events = {};
-      helpers.utils.each([
+      [
         'enter',
         'enter:transition',
         'update',
@@ -1164,8 +1173,8 @@
         'merge:transition',
         'exit',
         'exit:transition'
-      ], function(event) {
-        var method = 'on' + utils.map(event.split(':'), function capitalize(str) {
+      ].forEach(function(event) {
+        var method = 'on' + event.split(':').map(function capitalize(str) {
           return str.charAt(0).toUpperCase() + str.slice(1);
         }).join('');
 

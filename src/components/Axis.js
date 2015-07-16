@@ -358,12 +358,12 @@
 
       var extensions = ['orient', 'ticks', 'tickValues', 'tickSize', 'innerTickSize', 'outerTickSize', 'tickPadding', 'tickFormat'];
       var array_extensions = ['tickValues'];
-      helpers.utils.each(extensions, function(key) {
+      extensions.forEach(function(key) {
         var value = this[key] && this[key]();
         if (!helpers.utils.isUndefined(value)) {
           // If value is array, treat as arguments array
           // otherwise, pass in directly
-          if (helpers.utils.isArray(value) && !helpers.utils.contains(array_extensions, key))
+          if (Array.isArray(value) && !helpers.utils.contains(array_extensions, key))
             axis[key].apply(axis, value);
           else
             axis[key](value);
@@ -393,8 +393,8 @@
       });
 
       return {
-        width: helpers.utils.max(overhangs.width),
-        height: helpers.utils.max(overhangs.height)
+        width: d3.max(overhangs.width),
+        height: d3.max(overhangs.height)
       };
     }
   }), {

@@ -126,7 +126,7 @@
       if (this.charts()) {
         // Pull legend data from charts
         var charts = this.container.charts();
-        data = utils.reduce(this.charts(), function(data, chart_id) {
+        data = this.charts().reduce(function(data, chart_id) {
           var chart = charts[chart_id];
 
           // Check for exclude from legend option
@@ -137,7 +137,7 @@
           if (!helpers.isSeriesData(chart_data))
             chart_data = [chart_data];
 
-          var legend_data = utils.compact(utils.map(chart_data, function(series, index) {
+          var legend_data = utils.compact(chart_data.map(function(series, index) {
             // Check for exclude from legend option on series
             if (!series || series.exclude_from_legend) return;
 
@@ -155,7 +155,7 @@
           }));
 
           return data.concat(legend_data);
-        }, [], this);
+        }.bind(this), []);
       }
 
       return data;
@@ -246,7 +246,7 @@
         this.append('circle')
           .attr('cx', dimensions.width / 2)
           .attr('cy', dimensions.height / 2)
-          .attr('r', utils.min([dimensions.width, dimensions.height]) / 2)
+          .attr('r', d3.min([dimensions.width, dimensions.height]) / 2)
           .attr('class', 'chart-swatch');
       }
     },
@@ -271,10 +271,10 @@
       @param {Function} create "di" function that inserts swatch
     */
     registerSwatch: function(type, create) {
-      if (!utils.isArray(type))
+      if (!Array.isArray(type))
         type = [type];
 
-      utils.each(type, function(type) {
+      type.forEach(function(type) {
         this.swatches[type] = create;
       }, this);
     }
