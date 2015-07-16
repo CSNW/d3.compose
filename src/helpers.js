@@ -58,7 +58,6 @@
       if (n == null) return array[0];
       return Array.prototype.slice.call(array, 0, n);
     },
-    has: _.has,
     isBoolean: function(obj) {
       return obj === true || obj === false;
     },
@@ -198,7 +197,7 @@
         if (utils.isFunction(options.set) && !utils.isUndefined(value)) {
           var response = options.set.call(context, value, getSet.previous);
 
-          if (response && utils.has(response, 'override'))
+          if (response && 'override' in response)
             properties[name] = response.override;
           if (response && utils.isFunction(response.after))
             response.after.call(context, properties[name]);
