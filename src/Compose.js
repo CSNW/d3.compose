@@ -342,10 +342,10 @@
       var config = prepareConfig(this.options(), data);
 
       // Set charts and components from config
-      utils.objectEach(config, function(value, key) {
-        if (this[key] && this[key].is_property && this[key].set_from_options)
-          this[key](value);
-      }, this);
+      if (config.charts)
+        this.charts(config.charts);
+      if (config.components)
+        this.components(config.components);
 
       // Add config data
       data = {
@@ -617,10 +617,12 @@
     // Load config from options fn
     var config = options(data);
 
-    config = utils.defaults({}, config, {
-      charts: {},
-      components: {}
-    });
+    // Clone config and config.charts/components
+    config = utils.extend({}, config);
+    if (config.charts)
+      config.charts = utils.extend({}, config.charts);
+    if (config.components)
+      config.components = utils.extend({}, config.components);
 
     config.data = {
       charts: {},

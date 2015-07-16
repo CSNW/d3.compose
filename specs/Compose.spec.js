@@ -80,14 +80,14 @@
         ];
 
         container.components({
-          'component-0': components[0],
-          'component-1': components[1],
-          'component-2': components[2],
-          'component-3': components[3],
-          'component-4': components[4],
-          'component-5': components[5],
-          'component-6': components[6],
-          'component-7': components[7]
+          'component-1': components[0],
+          'component-2': components[1],
+          'component-3': components[2],
+          'component-4': components[3],
+          'component-5': components[4],
+          'component-6': components[5],
+          'component-7': components[6],
+          'component-8': components[7]
         });
 
         // Setup and attach chart
@@ -198,7 +198,8 @@
 
         container.draw([]);
 
-        d3.select('.chart').selectAll('g').each(function(d, i) {
+        expect(d3.select('#chart').selectAll('g')[0].length).toEqual(expected.length);
+        d3.select('#chart').selectAll('g').each(function(d, i) {
           var selection = d3.select(this);
           expect(selection.classed(expected[i]['class'])).toEqual(true);
           expect(selection.attr('data-id')).toEqual(expected[i].id);
