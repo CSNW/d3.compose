@@ -21,7 +21,18 @@
         fn.call(context, obj[keys[i]], keys[i], obj);
       }
     },
-    extend: _.extend,
+    extend: function(target) {
+      var length = arguments.length;
+      if (length >= 2) {
+        for (var i = 1; i < length; i++) {
+          for (var key in arguments[i]) {
+            target[key] = arguments[i][key];
+          }
+        }
+      }
+
+      return target;
+    },
     flatten: _.flatten,
     filter: _.filter,
     find: _.find,
