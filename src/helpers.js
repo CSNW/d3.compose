@@ -34,7 +34,7 @@
     isNumber: _.isNumber,
     isString: _.isString,
     isUndefined: _.isUndefined,
-    keys: _.keys,
+    keys: Object.keys,
     map: _.map,
     min: _.min,
     max: _.max,
