@@ -8,6 +8,7 @@
     @class helpers
   */
 
+  var slice = Array.prototype.slice;
   utils = {
     clone: _.clone,
     contains: _.contains,
@@ -43,7 +44,6 @@
     reduceRight: _.reduceRight,
     sortBy: _.sortBy,
     throttle: _.throttle,
-    toArray: _.toArray,
     uniq: _.uniq
   };
 
@@ -800,7 +800,7 @@
     @return {Object}
   */
   function mixin(mixins) {
-    mixins = utils.isArray(mixins) ? mixins : utils.toArray(arguments);
+    mixins = utils.isArray(mixins) ? mixins : slice.call(arguments);
     var mixed = utils.extend.apply(null, [{}].concat(mixins));
 
     // Don't mixin constructor with prototype
@@ -808,7 +808,7 @@
 
     if (mixed.initialize) {
       mixed.initialize = function initialize() {
-        var args = utils.toArray(arguments);
+        var args = slice.call(arguments);
 
         utils.each(mixins, function(extension) {
           if (extension.initialize)
