@@ -29,13 +29,6 @@
       });
     },
     defaults: _.defaults,
-    objectEach: function(obj, fn, context) {
-      if (!obj) return;
-      var keys = Object.keys(obj);
-      for (var i = 0, length = keys.length; i < length; i++) {
-        fn.call(context, obj[keys[i]], keys[i], obj);
-      }
-    },
     extend: function(target) {
       var length = arguments.length;
       if (length >= 2) {
@@ -54,7 +47,6 @@
         return memo.concat(item);
       }, []);
     },
-    find: _.find,
     first: function(array, n) {
       if (array == null) return void 0;
       if (n == null) return array[0];
@@ -78,6 +70,21 @@
     },
     isUndefined: function(obj) {
       return obj === void 0;
+    },
+    objectEach: function(obj, fn, context) {
+      if (!obj) return;
+      var keys = Object.keys(obj);
+      for (var i = 0, length = keys.length; i < length; i++) {
+        fn.call(context, obj[keys[i]], keys[i], obj);
+      }
+    },
+    objectFind: function(obj, fn, context) {
+      if (!obj) return;
+      var keys = Object.keys(obj);
+      for (var i = 0, length = keys.length; i < length; i++) {
+        if (fn.call(context, obj[keys[i]], keys[i], obj))
+          return obj[keys[i]];
+      }
     },
     pluck: function(objs, key) {
       if (!objs) return [];

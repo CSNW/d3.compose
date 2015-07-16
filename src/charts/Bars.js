@@ -118,7 +118,7 @@
 
       getOffsetAxis: function getOffsetAxis() {
         var components = this.container && this.container.components();
-        return utils.find(components, function(component, id) {
+        return utils.objectFind(components, function(component, id) {
           if (component.type == 'Axis' && component.position() == 'bottom')
             return component;
         });
@@ -297,7 +297,7 @@
 
     getOffsetAxis: function getOffsetAxis() {
       var components = this.container && this.container.components();
-      return utils.find(components, function(component, id) {
+      return utils.objectFind(components, function(component, id) {
         if (component.type == 'Axis' && component.position() == 'left')
           return component;
       });
