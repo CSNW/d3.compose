@@ -555,7 +555,7 @@
     container = container || {};
 
     // Remove charts that are no longer needed
-    var remove_ids = utils.difference(utils.keys(container), utils.keys(items));
+    var remove_ids = utils.difference(Object.keys(container), Object.keys(items));
     remove_ids.forEach(function(remove_id) {
       context.detach(remove_id, container[remove_id]);
       delete container[remove_id];

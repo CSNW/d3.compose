@@ -147,7 +147,7 @@
 
       // By default, use all charts for legend
       if (!legend_options.data && !legend_options.charts)
-        legend_options.charts = utils.keys(charts);
+        legend_options.charts = Object.keys(charts);
 
       components.legend = legend_options;
     }

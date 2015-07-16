@@ -51,7 +51,6 @@
     isNumber: _.isNumber,
     isString: _.isString,
     isUndefined: _.isUndefined,
-    keys: Object.keys,
     map: _.map,
     pluck: _.pluck,
     reduce: _.reduce,

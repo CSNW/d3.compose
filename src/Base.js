@@ -72,7 +72,7 @@
       set: function(options, previous) {
         // Clear all unset options, except for data and options
         if (previous) {
-          var unset = utils.difference(utils.keys(previous), utils.keys(options));
+          var unset = utils.difference(Object.keys(previous), Object.keys(options));
           unset.forEach(function(key) {
             if (key != 'data' && key != 'options' && isProperty(this, key))
               this[key](undefined); 
