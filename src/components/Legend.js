@@ -246,7 +246,7 @@
         this.append('circle')
           .attr('cx', dimensions.width / 2)
           .attr('cy', dimensions.height / 2)
-          .attr('r', utils.min([dimensions.width, dimensions.height]) / 2)
+          .attr('r', d3.min([dimensions.width, dimensions.height]) / 2)
           .attr('class', 'chart-swatch');
       }
     },

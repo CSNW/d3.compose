@@ -393,8 +393,8 @@
       });
 
       return {
-        width: helpers.utils.max(overhangs.width),
-        height: helpers.utils.max(overhangs.height)
+        width: d3.max(overhangs.width),
+        height: d3.max(overhangs.height)
       };
     }
   }), {

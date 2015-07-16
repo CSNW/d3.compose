@@ -36,8 +36,6 @@
     isUndefined: _.isUndefined,
     keys: Object.keys,
     map: _.map,
-    min: _.min,
-    max: _.max,
     pluck: _.pluck,
     reduce: _.reduce,
     reduceRight: _.reduceRight,
@@ -240,8 +238,8 @@
       // Size set by svg -> attr override or bounding_box
       // -> Take maximum
       return {
-        width: utils.max([client.width, attr.width || bbox.width]) || 0,
-        height: utils.max([client.height, attr.height || bbox.height]) || 0
+        width: d3.max([client.width, attr.width || bbox.width]) || 0,
+        height: d3.max([client.height, attr.height || bbox.height]) || 0
       };
     }
   }
