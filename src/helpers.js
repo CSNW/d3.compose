@@ -39,7 +39,12 @@
 
       return target;
     },
-    flatten: _.flatten,
+    flatten: function(arr) {
+      // Assumes all items in arr are arrays and only flattens one level
+      return arr.reduce(function(memo, item) {
+        return memo.concat(item);
+      }, []);
+    },
     find: _.find,
     first: function(array, n) {
       // Underscore vs. Lo-dash disagree on the implementation for first
