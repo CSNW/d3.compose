@@ -483,7 +483,7 @@
     function groupLabels(labelA, labelB) {
       if (labelA.group && labelB.group) {
         // Move labelB group labels into labelA group
-        utils.each(labelB.group.labels, function(label) {
+        utils.eachObject(labelB.group.labels, function(label) {
           labelA.group.labels.push(label);
           label.group = labelA.group;
         });

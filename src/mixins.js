@@ -905,13 +905,13 @@
     var active_keys = utils.pluck(active, 'key');
     var closest_keys = utils.pluck(closest, 'key');
 
-    utils.each(closest, function(point) {
+    utils.eachObject(closest, function(point) {
       if (utils.contains(active_keys, point.key))
         container.trigger('mousemove:point', point);
       else
         container.trigger('mouseenter:point', point);
     });
-    utils.each(active, function(point) {
+    utils.eachObject(active, function(point) {
       if (!utils.contains(closest_keys, point.key))
         container.trigger('mouseleave:point', point);
     });

@@ -14,7 +14,13 @@
     compact: _.compact,
     difference: _.difference,
     defaults: _.defaults,
-    each: _.each,
+    eachObject: function(obj, fn, context) {
+      if (!obj) return;
+      var keys = Object.keys(obj);
+      for (var i = 0, length = keys.length; i < length; i++) {
+        fn.call(context, obj[keys[i]], keys[i], obj);
+      }
+    },
     extend: _.extend,
     flatten: _.flatten,
     filter: _.filter,
@@ -475,7 +481,7 @@
     else
       scale = d3.scale.linear();
 
-    utils.each(options, function(value, key) {
+    utils.eachObject(options, function(value, key) {
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments

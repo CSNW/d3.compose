@@ -79,7 +79,7 @@
           }, this);
         }
 
-        utils.each(options, function setFromOptions(value, key) {
+        utils.eachObject(options, function setFromOptions(value, key) {
           if (isProperty(this, key))
             this[key](value);
         }, this);
