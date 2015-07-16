@@ -85,7 +85,6 @@
         return obj[key];
       });
     },
-    sortBy: _.sortBy,
     uniq: _.uniq
   };
 

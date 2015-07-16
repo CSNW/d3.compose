@@ -885,15 +885,23 @@
 
   function getClosestPoints(points, position, tolerance) {
     return utils.compact(points.map(function(series) {
-      function distance(point) {
+      function setDistance(point) {
         point.distance = getDistance(point.meta, position);
         return point;
       }
-      function close(point) {
+      function closePoints(point) {
         return point.distance < tolerance;
       }
+      function sortPoints(a, b) {
+        if (a.distance < b.distance)
+          return -1;
+        else if (a.distance > b.distance)
+          return 1;
+        else
+          return 0;
+      }
 
-      var by_distance = utils.sortBy(series.map(distance).filter(close), 'distance');
+      var by_distance = series.map(setDistance).filter(closePoints).sort(sortPoints);
 
       return by_distance[0];
     }));

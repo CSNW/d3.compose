@@ -700,9 +700,25 @@
 
   function positionByZIndex(layers) {
     // Sort by z-index
-    layers = utils.sortBy(layers, function(layer) {
-      return parseInt(d3.select(layer).attr('data-zIndex')) || 0;
-    });
+    function setZIndex(layer) {
+      return {
+        layer: layer,
+        zIndex: parseInt(d3.select(layer).attr('data-zIndex')) || 0
+      };
+    }
+    function sortZIndex(a, b) {
+      if (a.zIndex < b.zIndex)
+        return -1;
+      else if (a.zIndex > b.zIndex)
+        return 1;
+      else
+        return 0;
+    }
+    function getLayer(wrapped) {
+      return wrapped.layer;
+    }
+
+    layers = layers.map(setZIndex).sort(sortZIndex).map(getLayer);
 
     // Move layers to z-index order
     layers.forEach(function(layer) {

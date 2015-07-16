@@ -515,12 +515,18 @@
       function reset(label) {
         // Reset to original y
         label.y = label.originalY;
+        return label;
       }
-      function sort(label) {
-        return label.y;
+      function sortY(a, b) {
+        if (a.y < b.y)
+          return -1;
+        else if (a.y > b.y)
+          return 1;
+        else
+          return 0;
       }
 
-      var byY = utils.sortBy(group.labels.forEach(reset), sort).reverse();
+      var byY = group.labels.map(reset).sort(sortY).reverse();
 
       byY.forEach(function(label, index) {
         var prev = utils.first(byY, index);
