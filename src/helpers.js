@@ -8,6 +8,9 @@
     @class helpers
   */
 
+  // Many utils inlined from Underscore.js
+  // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+
   var slice = Array.prototype.slice;
   utils = {
     contains: function(arr, item) {
@@ -20,7 +23,7 @@
     },
     difference: _.difference,
     defaults: _.defaults,
-    eachObject: function(obj, fn, context) {
+    objectEach: function(obj, fn, context) {
       if (!obj) return;
       var keys = Object.keys(obj);
       for (var i = 0, length = keys.length; i < length; i++) {
@@ -497,7 +500,7 @@
     else
       scale = d3.scale.linear();
 
-    utils.eachObject(options, function(value, key) {
+    utils.objectEach(options, function(value, key) {
       if (scale[key]) {
         // If option is standard property (domain or range), pass in directly
         // otherwise, pass in as arguments
@@ -615,7 +618,7 @@
       return '';
 
     var keyValues = [];
-    utils.eachObject(styles, function(value, key) {
+    utils.objectEach(styles, function(value, key) {
       keyValues.push(key + ': ' + value);
     });
     styles = keyValues.join('; ');

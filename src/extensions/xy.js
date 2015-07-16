@@ -95,7 +95,7 @@
     }
 
     // Axes
-    utils.eachObject(options.axes, function(axis_options, key) {
+    utils.objectEach(options.axes, function(axis_options, key) {
       var positionByKey = {
         x: 'bottom',
         y: 'left',

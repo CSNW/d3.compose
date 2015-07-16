@@ -342,7 +342,7 @@
       var config = prepareConfig(this.options(), data);
 
       // Set charts and components from config
-      utils.eachObject(config, function(value, key) {
+      utils.objectEach(config, function(value, key) {
         if (this[key] && this[key].is_property && this[key].set_from_options)
           this[key](value);
       }, this);
@@ -443,7 +443,7 @@
 
       // 3. Set chart position from layout
       var chart_position = utils.extend({}, this.margins());
-      utils.eachObject(layout, function(parts, key) {
+      utils.objectEach(layout, function(parts, key) {
         parts.forEach(function(part) {
           chart_position[key] += part.offset || 0;
         });
@@ -562,7 +562,7 @@
     });
 
     // Create or update charts
-    utils.eachObject(items, function(options, id) {
+    utils.objectEach(items, function(options, id) {
       var item = container[id];
 
       if (options instanceof d3.chart()) {
@@ -627,7 +627,7 @@
       components: {}
     };
 
-    utils.eachObject(config.charts, function(options, id) {
+    utils.objectEach(config.charts, function(options, id) {
       if (options.data) {
         // Store data for draw later
         config.data.charts[id] = options.data;
@@ -639,7 +639,7 @@
       }
     });
 
-    utils.eachObject(config.components, function(options, id) {
+    utils.objectEach(config.components, function(options, id) {
       if (options.data) {
         // Store data for draw later
         config.data.components[id] = options.data;
@@ -713,7 +713,7 @@
 
   function extractLayout(components, data, demux) {
     var overall_layout = {top: [], right: [], bottom: [], left: []};
-    utils.eachObject(components, function(component, id) {
+    utils.objectEach(components, function(component, id) {
       if (component.skip_layout)
         return;
 
