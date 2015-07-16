@@ -14,6 +14,17 @@
   var slice = Array.prototype.slice;
   var toString = Object.prototype.toString;
 
+  function extend(target, extensions, undefined_only) {
+    for (var i = 0, l = extensions.length; i < l; i++) {
+      for (var key in extensions[i]) {
+        if (!undefined_only || target[key] === void 0)
+          target[key] = extensions[i][key];
+      }
+    }
+
+    return target;
+  }
+
   utils = {
     contains: function(arr, item) {
       return arr.indexOf(item) >= 0;
@@ -28,18 +39,11 @@
         return b.indexOf(value) < 0;
       });
     },
-    defaults: _.defaults,
+    defaults: function(target) {
+      return extend(target, slice.call(arguments, 1), true);
+    },
     extend: function(target) {
-      var length = arguments.length;
-      if (length >= 2) {
-        for (var i = 1; i < length; i++) {
-          for (var key in arguments[i]) {
-            target[key] = arguments[i][key];
-          }
-        }
-      }
-
-      return target;
+      return extend(target, slice.call(arguments, 1));
     },
     flatten: function(arr) {
       // Assumes all items in arr are arrays and only flattens one level
