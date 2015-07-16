@@ -893,7 +893,7 @@
         return point.distance < tolerance;
       }
 
-      var by_distance = utils.sortBy(utils.filter(series.map(distance), close), 'distance');
+      var by_distance = utils.sortBy(series.map(distance).filter(close), 'distance');
 
       return by_distance[0];
     }));

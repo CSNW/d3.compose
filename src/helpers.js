@@ -34,7 +34,6 @@
       return target;
     },
     flatten: _.flatten,
-    filter: _.filter,
     find: _.find,
     first: function(array, n) {
       // Underscore vs. Lo-dash disagree on the implementation for first
