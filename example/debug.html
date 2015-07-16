@@ -149,10 +149,10 @@
 
     var count = Math.round(Math.random() * 5 + 5);
 
-    data.forEach(function(set, key) {
+    utils.objectEach(data, function(set, key) {
       set.forEach(function(series) {
         series.values = [];
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < count; i++) {
           series.values.push(Math.round(Math.random() * 25));
         }
       });
