@@ -662,14 +662,14 @@
   }
 
   function positionComponents(layout, chart, width, height) {
-    utils.reduce(layout.top, function(previous, part, index, parts) {
+    layout.top.reduce(function(previous, part, index, parts) {
       var y = previous - part.offset;
       setLayout(part.component, chart.left, y, {width: chart.width});
 
       return y;
     }, chart.top);
 
-    utils.reduce(layout.right, function(previous, part, index, parts) {
+    layout.right.reduce(function(previous, part, index, parts) {
       var previousPart = parts[index - 1] || {offset: 0};
       var x = previous + previousPart.offset;
       setLayout(part.component, x, chart.top, {height: chart.height});
@@ -677,7 +677,7 @@
       return x;
     }, width - chart.right);
 
-    utils.reduce(layout.bottom, function(previous, part, index, parts) {
+    layout.bottom.reduce(function(previous, part, index, parts) {
       var previousPart = parts[index - 1] || {offset: 0};
       var y = previous + previousPart.offset;
       setLayout(part.component, chart.left, y, {width: chart.width});
@@ -685,7 +685,7 @@
       return y;
     }, height - chart.bottom);
 
-    utils.reduce(layout.left, function(previous, part, index, parts) {
+    layout.left.reduce(function(previous, part, index, parts) {
       var x = previous - part.offset;
       setLayout(part.component, x, chart.top, {height: chart.height});
 

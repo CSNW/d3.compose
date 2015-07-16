@@ -126,7 +126,7 @@
       if (this.charts()) {
         // Pull legend data from charts
         var charts = this.container.charts();
-        data = utils.reduce(this.charts(), function(data, chart_id) {
+        data = this.charts().reduce(function(data, chart_id) {
           var chart = charts[chart_id];
 
           // Check for exclude from legend option
@@ -155,7 +155,7 @@
           }));
 
           return data.concat(legend_data);
-        }, [], this);
+        }.bind(this), []);
       }
 
       return data;

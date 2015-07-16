@@ -53,8 +53,6 @@
     isUndefined: _.isUndefined,
     map: _.map,
     pluck: _.pluck,
-    reduce: _.reduce,
-    reduceRight: _.reduceRight,
     sortBy: _.sortBy,
     uniq: _.uniq
   };
@@ -381,7 +379,7 @@
     };
 
     if (isSeriesData(data)) {
-      return utils.reduce(data, function(memo, series, index) {
+      return data.reduce(function(memo, series, index) {
         if (series && utils.isArray(series.values)) {
           var series_max = getMax(series.values);
           return series_max > memo ? series_max : memo;
@@ -418,7 +416,7 @@
     };
 
     if (isSeriesData(data)) {
-      return utils.reduce(data, function(memo, series, index) {
+      return data.reduce(function(memo, series, index) {
         if (series && utils.isArray(series.values)) {
           var series_min = getMin(series.values);
           return series_min < memo ? series_min : memo;
@@ -830,12 +828,12 @@
     }
     if (mixed.transform) {
       mixed.transform = function transform(data) {
-        return utils.reduceRight(mixins, function(data, extension) {
+        return mixins.reduceRight(function(data, extension) {
           if (extension && extension.transform)
             return extension.transform.call(this, data);
           else
             return data;
-        }, data, this);
+        }.bind(this), data);
       };
     }
 
