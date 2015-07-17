@@ -127,7 +127,7 @@
         // Pull legend data from charts
         var charts = this.container.charts();
         data = this.charts().reduce(function(data, chart_id) {
-          var chart = charts[chart_id];
+          var chart = utils.find(charts, function(chart) { return chart.id == chart_id; });
 
           // Check for exclude from legend option
           if (!chart || chart.exclude_from_legend || chart.options().exclude_from_legend)

@@ -122,19 +122,19 @@
               y: {data: data.lines, key: 'y'}
             };
 
-            return d3.compose.xy({
-              charts: {
-                line: {type: 'Lines', data: data.lines, xScale: scales.x, yScale: scales.y, labels: {type: 'HoverLabels', hoverTolerance: 50}},
-              },
-              axes: {
-                x: {scale: scales.x, title: 'Year', tickFormat: d3.format('####')},
-                y: {scale: scales.y, title: 'Results'}
-              },
-              legend: {
-                display: 'right'
-              },
-              title: 'Results by Year'
-            });
+            return [
+              {type: 'Title', text: 'Results by Year', 'class': 'chart-title-main'},
+              [
+                {type: 'Title', text: 'Results'},
+                {type: 'Axis', scale: scales.y},
+                d3.compose.layered([
+                  {id: 'line', type: 'Lines', data: data.lines, xScale: scales.x, yScale: scales.y, labels: {type: 'HoverLabels', hoverTolerance: 50}}
+                ]),
+                {type: 'Legend', charts: ['line']}
+              ],
+              {type: 'Axis', scale: scales.x, tickFormat: d3.format('####')},
+              {type: 'Title', text: 'Year'}
+            ];
           })
           .width(600)
           .height(400)

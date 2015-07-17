@@ -51,10 +51,17 @@
         return memo.concat(item);
       }, []);
     },
-    first: function(array, n) {
-      if (array == null) return void 0;
-      if (n == null) return array[0];
-      return Array.prototype.slice.call(array, 0, n);
+    find: function(arr, fn, context) {
+      if (!arr) return;
+      for (var i = 0, length = arr.length; i < length; i++) {
+        if (fn.call(context, arr[i], i, arr))
+          return arr[i];
+      }
+    },
+    first: function(arr, n) {
+      if (arr == null) return void 0;
+      if (n == null) return arr[0];
+      return Array.prototype.slice.call(arr, 0, n);
     },
     isBoolean: function(obj) {
       return obj === true || obj === false;
