@@ -11,8 +11,12 @@
       container.responsive(false);
       container.margins({});
 
-      Chart = d3.chart('Chart').extend('TestChart');
-      Component = d3.chart('Component').extend('TestComponent');
+      Chart = d3.chart('Chart').extend('TestChart', {
+        name: helpers.property('name')
+      });
+      Component = d3.chart('Component').extend('TestComponent', {
+        name: helpers.property('name')
+      });
 
       charts = [];
       components = [];
@@ -195,26 +199,13 @@
 
     describe('options', function() {
       describe('object (DEPRECATED)', function() {
-        it('should load charts + order + ids from options', function() {
+        beforeEach(function() {
           container.options(function(data) {
             return {
               charts: {
                 a: {type: 'TestChart'},
                 b: {type: 'TestChart'}
-              }
-            };
-          });
-
-          container.draw([]);
-
-          expect(container.charts().length).toEqual(2);
-          expect(container.charts()[0].id).toEqual('a');
-          expect(container.charts()[1] instanceof Chart).toEqual(true);
-        });
-
-        it('should load components + order + keys from options', function() {
-          container.options(function(data) {
-            return {
+              },
               components: {
                 c: {type: 'TestComponent', position: 'top'},
                 d: {type: 'TestComponent', position: 'top'},
@@ -229,12 +220,20 @@
           });
 
           container.draw([]);
+        });
 
+        it('should load charts + order + ids from options', function() {
+          expect(container.charts().length).toEqual(2);
+          expect(container.charts()[0].id).toEqual('a');
+          expect(container.charts()[1] instanceof Chart).toEqual(true);
+        });
+
+        it('should load components + order + keys from options', function() {
           expect(container.components().length).toEqual(8);
           expect(container.components()[0].id).toEqual('c');
           expect(container.components()[7].id).toEqual('j');
 
-          var layout = container._extractLayout(container.components(), [], container.demux);
+          var layout = container._extractLayout([]);
 
           expect(layout.top[0].component.id).toEqual('c');
           expect(layout.top[1].component.id).toEqual('d');
@@ -248,7 +247,102 @@
       });
 
       describe('array', function() {
-        // TODO
+        beforeEach(function() {
+          layered = d3.compose.layered;
+
+          container.options(function(data) {
+            var charts = [
+              {id: 'a', type: 'TestChart'},
+              {id: 'b', type: 'TestChart'}
+            ];
+
+            return [
+              {id: 'd', type: 'TestComponent'},
+              {id: 'c', type: 'TestComponent'},
+              [
+                {id: 'f', type: 'TestComponent'},
+                {id: 'e', type: 'TestComponent'},
+                layered(charts),
+                {id: 'g', type: 'TestComponent'},
+                {id: 'h', type: 'TestComponent'},
+              ],              
+              {id: 'i', type: 'TestComponent'},
+              {id: 'j', type: 'TestComponent'}
+            ];
+          });
+
+          container.draw([]);
+        });
+
+        it('should load charts from options', function() {
+          expect(container.charts().length).toEqual(2);
+          expect(container.charts()[0].id).toEqual('a');
+          expect(container.charts()[1] instanceof Chart).toEqual(true);
+        });
+
+        it('should load components from options', function() {
+          expect(container.components().length).toEqual(8);
+          expect(container.components()[0].id).toEqual('c');
+          expect(container.components()[7].id).toEqual('j');
+
+          var layout = container._extractLayout([]);
+
+          expect(layout.top[0].component.id).toEqual('c');
+          expect(layout.top[1].component.id).toEqual('d');
+          expect(layout.left[0].component.id).toEqual('e');
+          expect(layout.left[1].component.id).toEqual('f');
+          expect(layout.right[0].component.id).toEqual('g');
+          expect(layout.right[1].component.id).toEqual('h');
+          expect(layout.bottom[0].component.id).toEqual('i');
+          expect(layout.bottom[1].component.id).toEqual('j');
+        });
+
+        it('should automatically assign ids by type + position', function() {
+          container.options(function(data) {
+            var charts = [
+              {name: 'a', type: 'TestChart'},
+              {name: 'b', type: 'TestChart'}
+            ];
+
+            return [
+              {name: 'd', type: 'TestComponent'},
+              {name: 'c', type: 'TestComponent'},
+              [
+                {name: 'f', type: 'TestComponent'},
+                {name: 'e', type: 'TestComponent'},
+                layered(charts),
+                {name: 'g', type: 'TestComponent'},
+                {name: 'h', type: 'TestComponent'},
+              ],              
+              {name: 'i', type: 'TestComponent'},
+              {name: 'j', type: 'TestComponent'}
+            ];
+          });
+
+          container.draw([]);
+
+          expect(container.charts()[0].name()).toEqual('a');
+          expect(container.charts()[0].id).toEqual('chart-1');
+          expect(container.charts()[1].name()).toEqual('b');
+          expect(container.charts()[1].id).toEqual('chart-2');
+
+          expect(container.components()[0].name()).toEqual('c');
+          expect(container.components()[0].id).toEqual('component-2-1');
+          expect(container.components()[1].name()).toEqual('d');
+          expect(container.components()[1].id).toEqual('component-1-1');
+          expect(container.components()[2].name()).toEqual('e');
+          expect(container.components()[2].id).toEqual('component-3-2');
+          expect(container.components()[3].name()).toEqual('f');
+          expect(container.components()[3].id).toEqual('component-3-1');
+          expect(container.components()[4].name()).toEqual('g');
+          expect(container.components()[4].id).toEqual('component-3-4');
+          expect(container.components()[5].name()).toEqual('h');
+          expect(container.components()[5].id).toEqual('component-3-5');
+          expect(container.components()[6].name()).toEqual('i');
+          expect(container.components()[6].id).toEqual('component-4-1');
+          expect(container.components()[7].name()).toEqual('j');
+          expect(container.components()[7].id).toEqual('component-5-1');
+        });
       });
     });
   });

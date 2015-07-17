@@ -116,7 +116,7 @@
       @type Function|Object
     */
     options: property('options', {
-      default_value: function(data) { return {}; },
+      default_value: function() {},
       type: 'Function',
       set: function(options) {
         // If options is plain object,
@@ -617,43 +617,94 @@
         }
       };
 
+      if (!config) {
+        return normalized;
+      }
+      else {
+        normalized.charts = [];
+        normalized.components = [];
+      }
+
       if (Array.isArray(config)) {
-        // TODO
+        // TEMP Idenfify charts from layered, 
+        // eventually no distinction between charts and components
+        var found = {
+          row: false,
+          charts: false
+        };
+
+        config.forEach(function(row, row_index) {
+          // Components are added from inside-out
+          // so for position: top, position: left, use unshift
+
+          if (Array.isArray(row)) {
+            found.row = true;
+            var row_components = [];
+
+            row.forEach(function(item, col_index) {
+              if (item._layered) {
+                found.charts = true;
+                normalized.charts = item.items.map(function(chart, chart_index) {
+                  return utils.defaults({}, chart, {id: 'chart-' + (chart_index + 1)});
+                });
+              }
+              else if (!found.charts) {
+                row_components.unshift(prepareComponent(item, 'left', row_index, col_index));
+              }
+              else {
+                row_components.push(prepareComponent(item, 'right', row_index, col_index));
+              }
+            });
+
+            normalized.components = normalized.components.concat(row_components);
+          }
+          else {
+            if (row._layered) {
+              found.row = found.charts = true;
+              normalized.charts = row.items.slice();
+            }
+            else {
+              if (!found.row)
+                normalized.components.unshift(prepareComponent(row, 'top', row_index, 0));
+              else
+                normalized.components.push(prepareComponent(row, 'bottom', row_index, 0));
+            }  
+          }
+        });
       }
       else {
         // DEPRECATED
-        if (config.charts) {
-          normalized.charts = [];
-          utils.objectEach(config.charts, function(options, id) {
-            options = utils.extend({id: id}, options);
+        utils.objectEach(config.charts, function(options, id) {
+          normalized.charts.push(utils.extend({id: id}, options));
+        });
 
-            if (options.data) {
-              // Store data for draw later and remove from options
-              normalized.data.charts[id] = options.data;
-              delete options.data;
-            }
-
-            normalized.charts.push(options);
-          });  
-        }
-        
-        if (config.components) {
-          normalized.components = [];
-          utils.objectEach(config.components, function(options, id) {
-            options = utils.extend({id: id}, options);
-
-            if (options.data) {
-              // Store data for draw later and remove from options
-              normalized.data.components[id] = options.data;
-              delete options.data;
-            }
-
-            normalized.components.push(options);
-          });
-        }
+        utils.objectEach(config.components, function(options, id) {
+          normalized.components.push(utils.extend({id: id}, options));
+        });
       }
 
+      normalized.charts.forEach(extractData('charts'));
+      normalized.components.forEach(extractData('components'));
+
       return normalized;
+
+      function prepareComponent(component, position, row_index, col_index) {
+        if (component && utils.isFunction(component.position))
+          component.position(position);
+        else
+          component = utils.extend({position: position}, component);
+
+        return utils.defaults(component, {id: 'component-' + (row_index + 1) + '-' + (col_index + 1)});
+      }
+
+      function extractData(type) {
+        return function(item) {
+          if (item.data && !utils.isFunction(item.data)) {
+            normalized.data[type][item.id] = item.data;
+            delete item.data;
+          }
+        };
+      }
     },
 
     _positionChartLayers: function() {
@@ -757,6 +808,13 @@
       return overall_layout;
     }
   });
+
+  d3.compose.layered = function(items) {
+    if (!Array.isArray(items))
+      items = Array.prototype.slice.call(arguments);
+
+    return {_layered: true, items: items};
+  };
 
   function findById(items, id) {
     return utils.find(items, function(item) {
