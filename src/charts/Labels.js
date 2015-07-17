@@ -506,6 +506,15 @@
     z_index: 150
   });
 
+  d3.compose.labels = function(id, options) {
+    if (!options) {
+      options = id;
+      id = undefined;
+    }
+
+    return utils.extend({id: id, type: 'Labels'}, options);
+  };
+
   /**
     (in-progress)
 
@@ -563,5 +572,14 @@
       return label;
     }
   }));
+
+  d3.compose.hoverLabels = function(id, options) {
+    if (!options) {
+      options = id;
+      id = undefined;
+    }
+
+    return utils.extend({id: id, type: 'HoverLabels'}, options);
+  };
 
 })(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
