@@ -178,4 +178,15 @@
     z_index: 70
   });
 
+  d3.compose.title = function(id, options) {
+    if (!options) {
+      options = id;
+      id = undefined;
+    }
+    if (utils.isString(options))
+      options = {text: options};
+
+    return utils.extend({id: id, type: 'Title'}, options);
+  };
+
 })(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

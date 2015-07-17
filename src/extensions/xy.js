@@ -8,8 +8,9 @@
     @class extensions
   */
 
+  // TODO Integrate xy defaults (e.g. margins) into standard charts/components
   /**
-    XY extension
+    XY extension (DEPRECATED)
     Generate d3.compose options for XY charts
   
     @example

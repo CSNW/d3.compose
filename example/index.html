@@ -115,25 +115,28 @@
       <div id="chart-2"></div>
 
       <script type="text/javascript">
+        var d3c = d3.compose;
         var chart = d3.select('#chart-2')
           .chart('Compose', function(data) {
             var scales = {
               x: {domain: [2000, 2020]},
               y: {data: data.lines, key: 'y'}
             };
+            var charts = [
+              d3c.lines('line', {data: data.lines, xScale: scales.x, yScale: scales.y, labels: {type: 'HoverLabels', hoverTolerance: 50}})
+            ];
+            var default_margins = {top: 8, right: 8, bottom: 8, left: 8};
 
             return [
-              {type: 'Title', text: 'Results by Year', 'class': 'chart-title-main'},
+              d3c.title({text: 'Results by Year', 'class': 'chart-title-main', margins: default_margins}),
               [
-                {type: 'Title', text: 'Results'},
-                {type: 'Axis', scale: scales.y},
-                d3.compose.layered([
-                  {id: 'line', type: 'Lines', data: data.lines, xScale: scales.x, yScale: scales.y, labels: {type: 'HoverLabels', hoverTolerance: 50}}
-                ]),
-                {type: 'Legend', charts: ['line']}
+                d3c.title({text: 'Results', margins: utils.defaults({right: 4}, default_margins)}),
+                d3c.axis('yAxis', {scale: scales.y}),
+                d3c.layered(charts),
+                d3c.legend({charts: ['line'], margins: default_margins})
               ],
-              {type: 'Axis', scale: scales.x, tickFormat: d3.format('####')},
-              {type: 'Title', text: 'Year'}
+              d3c.axis('xAxis', {scale: scales.x, tickFormat: d3.format('####')}),
+              d3c.title({text: 'Year', margins: utils.defaults({bottom: 4}, default_margins)})
             ];
           })
           .width(600)

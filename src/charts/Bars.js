@@ -169,6 +169,15 @@
     }
   ));
 
+  d3.compose.bars = function(id, options) {
+    if (!options) {
+      options = id;
+      id = undefined;
+    }
+      
+    return utils.extend({id: id, type: 'Bars'}, options);
+  };
+
   /**
     Bars chart with values stacked on top of each other
 
@@ -235,6 +244,15 @@
       return new_position;
     })
   });
+
+  d3.compose.stackedBars = function(id, options) {
+    if (!options) {
+      options = id;
+      id = undefined;
+    }
+      
+    return utils.extend({id: id, type: 'StackedBars'}, options);
+  };
 
   /**
     Bars chart with bars that group from left-to-right
@@ -326,6 +344,15 @@
     },
   }));
 
+  d3.compose.horizontalBars = function(id, options) {
+    if (!options) {
+      options = id;
+      id = undefined;
+    }
+      
+    return utils.extend({id: id, type: 'HorizontalBars'}, options);
+  };
+
   /**
     Horizontal Stacked Bars
 
@@ -392,5 +419,14 @@
       return previous;
     })
   });
+
+  d3.compose.horizontalStackedBars = function(id, options) {
+    if (!options) {
+      options = id;
+      id = undefined;
+    }
+      
+    return utils.extend({id: id, type: 'HorizontalStackedBars'}, options);
+  };
 
 })(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
