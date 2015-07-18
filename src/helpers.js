@@ -267,48 +267,23 @@
     @return {Object} `{width, height}`
   */
   function dimensions(selection) {
-    var element = selection && selection.length && selection[0] && selection[0].length && selection[0][0];
-    var is_SVG = element ? element.nodeName == 'svg' : false;
-
     // 1. Get width/height set via css (only valid for svg and some other elements)
-    var client = {
-      width: element && element.clientWidth,
-      height: element && element.clientHeight
-    };
-
-    // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
-    //        calculate from css
-    //        http://stackoverflow.com/questions/13122790/how-to-get-svg-element-dimensions-in-firefox
-    //        Note: This makes assumptions about the box model in use and that width/height are not percent values
-    if (is_SVG && (!element.clientWidth || !element.clientHeight) && typeof window !== 'undefined' && window.getComputedStyle) {
-      var styles = window.getComputedStyle(element);
-      client.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
-      client.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
-    }
+    var client = clientDimensions(selection);
 
     if (client.width && client.height)
       return client;
 
     // 2. Get width/height set via attribute
-    var attr = {
-      width: selection && selection.attr && parseFloat(selection.attr('width')),
-      height: selection && selection.attr && parseFloat(selection.attr('height'))
-    };
+    var attr = attrDimensions(selection);
 
-    if (is_SVG) {
+    if (isSVG(selection)) {
       return {
         width: client.width != null ? client.width : attr.width || 0,
         height: client.height != null ? client.height : attr.height || 0
       };
     }
     else {
-      // Firefox throws error when calling getBBox when svg hasn't been displayed
-      // ignore error and set to empty
-      var bbox = {width: 0, height: 0};
-      try {
-        bbox = element && typeof element.getBBox == 'function' && element.getBBox();
-      }
-      catch(ex) {}
+      var bbox = bboxDimensions(selection);
 
       // Size set by css -> client (only valid for svg and some other elements)
       // Size set by svg -> attr override or bounding_box
@@ -318,6 +293,51 @@
         height: d3.max([client.height, attr.height || bbox.height]) || 0
       };
     }
+  }
+
+  function clientDimensions(selection) {
+    var element = selection.node();
+
+    var dimensions = {
+      width: element && element.clientWidth,
+      height: element && element.clientHeight
+    };
+
+    // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
+    //        calculate from css
+    //        http://stackoverflow.com/questions/13122790/how-to-get-svg-element-dimensions-in-firefox
+    //        Note: This makes assumptions about the box model in use and that width/height are not percent values
+    if (isSVG(selection) && (!element.clientWidth || !element.clientHeight) && typeof window !== 'undefined' && window.getComputedStyle) {
+      var styles = window.getComputedStyle(element);
+      dimensions.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
+      dimensions.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
+    }
+
+    return dimensions;
+  }
+
+  function attrDimensions(selection) {
+    return {
+      width: selection && selection.attr && parseFloat(selection.attr('width')),
+      height: selection && selection.attr && parseFloat(selection.attr('height'))
+    };
+  }
+
+  function bboxDimensions(selection) {
+    // Firefox throws error when calling getBBox when svg hasn't been displayed
+    // ignore error and set to empty
+    var element = selection.node();
+    var bbox = {width: 0, height: 0};
+    try {
+      bbox = element && typeof element.getBBox == 'function' && element.getBBox();
+    }
+    catch(ex) {}
+
+    return bbox;
+  }
+
+  function isSVG(selection) {
+    return selection.node().nodeName == 'svg';
   }
 
   /**
