@@ -86,12 +86,48 @@
     /**
       Position overlay layer at given x,y coordinates
 
+      @example
+      ```js
+      // Absolute, x: 100, y: 50
+      overlay.position(100, 50);
+      overlay.position({x: 100, y: 50});
+
+      // Relative-to-chart, x: 50, y: 40
+      overlay.position({chart: {x: 50, y: 40}});
+
+      // Relative-to-container, x: 75, y: 50
+      overlay.position({container: {x: 75, y: 50}});
+      ```
       @method position
-      @param {Number} x in px from left
-      @param {Number} y in px from top
+      @param {Object|Number} position {x,y}, {container: {x,y}}, {chart: {x,y}} or x in px from left
+      @param {Number} [y] in px from top
     */
-    position: function(x, y) {
-      this.x(x).y(y);
+    position: function(position, y) {
+      if (arguments.length > 1) {
+        position = {
+          x: position,
+          y: y
+        };
+      }
+      else {
+        if ('container' in position) {
+          position = this.getAbsolutePosition(position.container);
+        }
+        else if ('chart' in position) {
+          if (this.container) {
+            var chart = this.container.chartPosition();
+            position = this.getAbsolutePosition({
+              x: position.chart.x + chart.left,
+              y: position.chart.y + chart.top
+            });
+          }
+          else {
+            position = this.getAbsolutePosition(position.chart);
+          }
+        }
+      }
+
+      this.x(position.x).y(position.y);
       this.base.attr('style', this.style());
     },
 
@@ -126,7 +162,7 @@
     getAbsolutePosition: function(container_position) {
       var container = this.container && this.container.container;
 
-      if (container) {
+      if (container && this.container.responsive()) {
         var dimensions = helpers.dimensions(container);
         var chart_width = this.container.width();
         var chart_height = this.container.height();

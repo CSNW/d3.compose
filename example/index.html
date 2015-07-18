@@ -115,6 +115,56 @@
       <div id="chart-2"></div>
 
       <script type="text/javascript">
+        d3.chart('Overlay').extend('HoverOverlay', {
+          initialize: function() {
+            var list = this.base.append('ul').style({
+              'background-color': '#fff',
+              'border': 'solid 1px #ccc',
+              'list-style': 'none',
+              'padding': '4px 4px 4px 6px'
+            });
+
+            this.on('attach', function() {
+              this.container.on('mouseenter', function(point) {
+                this.position(getPosition(point));
+              }.bind(this));
+              this.container.on('mousemove', function(point) {
+                this.position(getPosition(point));
+              }.bind(this));
+
+              var points = {};
+              this.container.on('mouseenter:point', function(point) {
+                points[point.key] = point;
+                if (Object.keys(points).length)
+                  this.show();
+                listPoints(list, points);
+              }.bind(this));
+              this.container.on('mouseleave:point', function(point) {
+                delete points[point.key];
+                if (!Object.keys(points).length)
+                  this.hide();
+                listPoints(list, points);
+              }.bind(this));
+
+              function getPosition(point) {
+                return {
+                  container: {
+                    x: point.container.x + 20,
+                    y: point.container.y
+                  }
+                };
+              }
+
+              function listPoints(list, points) {
+                list.selectAll('*').remove();
+                utils.objectEach(points, function(point) {
+                  list.append('li').text('(' + point.d.x + ', ' + point.d.y + ')');
+                });
+              }
+            }.bind(this));
+          }
+        })
+
         var d3c = d3.compose;
         var chart = d3.select('#chart-2')
           .chart('Compose', function(data) {
@@ -123,7 +173,7 @@
               y: {data: data.lines, key: 'y'}
             };
             var charts = [
-              d3c.lines('line', {data: data.lines, xScale: scales.x, yScale: scales.y, labels: {type: 'HoverLabels', hoverTolerance: 50}})
+              d3c.lines('line', {data: data.lines, xScale: scales.x, yScale: scales.y, hoverTolerance: 50})
             ];
             var default_margins = {top: 8, right: 8, bottom: 8, left: 8};
 
@@ -136,7 +186,8 @@
                 d3c.legend({charts: ['line'], margins: default_margins})
               ],
               d3c.axis('xAxis', {scale: scales.x, tickFormat: d3.format('####')}),
-              d3c.title({text: 'Year', margins: utils.defaults({bottom: 4}, default_margins)})
+              d3c.title({text: 'Year', margins: utils.defaults({bottom: 4}, default_margins)}),
+              {type: 'HoverOverlay'}
             ];
           })
           .width(600)
