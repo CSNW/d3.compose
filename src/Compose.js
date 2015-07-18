@@ -176,7 +176,9 @@
       @property width
       @type Number
     */
-    width: property('width'),
+    width: property('width', {
+      default_value: null
+    }),
 
     /**
       Get/set overall height of chart
@@ -184,7 +186,9 @@
       @property height
       @type Number
     */
-    height: property('height'),
+    height: property('height', {
+      default_value: null
+    }),
 
     _width: function() {
       var width = this.width();
@@ -339,8 +343,6 @@
       @param {Any} data
     */
     draw: function(data) {
-      // On redraw, get original data
-      data = data && data.original || data;
       var config = this._prepareConfig(this.options(), data);
 
       // Set charts and components from config
@@ -356,24 +358,7 @@
       };
       this.data(data);
 
-      // Set container and svg dimensions
-      // (if original selection is svg, no container and skip responsiveness)
-      if (this.container) {
-        this.container
-          .attr('style', this.containerStyle());
-
-        this.base
-          .attr('viewBox', this.viewBox())
-          .attr('preserveAspectRatio', this.preserveAspectRatio())
-          .attr('style', this.baseStyle())
-          .attr('width', this.responsive() ? null : this.width() || null)
-          .attr('height', this.responsive() ? null : this.height() || null);  
-      }
-      else {
-        this.base
-          .attr('width', this.width() || null)
-          .attr('height', this.height() || null);
-      }
+      this._updateDimensions();
 
       // Layout components
       this.layout(data);
@@ -542,6 +527,22 @@
     //
     // Internal
     //
+
+    _updateDimensions: function() {
+      // Set container and svg dimensions
+      // (if original selection is svg, no container and skip responsiveness)
+      if (this.container) {
+        this.container
+          .attr('style', this.containerStyle());
+      }
+
+      this.base
+        .attr('viewBox', this.viewBox())
+        .attr('preserveAspectRatio', this.preserveAspectRatio())
+        .attr('style', this.baseStyle())
+        .attr('width', this.responsive() ? null : this.width())
+        .attr('height', this.responsive() ? null : this.height());
+    },
 
     _attachItems: function(items, container, context) {
       items = items || [];
