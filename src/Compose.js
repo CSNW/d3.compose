@@ -509,12 +509,12 @@
 
         // Set at chart bounds if outside of chart
         if (x > (chart_position.left + chart_position.width))
-          chart_x = chart_position.left + chart_position.width;
+          chart_x = chart_position.width;
         else if (x < chart_position.left)
           chart_x = 0;
 
         if (y > (chart_position.top + chart_position.height))
-          chart_y = chart_position.top + chart_position.height;
+          chart_y = chart_position.height;
         else if (y < chart_position.top)
           chart_y = 0;
 
