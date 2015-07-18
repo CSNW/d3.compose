@@ -563,94 +563,105 @@
       }
     });
 
-    if (!options.domain && options.data && (options.key || options.value)) {
-      // Use value "di" or create for key
-      var getValue = options.value || function(d, i) {
-        return d[options.key];
-      };
-
-      // Enforce series data
-      var data = options.data;
-      if (!isSeriesData(data))
-        data = [{values: data}];
-
-      var domain;
-      if (options.type == 'ordinal') {
-        // Domain for ordinal is array of unique values
-        domain = utils.uniq(utils.flatten(data.map(function(series) {
-          if (series && series.values)
-            return series.values.map(getValue);
-        })));
-      }
-      else {
-        var min_value = min(data, getValue);
-
-        domain = [
-          min_value < 0 ? min_value : 0,
-          max(data, getValue)
-        ];
-      }
-
-      scale.domain(domain);
-    }
+    if (!options.domain && options.data && (options.key || options.value))
+      scale = setDomain(scale, options);
 
     // Add centered and adjacent extensions to ordinal
     // (centered by default for ordinal)
     var centered = options.centered || (options.type == 'ordinal' && options.centered == null);
-    if (options.type == 'ordinal' && (centered || options.adjacent)) {
-      var original = scale;
-
-      // Get series count for adjacent
-      var series_count = options.series || (!isSeriesData(options.data) ? 1 : options.data.length);
-
-      scale = (function(original, options, series_count) {
-        var context = function scale(value, series_index) {
-          var width = context.width();
-
-          if (!options.adjacent)
-            series_index = 0;
-
-          return original(value) + (0.5 * width) + (width * (series_index || 0));
-        };
-        utils.extend(context, original, {
-          width: function() {
-            var range_band = context.rangeBand && context.rangeBand();
-            var width = isFinite(range_band) ? range_band : 0;
-
-            if (options.adjacent)
-              width = width / series_count;
-
-            return width;
-          }
-        });
-
-        // TODO test copy() behavior
-
-        return context;
-      })(original, options, series_count);
-    }
+    if (options.type == 'ordinal' && (centered || options.adjacent))
+      scale = addCentered(scale, options);
 
     // Add padding extension to ordinal
-    if (options.type == 'ordinal' && (options.padding != null || centered || options.adjacent)) {
-      var padding = options.padding != null ? options.padding : 0.1;
+    if (options.type == 'ordinal' && (options.padding != null || centered || options.adjacent))
+      scale = addPadding(scale, options);
 
-      var original_range = scale.range;
-      scale.range = function(range) {
-        if (!arguments.length) return original_range();
+    return scale;
+  }
 
-        scale.rangeBands(
-          range,
-          padding,
-          padding / 2
-        );
-      };
+  function setDomain(scale, options) {
+    // Use value "di" or create for key
+    var getValue = options.value || function(d, i) {
+      return d[options.key];
+    };
 
-      if (options.range)
-        scale.range(options.range);
+    // Enforce series data
+    var data = options.data;
+    if (!isSeriesData(data))
+      data = [{values: data}];
 
-      // TODO test copy() behavior
+    var domain;
+    if (options.type == 'ordinal') {
+      // Domain for ordinal is array of unique values
+      domain = utils.uniq(utils.flatten(data.map(function(series) {
+        if (series && series.values)
+          return series.values.map(getValue);
+      })));
+    }
+    else {
+      var min_value = min(data, getValue);
+
+      domain = [
+        min_value < 0 ? min_value : 0,
+        max(data, getValue)
+      ];
     }
 
+    scale.domain(domain);
+    return scale;
+  }
+
+  function addCentered(original, options) {
+    // Get series count for adjacent
+    var series_count = options.series || (!isSeriesData(options.data) ? 1 : options.data.length);
+
+    scale = (function(original, options, series_count) {
+      var context = function scale(value, series_index) {
+        var width = context.width();
+
+        if (!options.adjacent)
+          series_index = 0;
+
+        return original(value) + (0.5 * width) + (width * (series_index || 0));
+      };
+      utils.extend(context, original, {
+        width: function() {
+          var range_band = context.rangeBand && context.rangeBand();
+          var width = isFinite(range_band) ? range_band : 0;
+
+          if (options.adjacent)
+            width = width / series_count;
+
+          return width;
+        }
+      });
+
+      // TODO test copy() behavior
+
+      return context;
+    })(original, options, series_count);
+
+    return scale;
+  }
+
+  function addPadding(scale, options) {
+    var padding = options.padding != null ? options.padding : 0.1;
+
+    var original_range = scale.range;
+    scale.range = function(range) {
+      if (!arguments.length) return original_range();
+
+      scale.rangeBands(
+        range,
+        padding,
+        padding / 2
+      );
+    };
+
+    if (options.range)
+      scale.range(options.range);
+
+    // TODO test copy() behavior
     return scale;
   }
 
