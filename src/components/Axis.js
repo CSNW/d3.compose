@@ -402,13 +402,6 @@
     z_index: 60
   });
 
-  d3.compose.axis = function(id, options) {
-    if (!options) {
-      options = id;
-      id = undefined;
-    }
-
-    return utils.extend({id: id, type: 'Axis'}, options);
-  };
+  d3.compose.axis = helpers.createHelper('Axis');
 
 })(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

@@ -139,13 +139,6 @@
     }
   ));
 
-  d3.compose.lines = function(id, options) {
-    if (!options) {
-      options = id;
-      id = undefined;
-    }
-
-    return utils.extend({id: id, type: 'Lines'}, options);
-  };
+  d3.compose.lines = helpers.createHelper('Lines');
 
 })(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);

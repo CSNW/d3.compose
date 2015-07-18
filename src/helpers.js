@@ -903,6 +903,17 @@
     return mixed;
   }
 
+  function createHelper(type) {
+    return function(id, options) {
+      if (!options) {
+        options = id;
+        id = undefined;
+      }
+
+      return utils.extend({id: id, type: type}, options);
+    };
+  }
+
   // Add helpers to d3.chart (static)
   d3.compose = d3.compose || {};
   d3.compose.helpers = utils.extend({}, d3.compose.helpers, {
@@ -923,6 +934,7 @@
     bindDi: bindDi,
     bindAllDi: bindAllDi,
     getParentData: getParentData,
-    mixin: mixin
+    mixin: mixin,
+    createHelper: createHelper
   });
 })(d3);

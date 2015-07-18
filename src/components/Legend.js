@@ -300,14 +300,7 @@
       .attr('class', 'chart-bar');
   });
 
-  d3.compose.legend = function(id, options) {
-    if (!options) {
-      options = id;
-      id = undefined;
-    }
-
-    return utils.extend({id: id, type: 'Legend'}, options);
-  };
+  d3.compose.legend = helpers.createHelper('Legend');
 
   /**
     Legend positioned within chart bounds.
@@ -376,13 +369,6 @@
     layer_type: 'chart'
   });
 
-  d3.compose.insetLegend = function(id, options) {
-    if (!options) {
-      options = id;
-      id = undefined;
-    }
-
-    return utils.extend({id: id, type: 'InsetLegend'}, options);
-  };
+  d3.compose.insetLegend = helpers.createHelper('InsetLegend');
 
 })(d3, d3.compose.helpers, d3.compose.mixins, d3.compose.charts);
