@@ -461,7 +461,9 @@
       container.on('mouseenter', function() {
         // Calculate chart position and bounds on enter and cache during move
         chart_position = chartPosition();
-        bounds = base.getBoundingClientRect();
+        bounds = utils.extend({}, base.getBoundingClientRect());
+        bounds.top += window.scrollY;
+        bounds.bottom += window.scrollY;
 
         was_inside = inside(bounds);
         if (was_inside)
