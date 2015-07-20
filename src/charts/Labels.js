@@ -260,8 +260,6 @@
       },
       onInsert: function onInsert(selection) {
         return selection.append('g')
-          .on('mouseenter', this.mouseEnterPoint)
-          .on('mouseleave', this.mouseLeavePoint)
           .call(this.insertLabels);
       },
       onMerge: function onMerge(selection) {
@@ -526,7 +524,7 @@
 
       @property hoverTolerance
       @type Number
-      @default 20
+      @default Infinity
     */
     hoverTolerance: property('hoverTolerance', {
       set: function(value) {
@@ -534,7 +532,7 @@
         if (this.parent && this.parent.hoverTolerance)
           this.parent.hoverTolerance(value);
       },
-      default_value: 20
+      default_value: Infinity
     }),
 
     // Don't fade in labels, hidden until hover

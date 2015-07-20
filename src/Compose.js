@@ -434,42 +434,57 @@
     },
 
     attachHoverListeners: function() {
+      // For responsive, listen on container div and calculate enter/exit for base from bounding rectangle
+      // For non-responsive, bounding rectangle is container so calculations still apply
+
       var trigger = this.trigger.bind(this);
       var chartPosition = this.chartPosition.bind(this);
       var container = this.container || this.base;
       var base = this.base.node();
-      var inside, chart_position;
+      var chart_position, bounds, was_inside;
 
       container.on('mouseenter', function() {
-        // Calculate chart position on enter and cache during move
+        // Calculate chart position and bounds on enter and cache during move
         chart_position = chartPosition();
+        bounds = utils.extend({}, base.getBoundingClientRect());
+        bounds.top += window.scrollY;
+        bounds.bottom += window.scrollY;
 
-        inside = true;
-        trigger('mouseenter', translateToXY(d3.mouse(base), chart_position));
+        was_inside = inside(bounds);
+        if (was_inside)
+          enter();
       });
       container.on('mousemove', function() {
-        if (inside) {
-          // Overlay layers may inadvertently delay mouseleave
-          // so explicity check if mouse is within bounds of svg base element
-          var mouse = d3.mouse(document.documentElement);
-          var bounds = base.getBoundingClientRect();
-          var inside_base = mouse[0] >= bounds.left && mouse[0] <= bounds.right && mouse[1] >= bounds.top && mouse[1] <= bounds.bottom;
+        var is_inside = inside(bounds);
+        if (was_inside && is_inside)
+          move();
+        else if (was_inside)
+          leave();
+        else if (is_inside)
+          enter();
 
-          if (inside_base) {
-            trigger('mousemove', translateToXY(d3.mouse(base), chart_position));
-          }
-          else {
-            inside = false;
-            trigger('mouseleave');
-          }
-        }
+        was_inside = is_inside;
       });
       container.on('mouseleave', function() {
-        if (inside) {
-          inside = false;
-          trigger('mouseleave');  
+        if (was_inside) {
+          was_inside = false;
+          leave();
         }
       });
+
+      function inside(bounds) {
+        var mouse = d3.mouse(document.documentElement);
+        return mouse[0] >= bounds.left && mouse[0] <= bounds.right && mouse[1] >= bounds.top && mouse[1] <= bounds.bottom;
+      }
+      function enter() {
+        trigger('mouseenter', translateToXY(d3.mouse(base), chart_position));
+      }
+      function move() {
+        trigger('mousemove', translateToXY(d3.mouse(base), chart_position));
+      }
+      function leave() {
+        trigger('mouseleave');
+      }
 
       function translateToXY(coordinates, chart_position) {
         var x = coordinates[0];
@@ -479,12 +494,12 @@
 
         // Set at chart bounds if outside of chart
         if (x > (chart_position.left + chart_position.width))
-          chart_x = chart_position.left + chart_position.width;
+          chart_x = chart_position.width;
         else if (x < chart_position.left)
           chart_x = 0;
 
         if (y > (chart_position.top + chart_position.height))
-          chart_y = chart_position.top + chart_position.height;
+          chart_y = chart_position.height;
         else if (y < chart_position.top)
           chart_y = 0;
 

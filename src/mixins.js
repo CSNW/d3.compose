@@ -860,10 +860,10 @@
 
       @property hoverTolerance
       @type Number
-      @default 20
+      @default Infinity
     */
     hoverTolerance: property('hoverTolerance', {
-      default_value: 20
+      default_value: Infinity
     })
   };
 
