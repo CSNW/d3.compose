@@ -219,6 +219,7 @@ function createLint(src, options) {
 
 function handleError(err) {
   gutil.log(gutil.colors.red('Error (' + err.plugin + '): ' + err.message));
+  gutil.log(err);
   this.emit('end');
 }
 
