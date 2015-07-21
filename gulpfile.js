@@ -21,26 +21,26 @@ var dist = './dist/';
   - Bundle d3.compose.js, d3.compose-mixins.js, d3.compose-all.js, and d3.compose.css to _tmp/
 */
 gulp.task('build', function(cb) {
-  runSequence('clean-tmp', ['build-tmp-library', 'build-tmp-mixins', 'build-tmp-all', 'css-tmp'], cb);
+  runSequence(
+    'clean-tmp',
+    ['build-tmp-library', 'build-tmp-mixins', 'build-tmp-all', 'css-tmp'],
+    cb);
 });
 
 /**
-  dist: 
+  dist:
   - Bundle and minify d3.compose.js, d3.compose-mixins.js, d3.compose-all.js, and d3.compose.css to dist/
 */
 gulp.task('dist', function(cb) {
-  runSequence('clean-dist', ['build-dist-library', 'build-dist-mixins', 'build-dist-all', 'css-dist'], cb);
+  runSequence(
+    'clean-dist',
+    ['build-dist-library', 'build-dist-mixins', 'build-dist-all', 'css-dist'],
+    cb);
 });
 
 // clean
 gulp.task('clean-tmp', createClean(tmp));
 gulp.task('clean-dist', createClean(dist));
-
-function createClean(folder) {
-  return function(cb) {
-    del([folder], cb);
-  }
-}
 
 // build
 gulp.task('build-tmp-library', createBuild('index.js', 'd3.compose', tmp));
@@ -51,6 +51,20 @@ var dist_options = {header: true, minify: true};
 gulp.task('build-dist-library', createBuild('index.js', 'd3.compose', dist, dist_options));
 gulp.task('build-dist-mixins', createBuild('index-mixins.js', 'd3.compose-mixins', dist, dist_options));
 gulp.task('build-dist-all', createBuild('index-all.js', 'd3.compose-all', dist, dist_options));
+
+// css
+gulp.task('css-tmp', createCss(tmp));
+gulp.task('css-dist', createCss(dist));
+
+// lint
+gulp.task('lint-src', createLint(['src/**/*.js']));
+gulp.task('lint-specs', createLint(['specs/**/*.spec.js']));
+
+function createClean(folder) {
+  return function(cb) {
+    del([folder], cb);
+  }
+}
 
 function createBuild(input, output, folder, options) {
   options = options || {};
@@ -71,7 +85,7 @@ function createBuild(input, output, folder, options) {
       .pipe(rename(output + '.js'));
 
     if (options.minify) {
-      // Add header to unminified 
+      // Add header to unminified
       if (options.header)
         build = build.pipe(header(banner, {pkg: pkg}))
 
@@ -95,10 +109,6 @@ function createBuild(input, output, folder, options) {
   };
 }
 
-// css
-gulp.task('css-tmp', createCss(tmp));
-gulp.task('css-dist', createCss(dist));
-
 function createCss(folder) {
   return function() {
     return gulp.src(['src/css/base.css'])
@@ -106,9 +116,6 @@ function createCss(folder) {
       .pipe(gulp.dest(folder));
   }
 }
-
-// line
-gulp.task('lint-src', createLint(['src/**/*.js']));
 
 function createLint(src) {
   return function() {

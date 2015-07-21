@@ -1,12 +1,11 @@
+/* global describe, it, expect, beforeEach, spyOn, d3 */
 (function(d3, helpers, mixins) {
-  var utils = helpers.utils;
-
   describe('mixins', function() {
     var Chart, chart, data, values, width, height, processed, transformed;
 
     // Process data to mimic actual data that is passed to (d, i) methods
-    function processData(data) {
-      return data.map(function(series, index) {
+    function processData(unprocessed) {
+      return unprocessed.map(function(series, index) {
         // Add series index to values for mocking
         chart.seriesValues(series, index).forEach(function(value) {
           value.series = series;
@@ -17,6 +16,7 @@
     }
 
     beforeEach(function() {
+      /* eslint-disable */
       data = [
         {key: 'A', values: [{x:0,y:0},{x:1,y:1},{x:2,y:2},{x:3,y:3},{x:4,y:4}]},
         {key: 'B', values: [{x:5,y:5},{x:6,y:6},{x:7,y:7},{x:8,y:8}]},
@@ -26,6 +26,7 @@
         {key: 'A', values: [{x:'A',y:0},{x:'B',y:1},{x:'C',y:2},{x:'D',y:3},{x:'E',y:4}]},
         {key: 'B', values: [{x:'A',y:5},{x:'B',y:6},{x:'C',y:7},{x:'D',y:8},{x:'E',y:9}]}
       ];
+      /* eslint-enable */
       width = 600;
       height = 400;
 
@@ -33,8 +34,8 @@
         initialize: function() {
           this._layers = {
             mock: {
-              draw: function(data) {
-                transformed = data;
+              draw: function(chart_data) {
+                transformed = chart_data;
               }
             }
           };
@@ -70,7 +71,7 @@
         chart = new Chart();
         processed = processData(data);
 
-        spyOn(d3, 'select').and.callFake(function(element) { return element; });
+        spyOn(d3, 'select').and.callFake(function(selection) { return selection; });
       });
 
       it('should get series for element', function() {
@@ -140,7 +141,7 @@
           [{y: 0}, {y: 10}, {y: 20}],
           [[0, 0], [1, 10], [2, 20]],
           [{x: 0, y: 0}, {x: 1, y: 10}, {x: 2, y: 20}]
-        ].forEach(function(test_case, i) {
+        ].forEach(function(test_case) {
           test_case = mixins.XY.transform(test_case);
 
           expect(chart.xValue(test_case[1])).toEqual(1);
@@ -166,7 +167,7 @@
 
         processed = processData(data);
 
-        spyOn(chart, 'seriesIndex').and.callFake(function(d, i) {
+        spyOn(chart, 'seriesIndex').and.callFake(function(d) {
           return d.series.seriesIndex;
         });
       });
