@@ -11,13 +11,13 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
 ## Getting Started
 
 1. Download the [latest release](https://github.com/CSNW/d3.compose/releases)
-    
+
     - Use `d3.compose-all` to use the standard charts/components to create your charts
     - Use `d3.compose-mixins` if you're creating your own charts/components and want to use d3.compose's mixins to help
     - Use `d3.compose` if you're using your own charts/components
 
 2. Download the dependencies:
-    
+
     - [D3.js (>= 3.0.0)](http://d3js.org/)
     - [d3.chart (>= 0.2.0)](http://misoproject.com/d3-chart/)
 
@@ -57,7 +57,7 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
         return {
           charts: {
             lines: {
-              type: 'Lines', 
+              type: 'Lines',
               data: data,
               xScale: scales.x,
               yScale: scales.y
@@ -87,16 +87,16 @@ See [http://CSNW.github.io/d3.compose/](http://CSNW.github.io/d3.compose/) for l
 Install bower (if necessary) `npm install -g bower`
 
 1. Install components `npm install` and `bower install`
-2. Develop with `grunt debug` or `npm run debug` (automatically builds, tests, and runs example server)
-2. Build with `grunt build` or `npm run build`
-3. Open example with `grunt server` and `localhost:4001`
-4. Test with `grunt test` or `npm test` or automatically with `grunt watch:test`
+2. Develop with `npm run dev` (automatically builds, tests, and runs example server)
+3. Build with `npm run build`
+4. Open example with `grunt serve` and `localhost:4001`
+5. Test with `npm test`
 
 ### Release
 
 (With all changes merged to master and on master branch)
 
-1. Build and publish release with `grunt release` or `npm run release`
+1. Build and publish release with `npm run release`
 
 ### Docs
 

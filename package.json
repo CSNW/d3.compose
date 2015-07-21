@@ -5,7 +5,9 @@
   "main": "dist/d3.compose.js",
   "scripts": {
     "test": "gulp test",
+    "dev": "gulp",
     "build": "gulp build",
+    "serve": "gulp serve",
     "release": "gulp release && node -e \"require('grunt').tasks(['release']);\"",
     "docs": "yuidoc && node -e \"require('grunt').tasks(['docs']);\""
   },
