@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   contains,
   first,
@@ -226,7 +227,7 @@ var Labels = Chart.extend('Labels', mixin(
 
     /**
       Define text-aligmment (top, middle, or bottom)
-      
+
       (set by default based on label position)
 
       @property alignment
@@ -270,7 +271,7 @@ var Labels = Chart.extend('Labels', mixin(
       @param {Number} i
       @return {String}
     */
-    labelClass: di(function(chart, d, i) {
+    labelClass: di(function(chart, d) {
       return 'chart-label' + (d['class'] ? ' ' + d['class'] : '');
     }),
 
@@ -324,7 +325,7 @@ var Labels = Chart.extend('Labels', mixin(
           labels[j] = [];
 
         // Store values for label and calculate layout
-        var label = chart._prepareLabel(chart, this, d, i , j);
+        var label = chart._prepareLabel(chart, this, d, i, j);
         labels[j].push(label);
 
         chart._calculateLayout(chart, options, label);
@@ -350,7 +351,7 @@ var Labels = Chart.extend('Labels', mixin(
     // Internal
     //
 
-    _prepareLabel: function(chart, element, d, i, j) {
+    _prepareLabel: function(chart, element, d, i) {
       var selection = d3.select(element);
       var text = selection.select('text');
       var bg = selection.select('rect');
@@ -381,8 +382,8 @@ var Labels = Chart.extend('Labels', mixin(
       var layout = label.bg.layout = {
         x: options.offset.x,
         y: options.offset.y,
-        width: text_bounds.width + 2*options.padding,
-        height: text_bounds.height + 2*options.padding
+        width: text_bounds.width + (2 * options.padding),
+        height: text_bounds.height + (2 * options.padding)
       };
 
       // Set width / height of label

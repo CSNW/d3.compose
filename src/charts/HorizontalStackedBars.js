@@ -57,7 +57,8 @@ var HorizontalStackedBars = HorizontalBars.extend('HorizontalStackedBars', {
     var x0 = chart.x0();
 
     // Only handle positive x-values
-    if (x < x0) return;
+    if (x < x0)
+      return;
 
     if (chart.bar_positions.length <= i)
       chart.bar_positions.push(0);

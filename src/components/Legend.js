@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   find,
   compact
@@ -137,35 +138,37 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
     if (this.charts()) {
       // Pull legend data from charts
       var charts = this.container.charts();
-      data = this.charts().reduce(function(data, chart_id) {
-        var chart = utils.find(charts, function(chart) { return chart.id == chart_id; });
+      data = this.charts().reduce(function(combined_data, chart_id) {
+        var chart = find(charts, function(find_chart) { return find_chart.id == chart_id; });
 
         // Check for exclude from legend option
         if (!chart || chart.exclude_from_legend || chart.options().exclude_from_legend)
-          return data;
+          return combined_data;
 
         var chart_data = this.container.demux(chart_id, this.container.data());
         if (!isSeriesData(chart_data))
           chart_data = [chart_data];
 
-        var legend_data = utils.compact(chart_data.map(function(series, index) {
+        var legend_data = chart_data.reduce(function(memo, series, index) {
           // Check for exclude from legend option on series
-          if (!series || series.exclude_from_legend) return;
+          if (series && !series.exclude_from_legend) {
+            memo.push({
+              text: series.name || 'Series ' + (index + 1),
+              key: chart_id + '.' + (series.key || index),
+              type: chart.type,
+              'class': compact([
+                'chart-series',
+                'chart-index-' + index,
+                chart.options()['class'],
+                series['class']
+              ]).join(' ')
+            });
+          }
 
-          return {
-            text: series.name || 'Series ' + (index + 1),
-            key: chart_id + '.' + (series.key || index),
-            type: chart.type,
-            'class': utils.compact([
-              'chart-series',
-              'chart-index-' + index,
-              chart.options()['class'],
-              series['class']
-            ]).join(' ')
-          };
-        }));
+          return memo;
+        }, []);
 
-        return data.concat(legend_data);
+        return combined_data.concat(legend_data);
       }.bind(this), []);
     }
 
@@ -173,17 +176,17 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
   },
 
   // Key for legend item (default is key from data)
-  itemKey: di(function(chart, d, i) {
+  itemKey: di(function(chart, d) {
     return d.key;
   }),
 
   // Text for legend item (default is text from data)
-  itemText: di(function(chart, d, i) {
+  itemText: di(function(chart, d) {
     return d.text;
   }),
 
   // Class to apply to swatch (default is class from data)
-  swatchClass: di(function(chart, d, i) {
+  swatchClass: di(function(chart, d) {
     return d['class'];
   }),
 
@@ -251,7 +254,7 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
 }), {
   z_index: 200,
   swatches: {
-    'default': function(chart, d, i) {
+    'default': function(chart) {
       var dimensions = chart.swatchDimensions();
 
       this.append('circle')
@@ -278,21 +281,21 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
     ```
     @method registerSwatch
     @static
-    @param {String|Array} type Chart type
+    @param {Array|String} types Chart type(s)
     @param {Function} create "di" function that inserts swatch
   */
-  registerSwatch: function(type, create) {
-    if (!Array.isArray(type))
-      type = [type];
+  registerSwatch: function(types, create) {
+    if (!Array.isArray(types))
+      types = [types];
 
-    type.forEach(function(type) {
+    types.forEach(function(type) {
       this.swatches[type] = create;
     }, this);
   }
 });
 
 // Create line swatch for Line and LineValues
-Legend.registerSwatch(['Lines'], function(chart, d, i) {
+Legend.registerSwatch(['Lines'], function(chart) {
   var dimensions = chart.swatchDimensions();
 
   return this.append('line')
@@ -302,7 +305,7 @@ Legend.registerSwatch(['Lines'], function(chart, d, i) {
 });
 
 // Create bars swatch for Bars and StackedBars
-Legend.registerSwatch(['Bars', 'StackedBars', 'HorizontalBars', 'HorizontalStackedBars'], function(chart, d, i) {
+Legend.registerSwatch(['Bars', 'StackedBars', 'HorizontalBars', 'HorizontalStackedBars'], function(chart) {
   var dimensions = chart.swatchDimensions();
 
   return this.append('rect')
@@ -316,4 +319,4 @@ var legend = createHelper('Legend');
 export {
   Legend as default,
   legend
-}
+};

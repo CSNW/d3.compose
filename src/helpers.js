@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   isFunction,
   isUndefined,
@@ -96,18 +97,17 @@ export function property(name, options) {
   options = options || {};
   var prop_key = options.prop_key || '__properties';
 
-  var getSet = function(value) {
+  var property = function(value) {//eslint-disable-line no-shadow
     var properties = this[prop_key] = this[prop_key] || {};
-    var existing = properties[name];
-    var context = valueOrDefault(getSet.context, this);
+    var context = valueOrDefault(property.context, this);
 
     if (arguments.length)
-      return set.call(this, value);
+      return set.call(this);
     else
       return get.call(this);
 
     function get() {
-      var value = valueOrDefault(properties[name], getSet.default_value);
+      value = valueOrDefault(properties[name], property.default_value);
 
       // Unwrap value if its type is not a function
       if (isFunction(value) && options.type != 'Function')
@@ -116,16 +116,16 @@ export function property(name, options) {
       return isFunction(options.get) ? options.get.call(context, value) : value;
     }
 
-    function set(value) {
+    function set() {
       // Validate
       if (isFunction(options.validate) && !isUndefined(value) && !options.validate.call(this, value))
         throw new Error('Invalid value for ' + name + ': ' + JSON.stringify(value));
 
-      getSet.previous = properties[name];
+      property.previous = properties[name];
       properties[name] = value;
 
       if (isFunction(options.set) && !isUndefined(value)) {
-        var response = options.set.call(context, value, getSet.previous);
+        var response = options.set.call(context, value, property.previous);
 
         if (response && 'override' in response)
           properties[name] = response.override;
@@ -138,12 +138,12 @@ export function property(name, options) {
   };
 
   // For checking if function is a property
-  getSet.is_property = true;
-  getSet.set_from_options = valueOrDefault(options.set_from_options, true);
-  getSet.default_value = options.default_value;
-  getSet.context = options.context;
+  property.is_property = true;
+  property.set_from_options = valueOrDefault(options.set_from_options, true);
+  property.default_value = options.default_value;
+  property.context = options.context;
 
-  return getSet;
+  return property;
 }
 
 /**
@@ -197,7 +197,7 @@ export function dimensions(selection) {
 function clientDimensions(selection) {
   var element = selection.node();
 
-  var dimensions = {
+  var client_dimensions = {
     width: element && element.clientWidth,
     height: element && element.clientHeight
   };
@@ -208,11 +208,11 @@ function clientDimensions(selection) {
   //        Note: This makes assumptions about the box model in use and that width/height are not percent values
   if (isSVG(selection) && (!element.clientWidth || !element.clientHeight) && typeof window !== 'undefined' && window.getComputedStyle) {
     var styles = window.getComputedStyle(element);
-    dimensions.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
-    dimensions.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
+    client_dimensions.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
+    client_dimensions.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
   }
 
-  return dimensions;
+  return client_dimensions;
 }
 
 function attrDimensions(selection) {
@@ -223,14 +223,16 @@ function attrDimensions(selection) {
 }
 
 function bboxDimensions(selection) {
-  // Firefox throws error when calling getBBox when svg hasn't been displayed
-  // ignore error and set to empty
   var element = selection.node();
-  var bbox = {width: 0, height: 0};
+  var bbox;
   try {
     bbox = element && typeof element.getBBox == 'function' && element.getBBox();
   }
-  catch(ex) {}
+  catch(ex) {
+    // Firefox throws error when calling getBBox when svg hasn't been displayed
+    // Ignore error and set to empty
+    bbox = {width: 0, height: 0};
+  }
 
   return bbox;
 }
@@ -273,8 +275,9 @@ export function rotate(degrees, center) {
   var rotation = 'rotate(' + (degrees || 0);
   if (center)
     rotation += ' ' + (center.x || 0) + ',' + (center.y || 0);
+  rotation += ')';
 
-  return rotation += ')';
+  return rotation;
 }
 
 /**
@@ -303,9 +306,9 @@ export function alignText(element, line_height) {
   try {
     var height = element.getBBox().height;
 
-    var style = window.getComputedStyle(element);
-    var css_font_size = parseFloat(style['font-size']);
-    var css_line_height = parseFloat(style['line-height']);
+    var element_style = window.getComputedStyle(element);
+    var css_font_size = parseFloat(element_style['font-size']);
+    var css_line_height = parseFloat(element_style['line-height']);
 
     // If line-height: normal, use estimate 1.14em
     // (actual line-height depends on browser and font)
@@ -321,7 +324,10 @@ export function alignText(element, line_height) {
 
     offset = height + (css_adjustment || 0) + (height_adjustment || 0);
   }
-  catch (ex) {}
+  catch (ex) {
+    // Errors can occur from getBBox and getComputedStyle
+    // No useful information for offset, do nothing
+  }
 
   return offset;
 }
@@ -355,12 +361,12 @@ export function isSeriesData(data) {
   @return {Number}
 */
 export function max(data, getValue) {
-  var getMax = function(data) {
-    return data && d3.extent(data, getValue)[1];
+  var getMax = function(series_data) {
+    return series_data && d3.extent(series_data, getValue)[1];
   };
 
   if (isSeriesData(data)) {
-    return data.reduce(function(memo, series, index) {
+    return data.reduce(function(memo, series) {
       if (series && Array.isArray(series.values)) {
         var series_max = getMax(series.values);
         return series_max > memo ? series_max : memo;
@@ -392,12 +398,12 @@ export function max(data, getValue) {
   @return {Number}
 */
 export function min(data, getValue) {
-  var getMin = function(data) {
-    return data && d3.extent(data, getValue)[0];
+  var getMin = function(series_data) {
+    return series_data && d3.extent(series_data, getValue)[0];
   };
 
   if (isSeriesData(data)) {
-    return data.reduce(function(memo, series, index) {
+    return data.reduce(function(memo, series) {
       if (series && Array.isArray(series.values)) {
         var series_min = getMin(series.values);
         return series_min < memo ? series_min : memo;
@@ -446,7 +452,7 @@ export function min(data, getValue) {
   @param {String} [options.key] Data key to extract value
   @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
   @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each other
-  
+
   - Requires series-index as second argument to scale, otherwise centered x-value is used
   - Requires "data" or "series" options to determine number of series
   @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
@@ -500,7 +506,7 @@ export function createScale(options) {
 
 function setDomain(scale, options) {
   // Use value "di" or create for key
-  var getValue = options.value || function(d, i) {
+  var getValue = options.value || function(d) {
     return d[options.key];
   };
 
@@ -534,8 +540,9 @@ function addCentered(original, options) {
   // Get series count for adjacent
   var series_count = options.series || (!isSeriesData(options.data) ? 1 : options.data.length);
 
-  var scale = (function(original, options, series_count) {
-    var context = function scale(value, series_index) {
+  // TODO Look into removing closure
+  var scale = (function(original, options, series_count) {//eslint-disable-line no-shadow
+    var context = function(value, series_index) {
       var width = context.width();
 
       if (!options.adjacent)
@@ -617,7 +624,7 @@ export function style(styles) {
 
   // Stack all text elements horizontally, from the right, with 5px padding
   d3.selectAll('text').call(helpers.stack.bind(this, {
-    direction: 'horizontal', 
+    direction: 'horizontal',
     origin: 'right',
     padding: 5
   }));
@@ -646,7 +653,7 @@ export function stack(options, elements) {
     var previous = 0;
     elements
       .attr('transform', function(d, i) {
-        var dimensions = this.getBBox();
+        var element_dimensions = this.getBBox();
         var x = 0;
         var y = 0;
 
@@ -657,9 +664,9 @@ export function stack(options, elements) {
           if (options.origin == 'left')
             x = previous + padding(d, i);
           else
-            x = previous + dimensions.width + padding(d, i);
+            x = previous + element_dimensions.width + padding(d, i);
 
-          previous = previous + dimensions.width + padding(d, i);
+          previous = previous + element_dimensions.width + padding(d, i);
         }
         else {
           if (!(options.origin == 'top' || options.origin == 'bottom'))
@@ -668,9 +675,9 @@ export function stack(options, elements) {
           if (options.origin == 'top')
             y = previous + padding(d, i);
           else
-            y = previous + dimensions.height + padding(d, i);
+            y = previous + element_dimensions.height + padding(d, i);
 
-          previous = previous + dimensions.height + padding(d, i);
+          previous = previous + element_dimensions.height + padding(d, i);
         }
 
         return translate(x, y);
@@ -717,9 +724,9 @@ export function di(callback) {
   return wrapped;
 }
 
-export function bindDi(di, chart) {
+export function bindDi(diFn, chart) {
   return function wrapped(d, i, j) {
-    return (di.original || di).call(this, chart, d, i, j);
+    return (diFn.original || diFn).call(this, chart, d, i, j);
   };
 }
 
@@ -821,11 +828,11 @@ export function mixin(mixins) {
   }
   if (mixed.transform) {
     mixed.transform = function transform(data) {
-      return mixins.reduceRight(function(data, extension) {
+      return mixins.reduceRight(function(memo, extension) {
         if (extension && extension.transform)
-          return extension.transform.call(this, data);
+          return extension.transform.call(this, memo);
         else
-          return data;
+          return memo;
       }.bind(this), data);
     };
   }

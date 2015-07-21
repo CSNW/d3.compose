@@ -44,6 +44,7 @@
     "grunt-zip": "~0.16.2",
     "gulp": "^3.9.0",
     "gulp-concat-css": "^2.2.0",
+    "gulp-eslint": "^0.15.0",
     "gulp-file": "^0.2.0",
     "gulp-header": "^1.2.2",
     "gulp-plumber": "^1.0.1",

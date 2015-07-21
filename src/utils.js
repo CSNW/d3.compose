@@ -63,9 +63,9 @@ export function first(arr, n) {
 export function isBoolean(obj) {
   return obj === true || obj === false;
 }
-export var isFunction = function isFunction(obj) {
+export var isFunction = function(obj) {
   return toString.call(obj) === '[object Function]';
-}
+};
 export function isObject(obj) {
   var type = typeof obj;
   return type === 'function' || type === 'object' && !!obj;
@@ -114,7 +114,7 @@ export function uniq(arr) {
 }
 
 if (typeof /./ != 'function' && typeof Int8Array != 'object') {
-  isFunction = function isFunction(obj) {
+  isFunction = function(obj) {
     return typeof obj == 'function' || false;
   };
 }

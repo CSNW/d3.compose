@@ -32,7 +32,7 @@ import {
         charts: {
           bars: {type: 'Bars'}, // ...
           lines: {type: 'Lines'} // ...
-        }, 
+        },
         components: {}, // ...
 
         // Axes:
@@ -118,11 +118,11 @@ export default function xy(options) {
     components['axis.' + key] = axis_options;
 
     if (axis_options.title) {
-      var title_options = axis_options.title;
-      if (isString(title_options))
-        title_options = {text: title_options};
+      var axis_title_options = axis_options.title;
+      if (isString(axis_title_options))
+        axis_title_options = {text: axis_title_options};
 
-      title_options = defaults({}, title_options, {
+      axis_title_options = defaults({}, axis_title_options, {
         type: 'Title',
         position: axis_options.position,
         'class': 'chart-title-axis',
@@ -134,7 +134,7 @@ export default function xy(options) {
         }[axis_options.position], default_margins)
       });
 
-      components['axis.' + key + '.title'] = title_options;
+      components['axis.' + key + '.title'] = axis_title_options;
     }
   });
 
@@ -161,4 +161,4 @@ export default function xy(options) {
     charts: charts,
     components: extend(components, options.components)
   };
-};
+}

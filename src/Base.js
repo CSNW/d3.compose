@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   difference,
   objectEach
@@ -10,8 +11,8 @@ import {
 
 /**
   Shared functionality between all charts and components.
-  
-  - Set properties automatically from `options`, 
+
+  - Set properties automatically from `options`,
   - Store fully transformed data
   - Adds `"before:draw"` and `"draw"` events
   - Standard `width` and `height` calculations
@@ -80,7 +81,7 @@ export default d3.chart('Base', {
         var unset = difference(Object.keys(previous), Object.keys(options));
         unset.forEach(function(key) {
           if (key != 'data' && key != 'options' && isProperty(this, key))
-            this[key](undefined); 
+            this[key](undefined);
         }, this);
       }
 

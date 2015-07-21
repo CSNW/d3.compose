@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   property,
   valueOrDefault,
@@ -33,7 +34,7 @@ export var Series = {
     @param {Any} d Series object with `key`
     @return {Any}
   */
-  seriesKey: di(function(chart, d, i) {
+  seriesKey: di(function(chart, d) {
     return d.key;
   }),
 
@@ -80,7 +81,7 @@ export var Series = {
     @method seriesData
     @return {Any}
   */
-  seriesData: di(function(chart, d, i) {
+  seriesData: di(function() {
     return getParentData(this);
   }),
 
@@ -94,7 +95,7 @@ export var Series = {
     @param {Number} [j]
     @return {String}
   */
-  itemStyle: di(function(chart, d, i) {
+  itemStyle: di(function(chart, d) {
     return style(d.style) || null;
   }),
 
@@ -374,7 +375,7 @@ export var XY = {
     @param {Any} d
     @return {Any}
   */
-  xValue: di(function(chart, d, i) {
+  xValue: di(function(chart, d) {
     var key = chart.xKey();
     if (d)
       return key in d ? d[key] : d[0];
@@ -392,7 +393,7 @@ export var XY = {
     @param {Any} d
     @return {Any}
   */
-  yValue: di(function(chart, d, i) {
+  yValue: di(function(chart, d) {
     var key = chart.yKey();
     if (d)
       return key in d ? d[key] : d[1];
@@ -483,7 +484,7 @@ export var XYValues = extend({}, XY, {
   layeredWidth: function() {
     var range_band = this.xScale() && this.xScale().rangeBand && this.xScale().rangeBand();
     var width = isFinite(range_band) ? range_band : 0;
-    
+
     return width;
   },
 
@@ -620,9 +621,9 @@ export var Labels = {
     var options = this.labels();
     options.parent = this;
 
-    var Labels = d3.chart(options.type);
+    var LabelsClass = d3.chart(options.type);
     var base = this.base.append('g').attr('class', 'chart-labels');
-    var labels = this._labels = new Labels(base, options);
+    var labels = this._labels = new LabelsClass(base, options);
 
     // Proxy x and y to parent chart
     this.proxyLabelMethods.forEach(function(method) {
@@ -632,7 +633,7 @@ export var Labels = {
     this.on('draw', function(data) {
       options = this.labels();
       options.parent = this;
-      
+
       labels.options(options);
 
       if (options.display !== false)
@@ -811,7 +812,7 @@ export var Hover = {
     @param {Object} position.chart {x, y} position relative to chart origin
     @param {Object} position.container {x, y} position relative to container origin
   */
-  onMouseEnter: function(position) {},
+  onMouseEnter: function(/* position */) {},
 
   /**
     (Override) Called when mouse moves within container
@@ -821,7 +822,7 @@ export var Hover = {
     @param {Object} position.chart {x, y} position relative to chart origin
     @param {Object} position.container {x, y} position relative to container origin
   */
-  onMouseMove: function(position) {},
+  onMouseMove: function(/* position */) {},
 
   /**
     (Override) Called when mouse leaves container
@@ -847,6 +848,15 @@ export var HoverPoints = {
     });
 
     this.on('attach', function() {
+      var update = function update(position) {
+        var closest = [];
+        if (position)
+          closest = getClosestPoints(points, position.chart, tolerance);
+
+        updateActive(active, closest, this.container);
+        active = closest;
+      }.bind(this);
+
       this.container.on('mouseenter', function(position) {
         if (!points)
           points = getPoints(this, this.data());
@@ -858,15 +868,6 @@ export var HoverPoints = {
       this.container.on('mousemove', update);
       this.container.on('mouseleave', update);
     }.bind(this));
-
-    var update = function update(position) {
-      var closest = [];
-      if (position)
-        closest = getClosestPoints(points, position.chart, tolerance);
-
-      updateActive(active, closest, this.container);
-      active = closest;
-    }.bind(this);
   },
 
   /**
@@ -968,7 +969,7 @@ export var Transition = {
 
   /**
     Transition ease function
-    
+
     - See: [Transitions#ease](https://github.com/mbostock/d3/wiki/Transitions#ease)
     - Note: arguments to pass to `d3.ease` are not supported
 
@@ -1094,7 +1095,7 @@ export var StandardLayer = {
     @param {Any} data
     @return {d3.selection}
   */
-  onDataBind: function onDataBind(selection, data) {},
+  onDataBind: function onDataBind(/* selection, data */) {},
 
   /**
     Called for standard layer's `insert`
@@ -1103,7 +1104,7 @@ export var StandardLayer = {
     @param {d3.selection} selection
     @return {d3.selection}
   */
-  onInsert: function onInsert(selection) {},
+  onInsert: function onInsert(/* selection */) {},
 
   /**
     Call for standard layer's `events['enter']`
@@ -1111,7 +1112,7 @@ export var StandardLayer = {
     @method onEnter
     @param {d3.selection}
   */
-  onEnter: function onEnter(selection) {},
+  onEnter: function onEnter(/* selection */) {},
 
   /**
     Call for standard layer's `events['enter:transition']`
@@ -1127,7 +1128,7 @@ export var StandardLayer = {
     @method onUpdate
     @param {d3.selection}
   */
-  onUpdate: function onUpdate(selection) {},
+  onUpdate: function onUpdate(/* selection */) {},
 
   /**
     Call for standard layer's `events['update']`
@@ -1143,7 +1144,7 @@ export var StandardLayer = {
     @method onMerge
     @param {d3.selection}
   */
-  onMerge: function onMerge(selection) {},
+  onMerge: function onMerge(/* selection */) {},
 
   /**
     Call for standard layer's `events['merge:transition']`
@@ -1159,7 +1160,7 @@ export var StandardLayer = {
     @method onExit
     @param {d3.selection}
   */
-  onExit: function onExit(selection) {},
+  onExit: function onExit(/* selection */) {}
 
   /**
     Call for standard layer's `events['exit:transition']`

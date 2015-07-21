@@ -8,7 +8,6 @@ import {
   style,
   translate,
   rotate,
-  di,
   mixin
 } from '../helpers';
 import { StandardLayer } from '../mixins';
@@ -134,7 +133,7 @@ var Title = Component.extend('Title', mixin(StandardLayer, {
   verticalAlign: property('verticalAlign', {
     default_value: 'middle',
     validate: function(value) {
-      return contains(['top', 'middle', 'bottom']);
+      return contains(['top', 'middle', 'bottom'], value);
     }
   }),
 
@@ -152,7 +151,7 @@ var Title = Component.extend('Title', mixin(StandardLayer, {
     }
   }),
 
-  onDataBind: function onDataBind(selection, data) {
+  onDataBind: function onDataBind(selection) {
     return selection.selectAll('text')
       .data([0]);
   },
@@ -184,7 +183,7 @@ var Title = Component.extend('Title', mixin(StandardLayer, {
     var rotation = rotate(this.rotation());
 
     return translation + ' ' + rotation;
-  },
+  }
 }), {
   z_index: 70
 });

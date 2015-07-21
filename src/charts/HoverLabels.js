@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   property,
   mixin,
@@ -37,7 +38,7 @@ var HoverLabels = Labels.extend('HoverLabels', mixin(Hover, {
   }),
 
   // Don't fade in labels, hidden until hover
-  transitionLabels: function(selection) {},
+  transitionLabels: function() {},
 
   onMouseEnterPoint: function(point) {
     var label = this.findLabelForPoint(point);

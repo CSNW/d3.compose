@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var del = require('del');
 var concatCss = require('gulp-concat-css');
+var eslint = require('gulp-eslint');
 var file = require('gulp-file');
 var header = require('gulp-header');
 var plumber = require('gulp-plumber');
@@ -15,32 +16,41 @@ var pkg = require('./package.json');
 var tmp = './_tmp/';
 var dist = './dist/';
 
+/**
+  build:
+  - Bundle d3.compose.js, d3.compose-mixins.js, d3.compose-all.js, and d3.compose.css to _tmp/
+*/
 gulp.task('build', function(cb) {
-  runSequence('build-clean', ['build-library', 'build-mixins', 'build-all', 'build-css'], cb);
+  runSequence('clean-tmp', ['build-tmp-library', 'build-tmp-mixins', 'build-tmp-all', 'css-tmp'], cb);
 });
+
+/**
+  dist: 
+  - Bundle and minify d3.compose.js, d3.compose-mixins.js, d3.compose-all.js, and d3.compose.css to dist/
+*/
 gulp.task('dist', function(cb) {
-  runSequence('dist-clean', ['dist-library', 'dist-mixins', 'dist-all', 'dist-css'], cb);
+  runSequence('clean-dist', ['build-dist-library', 'build-dist-mixins', 'build-dist-all', 'css-dist'], cb);
 });
 
-gulp.task('build-clean', createClean(tmp));
-gulp.task('dist-clean', createClean(dist));
-
-gulp.task('build-library', createBuild('index.js', 'd3.compose', tmp));
-gulp.task('build-mixins', createBuild('index-mixins.js', 'd3.compose-mixins', tmp));
-gulp.task('build-all', createBuild('index-all.js', 'd3.compose-all', tmp));
-gulp.task('build-css', createCss(tmp));
-
-var dist_options = {header: true, minify: true};
-gulp.task('dist-library', createBuild('index.js', 'd3.compose', dist, dist_options));
-gulp.task('dist-mixins', createBuild('index-mixins.js', 'd3.compose-mixins', dist, dist_options));
-gulp.task('dist-all', createBuild('index-all.js', 'd3.compose-all', dist, dist_options));
-gulp.task('dist-css', createCss(dist));
+// clean
+gulp.task('clean-tmp', createClean(tmp));
+gulp.task('clean-dist', createClean(dist));
 
 function createClean(folder) {
   return function(cb) {
     del([folder], cb);
   }
 }
+
+// build
+gulp.task('build-tmp-library', createBuild('index.js', 'd3.compose', tmp));
+gulp.task('build-tmp-mixins', createBuild('index-mixins.js', 'd3.compose-mixins', tmp));
+gulp.task('build-tmp-all', createBuild('index-all.js', 'd3.compose-all', tmp));
+
+var dist_options = {header: true, minify: true};
+gulp.task('build-dist-library', createBuild('index.js', 'd3.compose', dist, dist_options));
+gulp.task('build-dist-mixins', createBuild('index-mixins.js', 'd3.compose-mixins', dist, dist_options));
+gulp.task('build-dist-all', createBuild('index-all.js', 'd3.compose-all', dist, dist_options));
 
 function createBuild(input, output, folder, options) {
   options = options || {};
@@ -85,11 +95,27 @@ function createBuild(input, output, folder, options) {
   };
 }
 
+// css
+gulp.task('css-tmp', createCss(tmp));
+gulp.task('css-dist', createCss(dist));
+
 function createCss(folder) {
   return function() {
     return gulp.src(['src/css/base.css'])
       .pipe(concatCss('d3.compose.css'))
       .pipe(gulp.dest(folder));
+  }
+}
+
+// line
+gulp.task('lint-src', createLint(['src/**/*.js']));
+
+function createLint(src) {
+  return function() {
+    return gulp.src(src)
+      .pipe(eslint())
+      .pipe(eslint.format())
+      .pipe(eslint.failOnError());
   }
 }
 

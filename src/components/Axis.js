@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   contains,
   extend,
@@ -6,7 +7,6 @@ import {
 import {
   property,
   translate,
-  di,
   mixin,
   createHelper
 } from '../helpers';
@@ -88,7 +88,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     this.standardLayer('Axis', this.axis_base);
 
     this.layer('_LayoutAxis', this._layout_base, {
-      dataBind: function(data) {
+      dataBind: function() {
         return this.selectAll('g').data([0]);
       },
       insert: function() {
@@ -256,7 +256,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
   tickPadding: property('tickPadding', {type: 'Function'}),
   tickFormat: property('tickFormat', {type: 'Function'}),
 
-  onDataBind: function onDataBind(selection, data) {
+  onDataBind: function onDataBind(selection) {
     // Setup axis (scale and properties)
     this._setupAxis(this.axis);
 
@@ -334,7 +334,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
       height: label_overhang.height
     };
   },
-  setLayout: function(x, y, options) {
+  setLayout: function() {
     // Axis is positioned with chartBase, so don't set layout
     return;
   },

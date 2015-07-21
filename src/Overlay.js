@@ -30,7 +30,7 @@ export default Component.extend('Overlay', {
     this.base.attr('style', this.style());
   },
   skip_layout: true,
-  
+
   /**
     Overlay's top-left x-position in px from left
 
@@ -168,11 +168,11 @@ export default Component.extend('Overlay', {
     var container = this.container && this.container.container;
 
     if (container && this.container.responsive()) {
-      var dimensions = dimensions(container);
+      var container_dimensions = dimensions(container);
       var chart_width = this.container.width();
       var chart_height = this.container.height();
-      var width_ratio = dimensions.width / chart_width;
-      var height_ratio = dimensions.height / chart_height;
+      var width_ratio = container_dimensions.width / chart_width;
+      var height_ratio = container_dimensions.height / chart_height;
 
       return {
         x: width_ratio * container_position.x,
@@ -182,7 +182,7 @@ export default Component.extend('Overlay', {
     else {
       // Not attached so can't get actual dimensions
       // fallback to container position
-      return container_position;  
+      return container_position;
     }
   }
 }, {

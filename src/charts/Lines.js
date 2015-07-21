@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   property,
   di,
@@ -5,12 +6,12 @@ import {
   createHelper
 } from '../helpers';
 import {
-  Series, 
-  XY, 
-  XYLabels, 
-  Hover, 
-  HoverPoints, 
-  Transition, 
+  Series,
+  XY,
+  XYLabels,
+  Hover,
+  HoverPoints,
+  Transition,
   StandardLayer
 } from '../mixins';
 import Chart from '../Chart';
@@ -68,13 +69,13 @@ import Chart from '../Chart';
   @extends Chart, Series, XY, XYLabels, Hover, HoverPoints, Transition, StandardLayer
 */
 var Lines = Chart.extend('Lines', mixin(
-  Series, 
-  XY, 
-  XYLabels, 
-  Hover, 
-  HoverPoints, 
-  Transition, 
-  StandardLayer, 
+  Series,
+  XY,
+  XYLabels,
+  Hover,
+  HoverPoints,
+  Transition,
+  StandardLayer,
   {
     initialize: function() {
       this.lines = {};

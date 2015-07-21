@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import {
   isFunction,
   contains,
@@ -28,7 +29,7 @@ import Base from './Base';
   var chart = d3.select('#chart')
     .chart('Compose', function(data) {
       // Process data...
-      
+
       // Create shared scales
       var scales = {
         x: {data: data.input, key: 'x', adjacent: true},
@@ -136,7 +137,7 @@ export default Base.extend('Compose', {
       // return from generic options function
       if (!isFunction(options)) {
         return {
-          override: function(data) {
+          override: function() {
             return options;
           }
         };
@@ -205,11 +206,11 @@ export default Base.extend('Compose', {
 
   _width: function() {
     var width = this.width();
-    return width != null ? width : charts.Base.prototype.width.call(this);
+    return width != null ? width : Base.prototype.width.call(this);
   },
   _height: function() {
     var height = this.height();
-    return height != null ? height : charts.Base.prototype.height.call(this);
+    return height != null ? height : Base.prototype.height.call(this);
   },
 
   /**
@@ -257,7 +258,7 @@ export default Base.extend('Compose', {
           height: 0,
           'padding-top': (aspect_ratio * 100) + '%',
           position: 'relative'
-        });  
+        });
       }
       else {
         return style({position: 'relative'});
@@ -346,7 +347,7 @@ export default Base.extend('Compose', {
     chart.draw([1, 2, 3]);
 
     chart.draw({values: [1, 2, 3]});
-    
+
     chart.draw([
       {values: [1, 2, 3]},
       {values: [4, 5, 6]}
@@ -417,7 +418,7 @@ export default Base.extend('Compose', {
   },
 
   // Create overlay layer
-  createOverlayLayer: function(options) {
+  createOverlayLayer: function() {
     if (!this.container)
       throw new Error('Cannot create overlay layer if original selection "d3.select(...).chart(\'Compose\')" is an svg. Use a div instead for responsive and overlay support.');
 
@@ -485,21 +486,21 @@ export default Base.extend('Compose', {
       }
     });
 
-    function inside(bounds) {
+    function inside() {
       var mouse = d3.mouse(document.documentElement);
       return mouse[0] >= bounds.left && mouse[0] <= bounds.right && mouse[1] >= bounds.top && mouse[1] <= bounds.bottom;
     }
     function enter() {
-      trigger('mouseenter', translateToXY(d3.mouse(base), chart_position));
+      trigger('mouseenter', translateToXY(d3.mouse(base)));
     }
     function move() {
-      trigger('mousemove', translateToXY(d3.mouse(base), chart_position));
+      trigger('mousemove', translateToXY(d3.mouse(base)));
     }
     function leave() {
       trigger('mouseleave');
     }
 
-    function translateToXY(coordinates, chart_position) {
+    function translateToXY(coordinates) {
       var x = coordinates[0];
       var y = coordinates[1];
       var chart_x = x - chart_position.left;
@@ -655,7 +656,7 @@ export default Base.extend('Compose', {
     }
 
     if (Array.isArray(config)) {
-      // TEMP Idenfify charts from layered, 
+      // TEMP Idenfify charts from layered,
       // eventually no distinction between charts and components
       var found = {
         row: false,
@@ -697,18 +698,18 @@ export default Base.extend('Compose', {
               normalized.components.unshift(prepareComponent(row, 'top', row_index, 0));
             else
               normalized.components.push(prepareComponent(row, 'bottom', row_index, 0));
-          }  
+          }
         }
       });
     }
     else {
       // DEPRECATED
-      objectEach(config.charts, function(options, id) {
-        normalized.charts.push(extend({id: id}, options));
+      objectEach(config.charts, function(chart_options, id) {
+        normalized.charts.push(extend({id: id}, chart_options));
       });
 
-      objectEach(config.components, function(options, id) {
-        normalized.components.push(extend({id: id}, options));
+      objectEach(config.components, function(component_options, id) {
+        normalized.components.push(extend({id: id}, component_options));
       });
     }
 
@@ -749,7 +750,7 @@ export default Base.extend('Compose', {
     var width = this._width();
     var height = this._height();
 
-    layout.top.reduce(function(previous, part, index, parts) {
+    layout.top.reduce(function(previous, part) {
       var y = previous - part.offset;
       setLayout(part.component, chart.left, y, {width: chart.width});
 
@@ -772,7 +773,7 @@ export default Base.extend('Compose', {
       return y;
     }, height - chart.bottom);
 
-    layout.left.reduce(function(previous, part, index, parts) {
+    layout.left.reduce(function(previous, part) {
       var x = previous - part.offset;
       setLayout(part.component, x, chart.top, {height: chart.height});
 
@@ -843,7 +844,7 @@ export function layered(items) {
   if (!Array.isArray(items))
     items = Array.prototype.slice.call(arguments);
 
-  return {_layered: true, items: items};  
+  return {_layered: true, items: items};
 }
 
 function findById(items, id) {

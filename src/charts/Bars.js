@@ -1,10 +1,8 @@
 import {
-  isUndefined,
   objectFind
 } from '../utils';
 import {
   mixin,
-  property,
   di,
   createHelper
 } from '../helpers';
@@ -13,7 +11,7 @@ import {
   XYValues,
   XYLabels,
   Hover,
-  Transition, 
+  Transition,
   StandardLayer
 } from '../mixins';
 import Chart from '../Chart';
@@ -80,8 +78,8 @@ var Bars = Chart.extend('Bars', mixin(
   XYValues,
   XYLabels,
   Hover,
-  Transition, 
-  StandardLayer, 
+  Transition,
+  StandardLayer,
   {
     initialize: function() {
       this.on('before:draw', function() {
@@ -98,7 +96,7 @@ var Bars = Chart.extend('Bars', mixin(
       var height = Math.abs(chart.y0() - chart.y.call(this, d, i)) - chart.barOffset();
       return height > 0 ? height : 0;
     }),
-    barWidth: di(function(chart, d, i) {
+    barWidth: di(function(chart) {
       return chart.itemWidth();
     }),
     barX: di(function(chart, d, i) {
@@ -115,7 +113,7 @@ var Bars = Chart.extend('Bars', mixin(
       var offset = chart.barOffset();
       return chart.y.call(this, d, i) <= y0 ? y0 - offset : y0 + offset;
     }),
-    barClass: di(function(chart, d, i) {
+    barClass: di(function(chart, d) {
       return 'chart-bar' + (d['class'] ? ' ' + d['class'] : '');
     }),
 
@@ -132,7 +130,7 @@ var Bars = Chart.extend('Bars', mixin(
 
     getOffsetAxis: function getOffsetAxis() {
       var components = this.container && this.container.components();
-      return objectFind(components, function(component, id) {
+      return objectFind(components, function(component) {
         if (component.type == 'Axis' && component.position() == 'bottom')
           return component;
       });
@@ -143,7 +141,7 @@ var Bars = Chart.extend('Bars', mixin(
       return selection.selectAll('rect')
         .data(data, this.key);
     },
-    
+
     // Override StandardLayer
     onInsert: function onInsert(selection) {
       return selection.append('rect')

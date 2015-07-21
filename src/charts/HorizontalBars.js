@@ -57,7 +57,7 @@ var HorizontalBars = Bars.extend('HorizontalBars', mixin(InvertedXY, {
     var width = Math.abs(chart.x0() - chart.x.call(this, d, i)) - chart.barOffset();
     return width > 0 ? width : 0;
   }),
-  barHeight: di(function(chart, d, i) {
+  barHeight: di(function(chart) {
     return chart.itemWidth();
   }),
   bar0: di(function(chart, d, i) {
@@ -68,7 +68,7 @@ var HorizontalBars = Bars.extend('HorizontalBars', mixin(InvertedXY, {
 
   getOffsetAxis: function getOffsetAxis() {
     var components = this.container && this.container.components();
-    return objectFind(components, function(component, id) {
+    return objectFind(components, function(component) {
       if (component.type == 'Axis' && component.position() == 'left')
         return component;
     });
@@ -79,7 +79,7 @@ var HorizontalBars = Bars.extend('HorizontalBars', mixin(InvertedXY, {
       .attr('x', this.bar0)
       .attr('width', 0);
   },
-  
+
   onMerge: function onMerge(selection) {
     selection
       .attr('class', this.barClass)
@@ -87,14 +87,14 @@ var HorizontalBars = Bars.extend('HorizontalBars', mixin(InvertedXY, {
       .attr('y', this.barY)
       .attr('height', this.barHeight);
   },
-  
+
   onMergeTransition: function onMergeTransition(selection) {
     this.setupTransition(selection);
 
     selection
       .attr('x', this.barX)
       .attr('width', this.barWidth);
-  },
+  }
 }));
 
 var horizontalBars = createHelper('HorizontalBars');

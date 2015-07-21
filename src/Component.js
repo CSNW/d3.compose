@@ -11,7 +11,7 @@ import Base from './Base';
 
 /**
   Common base for creating components that includes helpers for positioning and layout.
-  
+
   ### Extending
 
   `d3.chart('Component')` contains intelligent defaults and there are no required overrides.
@@ -128,10 +128,10 @@ export default Base.extend('Component', {
     Perform any layout preparation required before getLayout (default is draw)
     (override in prototype of extension)
 
-    Note: By default, components are double-drawn; 
+    Note: By default, components are double-drawn;
     for every draw, they are drawn once to determine the layout size of the component and a second time for display with the calculated layout.
     This can cause issues if the component uses transitions. See Axis for an example of a Component with transitions.
-    
+
     @example
     ```js
     d3.chart('Component').extend('Custom', {

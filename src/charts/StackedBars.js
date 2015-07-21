@@ -57,7 +57,8 @@ var StackedBars = Bars.extend('StackedBars', {
     var y0 = chart.y0();
 
     // Only handle positive y-values
-    if (y > y0) return;
+    if (y > y0)
+      return;
 
     if (chart.bar_positions.length <= i)
       chart.bar_positions.push(0);
