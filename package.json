@@ -4,12 +4,9 @@
   "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
   "main": "dist/d3.compose.js",
   "scripts": {
+    "test": "gulp test",
     "build": "gulp build",
-    "dist": "gulp dist",
-    "jshint": "node -e \"require('grunt').tasks(['jshint']);\"",
-    "release": "node -e \"require('grunt').tasks(['release']);\"",
-    "test": "node -e \"require('grunt').tasks(['test']);\"",
-    "debug": "node -e \"require('grunt').tasks(['debug']);\"",
+    "release": "gulp release && node -e \"require('grunt').tasks(['release']);\"",
     "docs": "yuidoc && node -e \"require('grunt').tasks(['docs']);\""
   },
   "repository": {
