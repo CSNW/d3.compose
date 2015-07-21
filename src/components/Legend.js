@@ -255,12 +255,12 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
   z_index: 200,
   swatches: {
     'default': function(chart) {
-      var dimensions = chart.swatchDimensions();
+      var swatch_dimensions = chart.swatchDimensions();
 
       this.append('circle')
-        .attr('cx', dimensions.width / 2)
-        .attr('cy', dimensions.height / 2)
-        .attr('r', d3.min([dimensions.width, dimensions.height]) / 2)
+        .attr('cx', swatch_dimensions.width / 2)
+        .attr('cy', swatch_dimensions.height / 2)
+        .attr('r', d3.min([swatch_dimensions.width, swatch_dimensions.height]) / 2)
         .attr('class', 'chart-swatch');
     }
   },
@@ -296,21 +296,21 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
 
 // Create line swatch for Line and LineValues
 Legend.registerSwatch(['Lines'], function(chart) {
-  var dimensions = chart.swatchDimensions();
+  var swatch_dimensions = chart.swatchDimensions();
 
   return this.append('line')
-    .attr('x1', 0).attr('y1', dimensions.height / 2)
-    .attr('x2', dimensions.width).attr('y2', dimensions.height / 2)
+    .attr('x1', 0).attr('y1', swatch_dimensions.height / 2)
+    .attr('x2', swatch_dimensions.width).attr('y2', swatch_dimensions.height / 2)
     .attr('class', 'chart-line');
 });
 
 // Create bars swatch for Bars and StackedBars
 Legend.registerSwatch(['Bars', 'StackedBars', 'HorizontalBars', 'HorizontalStackedBars'], function(chart) {
-  var dimensions = chart.swatchDimensions();
+  var swatch_dimensions = chart.swatchDimensions();
 
   return this.append('rect')
     .attr('x', 0).attr('y', 0)
-    .attr('width', dimensions.width).attr('height', dimensions.height)
+    .attr('width', swatch_dimensions.width).attr('height', swatch_dimensions.height)
     .attr('class', 'chart-bar');
 });
 
