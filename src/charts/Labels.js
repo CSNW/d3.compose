@@ -4,7 +4,8 @@ import {
   first,
   isString,
   isNumber,
-  objectEach
+  objectEach,
+  valueOrDefault
 } from '../utils';
 import {
   property,
@@ -12,7 +13,6 @@ import {
   mixin,
   createHelper,
   isSeriesData,
-  valueOrDefault,
   translate,
   alignText
 } from '../helpers';

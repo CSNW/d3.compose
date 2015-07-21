@@ -113,6 +113,16 @@ export function uniq(arr) {
   return result;
 }
 
+// If value isn't `undefined`, return `value`, otherwise use `default_value`
+//
+// @method valueOrDefault
+// @param {Any} [value]
+// @param {Any} default_value
+// @return {Any}
+export function valueOrDefault(value, default_value) {
+  return !isUndefined(value) ? value : default_value;
+}
+
 if (typeof /./ != 'function' && typeof Int8Array != 'object') {
   isFunction = function(obj) {
     return typeof obj == 'function' || false;
@@ -137,6 +147,7 @@ var utils = {
   objectEach: objectEach,
   objectFind: objectFind,
   pluck: pluck,
-  uniq: uniq
+  uniq: uniq,
+  valueOrDefault: valueOrDefault
 };
 export default utils;

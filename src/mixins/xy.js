@@ -1,15 +1,15 @@
 import {
+  extend,
+  isUndefined,
+  isObject,
+  valueOrDefault
+} from '../utils';
+import {
   property,
-  valueOrDefault,
   isSeriesData,
   createScale,
   di
 } from '../helpers';
-import {
-  extend,
-  isUndefined,
-  isObject
-} from '../utils';
 
 /**
   Mixin for handling XY data
