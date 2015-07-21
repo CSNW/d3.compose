@@ -1,4 +1,4 @@
-/* global describe, it, expect, beforeEach, spyOn, jasmine, setFixtures, d3 */
+/* global setFixtures */
 (function(d3, helpers) {
 
   describe('helpers', function() {

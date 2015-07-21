@@ -1,4 +1,4 @@
-/* global describe, it, expect, beforeEach, setFixtures, d3 */
+/* global setFixtures */
 (function(d3) {
 
   describe('Component', function() {

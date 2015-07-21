@@ -1,4 +1,3 @@
-/* global describe, it, expect, beforeEach, spyOn, d3 */
 (function(d3, helpers, mixins) {
   describe('mixins', function() {
     var Chart, chart, data, values, width, height, processed, transformed;

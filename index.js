@@ -17,4 +17,4 @@ export default {
   Overlay: Overlay,
   Compose: Compose,
   layered: layered
-}
+};

@@ -21,4 +21,4 @@ export default {
   layered: layered,
 
   mixins: mixins
-}
+};

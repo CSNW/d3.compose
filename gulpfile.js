@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var del = require('del');
 var concatCss = require('gulp-concat-css');
+var connect = require('gulp-connect');
 var eslint = require('gulp-eslint');
 var file = require('gulp-file');
 var header = require('gulp-header');
@@ -12,9 +13,22 @@ var uglify = require('gulp-uglify');
 var gutil = require('gulp-util');
 var runSequence = require('run-sequence');
 
+// TEMP Load grunt dependencies
+require('gulp-grunt')(gulp);
+
 var pkg = require('./package.json');
 var tmp = './_tmp/';
 var dist = './dist/';
+var src = ['src/**/*.js', 'src/**/*.css'];
+var specs = ['specs/**/*.spec.js'];
+
+/**
+  default:
+  - start example server
+  - watch for changes in src/ and specs/
+  - build and test on changes
+*/
+gulp.task('default', ['connect', 'watch', 'build-and-test']);
 
 /**
   build:
@@ -38,6 +52,46 @@ gulp.task('dist', function(cb) {
     cb);
 });
 
+/**
+  test:
+  - eslint src and specs
+  - run specs through jasmine
+*/
+gulp.task('test', ['lint-src', 'lint-specs', 'grunt-jasmine:temp']);
+
+/**
+  watch:
+  - build and test on changes in src/ and specs/
+*/
+gulp.task('watch', function() {
+  return gulp.watch(src.concat(specs), ['build-and-test']);
+});
+
+/**
+  serve:
+  - build and serve example at localhost:4001
+*/
+gulp.task('serve', function(cb) {
+  runSequence('build', ['connect', 'watch-build'], cb);
+});
+
+/**
+  release:
+  - build dist, test dist, and publish
+*/
+gulp.task('release', function(cb) {
+  runSequence('dist', ['lint-dist', 'grunt-jasmine:release'], function() {
+    gutil.log(gutil.colors.yellow('The release has successfully built, to publish run "grunt release"'));
+    cb();
+  });
+});
+
+/**
+  docs:
+  - copy files for gh-pages
+*/
+gulp.task('docs', ['grunt-docs']);
+
 // clean
 gulp.task('clean-tmp', createClean(tmp));
 gulp.task('clean-dist', createClean(dist));
@@ -52,6 +106,10 @@ gulp.task('build-dist-library', createBuild('index.js', 'd3.compose', dist, dist
 gulp.task('build-dist-mixins', createBuild('index-mixins.js', 'd3.compose-mixins', dist, dist_options));
 gulp.task('build-dist-all', createBuild('index-all.js', 'd3.compose-all', dist, dist_options));
 
+gulp.task('build-and-test', function(cb) {
+  runSequence('build', 'test', cb);
+});
+
 // css
 gulp.task('css-tmp', createCss(tmp));
 gulp.task('css-dist', createCss(dist));
@@ -59,6 +117,39 @@ gulp.task('css-dist', createCss(dist));
 // lint
 gulp.task('lint-src', createLint(['src/**/*.js']));
 gulp.task('lint-specs', createLint(['specs/**/*.spec.js']));
+gulp.task('lint-tmp', createLint(['_tmp/d3.compose-all.js'], {
+  rules: {
+    'eol-last': [0],
+    'no-extra-strict': [0],
+    'no-shadow': [0],
+    'no-unused-expressions': [0],
+    'semi': [0],
+    'strict': [0]
+  }
+}));
+gulp.task('lint-dist', createLint(['dist/d3.compose-all.js'], {
+  rules: {
+    'eol-last': [0],
+    'no-extra-strict': [0],
+    'no-shadow': [0],
+    'no-unused-expressions': [0],
+    'semi': [0],
+    'strict': [0]
+  }
+}));
+
+// watch
+gulp.task('watch-build', function() {
+  return gulp.watch(src, ['build']);
+});
+
+// connect
+gulp.task('connect', function() {
+  connect.server({
+    root: ['.', 'example'],
+    port: 4001
+  });
+});
 
 function createClean(folder) {
   return function(cb) {
@@ -117,10 +208,10 @@ function createCss(folder) {
   }
 }
 
-function createLint(src) {
+function createLint(src, options) {
   return function() {
     return gulp.src(src)
-      .pipe(eslint())
+      .pipe(eslint(options))
       .pipe(eslint.format())
       .pipe(eslint.failOnError());
   }

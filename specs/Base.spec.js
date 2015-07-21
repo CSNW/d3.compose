@@ -1,4 +1,3 @@
-/* global describe, it, expect, jasmine, d3 */
 (function(d3, helpers) {
 
   describe('Base', function() {

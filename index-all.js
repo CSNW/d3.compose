@@ -46,6 +46,7 @@ export default {
   HorizontalBars: HorizontalBars,
   horizontalBars: horizontalBars,
   HorizontalStackedBars: HorizontalStackedBars,
+  horizontalStackedBars: horizontalStackedBars,
   Labels: labels,
   labels: labels,
   HoverLabels: HoverLabels,
@@ -61,4 +62,4 @@ export default {
   insetLegend: insetLegend,
 
   xy: xy
-}
+};

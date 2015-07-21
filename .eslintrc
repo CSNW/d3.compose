@@ -4,16 +4,21 @@
   },
   "rules": {
     "camelcase": [0],
-    "quotes": [1, "single"],
-    "curly": [0],
-    "eqeqeq": [0],
-    "dot-notation": [2, {"allowKeywords": false}],
-    "no-underscore-dangle": [0],
     "consistent-return": [0],
+    "curly": [0],
+    "dot-notation": [2, {"allowKeywords": false}],
+    "eqeqeq": [0],
+    "quotes": [1, "single"],
+    "no-underscore-dangle": [0],
     "no-use-before-define": [2, "nofunc"]
   },
+  "env": {
+    "browser": true,
+    "node": true,
+    "amd": true,
+    "jasmine": true
+  },
   "globals": {
-    "window": true,
-    "document": true
+    "d3": true
   }
 }

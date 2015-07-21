@@ -1,4 +1,3 @@
-/* global describe, it, expect, d3 */
 (function(d3) {
 
   describe('Chart', function() {
