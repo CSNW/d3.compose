@@ -125,7 +125,7 @@ var compiled_options = {
   }
 };
 
-gulp.task('lint-src', createLint(['src/**/*.js']));
+gulp.task('lint-src', createLint(['src/**/*.js', 'index.js', 'index-mixins.js', 'index-all.js']));
 gulp.task('lint-specs', createLint(['specs/**/*.spec.js']));
 gulp.task('lint-tmp', createLint(['_tmp/d3.compose-all.js'], compiled_options));
 gulp.task('lint-dist', createLint(['dist/d3.compose-all.js'], compiled_options));
