@@ -9,6 +9,7 @@
 - Update overlay positioning
 - New module system
 - __0.14.1__ Fix undefined `XYInverted` bug
+- __0.14.2__ Expose d3c global
 
 # 0.13.0
 
