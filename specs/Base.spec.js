@@ -35,14 +35,16 @@
       var A = Base.extend('A', {
         transform: function(data) {
           return data.map(function(value) {
-            return value += 10;
+            value += 10;
+            return value;
           });
         }
       });
       var B = A.extend('B', {
         transform: function(data) {
           return data.map(function(value) {
-            return value += 20;
+            value += 20;
+            return value;
           });
         }
       });

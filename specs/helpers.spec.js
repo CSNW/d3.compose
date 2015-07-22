@@ -1,3 +1,4 @@
+/* global setFixtures */
 (function(d3, helpers) {
 
   describe('helpers', function() {
@@ -123,7 +124,7 @@
 
         it('should override set', function() {
           instance.message = property('message', {
-            set: function(value, previous) {
+            set: function(value) {
               if (value === 'Hate')
                 return {override: 'Love'};
             }
@@ -155,7 +156,7 @@
             return instance.message();
           }
           instance.message = property('message', {
-            set: function(value, previous) {
+            set: function() {
               before = getValue();
               return {
                 override: 'Overridden',
@@ -173,7 +174,7 @@
 
         it('should use context of object by default', function() {
           instance.message = property('message', {
-            set: function(value, previous) {
+            set: function(value) {
               return {
                 override: value + ' from ' + this.name + '!'
               };
@@ -186,7 +187,7 @@
 
         it('should use context if set', function() {
           instance.message = property('message', {
-            set: function(value, previous) {
+            set: function(value) {
               return {
                 override: value + ' from ' + this.name + '!'
               };
@@ -215,9 +216,9 @@
     });
 
     describe('dimensions', function() {
-      var fixture, selection, dimensions;
+      var selection;
       beforeEach(function() {
-        fixture = setFixtures('<div id="chart"></div>');
+        setFixtures('<div id="chart"></div>');
         selection = d3.select('#chart')
           .append('svg')
           .attr('style', 'width: 20px; height: 20px');
@@ -349,7 +350,7 @@
             {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
             {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
             {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
-            {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]},
+            {values: [{x: 'a'}, {x: 'b'}, {x: 'c'}, {x: 'd'}, {x: 'e'}]}
           ],
           key: 'x',
           rangeBands: [[0, 100], 0, 0]
@@ -435,13 +436,13 @@
         var element = {
           parentNode: {
             data: function() {
-              return [[1,2,3]];
+              return [[1, 2, 3]];
             }
           }
         };
-        spyOn(d3, 'select').and.callFake(function(element) { return element; });
+        spyOn(d3, 'select').and.callFake(function(selection) { return selection; });
 
-        expect(helpers.getParentData(element)).toEqual([1,2,3]);
+        expect(helpers.getParentData(element)).toEqual([1, 2, 3]);
       });
     });
   });

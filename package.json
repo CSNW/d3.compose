@@ -1,14 +1,14 @@
 {
   "name": "d3.compose",
   "version": "0.13.6",
-  "description": "d3.compose",
+  "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
   "main": "dist/d3.compose.js",
   "scripts": {
-    "build": "node -e \"require('grunt').tasks(['build']);\"",
-    "jshint": "node -e \"require('grunt').tasks(['jshint']);\"",
-    "release": "node -e \"require('grunt').tasks(['release']);\"",
-    "test": "node -e \"require('grunt').tasks(['test']);\"",
-    "debug": "node -e \"require('grunt').tasks(['debug']);\"",
+    "test": "gulp test",
+    "dev": "gulp",
+    "build": "gulp build",
+    "serve": "gulp serve",
+    "release": "gulp release && node -e \"require('grunt').tasks(['release']);\"",
     "docs": "yuidoc && node -e \"require('grunt').tasks(['docs']);\""
   },
   "repository": {
@@ -30,6 +30,8 @@
   "license": "MIT",
   "devDependencies": {
     "async": "~0.9.0",
+    "del": "^1.2.0",
+    "esperanto": "^0.7.3",
     "grunt": "~0.4.5",
     "grunt-contrib-concat": "~0.5.1",
     "grunt-contrib-connect": "~0.9.0",
@@ -39,9 +41,26 @@
     "grunt-contrib-uglify": "~0.8.0",
     "grunt-contrib-watch": "~0.6.1",
     "grunt-zip": "~0.16.2",
+    "gulp": "^3.9.0",
+    "gulp-concat-css": "^2.2.0",
+    "gulp-connect": "^2.2.0",
+    "gulp-eslint": "^0.15.0",
+    "gulp-file": "^0.2.0",
+    "gulp-grunt": "^0.5.2",
+    "gulp-header": "^1.2.2",
+    "gulp-plumber": "^1.0.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.3",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-uglify": "^1.2.0",
+    "gulp-util": "^3.0.6",
     "inquirer": "~0.8.0",
     "load-grunt-tasks": "~3.1.0",
+    "object-assign": "^3.0.0",
     "request": "~2.53.0",
-    "semver": "~4.3.1"
+    "run-sequence": "^1.1.2",
+    "semver": "~4.3.1",
+    "through2": "^2.0.0",
+    "vinyl-sourcemaps-apply": "^0.1.4"
   }
 }

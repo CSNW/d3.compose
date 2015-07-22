@@ -1,3 +1,4 @@
+/* global setFixtures */
 (function(d3) {
 
   describe('Component', function() {

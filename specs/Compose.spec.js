@@ -1,9 +1,12 @@
+/* global describe, it, expect, beforeEach, spyOn, jasmine, setFixtures, d3 */
 (function(d3, helpers) {
 
   describe('Compose', function() {
-    var fixture, selection, Container, container, Chart, charts, Component, components;
+    var layered = d3.compose.layered;
+    var selection, Container, container, Chart, Component;
+
     beforeEach(function() {
-      fixture = setFixtures('<div id="chart"></div>');
+      setFixtures('<div id="chart"></div>');
       selection = d3.select('#chart');
 
       Container = d3.chart('Compose').extend('TestContainer');
@@ -17,13 +20,10 @@
       Component = d3.chart('Component').extend('TestComponent', {
         name: helpers.property('name')
       });
-
-      charts = [];
-      components = [];
     });
 
     it('should attach chart', function() {
-      charts = [new Chart(container.createChartLayer())];
+      var charts = [new Chart(container.createChartLayer())];
       charts[0].id = 'chart-1';
       container.charts(charts);
 
@@ -32,7 +32,7 @@
     });
 
     it('should attach component', function() {
-      components = [new Component(container.createComponentLayer())];
+      var components = [new Component(container.createComponentLayer())];
       components[0].id = 'component-1';
       container.components(components);
 
@@ -41,7 +41,7 @@
     });
 
     describe('Layout', function() {
-      var OverridenComponent, spy, chartSpy;
+      var OverridenComponent, spy, chartSpy, components;
       beforeEach(function() {
         // Setup components
         spy = jasmine.createSpy('component.draw');
@@ -92,7 +92,7 @@
           draw: chartSpy
         });
 
-        charts = [new Chart(container.createChartLayer({z_index: 100}))];
+        var charts = [new Chart(container.createChartLayer({z_index: 100}))];
         charts[0].id = 'chart-1';
 
         container.charts(charts);
@@ -189,10 +189,10 @@
 
         expect(d3.select('#chart').selectAll('g')[0].length).toEqual(expected.length);
         d3.select('#chart').selectAll('g').each(function(d, i) {
-          var selection = d3.select(this);
-          expect(selection.attr('class')).toMatch(expected[i]['class']);
-          expect(selection.attr('data-id')).toEqual(expected[i].id);
-          expect(+selection.attr('data-zIndex')).toEqual(expected[i].z_index);
+          var group = d3.select(this);
+          expect(group.attr('class')).toMatch(expected[i]['class']);
+          expect(group.attr('data-id')).toEqual(expected[i].id);
+          expect(parseInt(group.attr('data-zIndex'), 10)).toEqual(expected[i].z_index);
         });
       });
     });
@@ -200,7 +200,7 @@
     describe('options', function() {
       describe('object (DEPRECATED)', function() {
         beforeEach(function() {
-          container.options(function(data) {
+          container.options(function() {
             return {
               charts: {
                 a: {type: 'TestChart'},
@@ -248,9 +248,7 @@
 
       describe('array', function() {
         beforeEach(function() {
-          layered = d3.compose.layered;
-
-          container.options(function(data) {
+          container.options(function() {
             var charts = [
               {id: 'a', type: 'TestChart'},
               {id: 'b', type: 'TestChart'}
@@ -264,8 +262,8 @@
                 {id: 'e', type: 'TestComponent'},
                 layered(charts),
                 {id: 'g', type: 'TestComponent'},
-                {id: 'h', type: 'TestComponent'},
-              ],              
+                {id: 'h', type: 'TestComponent'}
+              ],
               {id: 'i', type: 'TestComponent'},
               {id: 'j', type: 'TestComponent'}
             ];
@@ -298,7 +296,7 @@
         });
 
         it('should automatically assign ids by type + position', function() {
-          container.options(function(data) {
+          container.options(function() {
             var charts = [
               {name: 'a', type: 'TestChart'},
               {name: 'b', type: 'TestChart'}
@@ -312,8 +310,8 @@
                 {name: 'e', type: 'TestComponent'},
                 layered(charts),
                 {name: 'g', type: 'TestComponent'},
-                {name: 'h', type: 'TestComponent'},
-              ],              
+                {name: 'h', type: 'TestComponent'}
+              ],
               {name: 'i', type: 'TestComponent'},
               {name: 'j', type: 'TestComponent'}
             ];

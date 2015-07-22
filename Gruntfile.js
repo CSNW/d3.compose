@@ -30,38 +30,6 @@ module.exports = function(grunt) {
   grunt.initConfig({
     env: process.env,
     pkg: grunt.file.readJSON('package.json'),
-    meta: {
-      banner: '/*! <%= pkg.name %> - v<%= pkg.version %>\n' +
-        ' * <%= pkg.homepage %>\n' +
-        ' * License: <%= pkg.license %>\n' +
-        ' */\n',
-      src: src
-    },
-
-    concat: {
-      temp: {
-        options: {
-          sourceMap: true
-        },
-        files: {
-          '_tmp/<%= pkg.name %>.js': src.core,
-          '_tmp/<%= pkg.name %>-mixins.js': src.core.concat(src.mixins),
-          '_tmp/<%= pkg.name %>-all.js': src.core.concat(src.mixins, src.lib),
-          '_tmp/<%= pkg.name %>.css': src.css
-        }
-      },
-      release: {
-        options: {
-          banner: '<%= meta.banner %>'
-        },
-        files: {
-          'dist/<%= pkg.name %>.js': src.core,
-          'dist/<%= pkg.name %>-mixins.js': src.core.concat(src.mixins),
-          'dist/<%= pkg.name %>-all.js': src.core.concat(src.mixins, src.lib),
-          'dist/<%= pkg.name %>.css': src.css
-        }
-      }
-    },
 
     copy: {
       docs: {
@@ -74,17 +42,6 @@ module.exports = function(grunt) {
           src: ['package.json', 'CHANGELOG.md'],
           dest: '_docs/additional/'
         }]
-      }
-    },
-
-    connect: {
-      example: {
-        options: {
-          port: 4001,
-          base: ['.', 'example'],
-          open: true,
-          hostname: 'localhost'
-        }
       }
     },
 
@@ -117,50 +74,6 @@ module.exports = function(grunt) {
       }
     },
 
-    jshint: {
-      options: {
-        'jshintrc': '.jshintrc'
-      },
-
-      src: ['src/**/*.js'],
-      specs: ['specs/*.spec.js'],
-      temp: ['_tmp/<%= pkg.name %>-all.js'],
-      release: ['dist/<%= pkg.name %>-all.js'],
-      grunt: ['Gruntfile.js']
-    },
-
-    uglify: {
-      options: {
-        banner: '<%= meta.banner %>',
-        sourceMap: true,
-        mangle: {
-          except: ['d3']
-        }
-      },
-      release: {
-        files: {
-          'dist/<%= pkg.name %>.min.js': 'dist/<%= pkg.name %>.js',
-          'dist/<%= pkg.name %>-mixins.min.js': 'dist/<%= pkg.name %>-mixins.js',
-          'dist/<%= pkg.name %>-all.min.js': 'dist/<%= pkg.name %>-all.js'
-        }
-      }
-    },
-
-    watch: {
-      jshint: {
-        files: ['src/**/*.js'],
-        tasks: ['jshint:src']
-      },
-      test: {
-        files: ['src/**/*.js', 'src/**/*.css', 'specs/**/*.js'],
-        tasks: ['build', 'test']
-      },
-      build: {
-        files: ['src/**/*.js', 'src/**/*.css'],
-        tasks: ['build']
-      }
-    },
-
     zip: {
       release: {
         cwd: 'dist/',
@@ -169,33 +82,6 @@ module.exports = function(grunt) {
       }
     }
   });
-
-  grunt.registerTask('default', ['test']);
-
-  grunt.registerTask('build', 'Temp build of the library', [
-    'concat:temp'
-  ]);
-
-  grunt.registerTask('build:release', 'Release build of the library', [
-    'concat:release',
-    'uglify:release'
-  ]);
-
-  grunt.registerTask('test', 'Lint and run specs', [
-    'jshint:src',
-    'jshint:specs',
-    'jasmine:temp'
-  ]);
-
-  grunt.registerTask('serve', 'Run example with automatic build', [
-    'connect:example',
-    'watch:build'
-  ]);
-
-  grunt.registerTask('debug', 'Run example with automatic build and testing', [
-    'connect:example',
-    'watch:test'
-  ]);
 
   grunt.registerTask('docs', 'Prepare files for docs', [
     'copy:docs'
@@ -237,9 +123,6 @@ module.exports = function(grunt) {
       // build, jshint, test, and publish
       grunt.option('version', version);
       grunt.task.run([
-        'build:release',
-        'jshint:release',
-        'jasmine:release',
         'zip:release',
         'publish'
       ]);
