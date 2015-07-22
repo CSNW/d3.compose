@@ -1,11 +1,11 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.1 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.14.2 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
   typeof define === 'function' && define.amd ? define(['d3'], factory) :
-  global.d3.compose = factory(global.d3)
+  global.d3c = factory(global.d3)
 }(this, function (d3) { 'use strict';
 
   // Many utils inlined from Underscore.js
@@ -4945,8 +4945,8 @@
     };
   }
 
-  var index_all = {
-    VERSION: '0.14.1',
+  var d3c = d3.compose = {
+    VERSION: '0.14.2',
     utils: utils,
     helpers: helpers,
     Base: Base,
@@ -4984,6 +4984,8 @@
 
     xy: xy
   };
+
+  var index_all = d3c;
 
   return index_all;
 
