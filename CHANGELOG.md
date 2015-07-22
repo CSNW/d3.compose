@@ -8,6 +8,7 @@
 - Update mouse listening
 - Update overlay positioning
 - New module system
+- __0.14.1__ Fix undefined `XYInverted` bug
 
 # 0.13.0
 
