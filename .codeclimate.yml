@@ -7,4 +7,12 @@ ratings:
 exclude_paths:
 - "dist/*"
 - "example/*"
-- "*"
+- "Gruntfile.js"
+- "gulpfile.js"
+- "*.md"
+- "LICENSE"
+- "*.json"
+- ".codeclimate.yml"
+- ".eslintrc"
+- ".gitattributes"
+- ".gitignore"
