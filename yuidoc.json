@@ -1,11 +1,8 @@
 {
   "name": "d3.compose",
-  "description": "d3.compose Docs",
-  "version": "0.12.14",
-  "url": "https://CSNW.github.io/d3.compose/",
   "options": {
     "paths": [
-      "src"
+      "./src"
     ],
     "outdir": "_docs"
   }

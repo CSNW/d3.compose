@@ -66,7 +66,7 @@ import Chart from '../Chart';
   ]);
   ```
   @class Lines
-  @extends Chart, Series, XY, XYLabels, Hover, HoverPoints, Transition, StandardLayer
+  @extends Chart, Series, XY, LabelsXY, Hover, HoverPoints, Transition, StandardLayer
 */
 var Lines = Chart.extend('Lines', mixin(
   Series,

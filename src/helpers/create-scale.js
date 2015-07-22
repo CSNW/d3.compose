@@ -38,6 +38,7 @@ import {
   });
   ```
   @method createScale
+  @for helpers
   @param {Object|Function} options (passing in `Function` returns original function with no changes)
   @param {String} [options.type='linear'] Any available `d3.scale` (`"linear"`, `"ordinal"`, `"log"`, etc.) or `"time"`
   @param {Array} [options.domain] Domain for scale

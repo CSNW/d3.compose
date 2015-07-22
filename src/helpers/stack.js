@@ -16,6 +16,7 @@ import { translate } from './index';
   }));
   ```
   @method stack
+  @for helpers
   @param {Object} [options]
   @param {String} [options.direction=vertical] `"vertical"` or `"horizontal"`
   @param {String} [options.origin] `"top"`, `"right"`, `"bottom"`, or `"left"` (by default, `"top"` for `"vertical"` and `"left"` for `"horizontal"`)

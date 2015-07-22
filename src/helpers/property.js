@@ -68,6 +68,7 @@ import {
   });
   ```
   @method property
+  @for helpers
   @param {String} name of stored property
   @param {Object} [options]
   @param {Any} [options.default_value] default value for property (when set value is `undefined`)

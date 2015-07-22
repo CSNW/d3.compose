@@ -41,7 +41,7 @@ import Bars from './Bars';
   ]);
   ```
   @class HorizontalBars
-  @extends Bars, InvertedXY
+  @extends Bars, XYInverted
 */
 var HorizontalBars = Bars.extend('HorizontalBars', mixin(XYInverted, {
   barX: di(function(chart, d, i) {

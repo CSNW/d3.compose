@@ -17,7 +17,6 @@ import {
 import Base from './Base';
 
 /**
-  d3.compose
   Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart.
   Using the `options` property, charts and components can be bound to data and customized to create dynamic charts.
 
@@ -62,9 +61,8 @@ import Base from './Base';
 
   chart.draw({input: [...], output: [...]});
   ```
-
   @class Compose
-  @param {Function|Object} [options]
+  @extends Base
 */
 export default Base.extend('Compose', {
   initialize: function() {

@@ -4,6 +4,7 @@ import d3 from 'd3';
   Helper for robustly determining width/height of given selector
 
   @method dimensions
+  @for helpers
   @param {d3.Selection} selection
   @return {Object} `{width, height}`
 */

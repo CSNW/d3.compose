@@ -71,7 +71,7 @@ import Chart from '../Chart';
   ]);
   ```
   @class Bars
-  @extends Chart, Series, XYValues, XYLabels, Hover, Transition, StandardLayer
+  @extends Chart, Series, XYValues, LabelsXY, Hover, Transition, StandardLayer
 */
 var Bars = Chart.extend('Bars', mixin(
   Series,

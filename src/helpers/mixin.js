@@ -28,6 +28,7 @@ import { extend } from '../utils';
   // transform: d -> a -> Chart
   ```
   @method mixin
+  @for helpers
   @param {Array|Object...} mixins... Array of mixins or mixins as separate arguments
   @return {Object}
 */

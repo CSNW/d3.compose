@@ -10,6 +10,11 @@ import {
 } from './helpers';
 
 /**
+  TEMP Clear namespace from mixins
+  @namespace
+*/
+
+/**
   Shared functionality between all charts and components.
 
   - Set properties automatically from `options`,
