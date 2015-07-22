@@ -47,7 +47,7 @@ export default {
   horizontalBars: horizontalBars,
   HorizontalStackedBars: HorizontalStackedBars,
   horizontalStackedBars: horizontalStackedBars,
-  Labels: labels,
+  Labels: Labels,
   labels: labels,
   HoverLabels: HoverLabels,
   hoverLabels: hoverLabels,
