@@ -3,7 +3,6 @@ var del = require('del');
 var concatCss = require('gulp-concat-css');
 var connect = require('gulp-connect');
 var eslint = require('gulp-eslint');
-var file = require('gulp-file');
 var header = require('gulp-header');
 var plumber = require('gulp-plumber');
 var rename = require('gulp-rename');
@@ -115,28 +114,21 @@ gulp.task('css-tmp', createCss(tmp));
 gulp.task('css-dist', createCss(dist));
 
 // lint
+var compiled_options = {
+  rules: {
+    'eol-last': [0],
+    'no-extra-strict': [0],
+    'no-shadow': [0],
+    'no-unused-expressions': [0],
+    'semi': [0],
+    'strict': [0]
+  }
+};
+
 gulp.task('lint-src', createLint(['src/**/*.js']));
 gulp.task('lint-specs', createLint(['specs/**/*.spec.js']));
-gulp.task('lint-tmp', createLint(['_tmp/d3.compose-all.js'], {
-  rules: {
-    'eol-last': [0],
-    'no-extra-strict': [0],
-    'no-shadow': [0],
-    'no-unused-expressions': [0],
-    'semi': [0],
-    'strict': [0]
-  }
-}));
-gulp.task('lint-dist', createLint(['dist/d3.compose-all.js'], {
-  rules: {
-    'eol-last': [0],
-    'no-extra-strict': [0],
-    'no-shadow': [0],
-    'no-unused-expressions': [0],
-    'semi': [0],
-    'strict': [0]
-  }
-}));
+gulp.task('lint-tmp', createLint(['_tmp/d3.compose-all.js'], compiled_options));
+gulp.task('lint-dist', createLint(['dist/d3.compose-all.js'], compiled_options));
 
 // watch
 gulp.task('watch-build', function() {
@@ -154,7 +146,7 @@ gulp.task('connect', function() {
 function createClean(folder) {
   return function(cb) {
     del([folder], cb);
-  }
+  };
 }
 
 function createBuild(input, output, folder, options) {
@@ -178,7 +170,7 @@ function createBuild(input, output, folder, options) {
     if (options.minify) {
       // Add header to unminified
       if (options.header)
-        build = build.pipe(header(banner, {pkg: pkg}))
+        build = build.pipe(header(banner, {pkg: pkg}));
 
       // Remove sourcemap from unminified and save
       // then rename and uglify
@@ -190,7 +182,7 @@ function createBuild(input, output, folder, options) {
     }
 
     if (options.header)
-      build = build.pipe(header(banner, {pkg: pkg}))
+      build = build.pipe(header(banner, {pkg: pkg}));
 
     build = build
       .pipe(sourcemaps.write('./', {addComment: options.minify ? true : false}))
@@ -205,16 +197,16 @@ function createCss(folder) {
     return gulp.src(['src/css/base.css'])
       .pipe(concatCss('d3.compose.css'))
       .pipe(gulp.dest(folder));
-  }
+  };
 }
 
-function createLint(src, options) {
+function createLint(files, options) {
   return function() {
-    return gulp.src(src)
+    return gulp.src(files)
       .pipe(eslint(options))
       .pipe(eslint.format())
       .pipe(eslint.failOnError());
-  }
+  };
 }
 
 function handleError(err) {
@@ -242,19 +234,20 @@ function bundle(options) {
       sourceMapFile: file.relative
     }, options);
 
-    esperanto.bundle(file_options).then(function(bundle) {
+    esperanto.bundle(file_options).then(function(bundled) {
       try {
-        var bundled = bundle.toUmd(file_options);
+        var res = bundled.toUmd(file_options);
 
-        if (file_options.sourceMap && bundled.map)
-          applySourceMap(file, bundled.map);
+        if (file_options.sourceMap && res.map)
+          applySourceMap(file, res.map);
 
-        file.contents = new Buffer(bundled.code);
+        file.contents = new Buffer(res.code);
         cb(null, file);
       } catch(err) {
         cb(createError(err));
       }
-    }).catch(function(err) {
+    })
+    ['catch'](function(err) {
       cb(createError(err));
     });
   });
