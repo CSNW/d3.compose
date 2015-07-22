@@ -7,7 +7,7 @@ import Component from './src/Component';
 import Overlay from './src/Overlay';
 import Compose, { layered } from './src/Compose';
 
-export default {
+var d3c = d3.compose = {
   VERSION: '{version}',
   utils: utils,
   helpers: helpers,
@@ -17,4 +17,6 @@ export default {
   Overlay: Overlay,
   Compose: Compose,
   layered: layered
-};
+}
+
+export default d3c;

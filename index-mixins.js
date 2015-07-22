@@ -9,7 +9,7 @@ import Compose, { layered } from './src/Compose';
 
 import mixins from './src/mixins';
 
-export default {
+var d3c = d3.compose = {
   VERSION: '{version}',
   utils: utils,
   helpers: helpers,
@@ -22,3 +22,5 @@ export default {
 
   mixins: mixins
 };
+
+export default d3c;

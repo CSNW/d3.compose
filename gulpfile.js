@@ -161,7 +161,7 @@ function createBuild(input, output, folder, options) {
       .pipe(plumber(handleError))
       .pipe(sourcemaps.init({loadMaps: true}))
       .pipe(bundle({
-        name: 'd3.compose',
+        name: 'd3c',
         sourceMapFile: output + '.js'
       }))
       .pipe(replace(/\{version\}/g, pkg.version))

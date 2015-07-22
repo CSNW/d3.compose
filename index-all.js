@@ -24,7 +24,7 @@ import InsetLegend, { insetLegend } from './src/components/InsetLegend';
 
 import xy from './src/extensions/xy';
 
-export default {
+var d3c = d3.compose = {
   VERSION: '{version}',
   utils: utils,
   helpers: helpers,
@@ -63,3 +63,5 @@ export default {
 
   xy: xy
 };
+
+export default d3c;
