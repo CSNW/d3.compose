@@ -1,12 +1,12 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.0 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.14.1 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('C:/dev/d3.compose/src/mixins/inverted-xy')) :
-  typeof define === 'function' && define.amd ? define(['d3', 'C:/dev/d3.compose/src/mixins/inverted-xy'], factory) :
-  global.d3.compose = factory(global.d3, global.XYInverted)
-}(this, function (d3, XYInverted) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
+  typeof define === 'function' && define.amd ? define(['d3'], factory) :
+  global.d3.compose = factory(global.d3)
+}(this, function (d3) { 'use strict';
 
   // Many utils inlined from Underscore.js
   // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2590,6 +2590,78 @@
     }
   });
 
+  var XYInverted = {
+    /**
+      Get x-value for plotting (scaled y-value)
+
+      @method x
+      @param {Any} d
+      @param {Number} i
+      @return {Number}
+    */
+    x: di(function(chart, d, i) {
+      var value = chart.yValue.call(this, d, i);
+      var series_index = chart.seriesIndex && chart.seriesIndex.call(this, d, i) || 0;
+
+      return parseFloat(chart.yScale()(value, series_index));
+    }),
+
+    /**
+      Get y-value for plotting (scaled x-value)
+
+      @method y
+      @param {Any} d
+      @param {Number} i
+      @return {Number}
+    */
+    y: di(function(chart, d, i) {
+      var value = chart.xValue.call(this, d, i);
+      var series_index = chart.seriesIndex && chart.seriesIndex.call(this, d, i) || 0;
+
+      return parseFloat(chart.xScale()(value, series_index));
+    }),
+
+    /**
+      Get scaled y = 0 value (along x-axis)
+
+      @method x0
+      @return {Number}
+    */
+    x0: function() {
+      return parseFloat(this.yScale()(0));
+    },
+
+    /**
+      Get scaled x = 0 value (along y-axis)
+
+      @method x0
+      @return {Number}
+    */
+    y0: function() {
+      return parseFloat(this.xScale()(0));
+    },
+
+    /**
+      Set range (height, 0) for given x-scale
+
+      @method setXScaleRange
+      @param {d3.scale} x_scale
+    */
+    setXScaleRange: function(x_scale) {
+      x_scale.range([this.height(), 0]);
+    },
+
+    /**
+      Set range (0, width) for given y-scale
+
+      @method setYScaleRange
+      @param {d3.scale} y_scale
+    */
+    setYScaleRange: function(y_scale) {
+      y_scale.range([0, this.width()]);
+    }
+  };
+
   var Labels = {
     /**
       Call during chart initialization to add labels to chart
@@ -3087,7 +3159,7 @@
       Call for standard layer's `events['enter']`
 
       @method onEnter
-      @param {d3.selection}
+      @param selection {d3.selection}
     */
     onEnter: function onEnter(/* selection */) {},
 
@@ -3095,7 +3167,7 @@
       Call for standard layer's `events['enter:transition']`
 
       @method onEnterTransition
-      @param {d3.selection}
+      @param selection {d3.selection}
     */
     // onEnterTransition: function onEnterTransition(selection) {},
 
@@ -3103,7 +3175,7 @@
       Call for standard layer's `events['update']`
 
       @method onUpdate
-      @param {d3.selection}
+      @param selection {d3.selection}
     */
     onUpdate: function onUpdate(/* selection */) {},
 
@@ -3111,7 +3183,7 @@
       Call for standard layer's `events['update']`
 
       @method onUpdateTransition
-      @param {d3.selection}
+      @param selection {d3.selection}
     */
     // onUpdateTransition: function onUpdateTransition(selection) {},
 
@@ -3119,7 +3191,7 @@
       Call for standard layer's `events['merge']`
 
       @method onMerge
-      @param {d3.selection}
+      @param selection {d3.selection}
     */
     onMerge: function onMerge(/* selection */) {},
 
@@ -3127,7 +3199,7 @@
       Call for standard layer's `events['merge:transition']`
 
       @method onMergeTransition
-      @param {d3.selection}
+      @param selection {d3.selection}
     */
     // onMergeTransition: function onMergeTransition(selection) {},
 
@@ -3135,7 +3207,7 @@
       Call for standard layer's `events['exit']`
 
       @method onExit
-      @param {d3.selection}
+      @param selection {d3.selection}
     */
     onExit: function onExit(/* selection */) {}
 
@@ -3143,7 +3215,7 @@
       Call for standard layer's `events['exit:transition']`
 
       @method onExitTransition
-      @param {d3.selection}
+      @param selection {d3.selection}
     */
     // onExitTransition: function onExitTransition(selection) {},
   };
@@ -3209,7 +3281,7 @@
   };
 
   var index_mixins = {
-    VERSION: '0.14.0',
+    VERSION: '0.14.1',
     utils: utils,
     helpers: helpers,
     Base: Base,
