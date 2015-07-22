@@ -6,7 +6,7 @@ ratings:
   - "src/**"
 exclude_paths:
 - "dist/*"
-- "example/*"
+- "example/**/*"
 - "Gruntfile.js"
 - "gulpfile.js"
 - "*.md"
