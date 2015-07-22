@@ -7,4 +7,4 @@ ratings:
 exclude_paths:
 - "dist/*"
 - "example/*"
-- "gulpfile.js"
+- "*"
