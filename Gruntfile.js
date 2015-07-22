@@ -87,7 +87,7 @@ module.exports = function(grunt) {
     'copy:docs'
   ]);
 
-  grunt.registerTask('release', 'Build a new release of the library', function() {
+  grunt.registerTask('prerelease', 'Prepare package.json for release', function() {
     var done = this.async();
     var inquirer = require('inquirer');
     var semver = require('semver');
@@ -118,17 +118,22 @@ module.exports = function(grunt) {
 
       fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
       fs.writeFileSync('bower.json', JSON.stringify(bower, null, 2) + '\n');
-      grunt.config('pkg', pkg);
 
-      // build, jshint, test, and publish
-      grunt.option('version', version);
-      grunt.task.run([
-        'zip:release',
-        'publish'
-      ]);
 
       done();
     });
+  });
+
+  grunt.registerTask('release', 'Build a new release of the library', function() {
+    var pkg = grunt.config('pkg');
+
+    // publish
+    grunt.config('pkg', pkg);
+    grunt.option('version', pkg.version);
+    grunt.task.run([
+      'zip:release',
+      'publish'
+    ]);
   });
 
   grunt.registerTask('publish', 'Publish a new release of the library', function() {

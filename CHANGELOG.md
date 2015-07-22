@@ -1,3 +1,14 @@
+# 0.14.0
+
+- New layout system
+- Remove dependency on Underscore
+- Only set `charts` and `components` from options function
+- Convert `Compose.charts` and `Compose.components` to arrays
+- Add helpers for charts and components
+- Update mouse listening
+- Update overlay positioning
+- New module system
+
 # 0.13.0
 
 - Add responsive support for `div` selections, with `width` and `height` used for `viewBox`
