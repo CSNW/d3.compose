@@ -9,7 +9,7 @@ import {
 import {
   Series,
   XYValues,
-  XYLabels,
+  LabelsXY,
   Hover,
   Transition,
   StandardLayer
@@ -76,7 +76,7 @@ import Chart from '../Chart';
 var Bars = Chart.extend('Bars', mixin(
   Series,
   XYValues,
-  XYLabels,
+  LabelsXY,
   Hover,
   Transition,
   StandardLayer,

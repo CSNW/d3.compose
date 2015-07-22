@@ -3,10 +3,10 @@ import { di } from '../helpers';
 /**
   Mixin for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
 
-  @class InvertedXY
+  @class XYInverted
   @namespace mixins
 */
-var InvertedXY = {
+var XYInverted = {
   /**
     Get x-value for plotting (scaled y-value)
 
@@ -78,4 +78,4 @@ var InvertedXY = {
   }
 };
 
-export default InvertedXY;
+export default XYInverted;

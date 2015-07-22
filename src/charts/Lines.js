@@ -8,7 +8,7 @@ import {
 import {
   Series,
   XY,
-  XYLabels,
+  LabelsXY,
   Hover,
   HoverPoints,
   Transition,
@@ -71,7 +71,7 @@ import Chart from '../Chart';
 var Lines = Chart.extend('Lines', mixin(
   Series,
   XY,
-  XYLabels,
+  LabelsXY,
   Hover,
   HoverPoints,
   Transition,

@@ -103,15 +103,15 @@ var Labels = {
   Mixin for handling labels in XY charts
   (proxies `x` and `y` to properly place labels for XY charts)
 
-  @class XYLabels
+  @class LabelsXY
   @namespace mixins
   @extends Labels
 */
-var XYLabels = extend({}, Labels, {
+var LabelsXY = extend({}, Labels, {
   proxyLabelMethods: ['x', 'y']
 });
 
 export {
   Labels as default,
-  XYLabels
+  LabelsXY
 };

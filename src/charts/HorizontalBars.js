@@ -4,7 +4,7 @@ import {
   di,
   createHelper
 } from '../helpers';
-import { InvertedXY } from '../mixins';
+import { XYInverted } from '../mixins';
 import Bars from './Bars';
 
 /**
@@ -43,7 +43,7 @@ import Bars from './Bars';
   @class HorizontalBars
   @extends Bars, InvertedXY
 */
-var HorizontalBars = Bars.extend('HorizontalBars', mixin(InvertedXY, {
+var HorizontalBars = Bars.extend('HorizontalBars', mixin(XYInverted, {
   barX: di(function(chart, d, i) {
     var x = chart.x.call(this, d, i);
     var x0 = chart.x0();

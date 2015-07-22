@@ -63,9 +63,6 @@ export function first(arr, n) {
 export function isBoolean(obj) {
   return obj === true || obj === false;
 }
-export var isFunction = function(obj) {
-  return toString.call(obj) === '[object Function]';
-};
 export function isObject(obj) {
   var type = typeof obj;
   return type === 'function' || type === 'object' && !!obj;
@@ -78,6 +75,15 @@ export function isString(obj) {
 }
 export function isUndefined(obj) {
   return obj === void 0;
+}
+
+export var isFunction = function(obj) {
+  return toString.call(obj) === '[object Function]';
+};
+if (typeof /./ != 'function' && typeof Int8Array != 'object') {
+  isFunction = function(obj) {
+    return typeof obj == 'function' || false;
+  };
 }
 
 export function objectEach(obj, fn, context) {
@@ -121,12 +127,6 @@ export function uniq(arr) {
 // @return {Any}
 export function valueOrDefault(value, default_value) {
   return !isUndefined(value) ? value : default_value;
-}
-
-if (typeof /./ != 'function' && typeof Int8Array != 'object') {
-  isFunction = function(obj) {
-    return typeof obj == 'function' || false;
-  };
 }
 
 var utils = {
