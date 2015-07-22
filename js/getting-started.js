@@ -173,6 +173,11 @@
     var choices = examples['masthead'];
     var current_index = 0;
 
+    // Pause on show options
+    chart.on('show:options', function() {
+      clearInterval(loop);
+    });
+
     return {
       next: function() {
         clearInterval(loop);

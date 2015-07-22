@@ -152,10 +152,12 @@
       if (!this.showing_options) {
         this.$('.editor-options').addClass('is-pinned');
         this.$('.js-options-toggle').text('Hide Options');
+        this.trigger('show:options');
       }
       else {
         this.$('.editor-options').removeClass('is-pinned');
         this.$('.js-options-toggle').text('Show Options');
+        this.trigger('hide:options');
       }
 
       this.showing_options = !this.showing_options;
