@@ -1,7 +1,7 @@
 import Series from './series';
 import XY from './xy';
 import XYValues from './xy-values';
-import XYInverted from './inverted-xy';
+import XYInverted from './xy-inverted';
 import Labels, { LabelsXY } from './labels';
 import Hover, { HoverPoints } from './hover';
 import Transition from './transition';
