@@ -36,9 +36,9 @@
         if (hidden_steps) {
           // Need to redraw after hide to make sure dimensions are up-to-date
           hidden_steps = false;
-          steps.chart.redraw();  
+          steps.chart.redraw();
         }
-        
+
         return;
       }
 
