@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.3 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.14.4 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -452,54 +452,62 @@
     return mixed;
   }
 
-  function stack(options, elements) {
-    if (options && !elements) {
-      elements = options;
-      options = {
-        direction: 'vertical',
-        origin: 'top',
-        padding: 0
-      };
-    }
+  function stack(options) {
+    options = extend({
+      direction: 'vertical',
+      origin: 'top',
+      padding: 0,
+      min_height: 0,
+      min_width: 0
+    }, options);
 
-    function padding(d, i) {
+    // Ensure valid origin based on direction
+    if (options.direction == 'horizontal' && !(options.origin == 'left' || options.origin == 'right'))
+      options.origin = 'left';
+    else if (options.direction == 'vertical' && !(options.origin == 'top' || options.origin == 'bottom'))
+      options.origin = 'top';
+
+    function padding(i) {
       return i > 0 && options.padding ? options.padding : 0;
     }
 
-    if (elements && elements.attr) {
-      var previous = 0;
-      elements
-        .attr('transform', function(d, i) {
+    return function(elements) {
+      if (elements && elements.attr) {
+        var previous = 0;
+
+        elements.attr('transform', function(d, i) {
           var element_dimensions = this.getBBox();
+          var spacing_width = d3.max([element_dimensions.width, options.min_width]);
+          var spacing_height = d3.max([element_dimensions.height, options.min_height]);
           var x = 0;
           var y = 0;
+          var next_position;
 
           if (options.direction == 'horizontal') {
-            if (!(options.origin == 'left' || options.origin == 'right'))
-              options.origin = 'left';
+            next_position = previous + spacing_width + padding(i);
 
             if (options.origin == 'left')
-              x = previous + padding(d, i);
+              x = previous + padding(i);
             else
-              x = previous + element_dimensions.width + padding(d, i);
+              x = next_position;
 
-            previous = previous + element_dimensions.width + padding(d, i);
+            previous = next_position;
           }
           else {
-            if (!(options.origin == 'top' || options.origin == 'bottom'))
-              options.origin = 'top';
+            next_position = previous + spacing_height + padding(i);
 
             if (options.origin == 'top')
-              y = previous + padding(d, i);
+              y = previous + padding(i);
             else
-              y = previous + element_dimensions.height + padding(d, i);
+              y = next_position;
 
-            previous = previous + element_dimensions.height + padding(d, i);
+            previous = next_position;
           }
 
           return translate(x, y);
         });
-    }
+      }
+    };
   }
 
   function translate(x, y) {
@@ -1691,6 +1699,39 @@
     }),
 
     /**
+      Delay start of transition by specified milliseconds.
+      (applied to all charts and components as default)
+
+      @property delay
+      @type Number|Function
+      @default d3 default: 0
+    */
+    delay: property('delay', {type: 'Function'}),
+
+    /**
+      Transition duration in milliseconds.
+      (applied to all charts and components as default)
+
+      @property duration
+      @type Number|Function
+      @default d3 default: 250ms
+    */
+    duration: property('duration', {type: 'Function'}),
+
+    /**
+      Transition ease function.
+      (applied to all charts and components as default)
+
+      - See: [Transitions#ease](https://github.com/mbostock/d3/wiki/Transitions#ease)
+      - Note: arguments to pass to `d3.ease` are not supported
+
+      @property ease
+      @type String|Function
+      @default d3 default: 'cubic-in-out'
+    */
+    ease: property('ease', {type: 'Function'}),
+
+    /**
       Draw chart with given data
 
       @example
@@ -2210,7 +2251,7 @@
   }
 
   var d3c = d3.compose = {
-    VERSION: '0.14.3',
+    VERSION: '0.14.4',
     utils: utils,
     helpers: helpers,
     Base: Base,

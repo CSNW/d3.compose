@@ -442,11 +442,11 @@
         ];
 
         var title = d3c.title('Multiple Charts');
-        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5, duration: 1000});
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, duration: 1000});
         var xAxisTitle = d3c.axisTitle('Trial');
-        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5, duration: 1000});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, duration: 1000});
         var yAxisTitle = d3c.axisTitle('Input');
-        var y2Axis = d3c.axis('y2Axis', {scale: scales.y2, ticks: 5, duration: 1000});
+        var y2Axis = d3c.axis('y2Axis', {scale: scales.y2, duration: 1000});
         var y2AxisTitle = d3c.axisTitle('Output');
         var legend = d3c.legend({charts: ['input', 'output'], centered: true});
 

@@ -11,6 +11,7 @@
 - __0.14.1__ Fix undefined `XYInverted` bug
 - __0.14.2__ Expose d3c global
 - __0.14.3__ Add `Text` and `AxisTitle` components, update default margins, add `centered` component property
+- __0.14.4__ Set transitions on `Compose`, update `stack`, and add hover listeners to `Legend`
 
 # 0.13.0
 
