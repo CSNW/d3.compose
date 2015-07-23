@@ -1,13 +1,4 @@
-/**
-  Base styles for d3.compose
-
-  Includes
-  - chart
-  - lines
-  - bars
-  - axis
-  - legend
-*/
+/* Base styles for d3.compose */
 
 .chart-compose {
   font-size: 14px;
@@ -55,21 +46,15 @@
   fill: #7f7f7f;
 }
 
-/* Lines */
-
 .chart-line {
   stroke-width: 1.5px;
   fill: none;
 }
 
-/* Bars */
-
 .chart-bar {
   stroke: none;
   shape-rendering: crispEdges;
 }
-
-/* Labels */
 
 .chart-label-text {
   font-size: 0.85em;
@@ -83,19 +68,15 @@
   stroke: none;
 }
 
-/* Title */
-
 .chart-title {
-  font-size: 1.1em;
-  font-weight: bold;
-}
-
-.chart-title-main {
   font-size: 1.2em;
   font-weight: bold;
 }
 
-/* Axis */
+.chart-axis-title {
+  font-size: 1.1em;
+  font-weight: bold;
+}
 
 .chart-axis {
   shape-rendering: crispEdges;
@@ -114,8 +95,6 @@
 .chart-axis .tick line {
   stroke: black;
 }
-
-/* Legend */
 
 .chart-legend-label {
   font-size: 0.9em;
