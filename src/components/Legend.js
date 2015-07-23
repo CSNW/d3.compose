@@ -1,7 +1,8 @@
 import d3 from 'd3';
 import {
-  find,
-  compact
+  compact,
+  contains,
+  find
 } from '../utils';
 import {
   alignText,
@@ -152,6 +153,29 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
     }
   }),
 
+  /**
+    Direction to "stack" legend, "vertical" or "horizontal".
+    (Default is set based on position: top/bottom = "horizontal", left/right = "vertical")
+
+    @property stackDirection
+    @type String
+    @default (based on position)
+  */
+  stackDirection: property('stackDirection', {
+    validate: function(value) {
+      return contains(['vertical', 'horizontal'], value);
+    },
+    default_value: function() {
+      var direction_by_position = {
+        top: 'horizontal',
+        right: 'vertical',
+        bottom: 'horizontal',
+        left: 'vertical'
+      };
+      return direction_by_position[this.position()];
+    }
+  }),
+
   transform: function(data) {
     if (this.charts()) {
       // Pull legend data from charts
@@ -258,13 +282,7 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
       });
 
     // Position groups after positioning everything inside
-    var direction_by_position = {
-      top: 'horizontal',
-      right: 'vertical',
-      bottom: 'horizontal',
-      left: 'vertical'
-    };
-    selection.call(stack.bind(selection, {direction: direction_by_position[this.position()], origin: 'top', padding: 5}));
+    selection.call(stack.bind(selection, {direction: this.stackDirection(), origin: 'top', padding: 5}));
   },
   onExit: function onExit(selection) {
     selection.remove();
