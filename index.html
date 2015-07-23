@@ -113,7 +113,7 @@ scripts: |
         <h3 id="1-download"><span class="step-number">1.</span> Download</h3>
 
         <p>
-          <a href="{{ site.baseurl }}/docs/#downloads">Download</a> and add d3.compose (and its dependencies: D3.js, d3.chart, and Underscore.js) to your page.
+          <a href="{{ site.baseurl }}/docs/#downloads">Download</a> and add d3.compose (and its dependencies: D3.js and d3.chart) to your page.
         </p>
 
 {% highlight html %}
@@ -127,7 +127,6 @@ scripts: |
 
     <script src="d3.js"></script>
     <script src="d3.chart.js"></script>
-    <script src="underscore.js"></script>
 
     <script src="d3.compose-all.js"></script>
 
@@ -154,7 +153,7 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
 
   return {
     charts: {
-      // Create results chart: 
+      // Create results chart:
       // type: 'Lines' -> d3.chart('Lines')
       // data: data -> pass given data to Lines chart
       results: {
@@ -355,13 +354,13 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
         'class': 'chart-title-main'
       },
       xAxisTitle: {
-        type: 'Title', 
-        position: 'bottom', 
+        type: 'Title',
+        position: 'bottom',
         text: 'Input'
       },
       yAxisTitle: {
-        type: 'Title', 
-        position: 'left', 
+        type: 'Title',
+        position: 'left',
         text: 'Results'
       }
     }
