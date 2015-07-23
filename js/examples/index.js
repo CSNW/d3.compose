@@ -1,3 +1,5 @@
+/* global d3, d3c, _, examples */
+/* eslint no-new-func:0, no-use-before-define:0 */
 (function(examples) {
 
   function sequence(range, step) {
@@ -11,30 +13,30 @@
     return sequenced;
   }
 
-  function generate(sequence, fn) {
-    return sequence.map(function(x, i) {
+  function generate(values, fn) {
+    return values.map(function(x, i) {
       return {
         x: x,
-        y: fn(x, i, sequence)
+        y: fn(x, i, values)
       };
     });
   }
 
   function random(range) {
-    return Math.round(range[0] + Math.random() * (range[1] - range[0]))
+    return Math.round(range[0] + Math.random() * (range[1] - range[0]));
   }
 
   function randomize(range) {
     return function() {
       return random(range);
-    }
+    };
   }
 
   function increasing(min, step) {
     var value = min || 0;
     step = step || 10;
 
-    return function(x) {
+    return function() {
       value = random([value - (step / 4), value + (step / 4 * 3)]);
       return value;
     };
@@ -126,7 +128,7 @@
       if (!options)
         return text;
       else if (_.isString(options))
-        return options
+        return options;
       else
         return _.extend({text: text}, options);
     }
@@ -576,8 +578,8 @@
   // Getting Started: Masthead
   //
 
-  examples['masthead'] = [{
-    generate: function(options) {
+  examples.masthead = [{
+    generate: function() {
       var fn = buildFn({
         scales: {
           x: inline(common.scale('xOrdinal')),
@@ -604,7 +606,7 @@
     data: examples.data.single,
     options: {}
   }, examples['lines-and-bars'], {
-    generate: function(options) {
+    generate: function() {
       var fn = buildFn({
         scales: {
           x: inline(common.scale('x', {domain: [-10, 110]})),
@@ -637,7 +639,7 @@
   //
 
   examples['getting-started-2'] = {
-    generate: function(options) {
+    generate: function() {
       var fn = buildFn({
         charts: {
           results: {type: 'Lines', data: code('options.data')}
@@ -655,7 +657,7 @@
   };
 
   examples['getting-started-3'] = {
-    generate: function(options) {
+    generate: function() {
       var fn = buildFn({
         charts: {
           results: inline({type: 'Lines', data: code('options.data')})
@@ -680,7 +682,7 @@
   };
 
   examples['getting-started-4'] = {
-    generate: function(options) {
+    generate: function() {
       var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
@@ -715,7 +717,7 @@
   };
 
   examples['getting-started-5'] = {
-    generate: function(options) {
+    generate: function() {
       var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
@@ -750,7 +752,7 @@
   };
 
   examples['getting-started-6'] = {
-    generate: function(options) {
+    generate: function() {
       var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
@@ -790,7 +792,7 @@
   };
 
   examples['getting-started-7'] = {
-    generate: function(options) {
+    generate: function() {
       var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x'}),
@@ -845,7 +847,7 @@
   };
 
   examples['getting-started-1'] = examples['getting-started-8'] = {
-    generate: function(options) {
+    generate: function() {
       var fn = buildFn({
         scales: {
           x: inline({data: code('options.data'), key: 'x', type: 'ordinal', adjacent: true}),
@@ -903,6 +905,7 @@
   // dependencies
   //
 
+  /* eslint-disable no-unused-vars */
   var dependencies = {
     dots: function() {
       var helpers = d3.compose.helpers;
@@ -970,7 +973,7 @@
                 var chart = this.chart();
                 this.attr('d', function(d, i) {
                   return chart.line(chart.points.call(this, d, i));
-                })
+                });
               }
             }
           });
@@ -989,7 +992,7 @@
 
         // helpers.di binds chart to "di" functions
         // so that "this" refers to the element (as expected)
-        points: helpers.di(function(chart, d, i) {
+        points: helpers.di(function(chart) {
           var points = [{}, {}];
 
           if (chart.orientation() == 'horizontal') {
@@ -1014,6 +1017,7 @@
       });
     }
   };
+  /* eslint-enable */
 
   _.each(dependencies, function(dependency) {
     dependency();
@@ -1077,22 +1081,22 @@
     return '  ' + fn.replace(/\n/g, '\n  ');
   }
 
-  function parseObject(obj, inline) {
+  function parseObject(obj, output_inline) {
     var parsed = _.reduce(obj, function(memo, value, key) {
       key = toKey(key);
       value = toValue(value);
 
       if (_.isArray(value)) {
         value[0] = key + ': ' + value[0];
-        value[value.length - 1] += ','
+        value[value.length - 1] += ',';
 
-        if (!inline)
+        if (!output_inline)
           value = _.map(value, function(item) {return '  ' + item; });
 
         memo = memo.concat(value);
       }
       else {
-        memo.push((inline ? '' : '  ') + key + ': ' + value + ',');
+        memo.push((output_inline ? '' : '  ') + key + ': ' + value + ',');
       }
 
       return memo;
@@ -1105,7 +1109,7 @@
     }
 
     // Add brackets depending on format
-    if (inline) {
+    if (output_inline) {
       parsed = '{' + parsed.join(' ') + '}';
     }
     else {
@@ -1163,6 +1167,6 @@
 
   function wrapFn(fn) {
     return 'd3.select(\'#chart\').chart(\'Compose\', function(options) {\n' + fn + '\n});';
-  };
+  }
 
 })(examples);
