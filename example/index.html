@@ -47,61 +47,45 @@
               y: {domain: [0, 20000]},
               y2: {domain: [0, 90]}
             };
+            var charts = [
+              d3c.bars('bars', {
+                data: data.results,
+                xScale: utils.extend({adjacent: true, series: 2}, scales.x),
+                yScale: scales.y,
 
-            return d3.compose.xy({
-              charts: {
-                bars: {
-                  type: 'Bars',
-                  data: data.results,
-                  xScale: utils.extend({adjacent: true, series: 2}, scales.x),
-                  yScale: scales.y,
+                labels: {
+                  offset: 2,
+                  position: 'top',
+                  style: {
+                    'font-size': '14px'
+                  },
+                  format: d3.format(',0d')
+                }
+              }),
+              d3c.lines('lines', {
+                data: data.input,
+                xScale: scales.x,
+                yScale: scales.y2,
 
-                  labels: {
-                    offset: 2,
-                    position: 'top',
-                    style: {
-                      'font-size': '14px'
-                    },
-                    format: d3.format(',0d')
-                  }
-                },
-                line: {
-                  type: 'Lines',
-                  data: data.input,
-                  xScale: scales.x,
-                  yScale: scales.y2,
+                labels: {
+                  position: 'top'
+                }
+              })
+            ];
 
-                  labels: {
-                    position: 'top'
-                  }
-                }
-              },
-              components: {
-                'x-axis-title': {
-                  type: 'Title',
-                  position: 'bottom',
-                  text: 'X Title'
-                }
-              },
-              axes: {
-                x: {
-                  type: 'Axis',
-                  scale: scales.x,
-                },
-                y: {
-                  title: 'Y1 Title',
-                  scale: scales.y
-                },
-                y2: {
-                  title: 'Y2 Title',
-                  scale: scales.y2
-                }
-              },
-              legend: {
-                type: 'InsetLegend'
-              },
-              title: {text: 'Chart Title', textAlign: 'left'}
-            });
+            return [
+              d3c.title({text: 'Chart Title', textAlign: 'left'}),
+              [
+                d3c.axisTitle('Y1 Title'),
+                d3c.axis('y1', {scale: scales.y}),
+                d3c.layered(charts),
+                d3c.axis('y2', {scale: scales.y2}),
+                d3c.axisTitle('Y2 Title'),
+                d3c.insetLegend({charts: ['lines', 'bars']})
+              ],
+              d3c.axis('x', {scale: scales.x}),
+              d3c.axisTitle('X Title')
+            ];
           })
           .width(600)
           .height(400);
@@ -165,7 +149,6 @@
           }
         })
 
-        var d3c = d3.compose;
         var chart = d3.select('#chart-2')
           .chart('Compose', function(data) {
             var scales = {
@@ -178,15 +161,15 @@
             var default_margins = {top: 8, right: 8, bottom: 8, left: 8};
 
             return [
-              d3c.title({text: 'Results by Year', 'class': 'chart-title-main', margins: default_margins}),
+              d3c.title('Results by Year'),
               [
-                d3c.title({text: 'Results', margins: utils.defaults({right: 4}, default_margins)}),
+                d3c.axisTitle('Results'),
                 d3c.axis('yAxis', {scale: scales.y}),
                 d3c.layered(charts),
                 d3c.legend({charts: ['line'], margins: default_margins})
               ],
               d3c.axis('xAxis', {scale: scales.x, tickFormat: d3.format('####')}),
-              d3c.title({text: 'Year', margins: utils.defaults({bottom: 4}, default_margins)}),
+              d3c.axisTitle('Year'),
               {type: 'HoverOverlay'}
             ];
           })
@@ -209,21 +192,24 @@
               x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
               y: {data: data, value: function(d, i) { return d; }}
             };
+            var charts = [
+              d3c.bars('bars', {
+                data: data,
+                xScale: scales.x,
+                yScale: scales.y,
+                labels: {format: d3.format(',0d')},
+                duration: 1000
+              })
+            ];
 
-            return d3.compose.xy({
-              charts: {
-                bars: {
-                  type: 'Bars',
-                  data: data, xScale: scales.x, yScale: scales.y,
-                  labels: {format: d3.format(',0d')},
-                  duration: 1000
-                }
-              },
-              axes: {
-                y: {scale: scales.y, title: 'Results'}
-              },
-              title: 'Results'
-            });
+            return [
+              d3c.title('Results'),
+              [
+                d3c.axisTitle('Results'),
+                d3c.axis('y', {scale: scales.y}),
+                d3c.layered(charts)
+              ]
+            ];
           })
           .width(600)
           .height(400);
@@ -244,21 +230,19 @@
               y: {domain: [0, 200]},
               y2: {domain: [0, 100]}
             };
+            var charts = [
+              d3c.stackedBars('stacked', {data: data.stacked, xScale: scales.x, yScale: scales.y})
+            ];
 
-            return d3.compose.xy({
-              charts: {
-                stacked: {
-                  type: 'StackedBars',
-                  data: data.stacked, xScale: scales.x, yScale: scales.y
-                }
-              },
-              axes: {
-                y: {scale: scales.y, ticks: 5},
-                y2: {scale: scales.y2, ticks: 5}
-              },
-              legend: true,
-              title: 'Stacked Bars'
-            });
+            return [
+              d3c.title('Stacked Bars'),
+              [
+                d3c.axis({scale: scales.y, ticks: 5}),
+                d3c.layered(charts),
+                d3c.axis({scale: scales.y2, ticks: 5}),
+                d3c.legend({charts: ['stacked']})
+              ]
+            ];
           })
           .width(600)
           .height(200);
@@ -286,20 +270,23 @@
               x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
               y: {data: data, value: function(d, i) { return d; }}
             };
+            var charts = [
+              d3c.horizontalBars('bars', {
+                data: data,
+                xScale: scales.x,
+                yScale: scales.y,
+                labels: {format: d3.format(',0d')}
+              })
+            ];
 
-            return d3.compose.xy({
-              charts: {
-                bars: {
-                  type: 'HorizontalBars',
-                  data: data, xScale: scales.x, yScale: scales.y,
-                  labels: {format: d3.format(',0d')}
-                }
-              },
-              axes: {
-                y: {scale: scales.y, title: 'Results', position: 'bottom'}
-              },
-              title: 'Results'
-            });
+            return [
+              d3c.title('Results'),
+              [
+                d3c.layered(charts)
+              ],
+              d3c.axis({scale: scales.y}),
+              d3c.axisTitle('Results')
+            ];
           })
           .width(600)
           .height(400);
@@ -320,21 +307,19 @@
               y: {domain: [0, 200]},
               y2: {domain: [0, 100]}
             };
+            var charts = [
+              d3c.horizontalStackedBars('stacked', {data: data.stacked, xScale: scales.x, yScale: scales.y})
+            ];
 
-            return d3.compose.xy({
-              charts: {
-                stacked: {
-                  type: 'HorizontalStackedBars',
-                  data: data.stacked, xScale: scales.x, yScale: scales.y
-                }
-              },
-              axes: {
-                y: {scale: scales.y, ticks: 5, position: 'bottom'},
-                y2: {scale: scales.y2, ticks: 5, position: 'top'}
-              },
-              legend: true,
-              title: {text: 'Horizontal Stacked Bars', margins: {bottom: 20}}
-            });
+            return [
+              d3c.title('Horizontal Stacked Bars'),
+              d3c.axis({scale: scales.y2, ticks: 5}),
+              [
+                d3c.layered(charts),
+                d3c.legend({charts: ['stacked']})
+              ],
+              d3c.axis({scale: scales.y, ticks: 5})
+            ];
           })
           .width(600)
           .height(240);
