@@ -335,6 +335,39 @@ export default Base.extend('Compose', {
   }),
 
   /**
+    Delay start of transition by specified milliseconds.
+    (applied to all charts and components as default)
+
+    @property delay
+    @type Number|Function
+    @default d3 default: 0
+  */
+  delay: property('delay', {type: 'Function'}),
+
+  /**
+    Transition duration in milliseconds.
+    (applied to all charts and components as default)
+
+    @property duration
+    @type Number|Function
+    @default d3 default: 250ms
+  */
+  duration: property('duration', {type: 'Function'}),
+
+  /**
+    Transition ease function.
+    (applied to all charts and components as default)
+
+    - See: [Transitions#ease](https://github.com/mbostock/d3/wiki/Transitions#ease)
+    - Note: arguments to pass to `d3.ease` are not supported
+
+    @property ease
+    @type String|Function
+    @default d3 default: 'cubic-in-out'
+  */
+  ease: property('ease', {type: 'Function'}),
+
+  /**
     Draw chart with given data
 
     @example

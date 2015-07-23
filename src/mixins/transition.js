@@ -17,18 +17,38 @@ var Transition = {
 
     @property delay
     @type Number|Function
-    @default d3 default: 0
+    @default (use container value, if available)
   */
-  delay: property('delay', {type: 'Function'}),
+  delay: property('delay', {
+    set: function(value) {
+      // type: 'Function' is desired, but default_value needs to be evaluated
+      // wrap value in function
+      return {
+        override: function() { return value; }
+      };
+    },
+    default_value: function() {
+      return this.container && this.container.delay && this.container.delay();
+    }
+  }),
 
   /**
     Transition duration in milliseconds.
 
     @property duration
     @type Number|Function
-    @default d3 default: 250ms
+    @default (use container value, if available)
   */
-  duration: property('duration', {type: 'Function'}),
+  duration: property('duration', {
+    set: function(value) {
+      return {
+        override: function() { return value; }
+      };
+    },
+    default_value: function() {
+      return this.container && this.container.delay && this.container.duration();
+    }
+  }),
 
   /**
     Transition ease function
@@ -38,9 +58,18 @@ var Transition = {
 
     @property ease
     @type String|Function
-    @default d3 default: 'cubic-in-out'
+    @default (use container value, if available)
   */
-  ease: property('ease', {type: 'Function'}),
+  ease: property('ease', {
+    set: function(value) {
+      return {
+        override: function() { return value; }
+      };
+    },
+    default_value: function() {
+      return this.container && this.container.delay && this.container.ease();
+    }
+  }),
 
   /**
     Setup delay, duration, and ease for transition

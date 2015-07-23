@@ -197,8 +197,7 @@
                 data: data,
                 xScale: scales.x,
                 yScale: scales.y,
-                labels: {format: d3.format(',0d')},
-                duration: 1000
+                labels: {format: d3.format(',0d')}
               })
             ];
 
@@ -211,6 +210,7 @@
               ]
             ];
           })
+          .duration(1000)
           .width(600)
           .height(400);
 
