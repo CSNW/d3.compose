@@ -109,6 +109,17 @@ export default Base.extend('Component', {
   }),
 
   /**
+    Center the component vertically/horizontally (depending on position)
+
+    @property centered
+    @type Boolean
+    @default false
+  */
+  centered: property('centered', {
+    default_value: false
+  }),
+
+  /**
     Skip component during layout calculations and positioning
     (override in prototype of extension)
 
@@ -215,7 +226,18 @@ export default Base.extend('Component', {
   setLayout: function(x, y, options) {
     var margins = this.margins();
 
-    this.base.attr('transform', translate(x + margins.left, y + margins.top));
+    if (this.centered()) {
+      if (options.height)
+        y += (options.height - this.height()) / 2;
+      if (options.width)
+        x += (options.width - this.width()) / 2;
+    }
+    else {
+      x += margins.left;
+      y += margins.top;
+    }
+
+    this.base.attr('transform', translate(x, y));
     this.height(options && options.height);
     this.width(options && options.width);
   }

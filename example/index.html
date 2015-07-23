@@ -162,11 +162,11 @@
 
             return [
               d3c.title('Results by Year'),
+              d3c.legend({charts: ['line'], margins: default_margins, centered: true}),
               [
                 d3c.axisTitle('Results'),
                 d3c.axis('yAxis', {scale: scales.y}),
-                d3c.layered(charts),
-                d3c.legend({charts: ['line'], margins: default_margins})
+                d3c.layered(charts)
               ],
               d3c.axis('xAxis', {scale: scales.x, tickFormat: d3.format('####')}),
               d3c.axisTitle('Year'),
