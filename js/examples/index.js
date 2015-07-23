@@ -138,60 +138,30 @@
 
   examples.lines = {
     generate: function(options) {
-      if (options.include.xy) {
-        var fn = buildFn({
-          scales: {
-            x: inline(common.scale('x')),
-            y: inline(common.scale('y'))
-          }
-        }, extensions.xy({
-          charts: {
-            lines: common.chart('Lines', {
-              interpolation: 'monotone'
-            })
-          },
-          axes: {
-            x: inline(common.axis('x')),
-            y: inline(common.axis('y'))
-          },
-          title: common.title()
-        }));
-      }
-      else {
-        var fn = buildFn({
-          scales: {
-            x: inline(common.scale('x')),
-            y: inline(common.scale('y'))
-          }
-        }, {
-          charts: {
-            lines: common.chart('Lines', {
-              interpolation: 'monotone'
-            })
-          },
-          components: {
-            'axis.x': {
-              type: 'Axis',
-              position: 'bottom',
-              scale: codes.scales.x,
-              ticks: 5
-            },
-            'axis.y': {
-              type: 'Axis',
-              position: 'left',
-              scale: codes.scales.y,
-              ticks: 5
-            },
-            title: {
-              type: 'Title',
-              position: 'top',
-              text: code('options.title.text'),
-              'class': 'chart-title-main',
-              margins: inline({top: 4, bottom: 4})
-            }
-          }
-        });
-      }
+      var fn = buildFn(function() {
+        var scales = {
+          x: {data: options.data, key: 'x'},
+          y: {data: options.data, key: 'y'}
+        };
+
+        var charts = [
+          d3c.lines('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var title = d3c.title(options.title.text);
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5});
+
+        return [
+          title,
+          [yAxis, d3c.layered(charts)],
+          xAxis
+        ];
+      });
 
       return {
         output: wrapFn(fn),
@@ -230,22 +200,31 @@
 
   examples.bars = {
     generate: function(options) {
-      var fn = buildFn({
-        scales: {
-          x: inline(common.scale('xOrdinal')),
-          y: inline(common.scale('y', {domain: [0, 120]}))
-        }
-      }, extensions.xy({
-        charts: {
-          bars: common.chart('Bars')
-        },
-        axes: {
-          x: inline(common.axis('x')),
-          y: inline(common.axis('y'))
-        },
-        title: common.title(),
-        legend: true
-      }));
+      var fn = buildFn(function() {
+        var scales = {
+          x: {type: 'ordinal', data: options.data, key: 'x', adjacent: true},
+          y: {data: options.data, key: 'y', domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.bars('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var title = d3c.title(options.title.text);
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5});
+        var legend = d3c.legend({charts: ['results']});
+
+        return [
+          title,
+          [yAxis, d3c.layered(charts), legend],
+          xAxis
+        ];
+      });
 
       return {
         output: wrapFn(fn),
@@ -279,22 +258,31 @@
 
   examples['stacked-bars'] = {
     generate: function(options) {
-      var fn = buildFn({
-        scales: {
-          x: inline(common.scale('xOrdinal', {adjacent: false})),
-          y: inline(common.scale('y', {domain: [0, 120]}))
-        }
-      }, extensions.xy({
-        charts: {
-          bars: common.chart('StackedBars')
-        },
-        axes: {
-          x: inline(common.axis('x')),
-          y: inline(common.axis('y'))
-        },
-        title: common.title('Stacked Bars'),
-        legend: true
-      }));
+      var fn = buildFn(function() {
+        var scales = {
+          x: {type: 'ordinal', data: options.data, key: 'x', adjacent: false},
+          y: {data: options.data, key: 'y', domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.stackedBars('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var title = d3c.title('Stacked Bars');
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5});
+        var legend = d3c.legend({charts: ['results']});
+
+        return [
+          title,
+          [yAxis, d3c.layered(charts), legend],
+          xAxis
+        ];
+      });
 
       return {
         output: wrapFn(fn),
@@ -302,7 +290,22 @@
       };
     },
 
-    options: {},
+    options: {
+      include: {
+        title: {
+          name: 'Title',
+          default_value: true,
+
+          options: {
+            text: {
+              name: 'Chart Title Text',
+              type: 'text',
+              default_value: 'Bars Chart'
+            }
+          }
+        }
+      }
+    },
     data: examples.data.single
   };
 
@@ -312,21 +315,31 @@
 
   examples['horizontal-bars'] = {
     generate: function(options) {
-      var fn = buildFn({
-        scales: {
-          x: inline(common.scale('xOrdinal')),
-          y: inline(common.scale('y', {domain: [0, 120]}))
-        }
-      }, extensions.xy({
-        charts: {
-          bars: common.chart('HorizontalBars', {duration: 1000})
-        },
-        axes: {
-          x: inline(common.axis('x', {position: 'left', duration: 1000})),
-          y: inline(common.axis('y', {position: 'bottom', duration: 1000}))
-        },
-        title: common.title()
-      }));
+      var fn = buildFn(function() {
+        var scales = {
+          x: {type: 'ordinal', data: options.data, key: 'x', adjacent: true},
+          y: {data: options.data, key: 'y', domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.horizontalBars('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y,
+            duration: 1000
+          })
+        ];
+
+        var title = d3c.title(options.title.text);
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5, duration: 1000});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5, duration: 1000});
+
+        return [
+          title,
+          [xAxis, d3c.layered(charts)],
+          yAxis
+        ];
+      });
 
       return {
         output: wrapFn(fn),
@@ -360,21 +373,30 @@
 
   examples['horizontal-stacked-bars'] = {
     generate: function(options) {
-      var fn = buildFn({
-        scales: {
-          x: inline(common.scale('xOrdinal', {adjacent: false})),
-          y: inline(common.scale('y', {domain: [0, 120]}))
-        }
-      }, extensions.xy({
-        charts: {
-          bars: common.chart('HorizontalStackedBars')
-        },
-        axes: {
-          x: inline(common.axis('x', {position: 'left'})),
-          y: inline(common.axis('y', {position: 'bottom'}))
-        },
-        title: common.title('Stacked Bars')
-      }));
+      var fn = buildFn(function() {
+        var scales = {
+          x: {type: 'ordinal', data: options.data, key: 'x', adjacent: false},
+          y: {data: options.data, key: 'y', domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.horizontalStackedBars('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var title = d3c.title('Stacked Bars');
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5});
+
+        return [
+          title,
+          [xAxis, d3c.layered(charts)],
+          yAxis
+        ];
+      });
 
       return {
         output: wrapFn(fn),
@@ -391,28 +413,49 @@
   //
 
   examples['lines-and-bars'] = {
+    // TODO Giving legend key of "legend" causes weird issues
     generate: function(options) {
-      var fn = buildFn({
-        input: code('options.data.input'),
-        output: code('options.data.output'),
-        scales: {
-          x: inline(common.scale('xOrdinal', {data: codes.output})),
-          y: inline(common.scale('y', {data: codes.input})),
-          y2: inline(common.scale('y', {data: codes.output, domain: [0, 100]}))
-        }
-      }, extensions.xy({
-        charts: {
-          input: common.chart('Lines', {data: codes.input, duration: 1000}),
-          output: common.chart('Bars', {data: codes.output, yScale: codes.scales.y2, duration: 1000})
-        },
-        axes: {
-          x: inline(common.axis('x', {title: 'Trial', duration: 1000})),
-          y: inline(common.axis('y', {title: 'Input', duration: 1000})),
-          y2: inline(common.axis('y2', {title: 'Output', duration: 1000}))
-        },
-        title: 'Multiple Charts',
-        // legend: {position: 'bottom'}
-      }));
+      var fn = buildFn(function() {
+        var input = options.data.input;
+        var output = options.data.output;
+        var scales = {
+          x: {type: 'ordinal', data: output, key: 'x', adjacent: true},
+          y: {data: input, key: 'y'},
+          y2: {data: output, key: 'y', domain: [0, 100]}
+        };
+
+        var charts = [
+          d3c.lines('input', {
+            data: input,
+            xScale: scales.x,
+            yScale: scales.y,
+            duration: 1000
+          }),
+          d3c.bars('output', {
+            data: output,
+            xScale: scales.x,
+            yScale: scales.y2,
+            duration: 1000
+          })
+        ];
+
+        var title = d3c.title('Multiple Charts');
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5, duration: 1000});
+        var xAxisTitle = d3c.axisTitle('Trial');
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5, duration: 1000});
+        var yAxisTitle = d3c.axisTitle('Input');
+        var y2Axis = d3c.axis('y2Axis', {scale: scales.y2, ticks: 5, duration: 1000});
+        var y2AxisTitle = d3c.axisTitle('Output');
+        var legend = d3c.legend({charts: ['input', 'output'], centered: true});
+
+        return [
+          title,
+          [yAxisTitle, yAxis, d3c.layered(charts), y2Axis, y2AxisTitle],
+          xAxis,
+          xAxisTitle,
+          legend
+        ];
+      });
 
       return {
         output: wrapFn(fn),
@@ -430,22 +473,38 @@
 
   examples['custom-chart'] = {
     generate: function(options) {
-      var fn = buildFn({
-        scales: {
-          x: inline(common.scale('x')),
-          y: inline(common.scale('y'))
-        }
-      }, extensions.xy({
-        charts: {
-          input: common.chart('Lines'),
-          dots: common.chart('Dots', {rValue: 5})
-        },
-        axes: {
-          x: inline(common.axis('x')),
-          y: inline(common.axis('y')),
-        },
-        title: 'Custom Chart'
-      }));
+      var fn = buildFn(function() {
+        var scales = {
+          x: {data: options.data, key: 'x'},
+          y: {data: options.data, key: 'y'}
+        };
+
+        var charts = [
+          d3c.lines('input', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          }),
+          {
+            type: 'Dots',
+            id: 'dots',
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y,
+            rValue: 5
+          }
+        ];
+
+        var title = d3c.title('Custom Chart');
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5});
+
+        return [
+          title,
+          [yAxis, d3c.layered(charts)],
+          xAxis
+        ];
+      });
 
       return {
         output: fnBody(dependencies.dots) + '\n\n' + wrapFn(fn),
@@ -463,40 +522,45 @@
 
   examples['custom-component'] = {
     generate: function(options) {
-      var fn = buildFn({
-        scales: {
-          x: inline(common.scale('x')),
-          y: inline(common.scale('y'))
-        }
-      }, extensions.xy({
-        charts: {
-          input: common.chart('Lines'),
-          label: {
-            type: 'Labels',
-            xScale: code('scales.x'),
-            yScale: code('scales.y'),
+      var fn = buildFn(function() {
+        var scales = {
+          x: {data: options.data, key: 'x'},
+          y: {data: options.data, key: 'y'}
+        };
+
+        var charts = [
+          d3c.lines('input', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          }),
+          d3c.labels('label', {
+            data: [{x: 14.5, y: 100, label: 'x = 14.5'}],
+            xScale: scales.x,
+            yScale: scales.y,
             position: 'right',
-            offset: inline({x: 5, y: 5}),
-            data: [
-              inline({x: 14.5, y: 100, label: 'x = 14.5'})
-            ]
-          }
-        },
-        axes: {
-          x: inline(common.axis('x')),
-          y: inline(common.axis('y')),
-        },
-        components: {
-          overlay: {
-            type: 'OverlayLine',
-            value: 14.5,
-            orientation: 'vertical',
-            xScale: code('scales.x'),
-            yScale: code('scales.y')
-          }
-        },
-        title: 'Custom Component'
-      }));
+            offset: {x: 5, y: 5}
+          })
+        ];
+
+        var title = d3c.title('Custom Component');
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5});
+        var overlay = {
+          type: 'OverlayLine',
+          value: 14.5,
+          orientation: 'vertical',
+          xScale: scales.x,
+          yScale: scales.y
+        };
+
+        return [
+          title,
+          [yAxis, d3c.layered(charts)],
+          xAxis,
+          overlay
+        ];
+      });
 
       return {
         output: fnBody(dependencies.overlay) + '\n\n' + wrapFn(fn),
@@ -915,7 +979,7 @@
         // helpers.property creates get/set property
         // that is set automatically from Compose options
         value: helpers.property('value'),
-        
+
         orientation: helpers.property('orientation', {
           default_value: 'vertical',
           validate: function(value) {
@@ -980,28 +1044,35 @@
   //   function() {} -> insert body
   function buildFn() {
     var parts = _.toArray(arguments);
-    var returns = parts.pop();
+    var fn;
 
-    var fn = _.map(parts, function(part) {
-      if (_.isFunction(part)) {
-        return fnBody(part);
-      }
-      else {
-        return _.map(part, function(value, key) {
-          value = toValue(value);
+    if (parts.length == 1 && _.isFunction(parts[0])) {
+      fn = fnBody(parts[0]);
+    }
+    else {
+      var returns = parts.pop();
 
-          if (_.isArray(value))
-            value = value.join('\n');
+      fn = _.map(parts, function(part) {
+        if (_.isFunction(part)) {
+          return fnBody(part);
+        }
+        else {
+          return _.map(part, function(value, key) {
+            value = toValue(value);
 
-          return 'var ' + key + ' = ' + value + ';';
-        }).join('\n');
-      }
-    }).join('\n\n');
+            if (_.isArray(value))
+              value = value.join('\n');
 
-    if (fn.length)
-      fn += '\n\n';
+            return 'var ' + key + ' = ' + value + ';';
+          }).join('\n');
+        }
+      }).join('\n\n');
 
-    fn += 'return ' + (_.isObject(returns) ? parseObject(returns).join('\n') : returns) + ';';
+      if (fn.length)
+        fn += '\n\n';
+
+      fn += 'return ' + (_.isObject(returns) ? parseObject(returns).join('\n') : returns) + ';';
+    }
 
     return '  ' + fn.replace(/\n/g, '\n  ');
   }
