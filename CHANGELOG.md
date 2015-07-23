@@ -10,6 +10,7 @@
 - New module system
 - __0.14.1__ Fix undefined `XYInverted` bug
 - __0.14.2__ Expose d3c global
+- __0.14.3__ Add `Text` and `AxisTitle` components, update default margins, add `centered` component property
 
 # 0.13.0
 

@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.2 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.14.3 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -690,6 +690,29 @@
   }
 
   /**
+    Get formatted margins for varying input
+
+    @method getMargins
+    @example
+    ```js
+    getMargins(4);
+    // -> {top: 4, right: 4, bottom: 4, left: 4}
+
+    getMargins({top: 20}, {top: 8, bottom: 8});
+    // -> {top: 20, right: 0, bottom: 8, left: 0}
+    ```
+    @param {Number|Object} margins
+    @param {Object} default_margins
+    @return {Object}
+  */
+  function getMargins(margins, default_margins) {
+    if (isNumber(margins))
+      return {top: margins, right: margins, bottom: margins, left: margins};
+    else
+      return defaults({}, margins, default_margins, {top: 0, right: 0, bottom: 0, left: 0});
+  }
+
+  /**
     Create wrapped `(d, i)` function that adds chart instance as first argument.
     Wrapped function uses standard d3 arguments and context.
 
@@ -804,6 +827,7 @@
     min: min,
     createScale: createScale,
     style: src_helpers__style,
+    getMargins: getMargins,
     stack: stack,
     di: di,
     bindDi: bindDi,
@@ -1005,10 +1029,21 @@
     margins: property('margins', {
       set: function(values) {
         return {
-          override: defaults(values, {top: 0, right: 0, bottom: 0, left: 0})
+          override: getMargins(values)
         };
       },
-      default_value: {top: 0, right: 0, bottom: 0, left: 0}
+      default_value: getMargins()
+    }),
+
+    /**
+      Center the component vertically/horizontally (depending on position)
+
+      @property centered
+      @type Boolean
+      @default false
+    */
+    centered: property('centered', {
+      default_value: false
     }),
 
     /**
@@ -1118,7 +1153,18 @@
     setLayout: function(x, y, options) {
       var margins = this.margins();
 
-      this.base.attr('transform', translate(x + margins.left, y + margins.top));
+      if (this.centered()) {
+        if (options.height)
+          y += (options.height - this.height()) / 2;
+        if (options.width)
+          x += (options.width - this.width()) / 2;
+      }
+      else {
+        x += margins.left;
+        y += margins.top;
+      }
+
+      this.base.attr('transform', translate(x, y));
       this.height(options && options.height);
       this.width(options && options.width);
     }
@@ -1326,6 +1372,56 @@
     layer_type: 'overlay'
   });
 
+  var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
+
+  /**
+    Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart.
+    Using the `options` property, charts and components can be bound to data and customized to create dynamic charts.
+
+    @example
+    ```html
+    <div id="#chart"></div>
+    ```
+    ```js
+    var chart = d3.select('#chart')
+      .chart('Compose', function(data) {
+        // Process data...
+
+        // Create shared scales
+        var scales = {
+          x: {data: data.input, key: 'x', adjacent: true},
+          y: {data: data.input, key: 'y'},
+          y2: {data: data.output, key: 'y'}
+        };
+
+        return {
+          charts: {
+            input: {
+              type: 'Bars', data: data.input, xScale: scales.x, yScale: scales.y
+            },
+            output: {
+              type: 'Lines', data: data.output, xScale: scales.x, yScale: scales.y2}
+            }
+          },
+          components: {
+            'axis.y': {
+              type: 'Axis', scale: scales.y, position: 'left'
+            },
+            'axis.y2': {
+              type: 'Axis', scale: scales.y2, position: 'right'
+            }
+            title: {
+              type: 'Title', position: 'top', text: 'd3.compose'
+            }
+          }
+        });
+      });
+
+    chart.draw({input: [...], output: [...]});
+    ```
+    @class Compose
+    @extends Base
+  */
   var Compose = Base.extend('Compose', {
     initialize: function() {
       // Overriding transform in init jumps it to the top of the transform cascade
@@ -1420,10 +1516,10 @@
       @default {top: 10, right: 10, bottom: 10, left: 10}
     */
     margins: property('margins', {
-      default_value: {top: 10, right: 10, bottom: 10, left: 10},
+      default_value: default_compose_margins,
       set: function(values) {
         return {
-          override: defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
+          override: getMargins(values, default_compose_margins)
         };
       }
     }),
@@ -2114,7 +2210,7 @@
   }
 
   var d3c = d3.compose = {
-    VERSION: '0.14.2',
+    VERSION: '0.14.3',
     utils: utils,
     helpers: helpers,
     Base: Base,
@@ -2123,7 +2219,7 @@
     Overlay: Overlay,
     Compose: Compose,
     layered: layered
-  }
+  };
 
   var _index = d3c;
 

@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.2 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.14.3 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -690,6 +690,29 @@
   }
 
   /**
+    Get formatted margins for varying input
+
+    @method getMargins
+    @example
+    ```js
+    getMargins(4);
+    // -> {top: 4, right: 4, bottom: 4, left: 4}
+
+    getMargins({top: 20}, {top: 8, bottom: 8});
+    // -> {top: 20, right: 0, bottom: 8, left: 0}
+    ```
+    @param {Number|Object} margins
+    @param {Object} default_margins
+    @return {Object}
+  */
+  function getMargins(margins, default_margins) {
+    if (isNumber(margins))
+      return {top: margins, right: margins, bottom: margins, left: margins};
+    else
+      return defaults({}, margins, default_margins, {top: 0, right: 0, bottom: 0, left: 0});
+  }
+
+  /**
     Create wrapped `(d, i)` function that adds chart instance as first argument.
     Wrapped function uses standard d3 arguments and context.
 
@@ -804,6 +827,7 @@
     min: min,
     createScale: createScale,
     style: src_helpers__style,
+    getMargins: getMargins,
     stack: stack,
     di: di,
     bindDi: bindDi,
@@ -1005,10 +1029,21 @@
     margins: property('margins', {
       set: function(values) {
         return {
-          override: defaults(values, {top: 0, right: 0, bottom: 0, left: 0})
+          override: getMargins(values)
         };
       },
-      default_value: {top: 0, right: 0, bottom: 0, left: 0}
+      default_value: getMargins()
+    }),
+
+    /**
+      Center the component vertically/horizontally (depending on position)
+
+      @property centered
+      @type Boolean
+      @default false
+    */
+    centered: property('centered', {
+      default_value: false
     }),
 
     /**
@@ -1118,7 +1153,18 @@
     setLayout: function(x, y, options) {
       var margins = this.margins();
 
-      this.base.attr('transform', translate(x + margins.left, y + margins.top));
+      if (this.centered()) {
+        if (options.height)
+          y += (options.height - this.height()) / 2;
+        if (options.width)
+          x += (options.width - this.width()) / 2;
+      }
+      else {
+        x += margins.left;
+        y += margins.top;
+      }
+
+      this.base.attr('transform', translate(x, y));
       this.height(options && options.height);
       this.width(options && options.width);
     }
@@ -1326,6 +1372,56 @@
     layer_type: 'overlay'
   });
 
+  var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
+
+  /**
+    Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart.
+    Using the `options` property, charts and components can be bound to data and customized to create dynamic charts.
+
+    @example
+    ```html
+    <div id="#chart"></div>
+    ```
+    ```js
+    var chart = d3.select('#chart')
+      .chart('Compose', function(data) {
+        // Process data...
+
+        // Create shared scales
+        var scales = {
+          x: {data: data.input, key: 'x', adjacent: true},
+          y: {data: data.input, key: 'y'},
+          y2: {data: data.output, key: 'y'}
+        };
+
+        return {
+          charts: {
+            input: {
+              type: 'Bars', data: data.input, xScale: scales.x, yScale: scales.y
+            },
+            output: {
+              type: 'Lines', data: data.output, xScale: scales.x, yScale: scales.y2}
+            }
+          },
+          components: {
+            'axis.y': {
+              type: 'Axis', scale: scales.y, position: 'left'
+            },
+            'axis.y2': {
+              type: 'Axis', scale: scales.y2, position: 'right'
+            }
+            title: {
+              type: 'Title', position: 'top', text: 'd3.compose'
+            }
+          }
+        });
+      });
+
+    chart.draw({input: [...], output: [...]});
+    ```
+    @class Compose
+    @extends Base
+  */
   var Compose = Base.extend('Compose', {
     initialize: function() {
       // Overriding transform in init jumps it to the top of the transform cascade
@@ -1420,10 +1516,10 @@
       @default {top: 10, right: 10, bottom: 10, left: 10}
     */
     margins: property('margins', {
-      default_value: {top: 10, right: 10, bottom: 10, left: 10},
+      default_value: default_compose_margins,
       set: function(values) {
         return {
-          override: defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
+          override: getMargins(values, default_compose_margins)
         };
       }
     }),
@@ -3159,7 +3255,7 @@
       Call for standard layer's `events['enter']`
 
       @method onEnter
-      @param selection {d3.selection}
+      @param {d3.selection} selection
     */
     onEnter: function onEnter(/* selection */) {},
 
@@ -3167,7 +3263,7 @@
       Call for standard layer's `events['enter:transition']`
 
       @method onEnterTransition
-      @param selection {d3.selection}
+      @param {d3.selection} selection
     */
     // onEnterTransition: function onEnterTransition(selection) {},
 
@@ -3175,7 +3271,7 @@
       Call for standard layer's `events['update']`
 
       @method onUpdate
-      @param selection {d3.selection}
+      @param {d3.selection} selection
     */
     onUpdate: function onUpdate(/* selection */) {},
 
@@ -3183,7 +3279,7 @@
       Call for standard layer's `events['update']`
 
       @method onUpdateTransition
-      @param selection {d3.selection}
+      @param {d3.selection} selection
     */
     // onUpdateTransition: function onUpdateTransition(selection) {},
 
@@ -3191,7 +3287,7 @@
       Call for standard layer's `events['merge']`
 
       @method onMerge
-      @param selection {d3.selection}
+      @param {d3.selection} selection
     */
     onMerge: function onMerge(/* selection */) {},
 
@@ -3199,7 +3295,7 @@
       Call for standard layer's `events['merge:transition']`
 
       @method onMergeTransition
-      @param selection {d3.selection}
+      @param {d3.selection} selection
     */
     // onMergeTransition: function onMergeTransition(selection) {},
 
@@ -3207,7 +3303,7 @@
       Call for standard layer's `events['exit']`
 
       @method onExit
-      @param selection {d3.selection}
+      @param {d3.selection} selection
     */
     onExit: function onExit(/* selection */) {}
 
@@ -3215,7 +3311,7 @@
       Call for standard layer's `events['exit:transition']`
 
       @method onExitTransition
-      @param selection {d3.selection}
+      @param {d3.selection} selection
     */
     // onExitTransition: function onExitTransition(selection) {},
   };
@@ -4081,6 +4177,202 @@
 
   var hoverLabels = createHelper('HoverLabels');
 
+  var Text = Component.extend('Text', mixin(StandardLayer, {
+    initialize: function() {
+      // Use standard layer for extensibility
+      this.standardLayer('Text', this.base.append('g').classed('chart-text', true));
+    },
+
+    /**
+      Text to display
+
+      @property text
+      @type String
+    */
+    text: property('text'),
+
+    /**
+      Rotation of text
+
+      @property rotation
+      @type Number
+      @default 0
+    */
+    rotation: property('rotation', {
+      default_value: 0
+    }),
+
+    /**
+      Horizontal text-alignment of text (`"left"`, `"center"`, or `"right"`)
+
+      @property textAlign
+      @type String
+      @default "center"
+    */
+    textAlign: property('textAlign', {
+      default_value: 'center',
+      validate: function(value) {
+        return contains(['left', 'center', 'right'], value);
+      }
+    }),
+
+    /**
+      text-anchor for text (`"start"`, `"middle"`, or `"end"`)
+
+      @property anchor
+      @type String
+      @default (set by `textAlign`)
+    */
+    anchor: property('anchor', {
+      default_value: function() {
+        return {
+          left: 'start',
+          center: 'middle',
+          right: 'end'
+        }[this.textAlign()];
+      },
+      validate: function(value) {
+        return contains(['start', 'middle', 'end', 'inherit'], value);
+      }
+    }),
+
+    /**
+      Vertical aligment for text (`"top"`, `"middle"`, `"bottom"`)
+
+      @property verticalAlign
+      @type String
+      @default "middle"
+    */
+    verticalAlign: property('verticalAlign', {
+      default_value: 'middle',
+      validate: function(value) {
+        return contains(['top', 'middle', 'bottom'], value);
+      }
+    }),
+
+    /**
+      Style object containing styles for text
+
+      @property style
+      @type Object
+      @default {}
+    */
+    style: property('style', {
+      default_value: {},
+      get: function(value) {
+        return src_helpers__style(value) || null;
+      }
+    }),
+
+    onDataBind: function onDataBind(selection) {
+      return selection.selectAll('text')
+        .data([0]);
+    },
+    onInsert: function onInsert(selection) {
+      return selection.append('text');
+    },
+    onMerge: function onMerge(selection) {
+      selection
+        .attr('transform', this.transformation())
+        .attr('style', this.style())
+        .attr('text-anchor', this.anchor())
+        .attr('class', this.options()['class'])
+        .text(this.text());
+    },
+
+    transformation: function() {
+      var x = {
+        left: 0,
+        center: this.width() / 2,
+        right: this.width()
+      }[this.textAlign()];
+      var y = {
+        top: 0,
+        middle: this.height() / 2,
+        bottom: this.height()
+      }[this.verticalAlign()];
+
+      var translation = translate(x, y);
+      var rotation = rotate(this.rotation());
+
+      return translation + ' ' + rotation;
+    }
+  }), {
+    z_index: 70
+  });
+
+  function textOptions(id, options, default_options) {
+    if (!options) {
+      options = id;
+      id = undefined;
+    }
+    if (isString(options))
+      options = {text: options};
+
+    return extend({id: id}, default_options, options);
+  }
+
+  function text(id, options) {
+    return textOptions(id, options, {type: 'Text'});
+  }
+
+  var Title = Text.extend('Title', {
+    initialize: function() {
+      this.base.select('.chart-text').classed('chart-title', true);
+    },
+
+    /**
+      Margins (in pixels) around Title
+
+      @property margins
+      @type Object
+      @default (set based on `position`)
+    */
+    margins: property('margins', {
+      set: function(values) {
+        return {
+          override: getMargins(values, components_Title__defaultMargins(this.position()))
+        };
+      },
+      default_value: function() {
+        return components_Title__defaultMargins(this.position());
+      }
+    }),
+
+    /**
+      Rotation of title. (Default is `-90` for `position = "right"`, `90` for `position = "left"`, and `0` otherwise).
+
+      @property rotation
+      @type Number
+      @default (set based on `position`)
+    */
+    rotation: property('rotation', {
+      default_value: function() {
+        var rotate_by_position = {
+          right: 90,
+          left: -90
+        };
+
+        return rotate_by_position[this.position()] || 0;
+      }
+    })
+  });
+
+  function components_Title__defaultMargins(position) {
+    var default_margin = 8;
+    var margins_by_position = {
+      top: {top: default_margin, bottom: default_margin},
+      right: {right: default_margin, left: default_margin},
+      bottom: {top: default_margin, bottom: default_margin},
+      left: {right: default_margin, left: default_margin}
+    };
+    return getMargins(margins_by_position[position]);
+  }
+
+  function title(id, options) {
+    return textOptions(id, options, {type: 'Title'});
+  }
+
   var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     initialize: function() {
       // Create two axes (so that layout and transitions work)
@@ -4427,148 +4719,124 @@
 
   var axis = createHelper('Axis');
 
-  var Title = Component.extend('Title', mixin(StandardLayer, {
+  var AxisTitle = Title.extend('AxisTitle', {
     initialize: function() {
-      // Use standard layer for extensibility
-      this.standardLayer('Title', this.base.append('g').classed('chart-title', true));
+      this.base.select('.chart-text')
+        .classed('chart-title', false)
+        .classed('chart-axis-title', true);
     },
 
     /**
-      Text to display in title
+      Margins (in pixels) around axis title
 
-      @property text
-      @type String
-    */
-    text: property('text'),
-
-    /**
-      Rotation of title text. (Default is `-90` for `position = "right"`, `90` for `position = "left"`, and `0` otherwise).
-
-      @property rotation
-      @type Number
+      @property margins
+      @type Object
       @default (set based on `position`)
     */
-    rotation: property('rotation', {
-      default_value: function() {
-        var rotate_by_position = {
-          right: 90,
-          left: -90
-        };
-
-        return rotate_by_position[this.position()] || 0;
-      }
-    }),
-
-    /**
-      Horizontal text-alignment of title (`"left"`, `"center"`, or `"right"`)
-
-      @property textAlign
-      @type String
-      @default "center"
-    */
-    textAlign: property('textAlign', {
-      default_value: 'center',
-      validate: function(value) {
-        return contains(['left', 'center', 'right'], value);
-      }
-    }),
-
-    /**
-      text-anchor for title (`"start"`, `"middle"`, or `"end"`)
-
-      @property anchor
-      @type String
-      @default (set by `textAlign`)
-    */
-    anchor: property('anchor', {
-      default_value: function() {
+    margins: property('margins', {
+      set: function(values) {
         return {
-          left: 'start',
-          center: 'middle',
-          right: 'end'
-        }[this.textAlign()];
+          override: getMargins(values, components_AxisTitle__defaultMargins(this.position()))
+        };
       },
-      validate: function(value) {
-        return contains(['start', 'middle', 'end', 'inherit'], value);
+      default_value: function() {
+        return components_AxisTitle__defaultMargins(this.position());
       }
-    }),
-
-    /**
-      Vertical aligment for title (`"top"`, `"middle"`, `"bottom"`)
-
-      @property verticalAlign
-      @type String
-      @default "middle"
-    */
-    verticalAlign: property('verticalAlign', {
-      default_value: 'middle',
-      validate: function(value) {
-        return contains(['top', 'middle', 'bottom'], value);
-      }
-    }),
-
-    /**
-      Style object containing styles for title
-
-      @property style
-      @type Object
-      @default {}
-    */
-    style: property('style', {
-      default_value: {},
-      get: function(value) {
-        return src_helpers__style(value) || null;
-      }
-    }),
-
-    onDataBind: function onDataBind(selection) {
-      return selection.selectAll('text')
-        .data([0]);
-    },
-    onInsert: function onInsert(selection) {
-      return selection.append('text');
-    },
-    onMerge: function onMerge(selection) {
-      selection
-        .attr('transform', this.transformation())
-        .attr('style', this.style())
-        .attr('text-anchor', this.anchor())
-        .attr('class', this.options()['class'])
-        .text(this.text());
-    },
-
-    transformation: function() {
-      var x = {
-        left: 0,
-        center: this.width() / 2,
-        right: this.width()
-      }[this.textAlign()];
-      var y = {
-        top: 0,
-        middle: this.height() / 2,
-        bottom: this.height()
-      }[this.verticalAlign()];
-
-      var translation = translate(x, y);
-      var rotation = rotate(this.rotation());
-
-      return translation + ' ' + rotation;
-    }
-  }), {
-    z_index: 70
+    })
   });
 
-  var title = function(id, options) {
-    if (!options) {
-      options = id;
-      id = undefined;
-    }
-    if (isString(options))
-      options = {text: options};
+  function components_AxisTitle__defaultMargins(position) {
+    var default_margin = 8;
+    var margins_by_position = {
+      top: {top: default_margin / 2, bottom: default_margin},
+      right: {left: default_margin / 2, right: default_margin},
+      bottom: {bottom: default_margin / 2, top: default_margin},
+      left: {right: default_margin / 2, left: default_margin}
+    };
 
-    return extend({id: id, type: 'Title'}, options);
-  };
+    return getMargins(margins_by_position[position]);
+  }
 
+  function axisTitle(id, options) {
+    return textOptions(id, options, {type: 'AxisTitle'});
+  }
+
+  var default_legend_margins = {top: 8, right: 8, bottom: 8, left: 8};
+
+  /**
+    Legend component that can automatically pull chart and series information from d3.compose
+
+    Notes:
+
+    - To exclude a chart from the legend, use `exclude_from_legend = true` in chart prototype or options
+    - To exclude a series from the legend, use `exclude_from_legend = true` in series object
+    - To add swatch for custom chart, use `Legend.registerSwatch()`
+
+    ### Extending
+
+    To extend the `Legend` component, the following methods are available:
+
+    - `itemKey`
+    - `itemText`
+    - `swatchClass`
+    - `createSwatch`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        var input = [{key: 'input', name: 'Input', values: data.input}];
+        var output = [
+          {key: 'output1', name: 'Output 1', values: data.output1},
+          {key: 'output2', name: 'Output 2', values: data.output2}
+        ];
+
+        return {
+          charts: {
+            a: {type: 'Lines', data: input}, // ...
+            b: {type: 'Bars', data: output} // ...
+          },
+          components: {
+            legend: {
+              type: 'Legend',
+              charts: ['a', 'b']
+            }
+          }
+        };
+      });
+
+    // -> automatically creates legend from series data for 'a' and 'b'
+    //    (Lines Swatch) Input
+    //    (Bars Swatch) Output 1
+    //    (Bars Swatch) Output 2
+
+    // or, manually set data for legend
+    return {
+      components: {
+        legend: {
+          type: 'Legend',
+          data: [
+            {type: 'Lines', text: 'Input', class: 'series-index-0'},
+            {type: 'Bars', text: 'Output 1', class: 'series-index-0'},
+            {type: 'Bars', text: 'Output 2', class: 'series-index-1'},
+          ]
+        }
+      }
+    };
+    ```
+    @class Legend
+    @extends Component, StandardLayer
+  */
   var Legend = Component.extend('Legend', mixin(StandardLayer, {
     initialize: function() {
       this.legend_base = this.base.append('g').classed('chart-legend', true);
@@ -4611,6 +4879,22 @@
     */
     swatchDimensions: property('swatchDimensions', {
       default_value: {width: 20, height: 20}
+    }),
+
+    /**
+      Margins (in pixels) around legend
+
+      @property margins
+      @type Object
+      @default {top: 8, right: 8, bottom: 8, left: 8}
+    */
+    margins: property('margins', {
+      default_value: default_legend_margins,
+      set: function(values) {
+        return {
+          override: getMargins(values, default_legend_margins)
+        };
+      }
     }),
 
     transform: function(data) {
@@ -4874,7 +5158,6 @@
       title_options = defaults({}, title_options, {
         type: 'Title',
         position: 'top',
-        'class': 'chart-title-main',
         margins: default_margins
       });
 
@@ -4905,9 +5188,8 @@
           axis_title_options = {text: axis_title_options};
 
         axis_title_options = defaults({}, axis_title_options, {
-          type: 'Title',
+          type: 'AxisTitle',
           position: axis_options.position,
-          'class': 'chart-title-axis',
           margins: defaults({
             top: {top: default_margin / 2},
             right: {left: default_margin / 2},
@@ -4946,7 +5228,7 @@
   }
 
   var d3c = d3.compose = {
-    VERSION: '0.14.2',
+    VERSION: '0.14.3',
     utils: utils,
     helpers: helpers,
     Base: Base,
@@ -4973,10 +5255,14 @@
     HoverLabels: HoverLabels,
     hoverLabels: hoverLabels,
 
-    Axis: Axis,
-    axis: axis,
+    Text: Text,
+    text: text,
     Title: Title,
     title: title,
+    Axis: Axis,
+    axis: axis,
+    AxisTitle: AxisTitle,
+    axisTitle: axisTitle,
     Legend: Legend,
     legend: legend,
     InsetLegend: InsetLegend,
