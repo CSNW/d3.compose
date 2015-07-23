@@ -697,6 +697,9 @@ export default Base.extend('Compose', {
       };
 
       config.forEach(function(row, row_index) {
+        if (!row)
+          return;
+
         // Components are added from inside-out
         // so for position: top, position: left, use unshift
 
@@ -705,6 +708,9 @@ export default Base.extend('Compose', {
           var row_components = [];
 
           row.forEach(function(item, col_index) {
+            if (!item)
+              return;
+
             if (item._layered) {
               found.charts = true;
               normalized.charts = item.items.map(function(chart, chart_index) {
