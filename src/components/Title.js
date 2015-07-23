@@ -1,78 +1,37 @@
-import {
-  contains,
-  isString,
-  extend
-} from '../utils';
-import {
-  property,
-  style,
-  translate,
-  rotate,
-  mixin
-} from '../helpers';
-import { StandardLayer } from '../mixins';
-import Component from '../Component';
+import { defaults } from '../utils';
+import { property } from '../helpers';
+import Text, { textOptions } from './Text';
+var default_title_margins = {top: 8, right: 8, bottom: 8, left: 8};
 
 /**
-  Add title text to a chart.
+  Title component that extends Text with defaults (styling, sensible margins, and rotated when positioned left or right)
 
-  ### Extending
-
-  To extend the `Title` component, the following methods are available:
-
-  - `onDataBind`
-  - `onInsert`
-  - `onEnter`
-  - `onEnterTransition`
-  - `onUpdate`
-  - `onUpdateTransition`
-  - `onMerge`
-  - `onMergeTransition`
-  - `onExit`
-  - `onExitTransition`
-
-  @example
-  ```js
-  d3.select('#chart')
-    .chart('Compose', function(data) {
-      return {
-        components: {
-          title: {
-            type: 'Title',
-            position: 'top'
-            text: 'Main Title',
-            textAlign: 'left',
-            'class': 'title-main'
-          },
-          subtitle: {
-            type: 'Title',
-            position: 'bottom',
-            text: 'Subtitle',
-            'class': 'title-subtitle'
-          }
-        }
-      };
-    });
-  ```
   @class Title
-  @extends Component, StandardLayer
+  @extends Text
 */
-var Title = Component.extend('Title', mixin(StandardLayer, {
+var Title = Text.extend('Title', {
   initialize: function() {
-    // Use standard layer for extensibility
-    this.standardLayer('Title', this.base.append('g').classed('chart-title', true));
+    this.base.select('.chart-text').classed('chart-title', true);
   },
 
   /**
-    Text to display in title
+    Margins (in pixels) around Title
 
-    @property text
-    @type String
+    @property margins
+    @type Object
+    @default {top: 8, right: 8, bottom: 8, left: 8}
   */
-  text: property('text'),
+  margins: property('margins', {
+    set: function(values) {
+      return {
+        override: defaults(values, default_title_margins)
+      };
+    },
+    default_value: default_title_margins
+  }),
 
   /**
-    Rotation of title text. (Default is `-90` for `position = "right"`, `90` for `position = "left"`, and `0` otherwise).
+    Rotation of title. (Default is `-90` for `position = "right"`, `90` for `position = "left"`, and `0` otherwise).
 
     @property rotation
     @type Number
@@ -87,117 +46,12 @@ var Title = Component.extend('Title', mixin(StandardLayer, {
 
       return rotate_by_position[this.position()] || 0;
     }
-  }),
-
-  /**
-    Horizontal text-alignment of title (`"left"`, `"center"`, or `"right"`)
-
-    @property textAlign
-    @type String
-    @default "center"
-  */
-  textAlign: property('textAlign', {
-    default_value: 'center',
-    validate: function(value) {
-      return contains(['left', 'center', 'right'], value);
-    }
-  }),
-
-  /**
-    text-anchor for title (`"start"`, `"middle"`, or `"end"`)
-
-    @property anchor
-    @type String
-    @default (set by `textAlign`)
-  */
-  anchor: property('anchor', {
-    default_value: function() {
-      return {
-        left: 'start',
-        center: 'middle',
-        right: 'end'
-      }[this.textAlign()];
-    },
-    validate: function(value) {
-      return contains(['start', 'middle', 'end', 'inherit'], value);
-    }
-  }),
-
-  /**
-    Vertical aligment for title (`"top"`, `"middle"`, `"bottom"`)
-
-    @property verticalAlign
-    @type String
-    @default "middle"
-  */
-  verticalAlign: property('verticalAlign', {
-    default_value: 'middle',
-    validate: function(value) {
-      return contains(['top', 'middle', 'bottom'], value);
-    }
-  }),
-
-  /**
-    Style object containing styles for title
-
-    @property style
-    @type Object
-    @default {}
-  */
-  style: property('style', {
-    default_value: {},
-    get: function(value) {
-      return style(value) || null;
-    }
-  }),
-
-  onDataBind: function onDataBind(selection) {
-    return selection.selectAll('text')
-      .data([0]);
-  },
-  onInsert: function onInsert(selection) {
-    return selection.append('text');
-  },
-  onMerge: function onMerge(selection) {
-    selection
-      .attr('transform', this.transformation())
-      .attr('style', this.style())
-      .attr('text-anchor', this.anchor())
-      .attr('class', this.options()['class'])
-      .text(this.text());
-  },
-
-  transformation: function() {
-    var x = {
-      left: 0,
-      center: this.width() / 2,
-      right: this.width()
-    }[this.textAlign()];
-    var y = {
-      top: 0,
-      middle: this.height() / 2,
-      bottom: this.height()
-    }[this.verticalAlign()];
-
-    var translation = translate(x, y);
-    var rotation = rotate(this.rotation());
-
-    return translation + ' ' + rotation;
-  }
-}), {
-  z_index: 70
+  })
 });
 
-var title = function(id, options) {
-  if (!options) {
-    options = id;
-    id = undefined;
-  }
-  if (isString(options))
-    options = {text: options};
-
-  return extend({id: id, type: 'Title'}, options);
-};
+function title(id, options) {
+  return textOptions(id, options, {type: 'Title'});
+}
 
 export {
   Title as default,

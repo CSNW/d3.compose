@@ -17,8 +17,10 @@ import HorizontalStackedBars, { horizontalStackedBars } from './src/charts/Horiz
 import Labels, { labels } from './src/charts/Labels';
 import HoverLabels, { hoverLabels } from './src/charts/HoverLabels';
 
-import Axis, { axis } from './src/components/Axis';
+import Text, { text } from './src/components/Text';
 import Title, { title } from './src/components/Title';
+import Axis, { axis } from './src/components/Axis';
+import AxisTitle, { axisTitle } from './src/components/AxisTitle';
 import Legend, { legend } from './src/components/Legend';
 import InsetLegend, { insetLegend } from './src/components/InsetLegend';
 
@@ -52,10 +54,14 @@ var d3c = d3.compose = {
   HoverLabels: HoverLabels,
   hoverLabels: hoverLabels,
 
-  Axis: Axis,
-  axis: axis,
+  Text: Text,
+  text: text,
   Title: Title,
   title: title,
+  Axis: Axis,
+  axis: axis,
+  AxisTitle: AxisTitle,
+  axisTitle: axisTitle,
   Legend: Legend,
   legend: legend,
   InsetLegend: InsetLegend,

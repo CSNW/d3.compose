@@ -17,6 +17,6 @@ var d3c = d3.compose = {
   Overlay: Overlay,
   Compose: Compose,
   layered: layered
-}
+};
 
 export default d3c;

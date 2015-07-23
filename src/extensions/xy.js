@@ -92,7 +92,6 @@ export default function xy(options) {
     title_options = defaults({}, title_options, {
       type: 'Title',
       position: 'top',
-      'class': 'chart-title-main',
       margins: default_margins
     });
 
@@ -123,9 +122,8 @@ export default function xy(options) {
         axis_title_options = {text: axis_title_options};
 
       axis_title_options = defaults({}, axis_title_options, {
-        type: 'Title',
+        type: 'AxisTitle',
         position: axis_options.position,
-        'class': 'chart-title-axis',
         margins: defaults({
           top: {top: default_margin / 2},
           right: {left: default_margin / 2},
