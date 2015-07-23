@@ -10,11 +10,13 @@ import {
   pluck
 } from './utils';
 import {
+  getMargins,
   property,
   style,
   translate
 } from './helpers';
 import Base from './Base';
+var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
 
 /**
   Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart.
@@ -158,10 +160,10 @@ export default Base.extend('Compose', {
     @default {top: 10, right: 10, bottom: 10, left: 10}
   */
   margins: property('margins', {
-    default_value: {top: 10, right: 10, bottom: 10, left: 10},
+    default_value: default_compose_margins,
     set: function(values) {
       return {
-        override: defaults({}, values, {top: 0, right: 0, bottom: 0, left: 0})
+        override: getMargins(values, default_compose_margins)
       };
     }
   }),

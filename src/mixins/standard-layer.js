@@ -93,7 +93,7 @@ var StandardLayer = {
     Call for standard layer's `events['enter']`
 
     @method onEnter
-    @param selection {d3.selection}
+    @param {d3.selection} selection
   */
   onEnter: function onEnter(/* selection */) {},
 
@@ -101,7 +101,7 @@ var StandardLayer = {
     Call for standard layer's `events['enter:transition']`
 
     @method onEnterTransition
-    @param selection {d3.selection}
+    @param {d3.selection} selection
   */
   // onEnterTransition: function onEnterTransition(selection) {},
 
@@ -109,7 +109,7 @@ var StandardLayer = {
     Call for standard layer's `events['update']`
 
     @method onUpdate
-    @param selection {d3.selection}
+    @param {d3.selection} selection
   */
   onUpdate: function onUpdate(/* selection */) {},
 
@@ -117,7 +117,7 @@ var StandardLayer = {
     Call for standard layer's `events['update']`
 
     @method onUpdateTransition
-    @param selection {d3.selection}
+    @param {d3.selection} selection
   */
   // onUpdateTransition: function onUpdateTransition(selection) {},
 
@@ -125,7 +125,7 @@ var StandardLayer = {
     Call for standard layer's `events['merge']`
 
     @method onMerge
-    @param selection {d3.selection}
+    @param {d3.selection} selection
   */
   onMerge: function onMerge(/* selection */) {},
 
@@ -133,7 +133,7 @@ var StandardLayer = {
     Call for standard layer's `events['merge:transition']`
 
     @method onMergeTransition
-    @param selection {d3.selection}
+    @param {d3.selection} selection
   */
   // onMergeTransition: function onMergeTransition(selection) {},
 
@@ -141,7 +141,7 @@ var StandardLayer = {
     Call for standard layer's `events['exit']`
 
     @method onExit
-    @param selection {d3.selection}
+    @param {d3.selection} selection
   */
   onExit: function onExit(/* selection */) {}
 
@@ -149,7 +149,7 @@ var StandardLayer = {
     Call for standard layer's `events['exit:transition']`
 
     @method onExitTransition
-    @param selection {d3.selection}
+    @param {d3.selection} selection
   */
   // onExitTransition: function onExitTransition(selection) {},
 };

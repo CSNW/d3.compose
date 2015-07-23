@@ -1,8 +1,8 @@
-import { defaults } from '../utils';
-import { property } from '../helpers';
+import {
+  getMargins,
+  property
+} from '../helpers';
 import Text, { textOptions } from './Text';
-var default_title_margin = 8;
-var zero_title_margins = {top: 0, right: 0, bottom: 0, left: 0};
 
 /**
   Title component that extends Text with defaults (styling, sensible margins, and rotated when positioned left or right)
@@ -25,17 +25,11 @@ var Title = Text.extend('Title', {
   margins: property('margins', {
     set: function(values) {
       return {
-        override: defaults(values, zero_title_margins)
+        override: getMargins(values, defaultMargins(this.position()))
       };
     },
     default_value: function() {
-      var margins_by_position = {
-        top: {top: default_title_margin, bottom: default_title_margin},
-        right: {right: default_title_margin, left: default_title_margin},
-        bottom: {top: default_title_margin, bottom: default_title_margin},
-        left: {right: default_title_margin, left: default_title_margin}
-      };
-      return defaults(margins_by_position[this.position()], zero_title_margins);
+      return defaultMargins(this.position());
     }
   }),
 
@@ -57,6 +51,17 @@ var Title = Text.extend('Title', {
     }
   })
 });
+
+function defaultMargins(position) {
+  var default_margin = 8;
+  var margins_by_position = {
+    top: {top: default_margin, bottom: default_margin},
+    right: {right: default_margin, left: default_margin},
+    bottom: {top: default_margin, bottom: default_margin},
+    left: {right: default_margin, left: default_margin}
+  };
+  return getMargins(margins_by_position[position]);
+}
 
 function title(id, options) {
   return textOptions(id, options, {type: 'Title'});

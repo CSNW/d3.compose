@@ -12,7 +12,7 @@
       Container = d3.chart('Compose').extend('TestContainer');
       container = new Container(selection);
       container.responsive(false);
-      container.margins({});
+      container.margins(0);
 
       Chart = d3.chart('Chart').extend('TestChart', {
         name: helpers.property('name')

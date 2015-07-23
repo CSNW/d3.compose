@@ -1,8 +1,10 @@
 import d3 from 'd3';
 import {
-  isObject,
+  defaults,
   extend,
   first,
+  isNumber,
+  isObject,
   objectEach
 } from '../utils';
 
@@ -221,6 +223,29 @@ export function style(styles) {
 }
 
 /**
+  Get formatted margins for varying input
+
+  @method getMargins
+  @example
+  ```js
+  getMargins(4);
+  // -> {top: 4, right: 4, bottom: 4, left: 4}
+
+  getMargins({top: 20}, {top: 8, bottom: 8});
+  // -> {top: 20, right: 0, bottom: 8, left: 0}
+  ```
+  @param {Number|Object} margins
+  @param {Object} default_margins
+  @return {Object}
+*/
+export function getMargins(margins, default_margins) {
+  if (isNumber(margins))
+    return {top: margins, right: margins, bottom: margins, left: margins};
+  else
+    return defaults({}, margins, default_margins, {top: 0, right: 0, bottom: 0, left: 0});
+}
+
+/**
   Create wrapped `(d, i)` function that adds chart instance as first argument.
   Wrapped function uses standard d3 arguments and context.
 
@@ -335,6 +360,7 @@ var helpers = {
   min: min,
   createScale: createScale,
   style: style,
+  getMargins: getMargins,
   stack: stack,
   di: di,
   bindDi: bindDi,

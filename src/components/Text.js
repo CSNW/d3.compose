@@ -1,6 +1,6 @@
 import {
   contains,
-  defaults,
+  extend,
   isString
 } from '../utils';
 import {
@@ -189,7 +189,7 @@ function textOptions(id, options, default_options) {
   if (isString(options))
     options = {text: options};
 
-  return defaults(options, {id: id}, default_options);
+  return extend({id: id}, default_options, options);
 }
 
 function text(id, options) {

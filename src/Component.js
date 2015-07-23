@@ -1,10 +1,8 @@
+import { contains } from './utils';
 import {
-  contains,
-  defaults
-} from './utils';
-import {
-  property,
   dimensions,
+  getMargins,
+  property,
   translate
 } from './helpers';
 import Base from './Base';
@@ -102,10 +100,10 @@ export default Base.extend('Component', {
   margins: property('margins', {
     set: function(values) {
       return {
-        override: defaults(values, {top: 0, right: 0, bottom: 0, left: 0})
+        override: getMargins(values)
       };
     },
-    default_value: {top: 0, right: 0, bottom: 0, left: 0}
+    default_value: getMargins()
   }),
 
   /**
