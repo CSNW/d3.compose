@@ -257,7 +257,17 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
   },
   onInsert: function onInsert(selection) {
     var groups = selection.append('g')
-      .attr('class', 'chart-legend-group');
+      .attr('class', 'chart-legend-group')
+      .style('pointer-events', 'all')
+      .on('mouseenter', function(d, i) {
+        this.container.trigger('mouseenter:legend', this._itemDetails(d, i));
+      }.bind(this))
+      .on('mousemove', function(d, i) {
+        this.container.trigger('mousemove:legend', this._itemDetails(d, i));
+      }.bind(this))
+      .on('mouseleave', function(d, i) {
+        this.container.trigger('mouseleave:legend', this._itemDetails(d, i));
+      }.bind(this));
 
     groups.append('g')
       .attr('width', this.swatchDimensions().width)
@@ -266,13 +276,18 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
     groups.append('text')
       .attr('class', 'chart-legend-label');
 
+    groups.append('rect')
+      .attr('class', 'chart-legend-hover')
+      .style('visibility', 'hidden');
+
     return groups;
   },
   onMerge: function onMerge(selection) {
     var swatch = this.swatchDimensions();
 
-    selection.select('g').each(this.createSwatch);
-    selection.select('text')
+    selection.select('.chart-legend-swatch').each(this.createSwatch);
+
+    selection.select('.chart-legend-label')
       .text(this.itemText)
       .each(function() {
         // Vertically center text
@@ -289,9 +304,29 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
       min_height: swatch.height,
       min_width: swatch.width
     }));
+
+    // Position hover listeners
+    var sizes = [];
+    selection.each(function() {
+      sizes.push(this.getBBox());
+    });
+    selection.select('.chart-legend-hover').each(function() {
+      var size = sizes.shift();
+      d3.select(this)
+        .attr('width', size.width)
+        .attr('height', size.height);
+    });
   },
   onExit: function onExit(selection) {
     selection.remove();
+  },
+
+  _itemDetails: function _itemDetails(d, i) {
+    return {
+      legend: this,
+      d: d,
+      i: i
+    };
   }
 }), {
   z_index: 200,
