@@ -1,7 +1,6 @@
 import d3 from 'd3';
 import {
   isFunction,
-  contains,
   find,
   defaults,
   extend,
@@ -15,6 +14,11 @@ import {
   style,
   translate
 } from './helpers';
+import {
+  extractLayout,
+  calculateLayout,
+  applyLayout
+} from './layout';
 import Base from './Base';
 var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
 
@@ -671,109 +675,7 @@ export default Base.extend('Compose', {
   },
 
   _prepareConfig: function(options, data) {
-    // Load config from options fn
-    var config = options(data);
-    var normalized = {
-      data: {
-        charts: {},
-        components: {}
-      }
-    };
-
-    if (!config) {
-      return normalized;
-    }
-    else {
-      normalized.charts = [];
-      normalized.components = [];
-    }
-
-    if (Array.isArray(config)) {
-      // TEMP Idenfify charts from layered,
-      // eventually no distinction between charts and components
-      var found = {
-        row: false,
-        charts: false
-      };
-
-      config.forEach(function(row, row_index) {
-        if (!row)
-          return;
-
-        // Components are added from inside-out
-        // so for position: top, position: left, use unshift
-
-        if (Array.isArray(row)) {
-          found.row = true;
-          var row_components = [];
-
-          row.forEach(function(item, col_index) {
-            if (!item)
-              return;
-
-            if (item._layered) {
-              found.charts = true;
-              normalized.charts = item.items.map(function(chart, chart_index) {
-                return defaults({}, chart, {id: 'chart-' + (chart_index + 1)});
-              });
-            }
-            else if (!found.charts) {
-              row_components.unshift(prepareComponent(item, 'left', row_index, col_index));
-            }
-            else {
-              row_components.push(prepareComponent(item, 'right', row_index, col_index));
-            }
-          });
-
-          normalized.components = normalized.components.concat(row_components);
-        }
-        else {
-          if (row._layered) {
-            found.row = found.charts = true;
-            normalized.charts = row.items.slice();
-          }
-          else {
-            if (!found.row)
-              normalized.components.unshift(prepareComponent(row, 'top', row_index, 0));
-            else
-              normalized.components.push(prepareComponent(row, 'bottom', row_index, 0));
-          }
-        }
-      });
-    }
-    else {
-      // DEPRECATED
-      objectEach(config.charts, function(chart_options, id) {
-        normalized.charts.push(extend({id: id}, chart_options));
-      });
-
-      objectEach(config.components, function(component_options, id) {
-        normalized.components.push(extend({id: id}, component_options));
-      });
-    }
-
-    normalized.charts.forEach(extractData('charts'));
-    normalized.components.forEach(extractData('components'));
-
-    return normalized;
-
-    function prepareComponent(component, position, row_index, col_index) {
-      if (component && isFunction(component.position))
-        component.position(position);
-      else
-        component = extend({position: position}, component);
-
-      return defaults(component, {id: 'component-' + (row_index + 1) + '-' + (col_index + 1)});
-    }
-
-    function extractData(type) {
-      return function(item) {
-        if (item.data && !isFunction(item.data)) {
-          normalized.data[type][item.id] = item.data;
-          delete item.data;
-        }
-      };
-    }
+    return extractLayout(options(data));
   },
 
   _positionChartLayers: function() {
@@ -785,44 +687,11 @@ export default Base.extend('Compose', {
   },
 
   _positionComponents: function(layout) {
-    var chart = this.chartPosition();
+    var chart_position = this.chartPosition();
     var width = this._width();
     var height = this._height();
 
-    layout.top.reduce(function(previous, part) {
-      var y = previous - part.offset;
-      setLayout(part.component, chart.left, y, {width: chart.width});
-
-      return y;
-    }, chart.top);
-
-    layout.right.reduce(function(previous, part, index, parts) {
-      var previousPart = parts[index - 1] || {offset: 0};
-      var x = previous + previousPart.offset;
-      setLayout(part.component, x, chart.top, {height: chart.height});
-
-      return x;
-    }, width - chart.right);
-
-    layout.bottom.reduce(function(previous, part, index, parts) {
-      var previousPart = parts[index - 1] || {offset: 0};
-      var y = previous + previousPart.offset;
-      setLayout(part.component, chart.left, y, {width: chart.width});
-
-      return y;
-    }, height - chart.bottom);
-
-    layout.left.reduce(function(previous, part) {
-      var x = previous - part.offset;
-      setLayout(part.component, x, chart.top, {height: chart.height});
-
-      return x;
-    }, chart.left);
-
-    function setLayout(component, x, y, options) {
-      if (component && isFunction(component.setLayout))
-        component.setLayout(x, y, options);
-    }
+    applyLayout(layout, chart_position, width, height);
   },
 
   _positionByZIndex: function() {
@@ -857,24 +726,7 @@ export default Base.extend('Compose', {
   },
 
   _extractLayout: function(data) {
-    var overall_layout = {top: [], right: [], bottom: [], left: []};
-    this.components().forEach(function(component) {
-      if (component.skip_layout || !component.getLayout)
-        return;
-
-      var layout = component.getLayout(this.demux(component.id, data));
-      var position = layout && layout.position;
-
-      if (!contains(['top', 'right', 'bottom', 'left'], position))
-        return;
-
-      overall_layout[position].push({
-        offset: position == 'top' || position == 'bottom' ? layout.height : layout.width,
-        component: component
-      });
-    }, this);
-
-    return overall_layout;
+    return calculateLayout(this.components(), data, this.demux.bind(this));
   }
 });
 
