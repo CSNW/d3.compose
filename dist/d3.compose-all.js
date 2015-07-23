@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.3 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.14.4 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -452,54 +452,62 @@
     return mixed;
   }
 
-  function stack(options, elements) {
-    if (options && !elements) {
-      elements = options;
-      options = {
-        direction: 'vertical',
-        origin: 'top',
-        padding: 0
-      };
-    }
+  function stack(options) {
+    options = extend({
+      direction: 'vertical',
+      origin: 'top',
+      padding: 0,
+      min_height: 0,
+      min_width: 0
+    }, options);
 
-    function padding(d, i) {
+    // Ensure valid origin based on direction
+    if (options.direction == 'horizontal' && !(options.origin == 'left' || options.origin == 'right'))
+      options.origin = 'left';
+    else if (options.direction == 'vertical' && !(options.origin == 'top' || options.origin == 'bottom'))
+      options.origin = 'top';
+
+    function padding(i) {
       return i > 0 && options.padding ? options.padding : 0;
     }
 
-    if (elements && elements.attr) {
-      var previous = 0;
-      elements
-        .attr('transform', function(d, i) {
+    return function(elements) {
+      if (elements && elements.attr) {
+        var previous = 0;
+
+        elements.attr('transform', function(d, i) {
           var element_dimensions = this.getBBox();
+          var spacing_width = d3.max([element_dimensions.width, options.min_width]);
+          var spacing_height = d3.max([element_dimensions.height, options.min_height]);
           var x = 0;
           var y = 0;
+          var next_position;
 
           if (options.direction == 'horizontal') {
-            if (!(options.origin == 'left' || options.origin == 'right'))
-              options.origin = 'left';
+            next_position = previous + spacing_width + padding(i);
 
             if (options.origin == 'left')
-              x = previous + padding(d, i);
+              x = previous + padding(i);
             else
-              x = previous + element_dimensions.width + padding(d, i);
+              x = next_position;
 
-            previous = previous + element_dimensions.width + padding(d, i);
+            previous = next_position;
           }
           else {
-            if (!(options.origin == 'top' || options.origin == 'bottom'))
-              options.origin = 'top';
+            next_position = previous + spacing_height + padding(i);
 
             if (options.origin == 'top')
-              y = previous + padding(d, i);
+              y = previous + padding(i);
             else
-              y = previous + element_dimensions.height + padding(d, i);
+              y = next_position;
 
-            previous = previous + element_dimensions.height + padding(d, i);
+            previous = next_position;
           }
 
           return translate(x, y);
         });
-    }
+      }
+    };
   }
 
   function translate(x, y) {
@@ -1689,6 +1697,39 @@
       },
       default_value: []
     }),
+
+    /**
+      Delay start of transition by specified milliseconds.
+      (applied to all charts and components as default)
+
+      @property delay
+      @type Number|Function
+      @default d3 default: 0
+    */
+    delay: property('delay', {type: 'Function'}),
+
+    /**
+      Transition duration in milliseconds.
+      (applied to all charts and components as default)
+
+      @property duration
+      @type Number|Function
+      @default d3 default: 250ms
+    */
+    duration: property('duration', {type: 'Function'}),
+
+    /**
+      Transition ease function.
+      (applied to all charts and components as default)
+
+      - See: [Transitions#ease](https://github.com/mbostock/d3/wiki/Transitions#ease)
+      - Note: arguments to pass to `d3.ease` are not supported
+
+      @property ease
+      @type String|Function
+      @default d3 default: 'cubic-in-out'
+    */
+    ease: property('ease', {type: 'Function'}),
 
     /**
       Draw chart with given data
@@ -3099,18 +3140,38 @@
 
       @property delay
       @type Number|Function
-      @default d3 default: 0
+      @default (use container value, if available)
     */
-    delay: property('delay', {type: 'Function'}),
+    delay: property('delay', {
+      set: function(value) {
+        // type: 'Function' is desired, but default_value needs to be evaluated
+        // wrap value in function
+        return {
+          override: function() { return value; }
+        };
+      },
+      default_value: function() {
+        return this.container && this.container.delay && this.container.delay();
+      }
+    }),
 
     /**
       Transition duration in milliseconds.
 
       @property duration
       @type Number|Function
-      @default d3 default: 250ms
+      @default (use container value, if available)
     */
-    duration: property('duration', {type: 'Function'}),
+    duration: property('duration', {
+      set: function(value) {
+        return {
+          override: function() { return value; }
+        };
+      },
+      default_value: function() {
+        return this.container && this.container.delay && this.container.duration();
+      }
+    }),
 
     /**
       Transition ease function
@@ -3120,9 +3181,18 @@
 
       @property ease
       @type String|Function
-      @default d3 default: 'cubic-in-out'
+      @default (use container value, if available)
     */
-    ease: property('ease', {type: 'Function'}),
+    ease: property('ease', {
+      set: function(value) {
+        return {
+          override: function() { return value; }
+        };
+      },
+      default_value: function() {
+        return this.container && this.container.delay && this.container.ease();
+      }
+    }),
 
     /**
       Setup delay, duration, and ease for transition
@@ -4897,6 +4967,29 @@
       }
     }),
 
+    /**
+      Direction to "stack" legend, "vertical" or "horizontal".
+      (Default is set based on position: top/bottom = "horizontal", left/right = "vertical")
+
+      @property stackDirection
+      @type String
+      @default (based on position)
+    */
+    stackDirection: property('stackDirection', {
+      validate: function(value) {
+        return contains(['vertical', 'horizontal'], value);
+      },
+      default_value: function() {
+        var direction_by_position = {
+          top: 'horizontal',
+          right: 'vertical',
+          bottom: 'horizontal',
+          left: 'vertical'
+        };
+        return direction_by_position[this.position()];
+      }
+    }),
+
     transform: function(data) {
       if (this.charts()) {
         // Pull legend data from charts
@@ -4978,7 +5071,17 @@
     },
     onInsert: function onInsert(selection) {
       var groups = selection.append('g')
-        .attr('class', 'chart-legend-group');
+        .attr('class', 'chart-legend-group')
+        .style('pointer-events', 'all')
+        .on('mouseenter', function(d, i) {
+          this.container.trigger('mouseenter:legend', this._itemDetails(d, i));
+        }.bind(this))
+        .on('mousemove', function(d, i) {
+          this.container.trigger('mousemove:legend', this._itemDetails(d, i));
+        }.bind(this))
+        .on('mouseleave', function(d, i) {
+          this.container.trigger('mouseleave:legend', this._itemDetails(d, i));
+        }.bind(this));
 
       groups.append('g')
         .attr('width', this.swatchDimensions().width)
@@ -4987,13 +5090,18 @@
       groups.append('text')
         .attr('class', 'chart-legend-label');
 
+      groups.append('rect')
+        .attr('class', 'chart-legend-hover')
+        .style('visibility', 'hidden');
+
       return groups;
     },
     onMerge: function onMerge(selection) {
       var swatch = this.swatchDimensions();
 
-      selection.select('g').each(this.createSwatch);
-      selection.select('text')
+      selection.select('.chart-legend-swatch').each(this.createSwatch);
+
+      selection.select('.chart-legend-label')
         .text(this.itemText)
         .each(function() {
           // Vertically center text
@@ -5003,16 +5111,36 @@
         });
 
       // Position groups after positioning everything inside
-      var direction_by_position = {
-        top: 'horizontal',
-        right: 'vertical',
-        bottom: 'horizontal',
-        left: 'vertical'
-      };
-      selection.call(stack.bind(selection, {direction: direction_by_position[this.position()], origin: 'top', padding: 5}));
+      selection.call(stack({
+        direction: this.stackDirection(),
+        origin: 'top',
+        padding: 5,
+        min_height: swatch.height,
+        min_width: swatch.width
+      }));
+
+      // Position hover listeners
+      var sizes = [];
+      selection.each(function() {
+        sizes.push(this.getBBox());
+      });
+      selection.select('.chart-legend-hover').each(function() {
+        var size = sizes.shift();
+        d3.select(this)
+          .attr('width', size.width)
+          .attr('height', size.height);
+      });
     },
     onExit: function onExit(selection) {
       selection.remove();
+    },
+
+    _itemDetails: function _itemDetails(d, i) {
+      return {
+        legend: this,
+        d: d,
+        i: i
+      };
     }
   }), {
     z_index: 200,
@@ -5228,7 +5356,7 @@
   }
 
   var d3c = d3.compose = {
-    VERSION: '0.14.3',
+    VERSION: '0.14.4',
     utils: utils,
     helpers: helpers,
     Base: Base,
