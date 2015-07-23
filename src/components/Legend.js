@@ -282,7 +282,13 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
       });
 
     // Position groups after positioning everything inside
-    selection.call(stack.bind(selection, {direction: this.stackDirection(), origin: 'top', padding: 5}));
+    selection.call(stack({
+      direction: this.stackDirection(),
+      origin: 'top',
+      padding: 5,
+      min_height: swatch.height,
+      min_width: swatch.width
+    }));
   },
   onExit: function onExit(selection) {
     selection.remove();
