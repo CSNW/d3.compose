@@ -2,7 +2,8 @@ import { defaults } from '../utils';
 import { property } from '../helpers';
 import { textOptions } from './Text';
 import Title from './Title';
-var default_axis_title_margins = {top: 8, right: 8, bottom: 8, left: 8};
+var default_axis_title_margin = 8;
+var zero_axis_title_margins = {top: 0, right: 0, bottom: 0, left: 0};
 
 /**
   Axis title component that extends Title with defaults (styling)
@@ -27,18 +28,18 @@ var AxisTitle = Title.extend('AxisTitle', {
   margins: property('margins', {
     set: function(values) {
       return {
-        override: defaults(values, default_axis_title_margins)
+        override: defaults(values, zero_axis_title_margins)
       };
     },
     default_value: function() {
       var margins_by_position = {
-        top: {top: 4},
-        right: {left: 4},
-        bottom: {bottom: 4},
-        left: {right: 4}
+        top: {top: default_axis_title_margin / 2, bottom: default_axis_title_margin},
+        right: {left: default_axis_title_margin / 2, right: default_axis_title_margin},
+        bottom: {bottom: default_axis_title_margin / 2, top: default_axis_title_margin},
+        left: {right: default_axis_title_margin / 2, left: default_axis_title_margin}
       };
 
-      return defaults(margins_by_position[this.position()], default_axis_title_margins);
+      return defaults(margins_by_position[this.position()], zero_axis_title_margins);
     }
   })
 });
