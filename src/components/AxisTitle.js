@@ -23,7 +23,7 @@ var AxisTitle = Title.extend('AxisTitle', {
 
     @property margins
     @type Object
-    @default (by position)
+    @default (set based on `position`)
   */
   margins: property('margins', {
     set: function(values) {

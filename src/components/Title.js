@@ -20,7 +20,7 @@ var Title = Text.extend('Title', {
 
     @property margins
     @type Object
-    @default {top: 8, right: 8, bottom: 8, left: 8}
+    @default (set based on `position`)
   */
   margins: property('margins', {
     set: function(values) {

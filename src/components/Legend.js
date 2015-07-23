@@ -4,17 +4,19 @@ import {
   compact
 } from '../utils';
 import {
-  property,
-  isSeriesData,
   alignText,
-  translate,
-  stack,
+  createHelper,
   di,
+  getMargins,
+  isSeriesData,
   mixin,
-  createHelper
+  property,
+  stack,
+  translate
 } from '../helpers';
 import { StandardLayer } from '../mixins';
 import Component from '../Component';
+var default_legend_margins = {top: 8, right: 8, bottom: 8, left: 8};
 
 /**
   Legend component that can automatically pull chart and series information from d3.compose
@@ -132,6 +134,22 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
   */
   swatchDimensions: property('swatchDimensions', {
     default_value: {width: 20, height: 20}
+  }),
+
+  /**
+    Margins (in pixels) around legend
+
+    @property margins
+    @type Object
+    @default {top: 8, right: 8, bottom: 8, left: 8}
+  */
+  margins: property('margins', {
+    default_value: default_legend_margins,
+    set: function(values) {
+      return {
+        override: getMargins(values, default_legend_margins)
+      };
+    }
   }),
 
   transform: function(data) {

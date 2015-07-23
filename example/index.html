@@ -158,11 +158,10 @@
             var charts = [
               d3c.lines('line', {data: data.lines, xScale: scales.x, yScale: scales.y, hoverTolerance: 50})
             ];
-            var default_margins = {top: 8, right: 8, bottom: 8, left: 8};
 
             return [
               d3c.title('Results by Year'),
-              d3c.legend({charts: ['line'], margins: default_margins, centered: true}),
+              d3c.legend({charts: ['line'], centered: true}),
               [
                 d3c.axisTitle('Results'),
                 d3c.axis('yAxis', {scale: scales.y}),
