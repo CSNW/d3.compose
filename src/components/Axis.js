@@ -150,7 +150,9 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
 
   /**
     Position axis relative to chart
-    (top, right, bottom, left, x0, y0)
+    (top, right, bottom, left)
+
+    Note: x0 and y0 are currently disabled for more testing
 
     @property position
     @type String
@@ -159,7 +161,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
   position: property('position', {
     default_value: 'bottom',
     validate: function(value) {
-      return contains(['top', 'right', 'bottom', 'left', 'x0', 'y0'], value);
+      return contains(['top', 'right', 'bottom', 'left'], value);
     },
     set: function() {
       // Update scale -> xScale/yScale when position changes
