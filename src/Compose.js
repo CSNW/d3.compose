@@ -31,39 +31,31 @@ var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
   <div id="#chart"></div>
   ```
   ```js
-  var chart = d3.select('#chart')
-    .chart('Compose', function(data) {
-      // Process data...
+  var chart = d3.select('#chart').chart('Compose', function(data) {
+    // Process data...
 
-      // Create shared scales
-      var scales = {
-        x: {data: data.input, key: 'x', adjacent: true},
-        y: {data: data.input, key: 'y'},
-        y2: {data: data.output, key: 'y'}
-      };
+    // Create shared scales
+    var scales = {
+      x: {data: data.input, key: 'x', adjacent: true},
+      y: {data: data.input, key: 'y'},
+      y2: {data: data.output, key: 'y'}
+    };
 
-      return {
-        charts: {
-          input: {
-            type: 'Bars', data: data.input, xScale: scales.x, yScale: scales.y
-          },
-          output: {
-            type: 'Lines', data: data.output, xScale: scales.x, yScale: scales.y2}
-          }
-        },
-        components: {
-          'axis.y': {
-            type: 'Axis', scale: scales.y, position: 'left'
-          },
-          'axis.y2': {
-            type: 'Axis', scale: scales.y2, position: 'right'
-          }
-          title: {
-            type: 'Title', position: 'top', text: 'd3.compose'
-          }
-        }
-      });
-    });
+    // Setup charts and components
+    var charts = [
+      d3c.bars('input', {data: data.input, xScale: scales.x, yScale: scales.y}),
+      d3c.lines('output', {data: data.output, xScale: scales.x, yScale: scales.y2})
+    ];
+
+    var title = d3c.title('d3.compose');
+    var yAxis = d3c.axis({scale: scales.y});
+    var y2Axis = d3c.axis({scale: scales.y2});
+
+    // Layout charts and components
+    return [
+      [yAxis, d3c.layered(charts), y2Axis]
+    ];;
+  });
 
   chart.draw({input: [...], output: [...]});
   ```
