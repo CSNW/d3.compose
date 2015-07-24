@@ -320,26 +320,26 @@
           container.draw([]);
 
           expect(container.charts()[0].name()).toEqual('a');
-          expect(container.charts()[0].id).toEqual('chart-1');
+          expect(container.charts()[0].id).toEqual('item-3-3-1');
           expect(container.charts()[1].name()).toEqual('b');
-          expect(container.charts()[1].id).toEqual('chart-2');
+          expect(container.charts()[1].id).toEqual('item-3-3-2');
 
           expect(container.components()[0].name()).toEqual('c');
-          expect(container.components()[0].id).toEqual('component-2-1');
+          expect(container.components()[0].id).toEqual('item-2-1');
           expect(container.components()[1].name()).toEqual('d');
-          expect(container.components()[1].id).toEqual('component-1-1');
+          expect(container.components()[1].id).toEqual('item-1-1');
           expect(container.components()[2].name()).toEqual('e');
-          expect(container.components()[2].id).toEqual('component-3-2');
+          expect(container.components()[2].id).toEqual('item-3-2');
           expect(container.components()[3].name()).toEqual('f');
-          expect(container.components()[3].id).toEqual('component-3-1');
+          expect(container.components()[3].id).toEqual('item-3-1');
           expect(container.components()[4].name()).toEqual('g');
-          expect(container.components()[4].id).toEqual('component-3-4');
+          expect(container.components()[4].id).toEqual('item-3-4');
           expect(container.components()[5].name()).toEqual('h');
-          expect(container.components()[5].id).toEqual('component-3-5');
+          expect(container.components()[5].id).toEqual('item-3-5');
           expect(container.components()[6].name()).toEqual('i');
-          expect(container.components()[6].id).toEqual('component-4-1');
+          expect(container.components()[6].id).toEqual('item-4-1');
           expect(container.components()[7].name()).toEqual('j');
-          expect(container.components()[7].id).toEqual('component-5-1');
+          expect(container.components()[7].id).toEqual('item-5-1');
         });
       });
     });

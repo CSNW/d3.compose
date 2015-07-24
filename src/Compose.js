@@ -387,12 +387,12 @@ export default Base.extend('Compose', {
   */
   draw: function(data) {
     var config = this._prepareConfig(this.options(), data);
+    if (!config)
+      config = {data: {_charts: {}, _components: {}}, layout: []};
 
     // Set charts and components from config
-    if (config.charts)
-      this.charts(config.charts);
-    if (config.components)
-      this.components(config.components);
+    this.charts(config.charts);
+    this.components(config.components);
 
     // Add config data
     data = {
@@ -401,10 +401,10 @@ export default Base.extend('Compose', {
     };
     this.data(data);
 
-    this._updateDimensions();
+    this._setDimensions();
 
     // Layout components
-    this.layout(data);
+    this.layout(config.layout, data);
 
     // Full draw now that everything has been laid out
     d3.chart().prototype.draw.call(this, data);
@@ -424,10 +424,10 @@ export default Base.extend('Compose', {
     if (!data || !data.config || !data.original)
       return data;
 
-    if (findById(this.charts(), name) && data.config.charts[name])
-      return data.config.charts[name];
-    else if (findById(this.components(), name) && data.config.components[name])
-      return data.config.components[name];
+    if (findById(this.charts(), name) && data.config._charts[name])
+      return data.config._charts[name];
+    else if (findById(this.components(), name) && data.config._components[name])
+      return data.config._components[name];
     else
       return data.original;
   },
@@ -456,12 +456,12 @@ export default Base.extend('Compose', {
   },
 
   // Layout components and charts for given data
-  layout: function(data) {
+  layout: function(layout, data) {
     // 1. Place chart layers
     this._positionChartLayers();
 
     // 2. Extract layout from components
-    var layout = this._extractLayout(data);
+    layout = this._extractLayout(data);
 
     // 3. Set chart position from layout
     var chart_position = extend({}, this.margins());
@@ -586,7 +586,7 @@ export default Base.extend('Compose', {
   // Internal
   //
 
-  _updateDimensions: function() {
+  _setDimensions: function() {
     // Set container and svg dimensions
     // (if original selection is svg, no container and skip responsiveness)
     if (this.container) {

@@ -8,99 +8,136 @@ import {
 
 /*
   Extract layout from the given options
+
+  @param {Array} options (deprecated: Object)
+  @return {Object} {data, items, layout}
 */
 export function extractLayout(options) {
-  var layout = {
-    data: {
-      charts: {},
-      components: {}
-    }
+  if (!options)
+    return;
+
+  // DEPRECATED
+  // Convert options object to array style
+  if (!Array.isArray(options))
+    options = convertObjectLayoutToArray(options);
+
+  var data = {
+    _charts: {},
+    _components: {}
+  };
+  var items = {};
+  var layout = [];
+  var charts = [];
+  var components = [];
+
+  // TEMP Idenfify charts from layered,
+  // eventually no distinction between charts and components
+  var found = {
+    row: false,
+    charts: false
   };
 
-  if (!options) {
-    return layout;
-  }
-  else {
-    layout.charts = [];
-    layout.components = [];
-  }
+  // Components are added from inside-out
+  // so for position: top, position: left, use unshift
+  options.forEach(function(row, row_index) {
+    var row_components = [];
 
-  if (Array.isArray(options)) {
-    // TEMP Idenfify charts from layered,
-    // eventually no distinction between charts and components
-    var found = {
-      row: false,
-      charts: false
-    };
+    if (!Array.isArray(row))
+      row = [row];
+    if (row.length > 1)
+      found.row = true;
 
-    options.forEach(function(row, row_index) {
-      if (!row)
+    var row_layout = row.map(function(item, col_index) {
+      if (!item)
         return;
 
-      // Components are added from inside-out
-      // so for position: top, position: left, use unshift
+      if (item._layered) {
+        // Charts
+        found.charts = true;
+        var chart_ids = [];
 
-      if (Array.isArray(row)) {
-        found.row = true;
-        var row_components = [];
+        item.items.forEach(function(chart, chart_index) {
+          chart = defaults({}, chart, {id: getId(row_index, col_index, chart_index)});
 
-        row.forEach(function(item, col_index) {
-          if (!item)
-            return;
-
-          if (item._layered) {
-            found.charts = true;
-            layout.charts = item.items.map(function(chart, chart_index) {
-              return defaults({}, chart, {id: 'chart-' + (chart_index + 1)});
-            });
-          }
-          else if (!found.charts) {
-            row_components.unshift(prepareComponent(item, 'left', row_index, col_index));
-          }
-          else {
-            row_components.push(prepareComponent(item, 'right', row_index, col_index));
-          }
+          chart_ids.push(chart.id);
+          charts.push(chart);
+          items[chart.id] = chart;
         });
 
-        layout.components = layout.components.concat(row_components);
+        return chart_ids;
       }
-      else {
-        if (row._layered) {
-          found.row = found.charts = true;
-          layout.charts = row.items.slice();
+
+      var component = prepareComponent(item, row_index, col_index);
+      items[component.id] = component;
+
+      if (row.length > 1) {
+        if (!found.charts) {
+          // Left
+          setPosition(component, 'left');
+          row_components.unshift(component);
         }
         else {
-          if (!found.row)
-            layout.components.unshift(prepareComponent(row, 'top', row_index, 0));
-          else
-            layout.components.push(prepareComponent(row, 'bottom', row_index, 0));
+          // Right
+          setPosition(component, 'right');
+          row_components.push(component);
         }
       }
+      else {
+        if (!found.row) {
+          // Top
+          setPosition(component, 'top');
+          components.unshift(component);
+        }
+        else {
+          // Bottom
+          setPosition(component, 'bottom');
+          components.push(component);
+        }
+      }
+
+      return component.id;
     });
+
+    if (row_components.length)
+      components = components.concat(row_components);
+
+    layout.push(row_layout);
+  });
+
+  charts.forEach(extractData('_charts'));
+  components.forEach(extractData('_components'));
+
+  return {
+    data: data,
+    items: items,
+    layout: layout,
+
+    charts: charts,
+    components: components
+  };
+
+  function prepareComponent(component, row_index, col_index) {
+    return defaults({}, component, {id: getId(row_index, col_index)});
   }
-  else {
-    // DEPRECATED
-    extractLayoutFromObject(layout, options);
-  }
-
-  layout.charts.forEach(extractData('charts'));
-  layout.components.forEach(extractData('components'));
-
-  return layout;
-
-  function prepareComponent(component, position, row_index, col_index) {
+  function setPosition(component, position) {
     if (component && isFunction(component.position))
       component.position(position);
     else
-      component = extend({position: position}, component);
+      component.position = position;
+  }
+  function getId(row_index, col_index, layered_index) {
+    var id = 'item-' + (row_index + 1) + '-' + (col_index + 1);
+    if (layered_index != null)
+      id += '-' + (layered_index + 1);
 
-    return defaults(component, {id: 'component-' + (row_index + 1) + '-' + (col_index + 1)});
+    return id;
   }
 
   function extractData(type) {
     return function(item) {
       if (item.data && !isFunction(item.data)) {
-        layout.data[type][item.id] = item.data;
+        data[type][item.id] = item.data;
+        data[item.id] = item.data;
         delete item.data;
       }
     };
@@ -108,17 +145,42 @@ export function extractLayout(options) {
 }
 
 // DEPRECATED
-function extractLayoutFromObject(layout, options) {
+function convertObjectLayoutToArray(options) {
   if (typeof console != 'undefined' && console.warn)
     console.warn('DEPRECATED - object-style options have been deprecated for array-style options and will be removed in the next version of d3.compose');
 
+  var layout = [];
+  var layered = {_layered: true, items: []};
+  var by_position = {top: [], right: [], bottom: [], left: []};
+
   objectEach(options.charts, function(chart_options, id) {
-    layout.charts.push(extend({id: id}, chart_options));
+    layered.items.push(extend({id: id}, chart_options));
   });
 
   objectEach(options.components, function(component_options, id) {
-    layout.components.push(extend({id: id}, component_options));
+    if (!by_position[component_options.position])
+      throw new Error('Unsupported position for component, position="' + component_options.position + '" id="' + id + '"');
+
+    by_position[component_options.position].push(extend({id: id}, component_options));
   });
+
+  // Add top items (from inside-out)
+  layout = by_position.top.reverse();
+
+  // Add left items (inside-out), charts, and right items
+  if (by_position.left.length || layered.items.length || by_position.right.length) {
+    var row = by_position.left.reverse();
+    if (layered.items.length)
+      row.push(layered);
+
+    row = row.concat(by_position.right);
+    layout.push(row);
+  }
+
+  // Add bottom items
+  layout.push.apply(layout, by_position.bottom);
+
+  return layout;
 }
 
 /*
