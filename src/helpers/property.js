@@ -107,11 +107,11 @@ export default function property(name, options) {
       if (isFunction(options.validate) && !isUndefined(value) && !options.validate.call(this, value))
         throw new Error('Invalid value for ' + name + ': ' + JSON.stringify(value));
 
-      property.previous = properties[name];
+      var previous = properties[name];
       properties[name] = value;
 
       if (isFunction(options.set) && !isUndefined(value)) {
-        var response = options.set.call(context, value, property.previous);
+        var response = options.set.call(context, value, previous);
 
         if (response && 'override' in response)
           properties[name] = response.override;
@@ -128,6 +128,7 @@ export default function property(name, options) {
   property.set_from_options = valueOrDefault(options.set_from_options, true);
   property.default_value = options.default_value;
   property.context = options.context;
+  property.options = options;
 
   return property;
 }

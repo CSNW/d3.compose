@@ -74,6 +74,9 @@ import Component from '../Component';
 */
 var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
   initialize: function() {
+    // Store previous values for transitioning
+    this.previous = {};
+
     // Create two axes (so that layout and transitions work)
     // 1. Display and transitions
     // 2. Layout (draw to get width, but separate so that transitions aren't affected)
@@ -132,7 +135,10 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
   */
   scale: property('scale', {
     type: 'Function',
-    set: function(value) {
+    set: function(value, previous) {
+      this.previous = this.previous || {};
+      this.previous.scale = previous;
+
       if (this.orientation() == 'vertical') {
         this.yScale(value);
         value = this.yScale();
@@ -258,6 +264,43 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
   tickPadding: property('tickPadding', {type: 'Function'}),
   tickFormat: property('tickFormat', {type: 'Function'}),
 
+  // Store previous value for xScale, yScale, and duration
+  xScale: property('xScale', {
+    type: 'Function',
+    set: function(value, previous) {
+      this.previous = this.previous || {};
+      this.previous.xScale = previous;
+
+      return XY.xScale.options.set.call(this, value, previous);
+    },
+    get: function(scale) {
+      return XY.xScale.options.get.call(this, scale);
+    }
+  }),
+
+  yScale: property('yScale', {
+    type: 'Function',
+    set: function(value, previous) {
+      this.previous = this.previous || {};
+      this.previous.yScale = previous;
+
+      return XY.yScale.options.set.call(this, value, previous);
+    },
+    get: function(scale) {
+      return XY.yScale.options.get.call(this, scale);
+    }
+  }),
+
+  duration: property('duration', {
+    set: function(value, previous) {
+      this.previous = this.previous || {};
+      this.previous.duration = previous;
+
+      return Transition.duration.options.set.call(this, value, previous);
+    },
+    default_value: Transition.duration.default_value
+  }),
+
   onDataBind: function onDataBind(selection) {
     // Setup axis (scale and properties)
     this._setupAxis(this.axis);
@@ -343,12 +386,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
 
   getState: function() {
     return {
-      previous: {
-        scale: this.scale.previous,
-        xScale: this.xScale.previous,
-        yScale: this.yScale.previous,
-        duration: this.duration.previous
-      },
+      previous: this.previous,
       current: {
         scale: this.scale(),
         xScale: this.xScale(),
