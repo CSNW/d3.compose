@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.5 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.14.6 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -189,11 +189,11 @@
         if (isFunction(options.validate) && !isUndefined(value) && !options.validate.call(this, value))
           throw new Error('Invalid value for ' + name + ': ' + JSON.stringify(value));
 
-        property.previous = properties[name];
+        var previous = properties[name];
         properties[name] = value;
 
         if (isFunction(options.set) && !isUndefined(value)) {
-          var response = options.set.call(context, value, property.previous);
+          var response = options.set.call(context, value, previous);
 
           if (response && 'override' in response)
             properties[name] = response.override;
@@ -210,6 +210,7 @@
     property.set_from_options = valueOrDefault(options.set_from_options, true);
     property.default_value = options.default_value;
     property.context = options.context;
+    property.options = options;
 
     return property;
   }
@@ -1384,11 +1385,6 @@
     if (!options)
       return;
 
-    // DEPRECATED
-    // Convert options object to array style
-    if (!Array.isArray(options))
-      options = convertObjectLayoutToArray(options);
-
     var data = {
       _charts: {},
       _components: {}
@@ -1397,6 +1393,15 @@
     var layout = [];
     var charts = [];
     var components = [];
+
+    // DEPRECATED
+    // Convert options object to array style
+    var unknown_position = [];
+    if (!Array.isArray(options)) {
+      var converted = convertObjectLayoutToArray(options);
+      options = converted.options;
+      unknown_position = converted.unknown_position;
+    }
 
     // TEMP Idenfify charts from layered,
     // eventually no distinction between charts and components
@@ -1421,7 +1426,7 @@
 
         if (item._layered) {
           // Charts
-          found.charts = true;
+          found.charts = found.row = true;
           var chart_ids = [];
 
           item.items.forEach(function(chart, chart_index) {
@@ -1472,6 +1477,8 @@
       layout.push(row_layout);
     });
 
+    components.push.apply(components, unknown_position);
+
     charts.forEach(extractData('_charts'));
     components.forEach(extractData('_components'));
 
@@ -1519,17 +1526,19 @@
 
     var layout = [];
     var layered = {_layered: true, items: []};
-    var by_position = {top: [], right: [], bottom: [], left: []};
+    var by_position = {top: [], right: [], bottom: [], left: [], unknown: []};
 
     objectEach(options.charts, function(chart_options, id) {
       layered.items.push(extend({id: id}, chart_options));
     });
 
     objectEach(options.components, function(component_options, id) {
-      if (!by_position[component_options.position])
-        throw new Error('Unsupported position for component, position="' + component_options.position + '" id="' + id + '"');
+      component_options = extend({id: id}, component_options);
 
-      by_position[component_options.position].push(extend({id: id}, component_options));
+      if (!by_position[component_options.position])
+        by_position.unknown.push(component_options);
+      else
+        by_position[component_options.position].push(component_options);
     });
 
     // Add top items (from inside-out)
@@ -1548,7 +1557,7 @@
     // Add bottom items
     layout.push.apply(layout, by_position.bottom);
 
-    return layout;
+    return {options: layout, unknown_position: by_position.unknown};
   }
 
   /*
@@ -1860,7 +1869,7 @@
     // Set base style
     baseStyle: property('baseStyle', {
       default_value: function() {
-        if (this.responsive()) {
+        if (this.responsive() && this.container) {
           return src_helpers__style({
             position: 'absolute',
             top: 0,
@@ -4526,6 +4535,9 @@
 
   var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     initialize: function() {
+      // Store previous values for transitioning
+      this.previous = {};
+
       // Create two axes (so that layout and transitions work)
       // 1. Display and transitions
       // 2. Layout (draw to get width, but separate so that transitions aren't affected)
@@ -4584,10 +4596,13 @@
     */
     scale: property('scale', {
       type: 'Function',
-      set: function(value) {
+      set: function(value, previous) {
+        this.previous = this.previous || {};
+        this.previous.scale = previous;
+
         if (this.orientation() == 'vertical') {
           this.yScale(value);
-          value = this.yValue();
+          value = this.yScale();
         }
         else {
           this.xScale(value);
@@ -4710,6 +4725,43 @@
     tickPadding: property('tickPadding', {type: 'Function'}),
     tickFormat: property('tickFormat', {type: 'Function'}),
 
+    // Store previous value for xScale, yScale, and duration
+    xScale: property('xScale', {
+      type: 'Function',
+      set: function(value, previous) {
+        this.previous = this.previous || {};
+        this.previous.xScale = previous;
+
+        return XY.xScale.options.set.call(this, value, previous);
+      },
+      get: function(scale) {
+        return XY.xScale.options.get.call(this, scale);
+      }
+    }),
+
+    yScale: property('yScale', {
+      type: 'Function',
+      set: function(value, previous) {
+        this.previous = this.previous || {};
+        this.previous.yScale = previous;
+
+        return XY.yScale.options.set.call(this, value, previous);
+      },
+      get: function(scale) {
+        return XY.yScale.options.get.call(this, scale);
+      }
+    }),
+
+    duration: property('duration', {
+      set: function(value, previous) {
+        this.previous = this.previous || {};
+        this.previous.duration = previous;
+
+        return Transition.duration.options.set.call(this, value, previous);
+      },
+      default_value: Transition.duration.default_value
+    }),
+
     onDataBind: function onDataBind(selection) {
       // Setup axis (scale and properties)
       this._setupAxis(this.axis);
@@ -4795,12 +4847,7 @@
 
     getState: function() {
       return {
-        previous: {
-          scale: this.scale.previous,
-          xScale: this.xScale.previous,
-          yScale: this.yScale.previous,
-          duration: this.duration.previous
-        },
+        previous: this.previous,
         current: {
           scale: this.scale(),
           xScale: this.xScale(),
@@ -4844,7 +4891,7 @@
       var overhangs = {width: [0], height: [0]};
       var orientation = this.orientation();
 
-      this._layout_base.selectAll('.tick').each(function() {
+      this._layout_base.selectAll('g').each(function() {
         try {
           // There are cases where getBBox may throw
           // (e.g. not currently displayed in Firefox)
@@ -5439,7 +5486,7 @@
   }
 
   var d3c = d3.compose = {
-    VERSION: '0.14.5',
+    VERSION: '0.14.6',
     utils: utils,
     helpers: helpers,
     Base: Base,

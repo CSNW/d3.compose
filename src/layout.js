@@ -164,7 +164,7 @@ function convertObjectLayoutToArray(options) {
   });
 
   objectEach(options.components, function(component_options, id) {
-    component_options = extend({id: id}, component_options)
+    component_options = extend({id: id}, component_options);
 
     if (!by_position[component_options.position])
       by_position.unknown.push(component_options);
