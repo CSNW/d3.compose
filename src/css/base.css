@@ -55,7 +55,7 @@
 .chart-axis .tick {
   font-size: 0.9em;
 }
-.chart-axis .tick line {
+.chart-axis .tick line, .chart-axis line.tick {
   stroke: black;
 }
 

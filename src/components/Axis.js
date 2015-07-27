@@ -430,7 +430,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     var overhangs = {width: [0], height: [0]};
     var orientation = this.orientation();
 
-    this._layout_base.selectAll('.tick').each(function() {
+    this._layout_base.selectAll('g').each(function() {
       try {
         // There are cases where getBBox may throw
         // (e.g. not currently displayed in Firefox)
