@@ -265,7 +265,7 @@ export default Base.extend('Compose', {
   // Set base style
   baseStyle: property('baseStyle', {
     default_value: function() {
-      if (this.responsive()) {
+      if (this.responsive() && this.container) {
         return style({
           position: 'absolute',
           top: 0,

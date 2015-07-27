@@ -16,11 +16,6 @@ export function extractLayout(options) {
   if (!options)
     return;
 
-  // DEPRECATED
-  // Convert options object to array style
-  if (!Array.isArray(options))
-    options = convertObjectLayoutToArray(options);
-
   var data = {
     _charts: {},
     _components: {}
@@ -29,6 +24,15 @@ export function extractLayout(options) {
   var layout = [];
   var charts = [];
   var components = [];
+
+  // DEPRECATED
+  // Convert options object to array style
+  var unknown_position = [];
+  if (!Array.isArray(options)) {
+    var converted = convertObjectLayoutToArray(options);
+    options = converted.options;
+    unknown_position = converted.unknown_position;
+  }
 
   // TEMP Idenfify charts from layered,
   // eventually no distinction between charts and components
@@ -53,7 +57,7 @@ export function extractLayout(options) {
 
       if (item._layered) {
         // Charts
-        found.charts = true;
+        found.charts = found.row = true;
         var chart_ids = [];
 
         item.items.forEach(function(chart, chart_index) {
@@ -104,6 +108,8 @@ export function extractLayout(options) {
     layout.push(row_layout);
   });
 
+  components.push.apply(components, unknown_position);
+
   charts.forEach(extractData('_charts'));
   components.forEach(extractData('_components'));
 
@@ -151,17 +157,19 @@ function convertObjectLayoutToArray(options) {
 
   var layout = [];
   var layered = {_layered: true, items: []};
-  var by_position = {top: [], right: [], bottom: [], left: []};
+  var by_position = {top: [], right: [], bottom: [], left: [], unknown: []};
 
   objectEach(options.charts, function(chart_options, id) {
     layered.items.push(extend({id: id}, chart_options));
   });
 
   objectEach(options.components, function(component_options, id) {
-    if (!by_position[component_options.position])
-      throw new Error('Unsupported position for component, position="' + component_options.position + '" id="' + id + '"');
+    component_options = extend({id: id}, component_options)
 
-    by_position[component_options.position].push(extend({id: id}, component_options));
+    if (!by_position[component_options.position])
+      by_position.unknown.push(component_options);
+    else
+      by_position[component_options.position].push(component_options);
   });
 
   // Add top items (from inside-out)
@@ -180,7 +188,7 @@ function convertObjectLayoutToArray(options) {
   // Add bottom items
   layout.push.apply(layout, by_position.bottom);
 
-  return layout;
+  return {options: layout, unknown_position: by_position.unknown};
 }
 
 /*

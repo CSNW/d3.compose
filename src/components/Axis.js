@@ -135,7 +135,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     set: function(value) {
       if (this.orientation() == 'vertical') {
         this.yScale(value);
-        value = this.yValue();
+        value = this.yScale();
       }
       else {
         this.xScale(value);
