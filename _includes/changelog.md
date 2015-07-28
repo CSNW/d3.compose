@@ -12,6 +12,8 @@
 - __0.14.2__ Expose d3c global
 - __0.14.3__ Add `Text` and `AxisTitle` components, update default margins, add `centered` component property
 - __0.14.4__ Set transitions on `Compose`, update `stack`, and add hover listeners to `Legend`
+- __0.14.5__ Disable x0 and y0 position for axes until tested more thoroughly, refactor layout
+- __0.14.6__ Fix vertical Axis bug, absolute positioning Compose bug, unknown position bug, and property.previous bug
 
 # 0.13.0
 
