@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.6 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.14.7 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -2232,7 +2232,10 @@
           return options;
         }
         else {
-          if (item && item.type != options.type) {
+          // TEMP Changing position has nasty side effects, disable for now
+          var changed_position = item && item.position && options.position && item.position() != options.position;
+
+          if (item && (item.type != options.type || changed_position)) {
             // If chart type has changed, detach and re-create
             context.detach(id, item);
             item = undefined;
@@ -2341,7 +2344,7 @@
   }
 
   var d3c = d3.compose = {
-    VERSION: '0.14.6',
+    VERSION: '0.14.7',
     utils: utils,
     helpers: helpers,
     Base: Base,
