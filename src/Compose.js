@@ -628,7 +628,10 @@ export default Base.extend('Compose', {
         return options;
       }
       else {
-        if (item && item.type != options.type) {
+        // TEMP Changing position has nasty side effects, disable for now
+        var changed_position = item && item.position && options.position && item.position() != options.position;
+
+        if (item && (item.type != options.type || changed_position)) {
           // If chart type has changed, detach and re-create
           context.detach(id, item);
           item = undefined;
