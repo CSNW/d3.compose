@@ -205,7 +205,7 @@
       var fn = buildFn(function() {
         var scales = {
           x: {type: 'ordinal', data: options.data, key: 'x', adjacent: true},
-          y: {data: options.data, key: 'y', domain: [0, 120]}
+          y: {domain: [0, 120]}
         };
 
         var charts = [
@@ -263,7 +263,7 @@
       var fn = buildFn(function() {
         var scales = {
           x: {type: 'ordinal', data: options.data, key: 'x', adjacent: false},
-          y: {data: options.data, key: 'y', domain: [0, 120]}
+          y: {domain: [0, 120]}
         };
 
         var charts = [
@@ -320,7 +320,7 @@
       var fn = buildFn(function() {
         var scales = {
           x: {type: 'ordinal', data: options.data, key: 'x', adjacent: true},
-          y: {data: options.data, key: 'y', domain: [0, 120]}
+          y: {domain: [0, 120]}
         };
 
         var charts = [
@@ -378,7 +378,7 @@
       var fn = buildFn(function() {
         var scales = {
           x: {type: 'ordinal', data: options.data, key: 'x', adjacent: false},
-          y: {data: options.data, key: 'y', domain: [0, 120]}
+          y: {domain: [0, 120]}
         };
 
         var charts = [
@@ -423,7 +423,7 @@
         var scales = {
           x: {type: 'ordinal', data: output, key: 'x', adjacent: true},
           y: {data: input, key: 'y'},
-          y2: {data: output, key: 'y', domain: [0, 100]}
+          y2: {domain: [0, 100]}
         };
 
         var charts = [
@@ -580,22 +580,35 @@
 
   examples.masthead = [{
     generate: function() {
-      var fn = buildFn({
-        scales: {
-          x: inline(common.scale('xOrdinal')),
-          y: inline(common.scale('y', {domain: [0, 120]}))
-        }
-      }, extensions.xy({
-        charts: {
-          bars: common.chart('Bars', {duration: 1000})
-        },
-        axes: {
-          x: inline(common.axis('x', {title: 'Input', duration: 1000})),
-          y: inline(common.axis('y', {title: 'Output', duration: 1000}))
-        },
-        title: 'd3.compose',
-        legend: true
-      }));
+      var fn = buildFn(function() {
+        var scales = {
+          x: {type: 'ordinal', data: options.data, key: 'x', adjacent: true},
+          y: {domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.bars('bars', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y,
+            duration: 1000
+          })
+        ];
+
+        var title = d3c.title('d3.compose');
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5, duration: 1000});
+        var xAxisTitle = d3c.axisTitle('Input');
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5, duration: 1000});
+        var yAxisTitle = d3c.axisTitle('Output');
+        var legend = d3c.legend({charts: ['bars']});
+
+        return [
+          title,
+          [yAxisTitle, yAxis, d3c.layered(charts), legend],
+          xAxis,
+          xAxisTitle
+        ];
+      });
 
       return {
         output: wrapFn(fn),
@@ -607,22 +620,36 @@
     options: {}
   }, examples['lines-and-bars'], {
     generate: function() {
-      var fn = buildFn({
-        scales: {
-          x: inline(common.scale('x', {domain: [-10, 110]})),
-          y: inline(common.scale('y', {domain: [0, 120]}))
-        }
-      }, extensions.xy({
-        charts: {
-          bars: common.chart('Lines', {labels: true, duration: 1000})
-        },
-        axes: {
-          x: inline(common.axis('x', {title: 'Input', duration: 1000})),
-          y: inline(common.axis('y', {title: 'Output', duration: 1000}))
-        },
-        title: 'Labels',
-        legend: true
-      }));
+      var fn = buildFn(function() {
+        var scales = {
+          x: {domain: [-10, 110]},
+          y: {domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.lines('lines', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y,
+            labels: true,
+            duration: 1000
+          })
+        ];
+
+        var title = d3c.title('Labels');
+        var xAxis = d3c.axis('xAxis', {scale: scales.x, duration: 1000});
+        var xAxisTitle = d3c.axisTitle('Input');
+        var yAxis = d3c.axis('yAxis', {scale: scales.y, duration: 1000});
+        var yAxisTitle = d3c.axisTitle('Output');
+        var legend = d3c.legend({charts: ['lines']});
+
+        return [
+          title,
+          [yAxisTitle, yAxis, d3c.layered(charts), legend],
+          xAxis,
+          xAxisTitle
+        ];
+      });
 
       return {
         output: wrapFn(fn),
@@ -640,10 +667,14 @@
 
   examples['getting-started-2'] = {
     generate: function() {
-      var fn = buildFn({
-        charts: {
-          results: {type: 'Lines', data: code('options.data')}
-        }
+      var fn = buildFn(function() {
+        var charts = [
+          d3c.lines('results', {data: options.data})
+        ];
+
+        return [
+          d3c.layered(charts)
+        ];
       });
 
       return {
@@ -658,17 +689,18 @@
 
   examples['getting-started-3'] = {
     generate: function() {
-      var fn = buildFn({
-        charts: {
-          results: inline({type: 'Lines', data: code('options.data')})
-        },
-        components: {
-          yAxis: {
-            type: 'Axis',
-            position: 'left',
-            scale: {domain: [0, 100]}
-          }
-        }
+      var fn = buildFn(function() {
+        var charts = [
+          d3c.lines('results', {data: options.data})
+        ];
+
+        var yAxis = d3c.axis('yAxis', {
+          scale: {domain: [0, 100]}
+        });
+
+        return [
+          [yAxis, d3c.layered(charts)]
+        ];
       });
 
       return {
@@ -683,27 +715,27 @@
 
   examples['getting-started-4'] = {
     generate: function() {
-      var fn = buildFn({
-        scales: {
-          x: inline({data: code('options.data'), key: 'x'}),
-          y: inline({domain: [0, 120]})
-        }
-      }, {
-        charts: {
-          results: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
-        },
-        components: {
-          xAxis: {
-            type: 'Axis',
-            position: 'bottom',
-            scale: code('scales.x')
-          },
-          yAxis: {
-            type: 'Axis',
-            position: 'left',
-            scale: code('scales.y')
-          }
-        }
+      var fn = buildFn(function() {
+        var scales = {
+          x: {data: options.data, key: 'x'},
+          y: {domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.lines('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var xAxis = d3c.axis('xAxis', {scale: scales.x});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y});
+
+        return [
+          [yAxis, d3c.layered(charts)],
+          xAxis
+        ];
       });
 
       return {
@@ -718,27 +750,27 @@
 
   examples['getting-started-5'] = {
     generate: function() {
-      var fn = buildFn({
-        scales: {
-          x: inline({data: code('options.data'), key: 'x'}),
-          y: inline({domain: [0, 120]})
-        }
-      }, {
-        charts: {
-          results: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
-        },
-        components: {
-          xAxis: {
-            type: 'Axis',
-            position: 'bottom',
-            scale: code('scales.x')
-          },
-          yAxis: {
-            type: 'Axis',
-            position: 'left',
-            scale: code('scales.y')
-          }
-        }
+      var fn = buildFn(function() {
+        var scales = {
+          x: {data: options.data, key: 'x'},
+          y: {domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.lines('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var xAxis = d3c.axis('xAxis', {scale: scales.x});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y});
+
+        return [
+          [yAxis, d3c.layered(charts)],
+          xAxis
+        ];
       });
 
       return {
@@ -753,32 +785,28 @@
 
   examples['getting-started-6'] = {
     generate: function() {
-      var fn = buildFn({
-        scales: {
-          x: inline({data: code('options.data'), key: 'x'}),
-          y: inline({domain: [0, 120]})
-        }
-      }, {
-        charts: {
-          results: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
-        },
-        components: {
-          xAxis: {
-            type: 'Axis',
-            position: 'bottom',
-            scale: code('scales.x')
-          },
-          yAxis: {
-            type: 'Axis',
-            position: 'left',
-            scale: code('scales.y')
-          },
-          legend: {
-            type: 'Legend',
-            position: 'right',
-            charts: ['results']
-          }
-        }
+      var fn = buildFn(function() {
+        var scales = {
+          x: {data: options.data, key: 'x'},
+          y: {domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.lines('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var xAxis = d3c.axis('xAxis', {scale: scales.x});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y});
+        var legend = d3c.legend({charts: ['results']});
+
+        return [
+          [yAxis, d3c.layered(charts), legend],
+          xAxis
+        ];
       });
 
       return {
@@ -793,47 +821,33 @@
 
   examples['getting-started-7'] = {
     generate: function() {
-      var fn = buildFn({
-        scales: {
-          x: inline({data: code('options.data'), key: 'x'}),
-          y: inline({domain: [0, 120]})
-        }
-      }, {
-        charts: {
-          results: inline({type: 'Lines', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
-        },
-        components: {
-          xAxis: {
-            type: 'Axis',
-            position: 'bottom',
-            scale: code('scales.x')
-          },
-          yAxis: {
-            type: 'Axis',
-            position: 'left',
-            scale: code('scales.y')
-          },
-          legend: {
-            type: 'Legend',
-            position: 'right',
-            charts: ['results']
-          },
-          title: {
-            type: 'Title',
-            text: 'd3.compose',
-            'class': 'chart-title-main'
-          },
-          xAxisTitle: {
-            type: 'Title',
-            position: 'bottom',
-            text: 'Input'
-          },
-          yAxisTitle: {
-            type: 'Title',
-            position: 'left',
-            text: 'Results'
-          }
-        }
+      var fn = buildFn(function() {
+        var scales = {
+          x: {data: options.data, key: 'x'},
+          y: {domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.lines('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var xAxis = d3c.axis('xAxis', {scale: scales.x});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y});
+        var legend = d3c.legend({charts: ['results']});
+        var title = d3c.title('d3.compose');
+        var xAxisTitle = d3c.axisTitle('Input');
+        var yAxisTitle = d3c.axisTitle('Results');
+
+        return [
+          title,
+          [yAxisTitle, yAxis, d3c.layered(charts), legend],
+          xAxis,
+          xAxisTitle
+        ];
       });
 
       return {
@@ -848,47 +862,33 @@
 
   examples['getting-started-1'] = examples['getting-started-8'] = {
     generate: function() {
-      var fn = buildFn({
-        scales: {
-          x: inline({data: code('options.data'), key: 'x', type: 'ordinal', adjacent: true}),
-          y: inline({domain: [0, 120]})
-        }
-      }, {
-        charts: {
-          results: inline({type: 'Bars', data: code('options.data'), xScale: code('scales.x'), yScale: code('scales.y')})
-        },
-        components: {
-          xAxis: {
-            type: 'Axis',
-            position: 'bottom',
-            scale: code('scales.x')
-          },
-          yAxis: {
-            type: 'Axis',
-            position: 'left',
-            scale: code('scales.y')
-          },
-          legend: {
-            type: 'Legend',
-            position: 'right',
-            charts: ['results']
-          },
-          title: {
-            type: 'Title',
-            text: 'd3.compose',
-            'class': 'chart-title-main'
-          },
-          xAxisTitle: {
-            type: 'Title',
-            position: 'bottom',
-            text: 'Input'
-          },
-          yAxisTitle: {
-            type: 'Title',
-            position: 'left',
-            text: 'Results'
-          }
-        }
+      var fn = buildFn(function() {
+        var scales = {
+          x: {type: 'ordinal', data: options.data, key: 'x', adjacent: true},
+          y: {domain: [0, 120]}
+        };
+
+        var charts = [
+          d3c.bars('results', {
+            data: options.data,
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var xAxis = d3c.axis('xAxis', {scale: scales.x});
+        var yAxis = d3c.axis('yAxis', {scale: scales.y});
+        var legend = d3c.legend({charts: ['results']});
+        var title = d3c.title('d3.compose');
+        var xAxisTitle = d3c.axisTitle('Input');
+        var yAxisTitle = d3c.axisTitle('Results');
+
+        return [
+          title,
+          [yAxisTitle, yAxis, d3c.layered(charts), legend],
+          xAxis,
+          xAxisTitle
+        ];
       });
 
       return {

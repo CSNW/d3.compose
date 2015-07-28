@@ -150,18 +150,19 @@ var data = [{x: 0, y: 25}, {x: 10, y: 52}, {x: 20, y: 73}, /* ... */];
 var chart = d3.select('#chart').chart('Compose', function(data) {
   // Options function:
   // Gets evaluated on each draw and takes in data and returns options
+ 
+  var charts = [
+    // Create results chart:
+    // d3c.lines -> type: 'Lines' -> d3.chart('Lines')
+    // 'results' -> chart key for transitions and legend
+    // {data: data} -> pass given data to Lines chart
+    d3c.lines('results', {data: data})
+  ];
 
-  return {
-    charts: {
-      // Create results chart:
-      // type: 'Lines' -> d3.chart('Lines')
-      // data: data -> pass given data to Lines chart
-      results: {
-        type: 'Lines',
-        data: data
-      }
-    }
-  };
+  return [
+    // Add charts to chart layer (d3c.layered)
+    d3c.layered(charts)
+  ];
 });
 
 chart.draw(data);
@@ -181,22 +182,24 @@ chart.draw(data);
 
 {% highlight js %}
 var chart = d3.select('#chart').chart('Compose', function(data) {
-  return {
-    charts: {
-      results: {type: 'Lines', data: data}
-    },
-    components: {
-      // Create yAxis component:
-      // type: 'Axis' -> d3.chart('Axis')
-      // position: 'left' -> position to the left of the charts
-      // scale: ... -> set scale property on axis
-      yAxis: {
-        type: 'Axis',
-        position: 'left',
-        scale: {domain: [0, 100]}
-      }
-    }
-  };
+  var charts = [
+    d3c.lines('results', {data: options.data})
+  ];
+
+  // Create yAxis component:
+  // d3c.axis -> type: 'Axis' -> d3.chart('Axis')
+  // 'yAxis' -> component key for applying transitions
+  // {scale: ...} -> pass options to Axis
+  var yAxis = d3c.axis('yAxis', {
+    scale: {domain: [0, 100]}
+  });
+
+  // Return layout with rows/columns
+  return [
+    // Row with two columns
+    // (d3c.layered expands to fill remaining row width)
+    [yAxis, d3c.layered(charts)]
+  ];
 });
 {% endhighlight %}
 
@@ -218,28 +221,29 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
 var chart = d3.select('#chart').chart('Compose', function(data) {
   // Scales are created as simple objects (that are later converted into d3.scale)
   var scales = {
-    // Automatically determine x-scale domain from the data
-    x: {data: data, key: 'x'},
+    x: {data: options.data, key: 'x'},
     y: {domain: [0, 120]}
   };
 
-  return {
-    charts: {
-      results: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y}
-    },
-    components: {
-      xAxis: {
-        type: 'Axis',
-        position: 'bottom',
-        scale: scales.x
-      },
-      yAxis: {
-        type: 'Axis',
-        position: 'left',
-        scale: scales.y
-      }
-    }
-  };
+  var charts = [
+    // Pass xScale and yScale options to Lines
+    d3c.lines('results', {
+      data: options.data,
+      xScale: scales.x,
+      yScale: scales.y
+    })
+  ];
+
+  // Pass scales to respective axes
+  var xAxis = d3c.axis('xAxis', {scale: scales.x});
+  var yAxis = d3c.axis('yAxis', {scale: scales.y});
+
+  return [
+    [yAxis, d3c.layered(charts)],
+
+    // Full-width row aligned with d3c.layered
+    xAxis
+  ];
 });
 {% endhighlight %}
 
@@ -295,29 +299,31 @@ chart.draw(data);
 {% highlight js %}
 var chart = d3.select('#chart').chart('Compose', function(data) {
   var scales = {
-    x: {data: data, key: 'x'}
-    y: {domain: [0, 100]}
+    x: {data: options.data, key: 'x'},
+    y: {domain: [0, 120]}
   };
 
-  return {
-    charts: {
-      results: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y}
-    },
-    components: {
-      xAxis: {type: 'Axis', position: 'bottom', scale: scales.x},
-      yAxis: {type: 'Axis', position: 'left', scale: scales.y},
+  var charts = [
+    d3c.lines('results', {
+      data: options.data,
+      xScale: scales.x,
+      yScale: scales.y
+    })
+  ];
 
-      // Create legend component
-      // type: 'Legend' -> d3.chart('Legend')
-      // position: 'right' -> position to the right of the chart
-      // charts: ['results'] -> generate legend from the 'results' chart
-      legend: {
-        type: 'Legend',
-        position: 'right',
-        charts: ['results']
-      }
-    }
-  };
+  var xAxis = d3c.axis('xAxis', {scale: scales.x});
+  var yAxis = d3c.axis('yAxis', {scale: scales.y});
+
+  // Create legend component
+  // d3c.legend -> type: 'Legend' -> d3.chart('Legend')
+  // charts: ['results'] -> generate legend from the 'results' chart
+  var legend = d3c.legend({charts: ['results']});
+
+  return [
+    // Place legend in column to the right of charts
+    [yAxis, d3c.layered(charts), legend],
+    xAxis
+  ];
 });
 {% endhighlight %}
 
@@ -336,35 +342,31 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
 {% highlight js %}
 var chart = d3.select('#chart').chart('Compose', function(data) {
   var scales = {
-    x: {data: data, key: 'x'}
-    y: {domain: [0, 100]}
+    x: {data: options.data, key: 'x'},
+    y: {domain: [0, 120]}
   };
 
-  return {
-    charts: {
-      results: {type: 'Lines', data: data, xScale: scales.x, yScale: scales.y}
-    },
-    components: {
-      xAxis: {type: 'Axis', position: 'bottom', scale: scales.x},
-      yAxis: {type: 'Axis', position: 'left', scale: scales.y},
-      legend: {type: 'Legend', position: 'right', charts: ['results']},
-      title: {
-        type: 'Title',
-        text: 'd3.compose',
-        'class': 'chart-title-main'
-      },
-      xAxisTitle: {
-        type: 'Title',
-        position: 'bottom',
-        text: 'Input'
-      },
-      yAxisTitle: {
-        type: 'Title',
-        position: 'left',
-        text: 'Results'
-      }
-    }
-  };
+  var charts = [
+    d3c.lines('results', {
+      data: options.data,
+      xScale: scales.x,
+      yScale: scales.y
+    })
+  ];
+
+  var xAxis = d3c.axis('xAxis', {scale: scales.x});
+  var yAxis = d3c.axis('yAxis', {scale: scales.y});
+  var legend = d3c.legend({charts: ['results']});
+  var title = d3c.title('d3.compose');
+  var xAxisTitle = d3c.axisTitle('Input');
+  var yAxisTitle = d3c.axisTitle('Results');
+
+  return [
+    title,
+    [yAxisTitle, yAxis, d3c.layered(charts), legend],
+    xAxis,
+    xAxisTitle
+  ];
 });
 {% endhighlight %}
 
@@ -386,16 +388,15 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
   var scales = {
     // Use d3.scale.ordinal(...)
     // and place series next to each other (adjacent)
-    x: {data: data, key: 'x', type: 'ordinal', adjacent: true}
-    // ...
+    x: {type: 'ordinal', data: options.data, key: 'x', adjacent: true},
+    // y: ...
   };
 
-  return {
-    charts: {
-      results: {type: 'Bars', /* ... */}
-    },
-    // Everything else stays the same...
-  };
+  var charts = [
+    d3c.bars('results', {/* ... */})
+  ];
+
+  // Everything else stays the same...
 });
 {% endhighlight %}
 
