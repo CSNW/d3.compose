@@ -14,6 +14,7 @@
 - __0.14.4__ Set transitions on `Compose`, update `stack`, and add hover listeners to `Legend`
 - __0.14.5__ Disable x0 and y0 position for axes until tested more thoroughly, refactor layout
 - __0.14.6__ Fix vertical Axis bug, absolute positioning Compose bug, unknown position bug, and property.previous bug
+- __0.14.7__ (Temporarily) Re-instantiate component on position change to avoid nasty side effects
 
 # 0.13.0
 
