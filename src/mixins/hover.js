@@ -188,7 +188,7 @@ var HoverPoints = {
     @type Number
     @default Infinity
   */
-  hoverTolerance: property('hoverTolerance', {
+  hoverTolerance: property({
     default_value: Infinity
   })
 };

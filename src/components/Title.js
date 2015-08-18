@@ -22,7 +22,7 @@ var Title = Text.extend('Title', {
     @type Object
     @default (set based on `position`)
   */
-  margins: property('margins', {
+  margins: property({
     set: function(values) {
       return {
         override: getMargins(values, defaultMargins(this.position()))
@@ -40,7 +40,7 @@ var Title = Text.extend('Title', {
     @type Number
     @default (set based on `position`)
   */
-  rotation: property('rotation', {
+  rotation: property({
     default_value: function() {
       var rotate_by_position = {
         right: 90,

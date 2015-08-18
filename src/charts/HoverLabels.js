@@ -28,7 +28,7 @@ var HoverLabels = Labels.extend('HoverLabels', mixin(Hover, {
     @type Number
     @default Infinity
   */
-  hoverTolerance: property('hoverTolerance', {
+  hoverTolerance: property({
     set: function(value) {
       // Pass through hover tolerance to parent (if present)
       if (this.parent && this.parent.hoverTolerance)

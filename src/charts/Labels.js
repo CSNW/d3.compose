@@ -138,8 +138,7 @@ var Labels = Chart.extend('Labels', mixin(
       @property format
       @type String|Function
     */
-    format: property('format', {
-      type: 'Function',
+    format: property({
       set: function(value) {
         if (isString(value)) {
           return {
@@ -157,7 +156,7 @@ var Labels = Chart.extend('Labels', mixin(
       @type String
       @default top
     */
-    position: property('position', {
+    position: property({
       default_value: 'top',
       validate: function(value) {
         return contains(['top', 'right', 'bottom', 'left'], value);
@@ -172,7 +171,7 @@ var Labels = Chart.extend('Labels', mixin(
       @type Number|Object
       @default {x: 0, y: 0}
     */
-    offset: property('offset', {
+    offset: property({
       default_value: {x: 0, y: 0},
       set: function(offset) {
         if (isNumber(offset)) {
@@ -200,7 +199,7 @@ var Labels = Chart.extend('Labels', mixin(
       @type Number
       @default 1
     */
-    padding: property('padding', {default_value: 1}),
+    padding: property({default_value: 1}),
 
     /**
       Define text anchor (start, middle, or end)
@@ -211,7 +210,7 @@ var Labels = Chart.extend('Labels', mixin(
       @type String
       @default middle
     */
-    anchor: property('anchor', {
+    anchor: property({
       default_value: function() {
         return {
           'top': 'middle',
@@ -234,7 +233,7 @@ var Labels = Chart.extend('Labels', mixin(
       @type String
       @default middle
     */
-    alignment: property('alignment', {
+    alignment: property({
       default_value: function() {
         return {
           'top': 'bottom',

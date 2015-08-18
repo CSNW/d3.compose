@@ -97,7 +97,7 @@ var Lines = Chart.extend('Lines', mixin(
       @type String
       @default monotone
     */
-    interpolate: property('interpolate', {
+    interpolate: property({
       default_value: 'monotone'
     }),
 

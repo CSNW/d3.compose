@@ -124,7 +124,7 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
     @property charts
     @type Array
   */
-  charts: property('charts'),
+  charts: property(),
 
   /**
     Dimensions of "swatch"
@@ -133,7 +133,7 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
     @type Object
     @default {width: 20, height: 20}
   */
-  swatchDimensions: property('swatchDimensions', {
+  swatchDimensions: property({
     default_value: {width: 20, height: 20}
   }),
 
@@ -144,7 +144,7 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
     @type Object
     @default {top: 8, right: 8, bottom: 8, left: 8}
   */
-  margins: property('margins', {
+  margins: property({
     default_value: default_legend_margins,
     set: function(values) {
       return {
@@ -161,7 +161,7 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
     @type String
     @default (based on position)
   */
-  stackDirection: property('stackDirection', {
+  stackDirection: property({
     validate: function(value) {
       return contains(['vertical', 'horizontal'], value);
     },

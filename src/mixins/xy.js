@@ -56,8 +56,7 @@ var XY = {
     @property xScale
     @type Object|d3.scale
   */
-  xScale: property('xScale', {
-    type: 'Function',
+  xScale: property({
     set: function(value) {
       var scale = createScale(value);
       this.setXScaleRange(scale);
@@ -82,8 +81,7 @@ var XY = {
     @property xScale
     @type Object|d3.scale
   */
-  yScale: property('yScale', {
-    type: 'Function',
+  yScale: property({
     set: function(value) {
       var scale = createScale(value);
       this.setYScaleRange(scale);
@@ -109,7 +107,7 @@ var XY = {
     @type String
     @default 'x'
   */
-  xKey: property('xKey', {
+  xKey: property({
     default_value: 'x'
   }),
 
@@ -120,7 +118,7 @@ var XY = {
     @type String
     @default 'y'
   */
-  yKey: property('yKey', {
+  yKey: property({
     default_value: 'y'
   }),
 

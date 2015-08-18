@@ -26,7 +26,7 @@ import Base from './Base';
       // "di" function with parent chart injected ("this" = element)
     }),
 
-    centered: helpers.property('centered', {
+    centered: helpers.property({
       default_value: true
       // can be automatically set from options object
     })

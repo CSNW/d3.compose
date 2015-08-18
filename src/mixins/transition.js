@@ -19,14 +19,7 @@ var Transition = {
     @type Number|Function
     @default (use container value, if available)
   */
-  delay: property('delay', {
-    set: function(value) {
-      // type: 'Function' is desired, but default_value needs to be evaluated
-      // wrap value in function
-      return {
-        override: function() { return value; }
-      };
-    },
+  delay: property({
     default_value: function() {
       return this.container && this.container.delay && this.container.delay();
     }
@@ -39,12 +32,7 @@ var Transition = {
     @type Number|Function
     @default (use container value, if available)
   */
-  duration: property('duration', {
-    set: function(value) {
-      return {
-        override: function() { return value; }
-      };
-    },
+  duration: property({
     default_value: function() {
       return this.container && this.container.delay && this.container.duration();
     }
@@ -60,12 +48,7 @@ var Transition = {
     @type String|Function
     @default (use container value, if available)
   */
-  ease: property('ease', {
-    set: function(value) {
-      return {
-        override: function() { return value; }
-      };
-    },
+  ease: property({
     default_value: function() {
       return this.container && this.container.delay && this.container.ease();
     }

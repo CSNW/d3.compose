@@ -167,8 +167,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     @property scale
     @type Object|d3.scale
   */
-  scale: property('scale', {
-    type: 'Function',
+  scale: property({
     set: function(value, previous) {
       this.previous = this.previous || {};
       this.previous.scale = previous;
@@ -198,7 +197,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     @type String
     @default bottom
   */
-  position: property('position', {
+  position: property({
     default_value: 'bottom',
     validate: function(value) {
       return contains(['top', 'right', 'bottom', 'left'], value);
@@ -218,7 +217,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     @type Object
     @default (set based on position)
   */
-  translation: property('translation', {
+  translation: property({
     default_value: function() {
       switch (this.position()) {
         case 'top':
@@ -248,7 +247,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     @type String
     @default (set based on position)
   */
-  orient: property('orient', {
+  orient: property({
     default_value: function() {
       var orient = this.position();
 
@@ -268,7 +267,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     @type String
     @default (set based on position)
   */
-  orientation: property('orientation', {
+  orientation: property({
     validate: function(value) {
       return contains(['horizontal', 'vertical'], value);
     },
@@ -297,7 +296,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     @type Boolean|Object
     @default false
   */
-  gridlines: property('gridlines', {
+  gridlines: property({
     get: function(value) {
       if (isBoolean(value))
         value = {display: value};
@@ -309,17 +308,16 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
   }),
 
   // d3.axis extensions
-  ticks: property('ticks', {type: 'Function'}),
-  tickValues: property('tickValues', {type: 'Function'}),
-  tickSize: property('tickSize', {type: 'Function'}),
-  innerTickSize: property('innerTickSize', {type: 'Function'}),
-  outerTickSize: property('outerTickSize', {type: 'Function'}),
-  tickPadding: property('tickPadding', {type: 'Function'}),
-  tickFormat: property('tickFormat', {type: 'Function'}),
+  ticks: property(),
+  tickValues: property(),
+  tickSize: property(),
+  innerTickSize: property(),
+  outerTickSize: property(),
+  tickPadding: property(),
+  tickFormat: property(),
 
   // Store previous value for xScale, yScale, and duration
-  xScale: property('xScale', {
-    type: 'Function',
+  xScale: property({
     set: function(value, previous) {
       this.previous = this.previous || {};
       this.previous.xScale = previous;
@@ -331,8 +329,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     }
   }),
 
-  yScale: property('yScale', {
-    type: 'Function',
+  yScale: property({
     set: function(value, previous) {
       this.previous = this.previous || {};
       this.previous.yScale = previous;
@@ -344,7 +341,7 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     }
   }),
 
-  duration: property('duration', {
+  duration: property({
     set: function(value, previous) {
       this.previous = this.previous || {};
       this.previous.duration = previous;
