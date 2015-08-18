@@ -5,7 +5,7 @@
 
     it('should set properties from options', function() {
       var HasProperties = Base.extend('HasProperties', {
-        a: helpers.property('a')
+        a: helpers.property()
       });
       var base = new HasProperties();
       base.options({a: 123, b: 456});
@@ -16,8 +16,8 @@
 
     it('should clear existing properties for new options', function() {
       var HasProperties = Base.extend('HasProperties', {
-        a: helpers.property('a'),
-        b: helpers.property('b')
+        a: helpers.property(),
+        b: helpers.property()
       });
       var base = new HasProperties();
       base.options({a: 123, b: 456});

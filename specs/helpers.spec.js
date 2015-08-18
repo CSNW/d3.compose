@@ -10,7 +10,7 @@
       });
 
       it('should get and set value', function() {
-        instance.message = property('message');
+        instance.message = property();
 
         expect(instance.message()).toBeUndefined();
         instance.message('Hello');
@@ -18,7 +18,7 @@
       });
 
       it('should use default values', function() {
-        instance.message = property('message', {
+        instance.message = property({
           default_value: 'Howdy!'
         });
 
@@ -32,7 +32,7 @@
       });
 
       it('should expose default_value on property', function() {
-        instance.message = property('message', {
+        instance.message = property({
           default_value: 'Howdy!'
         });
 
@@ -41,39 +41,15 @@
         expect(instance.message()).toEqual('Goodbye!');
       });
 
-      it('should evaluate get if type is not function', function() {
-        instance.message = property('message');
-
-        instance.message(function() { return 'Howdy!'; });
-        expect(instance.message()).toEqual('Howdy!');
-
-        instance.message = property('message', {type: 'Function'});
-        instance.message(function() { return 'Howdy!'; });
-        expect(typeof instance.message()).toEqual('function');
-        expect(instance.message()()).toEqual('Howdy!');
-      });
-
-      it('should evaluate get with context of object', function() {
-        instance.message = property('message');
-        instance.message(function() { return 'Howdy from ' + this.name; });
-        expect(instance.message()).toEqual('Howdy from Chart');
-      });
-
-      it('should store set values on object at prop_key', function() {
-        instance.message = property('message', {prop_key: 'properties'});
-        instance.message('Howdy!');
-        expect(instance.properties.message).toEqual('Howdy!');
-      });
-
       it('should expose is_property and set_from_options on property', function() {
-        instance.message = property('message', {set_from_options: false});
+        instance.message = property({set_from_options: false});
         expect(instance.message.is_property).toEqual(true);
         expect(instance.message.set_from_options).toEqual(false);
       });
 
       describe('get()', function() {
         it('should be used for return value', function() {
-          instance.message = property('message', {
+          instance.message = property({
             get: function(value) {
               return value + '!';
             }
@@ -84,7 +60,7 @@
         });
 
         it('should use context of object by default', function() {
-          instance.message = property('message', {
+          instance.message = property({
             get: function(value) {
               return value + ' from ' + this.name + '!';
             }
@@ -95,7 +71,7 @@
         });
 
         it('should use context if set', function() {
-          instance.message = property('message', {
+          instance.message = property({
             get: function(value) {
               return value + ' from ' + this.name + '!';
             },
@@ -110,7 +86,7 @@
       describe('set()', function() {
         it('should pass previous to set', function() {
           var args;
-          instance.message = property('message', {
+          instance.message = property({
             set: function(value, previous) {
               args = [value, previous];
             }
@@ -123,7 +99,7 @@
         });
 
         it('should override set', function() {
-          instance.message = property('message', {
+          instance.message = property({
             set: function(value) {
               if (value === 'Hate')
                 return {override: 'Love'};
@@ -137,7 +113,7 @@
         });
 
         it('should use undefined value in override on set', function() {
-          instance.message = property('message', {
+          instance.message = property({
             set: function(value) {
               if (value == 'Unknown')
                 return {override: undefined};
@@ -155,7 +131,7 @@
           function getValue() {
             return instance.message();
           }
-          instance.message = property('message', {
+          instance.message = property({
             set: function() {
               before = getValue();
               return {
@@ -173,7 +149,7 @@
         });
 
         it('should use context of object by default', function() {
-          instance.message = property('message', {
+          instance.message = property({
             set: function(value) {
               return {
                 override: value + ' from ' + this.name + '!'
@@ -186,7 +162,7 @@
         });
 
         it('should use context if set', function() {
-          instance.message = property('message', {
+          instance.message = property({
             set: function(value) {
               return {
                 override: value + ' from ' + this.name + '!'
@@ -201,7 +177,7 @@
 
         describe('validate', function() {
           beforeEach(function() {
-            instance.message = property('message', {
+            instance.message = property({
               validate: function(value) {
                 return value != 'INVALID';
               }

@@ -82,7 +82,7 @@ var Labels = {
     @property labels
     @type Object
   */
-  labels: property('labels', {
+  labels: property({
     get: function(value) {
       if (isBoolean(value))
         value = {display: value};

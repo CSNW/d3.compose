@@ -38,7 +38,7 @@ export default Component.extend('Overlay', {
     @type Number
     @default 0
   */
-  x: property('x', {
+  x: property({
     default_value: 0
   }),
 
@@ -49,7 +49,7 @@ export default Component.extend('Overlay', {
     @type Number
     @default 0
   */
-  y: property('y', {
+  y: property({
     default_value: 0
   }),
 
@@ -60,7 +60,7 @@ export default Component.extend('Overlay', {
     @type Boolean
     @default true
   */
-  hidden: property('hidden', {
+  hidden: property({
     default_value: true
   }),
 
@@ -72,7 +72,7 @@ export default Component.extend('Overlay', {
     @type String
     @default set from x, y, and hidden
   */
-  style: property('style', {
+  style: property({
     default_value: function() {
       var styles = {
         position: 'absolute',

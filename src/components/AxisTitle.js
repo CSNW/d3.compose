@@ -25,7 +25,7 @@ var AxisTitle = Title.extend('AxisTitle', {
     @type Object
     @default (set based on `position`)
   */
-  margins: property('margins', {
+  margins: property({
     set: function(values) {
       return {
         override: getMargins(values, defaultMargins(this.position()))

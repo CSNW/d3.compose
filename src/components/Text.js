@@ -69,7 +69,7 @@ var Text = Component.extend('Text', mixin(StandardLayer, {
     @property text
     @type String
   */
-  text: property('text'),
+  text: property(),
 
   /**
     Rotation of text
@@ -78,7 +78,7 @@ var Text = Component.extend('Text', mixin(StandardLayer, {
     @type Number
     @default 0
   */
-  rotation: property('rotation', {
+  rotation: property({
     default_value: 0
   }),
 
@@ -89,7 +89,7 @@ var Text = Component.extend('Text', mixin(StandardLayer, {
     @type String
     @default "center"
   */
-  textAlign: property('textAlign', {
+  textAlign: property({
     default_value: 'center',
     validate: function(value) {
       return contains(['left', 'center', 'right'], value);
@@ -103,7 +103,7 @@ var Text = Component.extend('Text', mixin(StandardLayer, {
     @type String
     @default (set by `textAlign`)
   */
-  anchor: property('anchor', {
+  anchor: property({
     default_value: function() {
       return {
         left: 'start',
@@ -123,7 +123,7 @@ var Text = Component.extend('Text', mixin(StandardLayer, {
     @type String
     @default "middle"
   */
-  verticalAlign: property('verticalAlign', {
+  verticalAlign: property({
     default_value: 'middle',
     validate: function(value) {
       return contains(['top', 'middle', 'bottom'], value);
@@ -137,7 +137,7 @@ var Text = Component.extend('Text', mixin(StandardLayer, {
     @type Object
     @default {}
   */
-  style: property('style', {
+  style: property({
     default_value: {},
     get: function(value) {
       return style(value) || null;

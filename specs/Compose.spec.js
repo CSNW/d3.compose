@@ -15,10 +15,10 @@
       container.margins(0);
 
       Chart = d3.chart('Chart').extend('TestChart', {
-        name: helpers.property('name')
+        name: helpers.property()
       });
       Component = d3.chart('Component').extend('TestComponent', {
-        name: helpers.property('name')
+        name: helpers.property()
       });
     });
 

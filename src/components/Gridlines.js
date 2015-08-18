@@ -84,7 +84,7 @@ var Gridlines = Component.extend('Gridlines', mixin(XY, Transition, StandardLaye
     @type String
     @default horizontal
   */
-  orientation: property('orientation', {
+  orientation: property({
     default_value: 'horizontal',
     validate: function(value) {
       return contains(['horizontal', 'vertical'], value);
@@ -111,8 +111,7 @@ var Gridlines = Component.extend('Gridlines', mixin(XY, Transition, StandardLaye
     @property scale
     @type Object|d3.scale
   */
-  scale: property('scale', {
-    type: 'Function',
+  scale: property({
     set: function(value) {
       if (this.orientation() == 'vertical') {
         this.xScale(value);
@@ -130,11 +129,10 @@ var Gridlines = Component.extend('Gridlines', mixin(XY, Transition, StandardLaye
   }),
 
   // d3.axis extensions
-  ticks: property('ticks', {
-    type: 'Function',
+  ticks: property({
     default_value: [10]
   }),
-  tickValues: property('tickValues', {type: 'Function'}),
+  tickValues: property(),
 
   drawLine: di(function(chart, d) {
     var x1, x2, y1, y2;

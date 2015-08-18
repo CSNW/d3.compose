@@ -125,9 +125,8 @@ export default Base.extend('Compose', {
     @property options
     @type Function|Object
   */
-  options: property('options', {
-    default_value: function() {},
-    type: 'Function',
+  options: property({
+    default_value: function() { return function() {}; },
     set: function(options) {
       // If options is plain object,
       // return from generic options function
@@ -142,7 +141,7 @@ export default Base.extend('Compose', {
   }),
 
   // Store raw data for container before it has been transformed
-  rawData: property('rawData'),
+  rawData: property(),
 
   /**
     Margins between edge of container and components/chart
@@ -155,7 +154,7 @@ export default Base.extend('Compose', {
     @type Object {top, right, bottom, left}
     @default {top: 10, right: 10, bottom: 10, left: 10}
   */
-  margins: property('margins', {
+  margins: property({
     default_value: default_compose_margins,
     set: function(values) {
       return {
@@ -165,7 +164,7 @@ export default Base.extend('Compose', {
   }),
 
   // Chart position
-  chartPosition: property('chartPosition', {
+  chartPosition: property({
     default_value: {top: 0, right: 0, bottom: 0, left: 0},
     set: function(values) {
       return {
@@ -186,7 +185,7 @@ export default Base.extend('Compose', {
     @property width
     @type Number
   */
-  width: property('width', {
+  width: property({
     default_value: null
   }),
 
@@ -196,7 +195,7 @@ export default Base.extend('Compose', {
     @property height
     @type Number
   */
-  height: property('height', {
+  height: property({
     default_value: null
   }),
 
@@ -217,12 +216,12 @@ export default Base.extend('Compose', {
     @type Boolean
     @default true
   */
-  responsive: property('responsive', {
+  responsive: property({
     default_value: true
   }),
 
   // Set svg viewBox attribute
-  viewBox: property('viewBox', {
+  viewBox: property({
     default_value: function() {
       if (this.responsive() && this.width() && this.height())
         return '0 0 ' + this.width() + ' ' + this.height();
@@ -232,7 +231,7 @@ export default Base.extend('Compose', {
   }),
 
   // Set svg preserveAspectRatio attribute
-  preserveAspectRatio: property('preserveAspectRatio', {
+  preserveAspectRatio: property({
     default_value: function() {
       if (this.responsive())
         return 'xMidYMid meet';
@@ -242,7 +241,7 @@ export default Base.extend('Compose', {
   }),
 
   // Set container style
-  containerStyle: property('containerStyle', {
+  containerStyle: property({
     default_value: function() {
       if (this.responsive()) {
         var aspect_ratio = 1;
@@ -263,7 +262,7 @@ export default Base.extend('Compose', {
   }),
 
   // Set base style
-  baseStyle: property('baseStyle', {
+  baseStyle: property({
     default_value: function() {
       if (this.responsive() && this.container) {
         return style({
@@ -294,7 +293,7 @@ export default Base.extend('Compose', {
     @property charts
     @type Array
   */
-  charts: property('charts', {
+  charts: property({
     set: function(chart_options, charts) {
       // Store actual charts rather than options
       return {
@@ -320,7 +319,7 @@ export default Base.extend('Compose', {
     @property components
     @type Array
   */
-  components: property('components', {
+  components: property({
     set: function(component_options, components) {
       // Store actual components rather than options
       return {
@@ -338,7 +337,7 @@ export default Base.extend('Compose', {
     @type Number|Function
     @default d3 default: 0
   */
-  delay: property('delay', {type: 'Function'}),
+  delay: property(),
 
   /**
     Transition duration in milliseconds.
@@ -348,7 +347,7 @@ export default Base.extend('Compose', {
     @type Number|Function
     @default d3 default: 250ms
   */
-  duration: property('duration', {type: 'Function'}),
+  duration: property(),
 
   /**
     Transition ease function.
@@ -361,7 +360,7 @@ export default Base.extend('Compose', {
     @type String|Function
     @default d3 default: 'cubic-in-out'
   */
-  ease: property('ease', {type: 'Function'}),
+  ease: property(),
 
   /**
     Draw chart with given data

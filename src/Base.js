@@ -39,7 +39,7 @@ export default d3.chart('Base', {
     @property data
     @type Any
   */
-  data: property('data'),
+  data: property(),
 
   /**
     Overall options for chart/component, automatically setting any matching properties.
@@ -49,8 +49,8 @@ export default d3.chart('Base', {
     var property = d3.compose.helpers.property;
 
     d3.chart('Base').extend('HasProperties', {
-      a: property('a'),
-      b: property('b', {
+      a: property(),
+      b: property({
         set: function(value) {
           return {
             override: value + '!'
@@ -78,7 +78,7 @@ export default d3.chart('Base', {
     @property options
     @type Object
   */
-  options: property('options', {
+  options: property({
     default_value: {},
     set: function(options, previous) {
       // Clear all unset options, except for data and options

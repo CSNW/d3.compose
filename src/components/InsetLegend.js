@@ -46,7 +46,7 @@ var InsetLegend = Legend.extend('InsetLegend', {
     @type Object {x,y}
     @default {x: 10, y: 10, relative_to: 'left-top'}
   */
-  translation: property('translation', {
+  translation: property({
     default_value: {x: 10, y: 0, relative_to: 'left-top'},
     get: function(value) {
       var x = value.x || 0;

@@ -55,7 +55,7 @@ export default Base.extend('Component', {
     @type String
     @default 'top'
   */
-  position: property('position', {
+  position: property({
     default_value: 'top',
     validate: function(value) {
       return contains(['top', 'right', 'bottom', 'left'], value);
@@ -70,7 +70,7 @@ export default Base.extend('Component', {
     @type Number
     @default (actual width)
   */
-  width: property('width', {
+  width: property({
     default_value: function() {
       return dimensions(this.base).width;
     }
@@ -84,7 +84,7 @@ export default Base.extend('Component', {
     @type Number
     @default (actual height)
   */
-  height: property('height', {
+  height: property({
     default_value: function() {
       return dimensions(this.base).height;
     }
@@ -97,7 +97,7 @@ export default Base.extend('Component', {
     @type Object
     @default {top: 0, right: 0, bottom: 0, left: 0}
   */
-  margins: property('margins', {
+  margins: property({
     set: function(values) {
       return {
         override: getMargins(values)
@@ -113,7 +113,7 @@ export default Base.extend('Component', {
     @type Boolean
     @default false
   */
-  centered: property('centered', {
+  centered: property({
     default_value: false
   }),
 
