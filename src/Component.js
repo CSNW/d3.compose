@@ -16,7 +16,7 @@ import Base from './Base';
   Create a component just like a chart, by creating layers in the `initialize` method in `extend`.
 
   - To adjust layout calculation, use `prepareLayout`, `getLayout`, and `setLayout`.
-  - To layout a component within the chart, use `skip_layout: false` and the static `layer_type: 'Chart'`
+  - To layout a component within the chart, use `skip_layout: true` and the static `layer_type: 'chart'`
 
   @example
   ```js

@@ -1,7 +1,9 @@
 import d3 from 'd3';
 import {
   contains,
+  defaults,
   extend,
+  isBoolean,
   isUndefined
 } from '../utils';
 import {
@@ -16,6 +18,7 @@ import {
   StandardLayer
 } from '../mixins';
 import Component from '../Component';
+import Gridlines from './Gridlines';
 
 /**
   Axis component for XY data (wraps `d3.axis`).
@@ -53,20 +56,17 @@ import Component from '../Component';
         y: {data: data, key: 'y'}
       };
 
-      return {
-        components: {
-          'x.axis': {
-            type: 'Axis',
-            position: 'bottom',
-            scale: scales.x
-          },
-          'y.axis': {
-            type: 'Axis',
-            position: 'left',
-            scale: scales.y
-          }
-        }
-      };
+      var charts = [];
+      var xAxis = d3c.axis({scale: scales.x});
+      var yAxis = d3c.axis({scale: scales.y});
+
+      return [
+        // Display y-axis to left of charts
+        [yAxis, d3c.layered(charts)],
+
+        // Display x-axis below charts
+        xAxis
+      ];
     });
   ```
   @class Axis
@@ -106,6 +106,40 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
         }
       }
     });
+
+    // Setup gridlines
+    var gridlines_options = gridlinesOptions(this);
+    var gridlines = this._gridlines = gridlines_options.display && createGridlines(this, gridlines_options);
+
+    this.on('draw', function() {
+      gridlines_options = gridlinesOptions(this);
+
+      if (gridlines)
+        gridlines.options(gridlines_options);
+      else if (gridlines_options.display)
+        gridlines = this._gridlines = createGridlines(this, gridlines_options);
+
+      if (gridlines && gridlines_options.display)
+        gridlines.draw();
+      else if (gridlines)
+        gridlines.draw([false]);
+    }.bind(this));
+
+    function gridlinesOptions(axis) {
+      return defaults({}, axis.gridlines(), {
+        parent: axis,
+        xScale: axis.xScale(),
+        yScale: axis.yScale(),
+        ticks: axis.ticks(),
+        tickValues: axis.tickValues(),
+        orientation: axis.orientation() == 'horizontal' ? 'vertical' : 'horizontal'
+      });
+    }
+
+    function createGridlines(axis, options) {
+      var base = axis.base.append('g').attr('class', 'chart-axis-gridlines');
+      return new Gridlines(base, options);
+    }
   },
 
   /**
@@ -252,6 +286,25 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
       // Update scale -> xScale/yScale when orientation changes
       if (this.scale())
         this.scale(this.scale());
+    }
+  }),
+
+  /**
+    Attach gridlines for axis
+    (`true` to show with default options, `{...}` to pass options to `Gridlines`)
+
+    @property gridlines
+    @type Boolean|Object
+    @default false
+  */
+  gridlines: property('gridlines', {
+    get: function(value) {
+      if (isBoolean(value))
+        value = {display: value};
+      else if (!value)
+        value = {display: false};
+
+      return value;
     }
   }),
 

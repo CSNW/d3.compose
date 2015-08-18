@@ -45,7 +45,7 @@
 }
 
 .chart-axis {
-  shape-rendering: crispEdges;
+
 }
 .chart-axis path {
   fill: none;
@@ -61,4 +61,10 @@
 
 .chart-legend-label {
   font-size: 0.9em;
+}
+
+.chart-gridline {
+  stroke-width: 0.5px;
+  stroke: #c9c9c9;
+  fill: none;
 }
