@@ -3,6 +3,7 @@ import { contains } from '../utils';
 import {
   createHelper,
   di,
+  dimensions,
   mixin,
   property
 } from '../helpers';
@@ -62,6 +63,16 @@ import Component from '../Component';
 */
 var Gridlines = Component.extend('Gridlines', mixin(XY, Transition, StandardLayer, {
   initialize: function() {
+    // Proxy attach to parent for width/height
+    var parent = this.options().parent;
+    if (parent) {
+      this.parent = parent;
+      parent.on('attach', function() {
+        this.container = parent.container;
+        this.trigger('attach');
+      }.bind(this));
+    }
+
     // Use standard layer for extensibility
     this.standardLayer('Gridlines', this.base.append('g').attr('class', 'chart-gridlines'));
   },
@@ -138,8 +149,6 @@ var Gridlines = Component.extend('Gridlines', mixin(XY, Transition, StandardLaye
       y1 = y2 = chart.yScale()(d);
     }
 
-    console.log(d, 'x1', x1, 'x2', x2, 'y1', y1, 'y2', y2);
-
     d3.select(this)
       .attr('x1', x1)
       .attr('x2', x2)
@@ -147,15 +156,34 @@ var Gridlines = Component.extend('Gridlines', mixin(XY, Transition, StandardLaye
       .attr('y2', y2);
   }),
 
-  onDataBind: function onDataBind(selection) {
+  width: function width() {
+    // Use container's explicit chart width rather than component width (if available)
+    return this.container ? this.container.chartPosition().width : dimensions(this.base).width;
+  },
+  height: function height() {
+    // Use container's explicit chart height rather than component width (if available)
+    return this.container ? this.container.chartPosition().height : dimensions(this.base).width;
+  },
+
+  onDataBind: function onDataBind(selection, data) {
+    // [false] is given for display: false when attached from Axis
+    var hide = data && data[0] && data[0].y === false;
+
     var tick_values = this.tickValues();
-    if (tick_values == null) {
+    if (tick_values == null && !hide) {
       // Get tick values from scale
       var scale = this.orientation() == 'vertical' ? this.xScale() : this.yScale();
-      tick_values = scale.ticks ? scale.ticks.apply(scale, this.ticks()) : scale.domain();
+      var ticks_args = this.ticks();
+
+      if (!ticks_args)
+        ticks_args = [10];
+      if (!Array.isArray(ticks_args))
+        ticks_args = [ticks_args];
+
+      tick_values = scale.ticks ? scale.ticks.apply(scale, ticks_args) : scale.domain();
     }
-    console.log(tick_values);
-    return selection.selectAll('line').data(tick_values);
+
+    return selection.selectAll('line').data(hide ? [] : tick_values);
   },
   onInsert: function onInsert(selection) {
     return selection.append('line')

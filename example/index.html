@@ -83,9 +83,8 @@
                 d3c.axisTitle('Y2 Title'),
                 d3c.insetLegend({charts: ['lines', 'bars']}),
                 d3c.gridlines('y-gridlines', {orientation: 'horizontal', scale: scales.y}),
-                d3c.gridlines({orientation: 'vertical', scale: scales.x})
               ],
-              d3c.axis('x', {scale: scales.x}),
+              d3c.axis('x', {scale: scales.x, gridlines: true}),
               d3c.axisTitle('X Title')
             ];
           })
