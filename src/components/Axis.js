@@ -345,8 +345,6 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
     set: function(value, previous) {
       this.previous = this.previous || {};
       this.previous.duration = previous;
-
-      return Transition.duration.options.set.call(this, value, previous);
     },
     default_value: Transition.duration.default_value
   }),
