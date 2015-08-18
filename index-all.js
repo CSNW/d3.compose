@@ -23,6 +23,7 @@ import Axis, { axis } from './src/components/Axis';
 import AxisTitle, { axisTitle } from './src/components/AxisTitle';
 import Legend, { legend } from './src/components/Legend';
 import InsetLegend, { insetLegend } from './src/components/InsetLegend';
+import Gridlines, { gridlines } from './src/components/Gridlines';
 
 import xy from './src/extensions/xy';
 
@@ -66,6 +67,8 @@ var d3c = d3.compose = {
   legend: legend,
   InsetLegend: InsetLegend,
   insetLegend: insetLegend,
+  Gridlines: Gridlines,
+  gridlines: gridlines,
 
   xy: xy
 };

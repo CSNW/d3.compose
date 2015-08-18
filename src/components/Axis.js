@@ -53,20 +53,17 @@ import Component from '../Component';
         y: {data: data, key: 'y'}
       };
 
-      return {
-        components: {
-          'x.axis': {
-            type: 'Axis',
-            position: 'bottom',
-            scale: scales.x
-          },
-          'y.axis': {
-            type: 'Axis',
-            position: 'left',
-            scale: scales.y
-          }
-        }
-      };
+      var charts = [];
+      var xAxis = d3c.axis({scale: scales.x});
+      var yAxis = d3c.axis({scale: scales.y});
+
+      return [
+        // Display y-axis to left of charts
+        [yAxis, d3c.layered(charts)],
+
+        // Display x-axis below charts
+        xAxis
+      ];
     });
   ```
   @class Axis

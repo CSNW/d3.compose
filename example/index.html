@@ -81,7 +81,9 @@
                 d3c.layered(charts),
                 d3c.axis('y2', {scale: scales.y2}),
                 d3c.axisTitle('Y2 Title'),
-                d3c.insetLegend({charts: ['lines', 'bars']})
+                d3c.insetLegend({charts: ['lines', 'bars']}),
+                d3c.gridlines('y-gridlines', {orientation: 'horizontal', scale: scales.y}),
+                d3c.gridlines({orientation: 'vertical', scale: scales.x})
               ],
               d3c.axis('x', {scale: scales.x}),
               d3c.axisTitle('X Title')
