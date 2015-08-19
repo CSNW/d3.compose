@@ -74,9 +74,10 @@ import Chart from '../Chart';
   @extends Chart, Series, XYValues, LabelsXY, Hover, Transition, StandardLayer
 */
 
-var Bars = mixin(Chart, Series, XYValues, LabelsXY, Hover, Transition, StandardLayer).extend({
+var Mixed = mixin(Chart, Series, XYValues, LabelsXY, Hover, Transition, StandardLayer);
+var Bars = Mixed.extend({
   initialize: function(options) {
-    this._super.initialize.call(this, options);
+    Mixed.prototype.initialize.call(this, options);
 
     this.on('before:draw', function() {
       this.offset_axis = this.getOffsetAxis();

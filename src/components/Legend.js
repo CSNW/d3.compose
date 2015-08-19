@@ -93,9 +93,10 @@ var default_legend_margins = {top: 8, right: 8, bottom: 8, left: 8};
   @class Legend
   @extends Component, StandardLayer
 */
-var Legend = mixin(Component, StandardLayer).extend({
+var Mixed = mixin(Component, StandardLayer);
+var Legend = Mixed.extend({
   initialize: function(options) {
-    this._super.initialize.call(this, options);
+    Mixed.prototype.initialize.call(this, options);
     this.legend_base = this.base.append('g').classed('chart-legend', true);
     this.standardLayer('Legend', this.legend_base);
   },

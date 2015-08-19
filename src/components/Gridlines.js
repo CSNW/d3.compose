@@ -61,9 +61,10 @@ import Component from '../Component';
   ```
   @class Gridlines
 */
-var Gridlines = mixin(Component, XY, Transition, StandardLayer).extend({
+var Mixed = mixin(Component, XY, Transition, StandardLayer);
+var Gridlines = Mixed.extend({
   initialize: function(options) {
-    this._super.initialize.call(this, options);
+    Mixed.prototype.initialize.call(this, options);
 
     // Proxy attach to parent for width/height
     var parent = this.options().parent;

@@ -57,9 +57,10 @@ import Component from '../Component';
   @class Text
   @extends Component, StandardLayer
 */
-var Text = mixin(Component, StandardLayer).extend({
+var Mixed = mixin(Component, StandardLayer);
+var Text = Mixed.extend({
   initialize: function(options) {
-    this._super.initialize.call(this, options);
+    Mixed.prototype.initialize.call(this, options);
 
     // Use standard layer for extensibility
     this.standardLayer('Text', this.base.append('g').classed('chart-text', true));

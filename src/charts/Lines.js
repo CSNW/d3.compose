@@ -68,9 +68,10 @@ import Chart from '../Chart';
   @class Lines
   @extends Chart, Series, XY, LabelsXY, Hover, HoverPoints, Transition, StandardLayer
 */
-var Lines = mixin(Chart, Series, XY, LabelsXY, Hover, HoverPoints, Transition, StandardLayer).extend({
+var Mixed = mixin(Chart, Series, XY, LabelsXY, Hover, HoverPoints, Transition, StandardLayer);
+var Lines = Mixed.extend({
   initialize: function(options) {
-    this._super.initialize.call(this, options);
+    Mixed.prototype.initialize.call(this, options);
 
     this.lines = {};
 

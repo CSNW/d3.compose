@@ -72,9 +72,10 @@ import Gridlines from './Gridlines';
   @class Axis
   @extends Component, XY, Transition, StandardLayer
 */
-var Axis = mixin(Component, XY, Transition, StandardLayer).extend({
+var Mixed = mixin(Component, XY, Transition, StandardLayer);
+var Axis = Mixed.extend({
   initialize: function(options) {
-    this._super.initialize.call(this, options);
+    Mixed.prototype.initialize.call(this, options);
 
     // Store previous values for transitioning
     this.previous = {};

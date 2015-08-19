@@ -13,9 +13,10 @@ import Labels from './Labels';
 
   @class HoverLabels
 */
-var HoverLabels = mixin(Labels, Hover).extend({
+var Mixed = mixin(Labels, Hover);
+var HoverLabels = Mixed.extend({
   initialize: function(options) {
-    this._super.initialize.call(this, options);
+    Mixed.prototype.initialize.call(this, options);
     this.on('attach', function() {
       this.container.on('mouseenter:point', this.onMouseEnterPoint.bind(this));
       this.container.on('mouseleave:point', this.onMouseLeavePoint.bind(this));

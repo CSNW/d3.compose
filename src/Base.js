@@ -204,8 +204,6 @@ Base.extend = function(proto_props, static_props) {
   if (proto_props)
     extend(Child.prototype, proto_props);
 
-  Child.prototype._super = Parent.prototype;
-
   // If name is given, register with d3.chart
   if (name)
     Chart[name] = Child;

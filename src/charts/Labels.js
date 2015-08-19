@@ -101,9 +101,10 @@ import Chart from '../Chart';
   @class Labels
   @extends Chart, Series, XY, Hover, Transition, StandardLayer
 */
-var Labels = mixin(Chart, Series, XY, Hover, Transition, StandardLayer).extend({
+var Mixed = mixin(Chart, Series, XY, Hover, Transition, StandardLayer);
+var Labels = Mixed.extend({
   initialize: function(options) {
-    this._super.initialize.call(this, options);
+    Mixed.prototype.initialize.call(this, options);
 
     // Proxy attach to parent for hover
     var parent = this.options().parent;
@@ -120,7 +121,7 @@ var Labels = mixin(Chart, Series, XY, Hover, Transition, StandardLayer).extend({
   },
 
   transform: function(data) {
-    data = this._super.transform.call(this, data);
+    data = Mixed.prototype.transform.call(this, data);
 
     if (!isSeriesData(data))
       data = [{key: 'labels', name: 'Labels', values: data}];
