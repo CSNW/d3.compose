@@ -1,6 +1,9 @@
 import d3 from 'd3';
 import {
   difference,
+  extend,
+  inherits,
+  isString,
   objectEach
 } from './utils';
 import {
@@ -8,6 +11,7 @@ import {
   bindAllDi,
   dimensions
 } from './helpers';
+var Chart = d3.chart();
 
 /**
   TEMP Clear namespace from mixins
@@ -24,14 +28,61 @@ import {
 
   @class Base
 */
-export default d3.chart('Base', {
-  initialize: function(options) {
-    // Bind all di-functions to this chart
-    bindAllDi(this);
+function Base(selection, options) {
+  // d3.chart() constructor without transform and initialize cascade
+  this.base = selection;
+  this._layers = {};
+  this._attached = {};
+  this._events = {};
 
-    if (options)
-      this.options(options);
+  // Bind all di-functions to this chart
+  bindAllDi(this);
+
+  // Set options (and properties with set_from_options)
+  if (options)
+    this.options(options);
+
+  // Initialize Chart (relies on explicitly calling super in initialize)
+  this.initialize(options);
+}
+
+inherits(Base, Chart);
+
+extend(Base.prototype, {
+  initialize: function() {},
+  transform: function(data) {
+    return data;
   },
+  demux: function(name, data) { return data; },
+
+  // Add events to draw: "before:draw" and "draw"
+  draw: function(data) {
+    // Transform data (relies on explicitly calling super in transform)
+    data = this.transform(data);
+
+    // Store fully-transformed data for reference
+    this.data(data);
+
+    this.trigger('before:draw', data);
+
+    objectEach(this._layers, function(layer) {
+      layer.draw(data);
+    });
+    objectEach(this._attached, function(attachment, name) {
+      attachment.draw(this.demux(name, data));
+    }, this);
+
+    this.trigger('draw', data);
+  },
+
+  // Explicitly load d3.chart prototype
+  layer: Chart.prototype.layer,
+  unlayer: Chart.prototype.unlayer,
+  attach: Chart.prototype.attach,
+  on: Chart.prototype.on,
+  once: Chart.prototype.once,
+  off: Chart.prototype.off,
+  trigger: Chart.prototype.trigger,
 
   /**
     Store fully-transformed data for direct access from the chart
@@ -121,21 +172,47 @@ export default d3.chart('Base', {
   */
   height: function height() {
     return dimensions(this.base).height;
-  },
-
-  // Store fully-transformed data for reference
-  // (Base is last transform to be called, so stored data has been fully transformed)
-  transform: function(data) {
-    data = data || [];
-
-    this.data(data);
-    return data;
-  },
-
-  // Add events to draw: "before:draw" and "draw"
-  draw: function(data) {
-    this.trigger('before:draw', data);
-    d3.chart().prototype.draw.apply(this, arguments);
-    this.trigger('draw', data);
   }
 });
+
+Base.extend = function(proto_props, static_props) {
+  // name may be first parameter for d3.chart usage
+  var name;
+  if (isString(proto_props)) {
+    name = proto_props;
+    proto_props = static_props;
+    static_props = arguments[2];
+  }
+
+  var Parent = this;
+  var Child;
+
+  if (proto_props && proto_props.hasOwnProperty('constructor')) {
+    Child = proto_props.constructor;
+
+    // inherits sets constructor, remove from proto_props
+    proto_props = extend({}, proto_props);
+    delete proto_props.constructor;
+  }
+  else {
+    Child = function() { return Parent.apply(this, arguments); };
+  }
+
+  inherits(Child, Parent);
+  if (static_props)
+    extend(Child, static_props);
+  if (proto_props)
+    extend(Child.prototype, proto_props);
+
+  Child.prototype._super = Parent.prototype;
+
+  // If name is given, register with d3.chart
+  if (name)
+    Chart[name] = Child;
+
+  return Child;
+};
+
+// Export to d3.chart
+Chart.Base = Base;
+export default Base;

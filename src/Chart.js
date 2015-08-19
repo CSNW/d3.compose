@@ -35,7 +35,7 @@ import Base from './Base';
   @class Chart
   @extends Base
 */
-export default Base.extend('Chart', {}, {
+var Chart = Base.extend({}, {
   /**
     Default z-index for chart
     (Components are 50 by default, so Chart = 100 is above component by default)
@@ -56,3 +56,6 @@ export default Base.extend('Chart', {}, {
   z_index: 100,
   layer_type: 'chart'
 });
+
+d3.chart().Chart = Chart;
+export default Chart;

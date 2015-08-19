@@ -62,15 +62,9 @@ var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
   @class Compose
   @extends Base
 */
-export default Base.extend('Compose', {
-  initialize: function() {
-    // Overriding transform in init jumps it to the top of the transform cascade
-    // Therefore, data coming in hasn't been transformed and is raw
-    // (Save raw data for redraw)
-    this.transform = function(data) {
-      this.rawData(data);
-      return data;
-    };
+var Compose = Base.extend({
+  initialize: function(options) {
+    Base.prototype.initialize.call(this, options);
 
     // Responsive svg based on the following approach (embedded + padding hack)
     // http://tympanus.net/codrops/2014/08/19/making-svgs-responsive-with-css/
@@ -89,6 +83,12 @@ export default Base.extend('Compose', {
     }
 
     this.attachHoverListeners();
+  },
+
+  transform: function(data) {
+    // Save raw data for redraw
+    this.rawData(data);
+    return Base.prototype.transform.call(this, data);
   },
 
   /**
@@ -725,7 +725,7 @@ export default Base.extend('Compose', {
 });
 
 // TODO Find better place for this
-export function layered(items) {
+function layered(items) {
   if (!Array.isArray(items))
     items = Array.prototype.slice.call(arguments);
 
@@ -737,3 +737,9 @@ function findById(items, id) {
     return item.id == id;
   });
 }
+
+d3.chart().Compose = Compose;
+export {
+  Compose as default,
+  layered
+};

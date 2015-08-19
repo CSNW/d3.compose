@@ -57,8 +57,10 @@ import Component from '../Component';
   @class Text
   @extends Component, StandardLayer
 */
-var Text = Component.extend('Text', mixin(StandardLayer, {
-  initialize: function() {
+var Text = mixin(Component, StandardLayer).extend({
+  initialize: function(options) {
+    this._super.initialize.call(this, options);
+
     // Use standard layer for extensibility
     this.standardLayer('Text', this.base.append('g').classed('chart-text', true));
   },
@@ -177,7 +179,7 @@ var Text = Component.extend('Text', mixin(StandardLayer, {
 
     return translation + ' ' + rotation;
   }
-}), {
+}, {
   z_index: 70
 });
 
@@ -196,6 +198,7 @@ function text(id, options) {
   return textOptions(id, options, {type: 'Text'});
 }
 
+d3.chart().Text = Text;
 export {
   Text as default,
   text,

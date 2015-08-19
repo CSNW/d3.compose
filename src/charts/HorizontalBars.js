@@ -43,7 +43,7 @@ import Bars from './Bars';
   @class HorizontalBars
   @extends Bars, XYInverted
 */
-var HorizontalBars = Bars.extend('HorizontalBars', mixin(XYInverted, {
+var HorizontalBars = mixin(Bars, XYInverted).extend({
   barX: di(function(chart, d, i) {
     var x = chart.x.call(this, d, i);
     var x0 = chart.x0();
@@ -95,10 +95,11 @@ var HorizontalBars = Bars.extend('HorizontalBars', mixin(XYInverted, {
       .attr('x', this.barX)
       .attr('width', this.barWidth);
   }
-}));
+});
 
 var horizontalBars = createHelper('HorizontalBars');
 
+d3.chart().HorizontalBars = HorizontalBars;
 export {
   HorizontalBars as default,
   horizontalBars

@@ -46,7 +46,7 @@ import Base from './Base';
   @class Component
   @extends Base
 */
-export default Base.extend('Component', {
+var Component = Base.extend({
   /**
     Component's position relative to chart
     (top, right, bottom, left)
@@ -278,3 +278,6 @@ export default Base.extend('Component', {
   */
   layer_type: 'component'
 });
+
+d3.chart().Component = Component;
+export default Component;

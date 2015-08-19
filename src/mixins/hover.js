@@ -210,6 +210,9 @@ function getPoints(chart, data) {
 }
 
 function getClosestPoints(points, position, tolerance) {
+  if (!points)
+    return [];
+
   return compact(points.map(function(series) {
     function setDistance(point) {
       point.distance = getDistance(point.meta, position);

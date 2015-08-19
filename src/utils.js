@@ -1,8 +1,8 @@
 // Many utils inlined from Underscore.js
 // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 
-var slice = Array.prototype.slice;
-var toString = Object.prototype.toString;
+export var slice = Array.prototype.slice;
+export var toString = Object.prototype.toString;
 
 function _extend(target, extensions, undefined_only) {
   for (var i = 0, length = extensions.length; i < length; i++) {
@@ -119,6 +119,22 @@ export function uniq(arr) {
   return result;
 }
 
+export function inherits(Child, Parent) {
+  Child.prototype = Object.create(Parent.prototype, {
+    constructor: {
+      value: Child,
+      enumerable: false,
+      writeable: true,
+      configurable: true
+    }
+  });
+
+  if (Object.setPrototypeOf)
+    Object.setPrototypeOf(Child, Parent);
+  else
+    Child.__proto__ = Parent; //eslint-disable-line no-proto
+}
+
 // If value isn't `undefined`, return `value`, otherwise use `default_value`
 //
 // @method valueOrDefault
@@ -130,6 +146,8 @@ export function valueOrDefault(value, default_value) {
 }
 
 var utils = {
+  slice: slice,
+  toString: toString,
   contains: contains,
   compact: compact,
   difference: difference,
@@ -148,6 +166,7 @@ var utils = {
   objectFind: objectFind,
   pluck: pluck,
   uniq: uniq,
+  inherits: inherits,
   valueOrDefault: valueOrDefault
 };
 export default utils;

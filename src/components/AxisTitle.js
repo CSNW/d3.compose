@@ -11,8 +11,9 @@ import Title from './Title';
   @class AxisTitle
   @extends Title
 */
-var AxisTitle = Title.extend('AxisTitle', {
-  initialize: function() {
+var AxisTitle = Title.extend({
+  initialize: function(options) {
+    Title.prototype.initialize.call(this, options);
     this.base.select('.chart-text')
       .classed('chart-title', false)
       .classed('chart-axis-title', true);
@@ -53,6 +54,7 @@ function axisTitle(id, options) {
   return textOptions(id, options, {type: 'AxisTitle'});
 }
 
+d3.chart().AxisTitle = AxisTitle;
 export {
   AxisTitle as default,
   axisTitle

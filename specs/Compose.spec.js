@@ -9,7 +9,7 @@
       setFixtures('<div id="chart"></div>');
       selection = d3.select('#chart');
 
-      Container = d3.chart('Compose').extend('TestContainer');
+      Container = d3.chart('Compose').extend();
       container = new Container(selection);
       container.responsive(false);
       container.margins(0);
