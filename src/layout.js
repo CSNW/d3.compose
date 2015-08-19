@@ -61,6 +61,9 @@ export function extractLayout(options) {
         var chart_ids = [];
 
         item.items.forEach(function(chart, chart_index) {
+          if (!chart)
+            return;
+
           chart = defaults({}, chart, {id: getId(row_index, col_index, chart_index)});
 
           chart_ids.push(chart.id);
