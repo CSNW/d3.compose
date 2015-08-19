@@ -77,30 +77,67 @@
         y: {data: data.increasing.concat(data.decreasing), value: function(d, i) { return d; }}
       };
 
-      config.charts.lines = {type: 'Lines', data: data.increasing, xScale: scales.x, yScale: scales.y, labels: true};
-      config.components.axis = {type: 'Axis', position: 'left', scale: scales.y};
+      config.charts.lines = d3c.lines('lines', {data: data.increasing, xScale: scales.x, yScale: scales.y, labels: true});
+      var bars = d3c.bars('chart_2', {data: data.decreasing, xScale: utils.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true});
+      var lines2 = d3c.lines('chart_2', {data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true});
 
-      if (options.charts == 'add')
-        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: utils.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true};
-      else if (options.charts == 'change')
-        config.charts['chart_2'] = {type: 'Lines', data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true};
-      else if (options.charts == 'remove')
-        delete config.charts['chart_2'];
-      else if (config.charts['chart_2'] && config.charts['chart_2'].type == 'Bars')
-        config.charts['chart_2'] = {type: 'Bars', data: data.decreasing, xScale: utils.extend({adjacent: true}, scales.x), yScale: scales.y, labels: true};
-      else if (config.charts['chart_2'])
-        config.charts['chart_2'] = {type: 'Lines', data: data.decreasing, xScale: scales.x, yScale: scales.y, labels: true};
+      if (options.charts == 'remove') {
+        delete config.charts.bars;
+        delete config.charts.lines2;
+      }
+      else if (options.charts == 'add') {
+        config.charts.bars = bars;
+        delete config.charts.lines2;
+      }
+      else if (options.charts == 'change') {
+        delete config.charts.bars;
+        config.charts.lines2 = lines2;
+      }
+      else if (config.charts.bars) {
+        config.charts.bars = bars;
+      }
+      else if (config.charts.lines2) {
+        config.charts.lines2 = lines2;
+      }
 
-      if (options.components == 'add')
-        config.components['component_2'] = {type: 'Legend', position: 'right', charts: ['lines', 'chart_2']};
-      else if (options.components == 'change')
-        config.components['component_2'] = {type: 'Axis', position: 'bottom', scale: scales.x};
-      else if (options.components == 'move')
-        config.components['component_2'] = {type: 'Axis', position: 'top', scale: scales.x};
-      else if (options.components == 'remove')
-        delete config.components['component_2'];
+      config.components.yAxis = yAxis = d3c.axis('axis', {position: 'left', scale: scales.y});
+      var legend = d3c.legend('component_2', {position: 'right', charts: ['lines', 'chart_2']});
+      var bottomXAxis = d3c.axis('component_2', {position: 'bottom', scale: scales.x});
+      var topXAxis = d3c.axis('component_2', {position: 'top', scale: scales.x});
 
-      return config;
+      if (options.components == 'remove') {
+        delete config.components.legend;
+        delete config.components.bottomXAxis;
+        delete config.components.topXAxis;
+      }
+      else if (options.components == 'add') {
+        config.components.legend = legend;
+        delete config.components.bottomXAxis;
+        delete config.components.topXAxis;
+      }
+      else if (options.components == 'change') {
+        delete config.components.legend;
+        config.components.bottomXAxis = bottomXAxis;
+        delete config.components.topXAxis;
+      }
+      else if (options.components == 'move') {
+        delete config.components.legend;
+        delete config.components.bottomXAxis;
+        config.components.topXAxis = topXAxis;
+      }
+
+      return [
+        config.components.topXAxis,
+        [
+          config.components.yAxis, d3c.layered([
+            config.charts.lines,
+            config.charts.bars,
+            config.charts.lines2
+          ]),
+          config.components.legend
+        ],
+        config.components.bottomXAxis
+      ];
     });
 
     chart.draw(data);
