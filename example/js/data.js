@@ -78,7 +78,7 @@
 
     'chart-3': [
       {key: 'a', name: 'A', values: [10000, 20000]},
-      {key: 'b', name: 'B', values: [20000, 25000]}
+      {key: 'b', name: 'B', values: [-20000, -25000]}
     ],
 
     // Specs

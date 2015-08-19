@@ -1,9 +1,12 @@
 import d3 from 'd3';
 import {
   contains,
+  extend,
   first,
+  isFunction,
   isString,
   isNumber,
+  isUndefined,
   objectEach,
   valueOrDefault
 } from '../utils';
@@ -151,14 +154,34 @@ var Labels = Mixed.extend({
     Label position relative to data point
     (top, right, bottom, or left)
 
+    Additionally, `(a)|(b)` can be used to set position to `a` if y-value >= 0 and `b` otherwise,
+    where `a` and `b` are `top`, `right`, `bottom`, or `left`
+
+    For more advanced positioning, a "di" function can be specified to set position per label
+
+    @example
+    ```js
+    labels.position('top'); // top for all values
+    labels.position('top|bottom'); // top for y-value >= 0, bottom otherwise
+    labels.position(function(d, i) { return d.x >= 0 ? 'right' : 'left'; });
+    ```
     @property position
-    @type String
-    @default top
+    @type String|Function
+    @default top|bottom
   */
   position: property({
-    default_value: 'top',
-    validate: function(value) {
-      return contains(['top', 'right', 'bottom', 'left'], value);
+    default_value: 'top|bottom',
+    set: function(value) {
+      if (isString(value) && value.indexOf('|') >= 0) {
+        var chart = this;
+        var parts = value.split('|');
+        return {
+          override: function(d, i, j) {
+            var y_value = chart.yValue.call(this, d, i, j);
+            return y_value >= 0 ? parts[0] : parts[1];
+          }
+        };
+      }
     }
   }),
 
@@ -168,27 +191,10 @@ var Labels = Mixed.extend({
 
     @property offset
     @type Number|Object
-    @default {x: 0, y: 0}
+    @default 0
   */
   offset: property({
-    default_value: {x: 0, y: 0},
-    set: function(offset) {
-      if (isNumber(offset)) {
-        offset = {
-          top: {x: 0, y: -offset},
-          right: {x: offset, y: 0},
-          bottom: {x: 0, y: offset},
-          left: {x: -offset, y: 0}
-        }[this.position()];
-
-        if (!offset)
-          offset = {x: 0, y: 0};
-
-        return {
-          override: offset
-        };
-      }
-    }
+    default_value: 0
   }),
 
   /**
@@ -210,21 +216,13 @@ var Labels = Mixed.extend({
     @default middle
   */
   anchor: property({
-    default_value: function() {
-      return {
-        'top': 'middle',
-        'right': 'start',
-        'bottom': 'middle',
-        'left': 'end'
-      }[this.position()];
-    },
     validate: function(value) {
       return contains(['start', 'middle', 'end'], value);
     }
   }),
 
   /**
-    Define text-aligmment (top, middle, or bottom)
+    Define text-alignment (top, middle, or bottom)
 
     (set by default based on label position)
 
@@ -233,14 +231,6 @@ var Labels = Mixed.extend({
     @default middle
   */
   alignment: property({
-    default_value: function() {
-      return {
-        'top': 'bottom',
-        'right': 'middle',
-        'bottom': 'top',
-        'left': 'middle'
-      }[this.position()];
-    },
     validate: function(value) {
       return contains(['top', 'middle', 'bottom'], value);
     }
@@ -312,12 +302,18 @@ var Labels = Mixed.extend({
     // Calculate layout
     var chart = this;
     var labels = [];
-    var options = {
+    var position = chart.position();
+    var values = {
       offset: chart.offset(),
       padding: chart.padding(),
       anchor: chart.anchor(),
       alignment: chart.alignment()
     };
+
+    var options;
+    if (isString(position))
+      options = getOptions();
+
     selection.each(function(d, i, j) {
       if (!labels[j])
         labels[j] = [];
@@ -326,7 +322,9 @@ var Labels = Mixed.extend({
       var label = chart._prepareLabel(chart, this, d, i, j);
       labels[j].push(label);
 
-      chart._calculateLayout(chart, options, label);
+      var label_options = options || getOptions.call(chart, this, d, i, j);
+
+      chart._calculateLayout(chart, label_options, label);
     });
 
     // Collision detection
@@ -338,6 +336,47 @@ var Labels = Mixed.extend({
         this._setLayout(chart, label);
       }, this);
     }, this);
+
+    function getOptions(element, d, i, j) {
+      var label_options = extend({}, values);
+      var label_position;
+
+      if (isFunction(position))
+        label_position = position.call(element, d, i, j);
+      else
+        label_position = position;
+
+      if (isNumber(label_options.offset)) {
+        var offset = {
+          top: {x: 0, y: -label_options.offset},
+          right: {x: label_options.offset, y: 0},
+          bottom: {x: 0, y: label_options.offset},
+          left: {x: -label_options.offset, y: 0}
+        }[label_position];
+
+        if (!offset)
+          offset = {x: 0, y: 0};
+
+        label_options.offset = offset;
+      }
+      if (isUndefined(label_options.anchor)) {
+        label_options.anchor = {
+          top: 'middle',
+          right: 'start',
+          bottom: 'middle',
+          left: 'end'
+        }[label_position];
+      }
+      if (isUndefined(label_options.alignment)) {
+        label_options.alignment = {
+          top: 'bottom',
+          right: 'middle',
+          bottom: 'top',
+          left: 'middle'
+        }[label_position];
+      }
+      return label_options;
+    }
   },
 
   // (Override for custom labels)
