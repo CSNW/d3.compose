@@ -171,16 +171,17 @@ var Labels = Mixed.extend({
   */
   position: property({
     default_value: 'top|bottom',
-    set: function(value) {
+    get: function(value) {
       if (isString(value) && value.indexOf('|') >= 0) {
         var chart = this;
         var parts = value.split('|');
-        return {
-          override: function(d, i, j) {
-            var y_value = chart.yValue.call(this, d, i, j);
-            return y_value >= 0 ? parts[0] : parts[1];
-          }
+        return function(d, i, j) {
+          var y_value = chart.yValue.call(this, d, i, j);
+          return y_value >= 0 ? parts[0] : parts[1];
         };
+      }
+      else {
+        return value;
       }
     }
   }),
