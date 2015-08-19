@@ -12,8 +12,9 @@ import Legend from './Legend';
   @class InsetLegend
   @extends Legend
 */
-var InsetLegend = Legend.extend('InsetLegend', {
-  initialize: function() {
+var InsetLegend = Legend.extend({
+  initialize: function(options) {
+    Legend.prototype.initialize.call(this, options);
     this.on('draw', function() {
       // Position legend on draw
       // (Need actual width/height for relative_to)
@@ -75,6 +76,7 @@ var InsetLegend = Legend.extend('InsetLegend', {
 
 var insetLegend = createHelper('InsetLegend');
 
+d3.chart().InsetLegend = InsetLegend;
 export {
   InsetLegend as default,
   insetLegend

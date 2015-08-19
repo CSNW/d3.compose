@@ -93,8 +93,9 @@ var default_legend_margins = {top: 8, right: 8, bottom: 8, left: 8};
   @class Legend
   @extends Component, StandardLayer
 */
-var Legend = Component.extend('Legend', mixin(StandardLayer, {
-  initialize: function() {
+var Legend = mixin(Component, StandardLayer).extend({
+  initialize: function(options) {
+    this._super.initialize.call(this, options);
     this.legend_base = this.base.append('g').classed('chart-legend', true);
     this.standardLayer('Legend', this.legend_base);
   },
@@ -328,7 +329,7 @@ var Legend = Component.extend('Legend', mixin(StandardLayer, {
       i: i
     };
   }
-}), {
+}, {
   z_index: 200,
   swatches: {
     'default': function(chart) {
@@ -393,6 +394,7 @@ Legend.registerSwatch(['Bars', 'StackedBars', 'HorizontalBars', 'HorizontalStack
 
 var legend = createHelper('Legend');
 
+d3.chart().Legend = Legend;
 export {
   Legend as default,
   legend

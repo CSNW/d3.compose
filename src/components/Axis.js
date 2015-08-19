@@ -72,8 +72,10 @@ import Gridlines from './Gridlines';
   @class Axis
   @extends Component, XY, Transition, StandardLayer
 */
-var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
-  initialize: function() {
+var Axis = mixin(Component, XY, Transition, StandardLayer).extend({
+  initialize: function(options) {
+    this._super.initialize.call(this, options);
+
     // Store previous values for transitioning
     this.previous = {};
 
@@ -136,9 +138,9 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
       });
     }
 
-    function createGridlines(axis, options) {
+    function createGridlines(axis, gridline_options) {
       var base = axis.base.append('g').attr('class', 'chart-axis-gridlines');
-      return new Gridlines(base, options);
+      return new Gridlines(base, gridline_options);
     }
   },
 
@@ -499,13 +501,14 @@ var Axis = Component.extend('Axis', mixin(XY, Transition, StandardLayer, {
       height: d3.max(overhangs.height)
     };
   }
-}), {
+}, {
   layer_type: 'chart',
   z_index: 60
 });
 
 var axis = createHelper('Axis');
 
+d3.chart().Axis = Axis;
 export {
   Axis as default,
   axis

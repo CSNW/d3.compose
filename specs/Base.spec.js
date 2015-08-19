@@ -4,7 +4,7 @@
     var Base = d3.chart('Base');
 
     it('should set properties from options', function() {
-      var HasProperties = Base.extend('HasProperties', {
+      var HasProperties = Base.extend({
         a: helpers.property()
       });
       var base = new HasProperties();
@@ -15,7 +15,7 @@
     });
 
     it('should clear existing properties for new options', function() {
-      var HasProperties = Base.extend('HasProperties', {
+      var HasProperties = Base.extend({
         a: helpers.property(),
         b: helpers.property()
       });
@@ -32,7 +32,7 @@
     });
 
     it('should store fully-transformed data', function() {
-      var A = Base.extend('A', {
+      var A = Base.extend({
         transform: function(data) {
           return data.map(function(value) {
             value += 10;
@@ -40,8 +40,9 @@
           });
         }
       });
-      var B = A.extend('B', {
+      var B = A.extend({
         transform: function(data) {
+          data = A.prototype.transform.call(this, data);
           return data.map(function(value) {
             value += 20;
             return value;

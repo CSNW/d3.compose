@@ -1,13 +1,10 @@
-import { extend } from '../utils';
+import {
+  objectEach,
+  slice
+} from '../utils';
 
 /**
-  Mix prototypes into single combined prototype for chart/component
-
-  Designed specifically to work with d3.chart:
-
-  - transform is called from last to first
-  - initialize is called from first to last
-  - remaining are overriden from first to last
+  Combine mixins with Parent super class for extension
 
   @example
   ```js
@@ -15,50 +12,61 @@ import { extend } from '../utils';
   var b = {initialize: function() {}, b: 2};
   var c = {c: 3};
 
-  d3.chart('Chart').extend('Custom', mixin(a, b, c, {
-    initialize: function() {
+  var Custom = mixin(Chart, a, b, c).extend({
+    initialize: function(options) {
+      this._super.initialize.call(this, options);
       // d
     },
-    transform: function() {
+    transform: function(data) {
+      data = this._super.transform.call(this, data);
       // d
     }
-  }));
+  });
 
-  // initialize: Chart -> b -> d
-  // transform: d -> a -> Chart
+  // initialize: Chart, b, d
+  // transform: Chart, a, d
   ```
   @method mixin
   @for helpers
-  @param {Array|Object...} mixins... Array of mixins or mixins as separate arguments
-  @return {Object}
+  @param {Function} Parent
+  @param {...Object} ...mixins
+  @return {Function}
 */
-export default function mixin(mixins) {
-  mixins = Array.isArray(mixins) ? mixins : Array.prototype.slice.call(arguments);
-  var mixed = extend.apply(null, [{}].concat(mixins));
+export default function mixin(Parent/*, ...mixins*/) {
+  var mixins = slice.call(arguments, 1);
+  var initializes = [];
+  var transforms = [];
+  var mixed = {};
 
-  // Don't mixin constructor with prototype
-  delete mixed.constructor;
+  mixins.forEach(function(mix) {
+    objectEach(mix, function(value, key) {
+      if (key == 'initialize')
+        initializes.push(value);
+      else if (key == 'transform')
+        transforms.push(value);
+      else
+        mixed[key] = value;
+    });
+  });
 
-  if (mixed.initialize) {
+  if (initializes.length) {
     mixed.initialize = function initialize() {
-      var args = Array.prototype.slice.call(arguments);
-
-      mixins.forEach(function(extension) {
-        if (extension.initialize)
-          extension.initialize.apply(this, args);
+      var args = slice.call(arguments);
+      Parent.prototype.initialize.apply(this, args);
+      initializes.forEach(function(init) {
+        init.apply(this, args);
       }, this);
     };
   }
-  if (mixed.transform) {
+
+  if (transforms.length) {
     mixed.transform = function transform(data) {
-      return mixins.reduceRight(function(memo, extension) {
-        if (extension && extension.transform)
-          return extension.transform.call(this, memo);
-        else
-          return memo;
+      data = Parent.prototype.transform.call(this, data);
+      return transforms.reduce(function(memo, trans) {
+        return trans.call(this, memo);
       }.bind(this), data);
     };
   }
 
-  return mixed;
+  return Parent.extend(mixed);
 }

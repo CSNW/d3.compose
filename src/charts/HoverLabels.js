@@ -13,8 +13,9 @@ import Labels from './Labels';
 
   @class HoverLabels
 */
-var HoverLabels = Labels.extend('HoverLabels', mixin(Hover, {
-  initialize: function() {
+var HoverLabels = mixin(Labels, Hover).extend({
+  initialize: function(options) {
+    this._super.initialize.call(this, options);
     this.on('attach', function() {
       this.container.on('mouseenter:point', this.onMouseEnterPoint.bind(this));
       this.container.on('mouseleave:point', this.onMouseLeavePoint.bind(this));
@@ -64,10 +65,11 @@ var HoverLabels = Labels.extend('HoverLabels', mixin(Hover, {
 
     return label;
   }
-}));
+});
 
 var hoverLabels = createHelper('HoverLabels');
 
+d3.chart().HoverLabels = HoverLabels;
 export {
   HoverLabels as default,
   hoverLabels

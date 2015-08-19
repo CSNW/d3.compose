@@ -40,11 +40,11 @@ import Bars from './Bars';
   @class StackedBars
   @extends Bars
 */
-var StackedBars = Bars.extend('StackedBars', {
+var StackedBars = Bars.extend({
   transform: function(data) {
     // Re-initialize bar positions each time data changes
     this.bar_positions = [];
-    return data;
+    return Bars.prototype.transform.call(this, data);
   },
 
   barHeight: di(function(chart, d, i) {
@@ -74,6 +74,7 @@ var StackedBars = Bars.extend('StackedBars', {
 
 var stackedBars = createHelper('StackedBars');
 
+d3.chart().StackedBars = StackedBars;
 export {
   StackedBars as default,
   stackedBars

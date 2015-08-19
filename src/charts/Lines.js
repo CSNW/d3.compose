@@ -68,92 +68,86 @@ import Chart from '../Chart';
   @class Lines
   @extends Chart, Series, XY, LabelsXY, Hover, HoverPoints, Transition, StandardLayer
 */
-var Lines = Chart.extend('Lines', mixin(
-  Series,
-  XY,
-  LabelsXY,
-  Hover,
-  HoverPoints,
-  Transition,
-  StandardLayer,
-  {
-    initialize: function() {
-      this.lines = {};
+var Lines = mixin(Chart, Series, XY, LabelsXY, Hover, HoverPoints, Transition, StandardLayer).extend({
+  initialize: function(options) {
+    this._super.initialize.call(this, options);
 
-      // Use standard series layer for extensibility
-      // (dataBind, insert, and events defined in prototype)
-      this.standardSeriesLayer('Lines', this.base.append('g').classed('chart-lines', true));
+    this.lines = {};
 
-      this.attachLabels();
-    },
+    // Use standard series layer for extensibility
+    // (dataBind, insert, and events defined in prototype)
+    this.standardSeriesLayer('Lines', this.base.append('g').classed('chart-lines', true));
 
-    /**
-      Set interpolation mode for line
+    this.attachLabels();
+  },
 
-      - See: [SVG-Shapes#line_interpolate](https://github.com/mbostock/d3/wiki/SVG-Shapes#line_interpolate)
-      - Set to `null` or `'linear'` for no interpolation
+  /**
+    Set interpolation mode for line
 
-      @property interpolate
-      @type String
-      @default monotone
-    */
-    interpolate: property({
-      default_value: 'monotone'
-    }),
+    - See: [SVG-Shapes#line_interpolate](https://github.com/mbostock/d3/wiki/SVG-Shapes#line_interpolate)
+    - Set to `null` or `'linear'` for no interpolation
 
-    // Create line on insert (keyed by series/index)
-    createLine: di(function(chart, d, i, j) {
-      var key = chart.lineKey.call(this, d, i, j);
-      var line = chart.lines[key] = d3.svg.line()
-        .x(chart.x)
-        .y(chart.y);
+    @property interpolate
+    @type String
+    @default monotone
+  */
+  interpolate: property({
+    default_value: 'monotone'
+  }),
 
-      var interpolate = d.interpolate || chart.interpolate();
-      if (interpolate)
-        line.interpolate(interpolate);
-    }),
+  // Create line on insert (keyed by series/index)
+  createLine: di(function(chart, d, i, j) {
+    var key = chart.lineKey.call(this, d, i, j);
+    var line = chart.lines[key] = d3.svg.line()
+      .x(chart.x)
+      .y(chart.y);
 
-    // Get key for line (from series key or index)
-    lineKey: di(function(chart, d, i, j) {
-      var key = chart.seriesKey(chart.seriesData.call(this, d, i, j));
-      return key != null ? key : chart.seriesIndex.call(this, d, i, j);
-    }),
+    var interpolate = d.interpolate || chart.interpolate();
+    if (interpolate)
+      line.interpolate(interpolate);
+  }),
 
-    // Get data for line
-    lineData: di(function(chart, d, i, j) {
-      var key = chart.lineKey.call(this, d, i, j);
-      if (chart.lines[key])
-        return chart.lines[key](d);
-    }),
+  // Get key for line (from series key or index)
+  lineKey: di(function(chart, d, i, j) {
+    var key = chart.seriesKey(chart.seriesData.call(this, d, i, j));
+    return key != null ? key : chart.seriesIndex.call(this, d, i, j);
+  }),
 
-    // Override StandardLayer
-    onDataBind: function onDataBind(selection, data) {
-      return selection.selectAll('path')
-        .data(function(d, i, j) {
-          return [data.call(selection, d, i, j)];
-        });
-    },
+  // Get data for line
+  lineData: di(function(chart, d, i, j) {
+    var key = chart.lineKey.call(this, d, i, j);
+    if (chart.lines[key])
+      return chart.lines[key](d);
+  }),
 
-    // Override StandardLayer
-    onInsert: function onInsert(selection) {
-      return selection.append('path')
-        .classed('chart-line', true)
-        .each(this.createLine);
-    },
+  // Override StandardLayer
+  onDataBind: function onDataBind(selection, data) {
+    return selection.selectAll('path')
+      .data(function(d, i, j) {
+        return [data.call(selection, d, i, j)];
+      });
+  },
 
-    // Override StandardLayer
-    onMergeTransition: function onMergeTransition(selection) {
-      this.setupTransition(selection);
+  // Override StandardLayer
+  onInsert: function onInsert(selection) {
+    return selection.append('path')
+      .classed('chart-line', true)
+      .each(this.createLine);
+  },
 
-      selection
-        .attr('d', this.lineData)
-        .attr('style', this.itemStyle);
-    }
+  // Override StandardLayer
+  onMergeTransition: function onMergeTransition(selection) {
+    this.setupTransition(selection);
+
+    selection
+      .attr('d', this.lineData)
+      .attr('style', this.itemStyle);
   }
-));
+});
 
 var lines = createHelper('Lines');
 
+d3.chart().Lines = Lines;
 export {
   Lines as default,
   lines

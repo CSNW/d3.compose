@@ -61,8 +61,10 @@ import Component from '../Component';
   ```
   @class Gridlines
 */
-var Gridlines = Component.extend('Gridlines', mixin(XY, Transition, StandardLayer, {
-  initialize: function() {
+var Gridlines = mixin(Component, XY, Transition, StandardLayer).extend({
+  initialize: function(options) {
+    this._super.initialize.call(this, options);
+
     // Proxy attach to parent for width/height
     var parent = this.options().parent;
     if (parent) {
@@ -200,13 +202,14 @@ var Gridlines = Component.extend('Gridlines', mixin(XY, Transition, StandardLaye
   },
 
   skip_layout: true
-}), {
+}, {
   layer_type: 'chart',
   z_index: 55
 });
 
 var gridlines = createHelper('Gridlines');
 
+d3.chart().Gridlines = Gridlines;
 export {
   Gridlines as default,
   gridlines

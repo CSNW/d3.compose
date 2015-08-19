@@ -25,8 +25,9 @@ import Component from './Component';
   @class Overlay
   @extends Component
 */
-export default Component.extend('Overlay', {
-  initialize: function() {
+var Overlay = Component.extend({
+  initialize: function(options) {
+    Component.prototype.initialize.call(this, options);
     this.base.attr('style', this.style());
   },
   skip_layout: true,
@@ -188,3 +189,6 @@ export default Component.extend('Overlay', {
 }, {
   layer_type: 'overlay'
 });
+
+d3.chart().Overlay = Overlay;
+export default Overlay;

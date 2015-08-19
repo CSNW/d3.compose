@@ -40,11 +40,11 @@ import HorizontalBars from './HorizontalBars';
   @class HorizontalStackedBars
   @extends HorizontalBars
 */
-var HorizontalStackedBars = HorizontalBars.extend('HorizontalStackedBars', {
+var HorizontalStackedBars = HorizontalBars.extend({
   transform: function(data) {
     // Re-initialize bar positions each time data changes
     this.bar_positions = [];
-    return data;
+    return HorizontalBars.prototype.transform.call(this, data);
   },
 
   barWidth: di(function(chart, d, i) {
@@ -74,6 +74,7 @@ var HorizontalStackedBars = HorizontalBars.extend('HorizontalStackedBars', {
 
 var horizontalStackedBars = createHelper('HorizontalStackedBars');
 
+d3.chart().HorizontalStackedBars = HorizontalStackedBars;
 export {
   HorizontalStackedBars as default,
   horizontalStackedBars

@@ -29,7 +29,7 @@
       width = 600;
       height = 400;
 
-      Chart = d3.chart('Chart').extend('Series', helpers.mixin(mixins.Series, {
+      Chart = helpers.mixin(d3.chart('Chart'), mixins.Series).extend('Series', {
         initialize: function() {
           this._layers = {
             mock: {
@@ -48,7 +48,7 @@
         width: function() {
           return width;
         }
-      }));
+      });
     });
 
     describe('Series', function() {

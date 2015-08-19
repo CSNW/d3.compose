@@ -101,431 +101,429 @@ import Chart from '../Chart';
   @class Labels
   @extends Chart, Series, XY, Hover, Transition, StandardLayer
 */
-var Labels = Chart.extend('Labels', mixin(
-  Series,
-  XY,
-  Hover,
-  Transition,
-  StandardLayer,
-  {
-    initialize: function() {
-      // Proxy attach to parent for hover
-      var parent = this.options().parent;
-      if (parent) {
-        this.parent = parent;
-        parent.on('attach', function() {
-          this.container = parent.container;
-          this.trigger('attach');
-        }.bind(this));
-      }
+var Labels = mixin(Chart, Series, XY, Hover, Transition, StandardLayer).extend({
+  initialize: function(options) {
+    this._super.initialize.call(this, options);
 
-      // Use StandardLayer for extensibility
-      this.standardSeriesLayer('Labels', this.base);
-    },
-
-    transform: function(data) {
-      if (!isSeriesData(data))
-        data = [{key: 'labels', name: 'Labels', values: data}];
-
-      // TODO Use ticks / domain from xScale
-      // ticks = scale.ticks ? scale.ticks.apply(scale, [10]) : scale.domain()
-      return data;
-    },
-
-    /**
-      Formatting function or string (string is passed to `d3.format`) for label values
-
-      @property format
-      @type String|Function
-    */
-    format: property({
-      set: function(value) {
-        if (isString(value)) {
-          return {
-            override: d3.format(value)
-          };
-        }
-      }
-    }),
-
-    /**
-      Label position relative to data point
-      (top, right, bottom, or left)
-
-      @property position
-      @type String
-      @default top
-    */
-    position: property({
-      default_value: 'top',
-      validate: function(value) {
-        return contains(['top', 'right', 'bottom', 'left'], value);
-      }
-    }),
-
-    /**
-      Offset between data point and label
-      (if `Number` is given, offset is set based on position)
-
-      @property offset
-      @type Number|Object
-      @default {x: 0, y: 0}
-    */
-    offset: property({
-      default_value: {x: 0, y: 0},
-      set: function(offset) {
-        if (isNumber(offset)) {
-          offset = {
-            top: {x: 0, y: -offset},
-            right: {x: offset, y: 0},
-            bottom: {x: 0, y: offset},
-            left: {x: -offset, y: 0}
-          }[this.position()];
-
-          if (!offset)
-            offset = {x: 0, y: 0};
-
-          return {
-            override: offset
-          };
-        }
-      }
-    }),
-
-    /**
-      Padding between text and label background
-
-      @property padding
-      @type Number
-      @default 1
-    */
-    padding: property({default_value: 1}),
-
-    /**
-      Define text anchor (start, middle, or end)
-
-      (set by default based on label position)
-
-      @property anchor
-      @type String
-      @default middle
-    */
-    anchor: property({
-      default_value: function() {
-        return {
-          'top': 'middle',
-          'right': 'start',
-          'bottom': 'middle',
-          'left': 'end'
-        }[this.position()];
-      },
-      validate: function(value) {
-        return contains(['start', 'middle', 'end'], value);
-      }
-    }),
-
-    /**
-      Define text-aligmment (top, middle, or bottom)
-
-      (set by default based on label position)
-
-      @property alignment
-      @type String
-      @default middle
-    */
-    alignment: property({
-      default_value: function() {
-        return {
-          'top': 'bottom',
-          'right': 'middle',
-          'bottom': 'top',
-          'left': 'middle'
-        }[this.position()];
-      },
-      validate: function(value) {
-        return contains(['top', 'middle', 'bottom'], value);
-      }
-    }),
-
-    /**
-      Get label text for data-point (uses "label" property or y-value)
-
-      @method labelText
-      @param {Any} d
-      @param {Number} i
-      @return {String}
-    */
-    labelText: di(function(chart, d, i) {
-      var value = valueOrDefault(d.label, chart.yValue.call(this, d, i));
-      var format = chart.format();
-
-      return format ? format(value) : value;
-    }),
-
-    /**
-      Get class for label group
-
-      @method labelClass
-      @param {Any} d
-      @param {Number} i
-      @return {String}
-    */
-    labelClass: di(function(chart, d) {
-      return 'chart-label' + (d['class'] ? ' ' + d['class'] : '');
-    }),
-
-    onDataBind: function onDataBind(selection, data) {
-      return selection.selectAll('g')
-        .data(data, this.key);
-    },
-    onInsert: function onInsert(selection) {
-      return selection.append('g')
-        .call(this.insertLabels);
-    },
-    onMerge: function onMerge(selection) {
-      selection.attr('class', this.labelClass);
-
-      this.mergeLabels(selection);
-      this.layoutLabels(selection);
-    },
-    onMergeTransition: function onMergeTransition(selection) {
-      // Transition labels into position
-      this.setupTransition(selection);
-      this.transitionLabels(selection);
-    },
-
-    // (Override for custom labels)
-    insertLabels: function(selection) {
-      selection.append('rect')
-        .attr('class', 'chart-label-bg');
-      selection.append('text')
-        .attr('class', 'chart-label-text');
-    },
-
-    // (Override for custom labels)
-    mergeLabels: function(selection) {
-      selection.selectAll('text')
-        .text(this.labelText);
-    },
-
-    // (Override for custom labels)
-    layoutLabels: function(selection) {
-      // Calculate layout
-      var chart = this;
-      var labels = [];
-      var options = {
-        offset: chart.offset(),
-        padding: chart.padding(),
-        anchor: chart.anchor(),
-        alignment: chart.alignment()
-      };
-      selection.each(function(d, i, j) {
-        if (!labels[j])
-          labels[j] = [];
-
-        // Store values for label and calculate layout
-        var label = chart._prepareLabel(chart, this, d, i, j);
-        labels[j].push(label);
-
-        chart._calculateLayout(chart, options, label);
-      });
-
-      // Collision detection
-      this._handleCollisions(chart, labels);
-
-      // Layout labels
-      labels.forEach(function(series) {
-        series.forEach(function(label) {
-          this._setLayout(chart, label);
-        }, this);
-      }, this);
-    },
-
-    // (Override for custom labels)
-    transitionLabels: function(selection) {
-      selection.attr('opacity', 1);
-    },
-
-    //
-    // Internal
-    //
-
-    _prepareLabel: function(chart, element, d, i) {
-      var selection = d3.select(element);
-      var text = selection.select('text');
-      var bg = selection.select('rect');
-
-      return {
-        x: chart.x.call(element, d, i),
-        y: chart.y.call(element, d, i),
-        element: element,
-        selection: selection,
-        text: {
-          element: text.node(),
-          selection: text
-        },
-        bg: {
-          element: bg.node(),
-          selection: bg
-        }
-      };
-    },
-
-    _calculateLayout: function(chart, options, label) {
-      var text_bounds = label.text.element.getBBox();
-
-      // Need to adjust text for line-height
-      var text_y_adjustment = alignText(label.text.element);
-
-      // Position background
-      var layout = label.bg.layout = {
-        x: options.offset.x,
-        y: options.offset.y,
-        width: text_bounds.width + (2 * options.padding),
-        height: text_bounds.height + (2 * options.padding)
-      };
-
-      // Set width / height of label
-      label.width = layout.width;
-      label.height = layout.height;
-
-      if (options.anchor == 'end')
-        layout.x -= layout.width;
-      else if (options.anchor == 'middle')
-        layout.x -= (layout.width / 2);
-
-      if (options.alignment == 'bottom')
-        layout.y -= layout.height;
-      else if (options.alignment == 'middle')
-        layout.y -= (layout.height / 2);
-
-      // Center text in background
-      label.text.layout = {
-        x: layout.x + (layout.width / 2) - (text_bounds.width / 2),
-        y: layout.y + (layout.height / 2) - (text_bounds.height / 2) + text_y_adjustment
-      };
-    },
-
-    _handleCollisions: function(chart, labels) {
-      labels.forEach(function(series, seriesIndex) {
-        // Check through remaining series for collisions
-        labels.slice(seriesIndex + 1).forEach(function(compareSeries) {
-          compareSeries.forEach(function(compareLabel) {
-            series.forEach(function(label) {
-              if (checkForOverlap(label, compareLabel))
-                groupLabels(label, compareLabel);
-            });
-          });
-        });
-      });
-
-      function checkForOverlap(labelA, labelB) {
-        var a = getEdges(labelA);
-        var b = getEdges(labelB);
-
-        var contained_LR = (b.left < a.left && b.right > a.right);
-        var contained_TB = (b.bottom < a.bottom && b.top > a.top);
-        var overlap_LR = (b.left >= a.left && b.left < a.right) || (b.right > a.left && b.right <= a.right) || contained_LR;
-        var overlap_TB = (b.top >= a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom <= a.bottom) || contained_TB;
-
-        return overlap_LR && overlap_TB;
-
-        function getEdges(label) {
-          return {
-            left: label.x,
-            right: label.x + label.width,
-            top: label.y,
-            bottom: label.y + label.height
-          };
-        }
-      }
-
-      function groupLabels(labelA, labelB) {
-        if (labelA.group && labelB.group) {
-          // Move labelB group labels into labelA group
-          objectEach(labelB.group.labels, function(label) {
-            labelA.group.labels.push(label);
-            label.group = labelA.group;
-          });
-
-          updateGroupPositions(labelA.group);
-        }
-        else if (labelA.group) {
-          addLabelToGroup(labelB, labelA.group);
-        }
-        else if (labelB.group) {
-          addLabelToGroup(labelA, labelB.group);
-        }
-        else {
-          var group = {labels: []};
-          addLabelToGroup(labelA, group);
-          addLabelToGroup(labelB, group);
-        }
-      }
-
-      function addLabelToGroup(label, group) {
-        group.labels.push(label);
-        label.group = group;
-        label.originalY = label.y;
-
-        updateGroupPositions(group);
-      }
-
-      function updateGroupPositions(group) {
-        function reset(label) {
-          // Reset to original y
-          label.y = label.originalY;
-          return label;
-        }
-        function sortY(a, b) {
-          if (a.y < b.y)
-            return -1;
-          else if (a.y > b.y)
-            return 1;
-          else
-            return 0;
-        }
-
-        var byY = group.labels.map(reset).sort(sortY).reverse();
-
-        byY.forEach(function(label, index) {
-          var prev = first(byY, index);
-          var overlap;
-
-          for (var i = prev.length - 1; i >= 0; i--) {
-            if (checkForOverlap(label, prev[i])) {
-              overlap = prev[i];
-              break;
-            }
-          }
-
-          if (overlap)
-            label.y = overlap.y - label.height;
-        });
-      }
-    },
-
-    _setLayout: function(chart, label) {
-      label.bg.selection
-        .attr('transform', translate(label.bg.layout.x, label.bg.layout.y))
-        .attr('width', label.bg.layout.width)
-        .attr('height', label.bg.layout.height);
-
-      label.text.selection
-        .attr('transform', translate(label.text.layout.x, label.text.layout.y));
-
-      // Position label and set opacity to fade-in
-      label.selection
-        .attr('transform', translate(label.x, label.y))
-        .attr('opacity', 0);
+    // Proxy attach to parent for hover
+    var parent = this.options().parent;
+    if (parent) {
+      this.parent = parent;
+      parent.on('attach', function() {
+        this.container = parent.container;
+        this.trigger('attach');
+      }.bind(this));
     }
+
+    // Use StandardLayer for extensibility
+    this.standardSeriesLayer('Labels', this.base);
+  },
+
+  transform: function(data) {
+    data = this._super.transform.call(this, data);
+
+    if (!isSeriesData(data))
+      data = [{key: 'labels', name: 'Labels', values: data}];
+
+    // TODO Use ticks / domain from xScale
+    // ticks = scale.ticks ? scale.ticks.apply(scale, [10]) : scale.domain()
+    return data;
+  },
+
+  /**
+    Formatting function or string (string is passed to `d3.format`) for label values
+
+    @property format
+    @type String|Function
+  */
+  format: property({
+    set: function(value) {
+      if (isString(value)) {
+        return {
+          override: d3.format(value)
+        };
+      }
+    }
+  }),
+
+  /**
+    Label position relative to data point
+    (top, right, bottom, or left)
+
+    @property position
+    @type String
+    @default top
+  */
+  position: property({
+    default_value: 'top',
+    validate: function(value) {
+      return contains(['top', 'right', 'bottom', 'left'], value);
+    }
+  }),
+
+  /**
+    Offset between data point and label
+    (if `Number` is given, offset is set based on position)
+
+    @property offset
+    @type Number|Object
+    @default {x: 0, y: 0}
+  */
+  offset: property({
+    default_value: {x: 0, y: 0},
+    set: function(offset) {
+      if (isNumber(offset)) {
+        offset = {
+          top: {x: 0, y: -offset},
+          right: {x: offset, y: 0},
+          bottom: {x: 0, y: offset},
+          left: {x: -offset, y: 0}
+        }[this.position()];
+
+        if (!offset)
+          offset = {x: 0, y: 0};
+
+        return {
+          override: offset
+        };
+      }
+    }
+  }),
+
+  /**
+    Padding between text and label background
+
+    @property padding
+    @type Number
+    @default 1
+  */
+  padding: property({default_value: 1}),
+
+  /**
+    Define text anchor (start, middle, or end)
+
+    (set by default based on label position)
+
+    @property anchor
+    @type String
+    @default middle
+  */
+  anchor: property({
+    default_value: function() {
+      return {
+        'top': 'middle',
+        'right': 'start',
+        'bottom': 'middle',
+        'left': 'end'
+      }[this.position()];
+    },
+    validate: function(value) {
+      return contains(['start', 'middle', 'end'], value);
+    }
+  }),
+
+  /**
+    Define text-aligmment (top, middle, or bottom)
+
+    (set by default based on label position)
+
+    @property alignment
+    @type String
+    @default middle
+  */
+  alignment: property({
+    default_value: function() {
+      return {
+        'top': 'bottom',
+        'right': 'middle',
+        'bottom': 'top',
+        'left': 'middle'
+      }[this.position()];
+    },
+    validate: function(value) {
+      return contains(['top', 'middle', 'bottom'], value);
+    }
+  }),
+
+  /**
+    Get label text for data-point (uses "label" property or y-value)
+
+    @method labelText
+    @param {Any} d
+    @param {Number} i
+    @return {String}
+  */
+  labelText: di(function(chart, d, i) {
+    var value = valueOrDefault(d.label, chart.yValue.call(this, d, i));
+    var format = chart.format();
+
+    return format ? format(value) : value;
+  }),
+
+  /**
+    Get class for label group
+
+    @method labelClass
+    @param {Any} d
+    @param {Number} i
+    @return {String}
+  */
+  labelClass: di(function(chart, d) {
+    return 'chart-label' + (d['class'] ? ' ' + d['class'] : '');
+  }),
+
+  onDataBind: function onDataBind(selection, data) {
+    return selection.selectAll('g')
+      .data(data, this.key);
+  },
+  onInsert: function onInsert(selection) {
+    return selection.append('g')
+      .call(this.insertLabels);
+  },
+  onMerge: function onMerge(selection) {
+    selection.attr('class', this.labelClass);
+
+    this.mergeLabels(selection);
+    this.layoutLabels(selection);
+  },
+  onMergeTransition: function onMergeTransition(selection) {
+    // Transition labels into position
+    this.setupTransition(selection);
+    this.transitionLabels(selection);
+  },
+
+  // (Override for custom labels)
+  insertLabels: function(selection) {
+    selection.append('rect')
+      .attr('class', 'chart-label-bg');
+    selection.append('text')
+      .attr('class', 'chart-label-text');
+  },
+
+  // (Override for custom labels)
+  mergeLabels: function(selection) {
+    selection.selectAll('text')
+      .text(this.labelText);
+  },
+
+  // (Override for custom labels)
+  layoutLabels: function(selection) {
+    // Calculate layout
+    var chart = this;
+    var labels = [];
+    var options = {
+      offset: chart.offset(),
+      padding: chart.padding(),
+      anchor: chart.anchor(),
+      alignment: chart.alignment()
+    };
+    selection.each(function(d, i, j) {
+      if (!labels[j])
+        labels[j] = [];
+
+      // Store values for label and calculate layout
+      var label = chart._prepareLabel(chart, this, d, i, j);
+      labels[j].push(label);
+
+      chart._calculateLayout(chart, options, label);
+    });
+
+    // Collision detection
+    this._handleCollisions(chart, labels);
+
+    // Layout labels
+    labels.forEach(function(series) {
+      series.forEach(function(label) {
+        this._setLayout(chart, label);
+      }, this);
+    }, this);
+  },
+
+  // (Override for custom labels)
+  transitionLabels: function(selection) {
+    selection.attr('opacity', 1);
+  },
+
+  //
+  // Internal
+  //
+
+  _prepareLabel: function(chart, element, d, i) {
+    var selection = d3.select(element);
+    var text = selection.select('text');
+    var bg = selection.select('rect');
+
+    return {
+      x: chart.x.call(element, d, i),
+      y: chart.y.call(element, d, i),
+      element: element,
+      selection: selection,
+      text: {
+        element: text.node(),
+        selection: text
+      },
+      bg: {
+        element: bg.node(),
+        selection: bg
+      }
+    };
+  },
+
+  _calculateLayout: function(chart, options, label) {
+    var text_bounds = label.text.element.getBBox();
+
+    // Need to adjust text for line-height
+    var text_y_adjustment = alignText(label.text.element);
+
+    // Position background
+    var layout = label.bg.layout = {
+      x: options.offset.x,
+      y: options.offset.y,
+      width: text_bounds.width + (2 * options.padding),
+      height: text_bounds.height + (2 * options.padding)
+    };
+
+    // Set width / height of label
+    label.width = layout.width;
+    label.height = layout.height;
+
+    if (options.anchor == 'end')
+      layout.x -= layout.width;
+    else if (options.anchor == 'middle')
+      layout.x -= (layout.width / 2);
+
+    if (options.alignment == 'bottom')
+      layout.y -= layout.height;
+    else if (options.alignment == 'middle')
+      layout.y -= (layout.height / 2);
+
+    // Center text in background
+    label.text.layout = {
+      x: layout.x + (layout.width / 2) - (text_bounds.width / 2),
+      y: layout.y + (layout.height / 2) - (text_bounds.height / 2) + text_y_adjustment
+    };
+  },
+
+  _handleCollisions: function(chart, labels) {
+    labels.forEach(function(series, seriesIndex) {
+      // Check through remaining series for collisions
+      labels.slice(seriesIndex + 1).forEach(function(compareSeries) {
+        compareSeries.forEach(function(compareLabel) {
+          series.forEach(function(label) {
+            if (checkForOverlap(label, compareLabel))
+              groupLabels(label, compareLabel);
+          });
+        });
+      });
+    });
+
+    function checkForOverlap(labelA, labelB) {
+      var a = getEdges(labelA);
+      var b = getEdges(labelB);
+
+      var contained_LR = (b.left < a.left && b.right > a.right);
+      var contained_TB = (b.bottom < a.bottom && b.top > a.top);
+      var overlap_LR = (b.left >= a.left && b.left < a.right) || (b.right > a.left && b.right <= a.right) || contained_LR;
+      var overlap_TB = (b.top >= a.top && b.top < a.bottom) || (b.bottom > a.top && b.bottom <= a.bottom) || contained_TB;
+
+      return overlap_LR && overlap_TB;
+
+      function getEdges(label) {
+        return {
+          left: label.x,
+          right: label.x + label.width,
+          top: label.y,
+          bottom: label.y + label.height
+        };
+      }
+    }
+
+    function groupLabels(labelA, labelB) {
+      if (labelA.group && labelB.group) {
+        // Move labelB group labels into labelA group
+        objectEach(labelB.group.labels, function(label) {
+          labelA.group.labels.push(label);
+          label.group = labelA.group;
+        });
+
+        updateGroupPositions(labelA.group);
+      }
+      else if (labelA.group) {
+        addLabelToGroup(labelB, labelA.group);
+      }
+      else if (labelB.group) {
+        addLabelToGroup(labelA, labelB.group);
+      }
+      else {
+        var group = {labels: []};
+        addLabelToGroup(labelA, group);
+        addLabelToGroup(labelB, group);
+      }
+    }
+
+    function addLabelToGroup(label, group) {
+      group.labels.push(label);
+      label.group = group;
+      label.originalY = label.y;
+
+      updateGroupPositions(group);
+    }
+
+    function updateGroupPositions(group) {
+      function reset(label) {
+        // Reset to original y
+        label.y = label.originalY;
+        return label;
+      }
+      function sortY(a, b) {
+        if (a.y < b.y)
+          return -1;
+        else if (a.y > b.y)
+          return 1;
+        else
+          return 0;
+      }
+
+      var byY = group.labels.map(reset).sort(sortY).reverse();
+
+      byY.forEach(function(label, index) {
+        var prev = first(byY, index);
+        var overlap;
+
+        for (var i = prev.length - 1; i >= 0; i--) {
+          if (checkForOverlap(label, prev[i])) {
+            overlap = prev[i];
+            break;
+          }
+        }
+
+        if (overlap)
+          label.y = overlap.y - label.height;
+      });
+    }
+  },
+
+  _setLayout: function(chart, label) {
+    label.bg.selection
+      .attr('transform', translate(label.bg.layout.x, label.bg.layout.y))
+      .attr('width', label.bg.layout.width)
+      .attr('height', label.bg.layout.height);
+
+    label.text.selection
+      .attr('transform', translate(label.text.layout.x, label.text.layout.y));
+
+    // Position label and set opacity to fade-in
+    label.selection
+      .attr('transform', translate(label.x, label.y))
+      .attr('opacity', 0);
   }
-), {
+}, {
   z_index: 150
 });
 
 var labels = createHelper('Labels');
 
+d3.chart().Labels = Labels;
 export {
   Labels as default,
   labels

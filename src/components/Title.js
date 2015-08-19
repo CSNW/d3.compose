@@ -10,8 +10,9 @@ import Text, { textOptions } from './Text';
   @class Title
   @extends Text
 */
-var Title = Text.extend('Title', {
-  initialize: function() {
+var Title = Text.extend({
+  initialize: function(options) {
+    Text.prototype.initialize.call(this, options);
     this.base.select('.chart-text').classed('chart-title', true);
   },
 
@@ -67,6 +68,7 @@ function title(id, options) {
   return textOptions(id, options, {type: 'Title'});
 }
 
+d3.chart().Title = Title;
 export {
   Title as default,
   title
