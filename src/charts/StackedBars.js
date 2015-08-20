@@ -1,4 +1,7 @@
 import {
+  extend
+} from '../utils';
+import {
   di,
   createHelper
 } from '../helpers';
@@ -42,33 +45,43 @@ import Bars from './Bars';
 */
 var StackedBars = Bars.extend({
   transform: function(data) {
-    // Re-initialize bar positions each time data changes
-    this.bar_positions = [];
-    return Bars.prototype.transform.call(this, data);
+    data = Bars.prototype.transform.call(this, data);
+
+    var grouped = {};
+    var x_key = this.xKey();
+    var y_key = this.yKey();
+    data = data.map(function(series) {
+      series = extend({}, series);
+      series.values = series.values.map(function(value) {
+        value = extend({}, value);
+        var x = value[x_key];
+        var y = value.__original_y = value[y_key];
+
+        if (!grouped[x])
+          grouped[x] = {pos: 0, neg: 0};
+
+        if (y >= 0) {
+          value.__previous = grouped[x].pos;
+          grouped[x].pos = value[y_key] = grouped[x].pos + y;
+        }
+        else {
+          value.__previous = grouped[x].neg;
+          grouped[x].neg = value[y_key] = grouped[x].neg + y;
+        }
+
+        return value;
+      }, this);
+
+      return series;
+    }, this);
+
+    return data;
   },
 
   barHeight: di(function(chart, d, i) {
-    var height = Math.abs(chart.y0() - chart.y.call(this, d, i));
+    var height = Math.abs(chart.yScale()(d.__previous) - chart.y.call(this, d, i));
     var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
     return height > 0 ? height - offset : 0;
-  }),
-  barY: di(function(chart, d, i) {
-    var y = chart.y.call(this, d, i);
-    var y0 = chart.y0();
-
-    // Only handle positive y-values
-    if (y > y0)
-      return;
-
-    if (chart.bar_positions.length <= i)
-      chart.bar_positions.push(0);
-
-    var previous = chart.bar_positions[i] || y0;
-    var new_position = previous - (y0 - y);
-
-    chart.bar_positions[i] = new_position;
-
-    return new_position;
   })
 });
 

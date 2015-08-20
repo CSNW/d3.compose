@@ -3,6 +3,7 @@ import {
   createHelper
 } from '../helpers';
 import HorizontalBars from './HorizontalBars';
+import StackedBars from './StackedBars';
 
 /**
   Horizontal Stacked Bars
@@ -42,33 +43,21 @@ import HorizontalBars from './HorizontalBars';
 */
 var HorizontalStackedBars = HorizontalBars.extend({
   transform: function(data) {
-    // Re-initialize bar positions each time data changes
-    this.bar_positions = [];
-    return HorizontalBars.prototype.transform.call(this, data);
+    data = StackedBars.prototype.transform.call(this, data);
+    data = HorizontalBars.prototype.transform.call(this, data);
+    return data;
   },
 
   barWidth: di(function(chart, d, i) {
-    var width = Math.abs(chart.x0() - chart.x.call(this, d, i));
+    var width = Math.abs(chart.yScale()(d.__previous) - chart.x.call(this, d, i));
     var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
     return width > 0 ? width - offset : 0;
   }),
   barX: di(function(chart, d, i) {
     var x = chart.x.call(this, d, i);
-    var x0 = chart.x0();
+    var x0 = chart.yScale()(d.__previous);
 
-    // Only handle positive x-values
-    if (x < x0)
-      return;
-
-    if (chart.bar_positions.length <= i)
-      chart.bar_positions.push(0);
-
-    var previous = chart.bar_positions[i] || (x0 + chart.barOffset());
-    var new_position = previous + (x - x0);
-
-    chart.bar_positions[i] = new_position;
-
-    return previous;
+    return x < x0 ? x : x0 + chart.barOffset();
   })
 });
 

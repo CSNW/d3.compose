@@ -246,7 +246,7 @@ var Labels = Mixed.extend({
     @return {String}
   */
   labelText: di(function(chart, d, i) {
-    var value = valueOrDefault(d.label, chart.yValue.call(this, d, i));
+    var value = valueOrDefault(d.label, valueOrDefault(d.__original_y, chart.yValue.call(this, d, i)));
     var format = chart.format();
 
     return format ? format(value) : value;

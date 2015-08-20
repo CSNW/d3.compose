@@ -229,11 +229,10 @@
           .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
-              y: {domain: [0, 200]},
-              y2: {domain: [0, 100]}
+              y: {domain: [-50, 150]}
             };
             var charts = [
-              d3c.stackedBars('stacked', {data: data.stacked, xScale: scales.x, yScale: scales.y})
+              d3c.stackedBars('stacked', {data: data.stacked, xScale: scales.x, yScale: scales.y, labels: true})
             ];
 
             return [
@@ -241,21 +240,21 @@
               [
                 d3c.axis({scale: scales.y, ticks: 5}),
                 d3c.layered(charts),
-                d3c.axis({scale: scales.y2, ticks: 5}),
                 d3c.legend({charts: ['stacked']})
               ]
             ];
           })
           .width(600)
-          .height(200);
+          .height(200)
+          .margins({bottom: 20});
 
         chart.draw({
           stacked: [
             {key: 'a', name: 'A', values: [{x: 0, y: 10}, {x: 1, y: 50}]},
             {key: 'b', name: 'B', values: [{x: 0, y: 20}, {x: 1, y: 40}]},
-            {key: 'c', name: 'C', values: [{x: 0, y: 50}, {x: 1, y: 30}]},
+            {key: 'c', name: 'C', values: [{x: 0, y: 50}, {x: 1, y: -30}]},
             {key: 'd', name: 'D', values: [{x: 0, y: 30}, {x: 1, y: 20}]},
-            {key: 'e', name: 'E', values: [{x: 0, y: 40}, {x: 1, y: 10}]}
+            {key: 'e', name: 'E', values: [{x: 0, y: -40}, {x: 1, y: 10}]}
           ]
         })
       </script>
@@ -309,16 +308,14 @@
           .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
-              y: {domain: [0, 200]},
-              y2: {domain: [0, 100]}
+              y: {domain: [-50, 150]}
             };
             var charts = [
-              d3c.horizontalStackedBars('stacked', {data: data.stacked, xScale: scales.x, yScale: scales.y})
+              d3c.horizontalStackedBars('stacked', {data: data.stacked, xScale: scales.x, yScale: scales.y, labels: {position: 'right|left', offset: 2}})
             ];
 
             return [
               d3c.title('Horizontal Stacked Bars'),
-              d3c.axis({scale: scales.y2, ticks: 5}),
               [
                 d3c.layered(charts),
                 d3c.legend({charts: ['stacked']})
@@ -333,9 +330,9 @@
           stacked: [
             {key: 'a', name: 'A', values: [{x: 0, y: 10}, {x: 1, y: 50}]},
             {key: 'b', name: 'B', values: [{x: 0, y: 20}, {x: 1, y: 40}]},
-            {key: 'c', name: 'C', values: [{x: 0, y: 50}, {x: 1, y: 30}]},
+            {key: 'c', name: 'C', values: [{x: 0, y: 50}, {x: 1, y: -30}]},
             {key: 'd', name: 'D', values: [{x: 0, y: 30}, {x: 1, y: 20}]},
-            {key: 'e', name: 'E', values: [{x: 0, y: 40}, {x: 1, y: 10}]}
+            {key: 'e', name: 'E', values: [{x: 0, y: -40}, {x: 1, y: 10}]}
           ]
         })
       </script>
