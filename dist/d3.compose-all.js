@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.0 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.1 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -1522,6 +1522,7 @@
       @param {Object|Number} position {x,y}, {container: {x,y}}, {chart: {x,y}} or x in px from left
       @param {Number} [y] in px from top
     */
+    // TODO This conflicts with component.position(), might need a rename
     position: function(position, y) {
       if (arguments.length > 1) {
         position = {
@@ -2408,7 +2409,7 @@
         }
         else {
           // TEMP Changing position has nasty side effects, disable for now
-          var changed_position = item && item.position && options.position && item.position() != options.position;
+          var changed_position = item && !(item instanceof Overlay) && item.position && options.position && item.position() != options.position;
 
           if (item && (item.type != options.type || changed_position)) {
             // If chart type has changed, detach and re-create
@@ -3886,33 +3887,43 @@
 
   var StackedBars = Bars.extend({
     transform: function(data) {
-      // Re-initialize bar positions each time data changes
-      this.bar_positions = [];
-      return Bars.prototype.transform.call(this, data);
+      data = Bars.prototype.transform.call(this, data);
+
+      var grouped = {};
+      var x_key = this.xKey();
+      var y_key = this.yKey();
+      data = data.map(function(series) {
+        series = extend({}, series);
+        series.values = series.values.map(function(value) {
+          value = extend({}, value);
+          var x = value[x_key];
+          var y = value.__original_y = value[y_key];
+
+          if (!grouped[x])
+            grouped[x] = {pos: 0, neg: 0};
+
+          if (y >= 0) {
+            value.__previous = grouped[x].pos;
+            grouped[x].pos = value[y_key] = grouped[x].pos + y;
+          }
+          else {
+            value.__previous = grouped[x].neg;
+            grouped[x].neg = value[y_key] = grouped[x].neg + y;
+          }
+
+          return value;
+        }, this);
+
+        return series;
+      }, this);
+
+      return data;
     },
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0() - chart.y.call(this, d, i));
+      var height = Math.abs(chart.yScale()(d.__previous) - chart.y.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
       return height > 0 ? height - offset : 0;
-    }),
-    barY: di(function(chart, d, i) {
-      var y = chart.y.call(this, d, i);
-      var y0 = chart.y0();
-
-      // Only handle positive y-values
-      if (y > y0)
-        return;
-
-      if (chart.bar_positions.length <= i)
-        chart.bar_positions.push(0);
-
-      var previous = chart.bar_positions[i] || y0;
-      var new_position = previous - (y0 - y);
-
-      chart.bar_positions[i] = new_position;
-
-      return new_position;
     })
   });
 
@@ -3980,33 +3991,21 @@
 
   var HorizontalStackedBars = HorizontalBars.extend({
     transform: function(data) {
-      // Re-initialize bar positions each time data changes
-      this.bar_positions = [];
-      return HorizontalBars.prototype.transform.call(this, data);
+      data = StackedBars.prototype.transform.call(this, data);
+      data = HorizontalBars.prototype.transform.call(this, data);
+      return data;
     },
 
     barWidth: di(function(chart, d, i) {
-      var width = Math.abs(chart.x0() - chart.x.call(this, d, i));
+      var width = Math.abs(chart.yScale()(d.__previous) - chart.x.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
       return width > 0 ? width - offset : 0;
     }),
     barX: di(function(chart, d, i) {
       var x = chart.x.call(this, d, i);
-      var x0 = chart.x0();
+      var x0 = chart.yScale()(d.__previous);
 
-      // Only handle positive x-values
-      if (x < x0)
-        return;
-
-      if (chart.bar_positions.length <= i)
-        chart.bar_positions.push(0);
-
-      var previous = chart.bar_positions[i] || (x0 + chart.barOffset());
-      var new_position = previous + (x - x0);
-
-      chart.bar_positions[i] = new_position;
-
-      return previous;
+      return x < x0 ? x : x0 + chart.barOffset();
     })
   });
 
@@ -4156,7 +4155,7 @@
       @return {String}
     */
     labelText: di(function(chart, d, i) {
-      var value = valueOrDefault(d.label, chart.yValue.call(this, d, i));
+      var value = valueOrDefault(d.label, valueOrDefault(d.__original_y, chart.yValue.call(this, d, i)));
       var format = chart.format();
 
       return format ? format(value) : value;
@@ -5821,7 +5820,7 @@
   d3.chart().InsetLegend = InsetLegend;
 
   var d3c = d3.compose = {
-    VERSION: '0.15.0',
+    VERSION: '0.15.1',
     utils: utils,
     helpers: helpers,
     Base: Base,

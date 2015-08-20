@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.0 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.1 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -1522,6 +1522,7 @@
       @param {Object|Number} position {x,y}, {container: {x,y}}, {chart: {x,y}} or x in px from left
       @param {Number} [y] in px from top
     */
+    // TODO This conflicts with component.position(), might need a rename
     position: function(position, y) {
       if (arguments.length > 1) {
         position = {
@@ -2408,7 +2409,7 @@
         }
         else {
           // TEMP Changing position has nasty side effects, disable for now
-          var changed_position = item && item.position && options.position && item.position() != options.position;
+          var changed_position = item && !(item instanceof Overlay) && item.position && options.position && item.position() != options.position;
 
           if (item && (item.type != options.type || changed_position)) {
             // If chart type has changed, detach and re-create
@@ -3696,7 +3697,7 @@
   };
 
   var d3c = d3.compose = {
-    VERSION: '0.15.0',
+    VERSION: '0.15.1',
     utils: utils,
     helpers: helpers,
     Base: Base,
