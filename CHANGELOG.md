@@ -1,3 +1,11 @@
+# 0.15.0
+
+- Add Gridlines component
+- Update and simplify `property`
+- Update label positioning
+- Update class system to remove implicit initialize and transform cascade
+- Remove deprecated xy extension and Object-style layout
+
 # 0.14.0
 
 - New layout system

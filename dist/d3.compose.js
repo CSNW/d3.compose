@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.14.7 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.0 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -129,6 +129,22 @@
     return result;
   }
 
+  function inherits(Child, Parent) {
+    Child.prototype = Object.create(Parent.prototype, {
+      constructor: {
+        value: Child,
+        enumerable: false,
+        writeable: true,
+        configurable: true
+      }
+    });
+
+    if (Object.setPrototypeOf)
+      Object.setPrototypeOf(Child, Parent);
+    else
+      Child.__proto__ = Parent; //eslint-disable-line no-proto
+  }
+
   // If value isn't `undefined`, return `value`, otherwise use `default_value`
   //
   // @method valueOrDefault
@@ -140,6 +156,8 @@
   }
 
   var utils = {
+    slice: slice,
+    toString: toString,
     contains: contains,
     compact: compact,
     difference: difference,
@@ -158,15 +176,115 @@
     objectFind: objectFind,
     pluck: pluck,
     uniq: uniq,
+    inherits: inherits,
     valueOrDefault: valueOrDefault
   };
 
-  function property(name, options) {
+  var unique_index = 0;
+
+  /**
+    Helper for creating properties for charts/components
+
+    @example
+    ```javascript
+    var Custom = d3.chart('Chart').extend('Custom', {
+      // Create property that's stored internally as 'simple'
+      simple: property()
+    });
+    var custom; // = new Custom(...);
+
+    // set
+    custom.simple('Howdy');
+
+    // get
+    console.log(custom.simple()); // -> 'Howdy'
+
+    // Advanced
+    // --------
+    // Default values:
+    Custom.prototype.message = property({
+      default_value: 'Howdy!'
+    });
+
+    console.log(custom.message()); // -> 'Howdy!'
+    custom.message('Goodbye');
+    console.log(custom.message()); // -> 'Goodbye'
+
+    // Set to undefined to reset to default value
+    custom.message(undefined);
+    console.log(custom.message()); // -> 'Howdy!'
+
+    // Computed default value:
+    Custom.property.computed = property({
+      default_value: function() {
+        // "this" = Custom instance
+        return this.message();
+      }
+    });
+
+    // Function default value:
+    // For function default_values, wrap in function to differentiate from computed
+    Custom.property.fn = property({
+      default_value: function() {
+        return function defaultFn() {};
+      }
+      // The following would be incorrectly evaluated
+      // default_value: function defaultFn() {}
+    })
+
+    // Custom getter:
+    Custom.prototype.exclaimed = property({
+      get: function(value) {
+        // Value is the underlying set value
+        return value + '!';
+      }
+    });
+
+    custom.exclaimed('Howdy');
+    console.log(custom.exclaimed()); // -> 'Howdy!'
+
+    // Custom setter:
+    Custom.prototype.feeling = property({
+      set: function(value, previous) {
+        if (value == 'Hate') {
+          // To override value, return Object with override specified
+          return {
+            override: 'Love',
+
+            // To do something after override, use after callback
+            after: function() {
+              console.log('After: ' + this.feeling()); // -> 'After: Love'
+            }
+          };
+        }
+      }
+
+      custom.feeling('Hate'); // -> 'After: Love'
+      console.log(custom.feeling()); // -> 'Love'
+    });
+    ```
+    @method property
+    @for helpers
+    @param {Object} [options]
+    @param {Any} [options.default_value] default value for property (when set value is `undefined`). If default value is a function, wrap in another function as default_value is evaluated by default.
+    @param {Function} [options.get] `function(value) {return ...}` getter, where `value` is the stored value and return desired value
+    @param {Function} [options.set] `function(value, previous) {return {override, after}}`. Return `override` to override stored value and `after()` to run after set
+    @param {Object} [options.context=this] context to evaluate get/set/after functions
+    @return {Function} `()`: get, `(value)`: set
+  */
+  function property(options) {
+    // DEPRECATED: name as first argument
+    if (arguments.length == 2) {
+      if (typeof console != 'undefined' && console.warn)
+        console.warn('DEPRECATED - name argument for property is no longer supported will be removed in the next version of d3.compose');
+      options = arguments[1];
+    }
+
     options = options || {};
-    var prop_key = options.prop_key || '__properties';
+    var id = 'property_' + unique_index++;
 
     var property = function(value) {//eslint-disable-line no-shadow
-      var properties = this[prop_key] = this[prop_key] || {};
+      var properties = this.__properties = this.__properties || {};
       var context = valueOrDefault(property.context, this);
 
       if (arguments.length)
@@ -175,30 +293,33 @@
         return get.call(this);
 
       function get() {
-        value = valueOrDefault(properties[name], property.default_value);
+        value = properties[id];
 
-        // Unwrap value if its type is not a function
-        if (isFunction(value) && options.type != 'Function')
-          value = value.call(this);
+        if (isUndefined(value)) {
+          // Use default value and unwrap if it's a function
+          value = property.default_value;
+          if (isFunction(value))
+            value = value.call(context);
+        }
 
         return isFunction(options.get) ? options.get.call(context, value) : value;
       }
 
       function set() {
         // Validate
-        if (isFunction(options.validate) && !isUndefined(value) && !options.validate.call(this, value))
-          throw new Error('Invalid value for ' + name + ': ' + JSON.stringify(value));
+        if (isFunction(options.validate) && !isUndefined(value) && !options.validate.call(context, value))
+          throw new Error('Invalid value for property: ' + JSON.stringify(value));
 
-        var previous = properties[name];
-        properties[name] = value;
+        var previous = properties[id];
+        properties[id] = value;
 
         if (isFunction(options.set) && !isUndefined(value)) {
           var response = options.set.call(context, value, previous);
 
           if (response && 'override' in response)
-            properties[name] = response.override;
+            properties[id] = response.override;
           if (response && isFunction(response.after))
-            response.after.call(context, properties[name]);
+            response.after.call(context, properties[id]);
         }
 
         return this;
@@ -207,6 +328,7 @@
 
     // For checking if function is a property
     property.is_property = true;
+    property.id = id;
     property.set_from_options = valueOrDefault(options.set_from_options, true);
     property.default_value = options.default_value;
     property.context = options.context;
@@ -422,35 +544,43 @@
     return scale;
   }
 
-  function mixin(mixins) {
-    mixins = Array.isArray(mixins) ? mixins : Array.prototype.slice.call(arguments);
-    var mixed = extend.apply(null, [{}].concat(mixins));
+  function mixin(Parent/*, ...mixins*/) {
+    var mixins = slice.call(arguments, 1);
+    var initializes = [];
+    var transforms = [];
+    var mixed = {};
 
-    // Don't mixin constructor with prototype
-    delete mixed.constructor;
+    mixins.forEach(function(mix) {
+      objectEach(mix, function(value, key) {
+        if (key == 'initialize')
+          initializes.push(value);
+        else if (key == 'transform')
+          transforms.push(value);
+        else
+          mixed[key] = value;
+      });
+    });
 
-    if (mixed.initialize) {
+    if (initializes.length) {
       mixed.initialize = function initialize() {
-        var args = Array.prototype.slice.call(arguments);
-
-        mixins.forEach(function(extension) {
-          if (extension.initialize)
-            extension.initialize.apply(this, args);
+        var args = slice.call(arguments);
+        Parent.prototype.initialize.apply(this, args);
+        initializes.forEach(function(init) {
+          init.apply(this, args);
         }, this);
       };
     }
-    if (mixed.transform) {
+
+    if (transforms.length) {
       mixed.transform = function transform(data) {
-        return mixins.reduceRight(function(memo, extension) {
-          if (extension && extension.transform)
-            return extension.transform.call(this, memo);
-          else
-            return memo;
+        data = Parent.prototype.transform.call(this, data);
+        return transforms.reduce(function(memo, trans) {
+          return trans.call(this, memo);
         }.bind(this), data);
       };
     }
 
-    return mixed;
+    return Parent.extend(mixed);
   }
 
   function stack(options) {
@@ -846,14 +976,78 @@
     createHelper: createHelper
   };
 
-  var Base = d3.chart('Base', {
-    initialize: function(options) {
-      // Bind all di-functions to this chart
-      bindAllDi(this);
+  var Base__Chart = d3.chart();
 
-      if (options)
-        this.options(options);
+  /**
+    TEMP Clear namespace from mixins
+    @namespace
+  */
+
+  /**
+    Shared functionality between all charts and components.
+
+    - Set properties automatically from `options`,
+    - Store fully transformed data
+    - Adds `"before:draw"` and `"draw"` events
+    - Standard `width` and `height` calculations
+
+    @class Base
+  */
+  function Base(selection, options) {
+    // d3.chart() constructor without transform and initialize cascade
+    this.base = selection;
+    this._layers = {};
+    this._attached = {};
+    this._events = {};
+
+    // Bind all di-functions to this chart
+    bindAllDi(this);
+
+    // Set options (and properties with set_from_options)
+    if (options)
+      this.options(options);
+
+    // Initialize Chart (relies on explicitly calling super in initialize)
+    this.initialize(options);
+  }
+
+  inherits(Base, Base__Chart);
+
+  extend(Base.prototype, {
+    initialize: function() {},
+    transform: function(data) {
+      return data;
     },
+    demux: function(name, data) { return data; },
+
+    // Add events to draw: "before:draw" and "draw"
+    draw: function(data) {
+      // Transform data (relies on explicitly calling super in transform)
+      data = this.transform(data);
+
+      // Store fully-transformed data for reference
+      this.data(data);
+
+      this.trigger('before:draw', data);
+
+      objectEach(this._layers, function(layer) {
+        layer.draw(data);
+      });
+      objectEach(this._attached, function(attachment, name) {
+        attachment.draw(this.demux(name, data));
+      }, this);
+
+      this.trigger('draw', data);
+    },
+
+    // Explicitly load d3.chart prototype
+    layer: Base__Chart.prototype.layer,
+    unlayer: Base__Chart.prototype.unlayer,
+    attach: Base__Chart.prototype.attach,
+    on: Base__Chart.prototype.on,
+    once: Base__Chart.prototype.once,
+    off: Base__Chart.prototype.off,
+    trigger: Base__Chart.prototype.trigger,
 
     /**
       Store fully-transformed data for direct access from the chart
@@ -861,7 +1055,7 @@
       @property data
       @type Any
     */
-    data: property('data'),
+    data: property(),
 
     /**
       Overall options for chart/component, automatically setting any matching properties.
@@ -871,8 +1065,8 @@
       var property = d3.compose.helpers.property;
 
       d3.chart('Base').extend('HasProperties', {
-        a: property('a'),
-        b: property('b', {
+        a: property(),
+        b: property({
           set: function(value) {
             return {
               override: value + '!'
@@ -900,7 +1094,7 @@
       @property options
       @type Object
     */
-    options: property('options', {
+    options: property({
       default_value: {},
       set: function(options, previous) {
         // Clear all unset options, except for data and options
@@ -943,26 +1137,49 @@
     */
     height: function height() {
       return dimensions(this.base).height;
-    },
-
-    // Store fully-transformed data for reference
-    // (Base is last transform to be called, so stored data has been fully transformed)
-    transform: function(data) {
-      data = data || [];
-
-      this.data(data);
-      return data;
-    },
-
-    // Add events to draw: "before:draw" and "draw"
-    draw: function(data) {
-      this.trigger('before:draw', data);
-      d3.chart().prototype.draw.apply(this, arguments);
-      this.trigger('draw', data);
     }
   });
 
-  var Chart = Base.extend('Chart', {}, {
+  Base.extend = function(proto_props, static_props) {
+    // name may be first parameter for d3.chart usage
+    var name;
+    if (isString(proto_props)) {
+      name = proto_props;
+      proto_props = static_props;
+      static_props = arguments[2];
+    }
+
+    var Parent = this;
+    var Child;
+
+    if (proto_props && proto_props.hasOwnProperty('constructor')) {
+      Child = proto_props.constructor;
+
+      // inherits sets constructor, remove from proto_props
+      proto_props = extend({}, proto_props);
+      delete proto_props.constructor;
+    }
+    else {
+      Child = function() { return Parent.apply(this, arguments); };
+    }
+
+    inherits(Child, Parent);
+    if (static_props)
+      extend(Child, static_props);
+    if (proto_props)
+      extend(Child.prototype, proto_props);
+
+    // If name is given, register with d3.chart
+    if (name)
+      Base__Chart[name] = Child;
+
+    return Child;
+  };
+
+  // Export to d3.chart
+  Base__Chart.Base = Base;
+
+  var src_Chart__Chart = Base.extend({}, {
     /**
       Default z-index for chart
       (Components are 50 by default, so Chart = 100 is above component by default)
@@ -984,7 +1201,10 @@
     layer_type: 'chart'
   });
 
-  var Component = Base.extend('Component', {
+  d3.chart().Chart = src_Chart__Chart;
+  var src_Chart = src_Chart__Chart;
+
+  var Component = Base.extend({
     /**
       Component's position relative to chart
       (top, right, bottom, left)
@@ -993,7 +1213,7 @@
       @type String
       @default 'top'
     */
-    position: property('position', {
+    position: property({
       default_value: 'top',
       validate: function(value) {
         return contains(['top', 'right', 'bottom', 'left'], value);
@@ -1008,7 +1228,7 @@
       @type Number
       @default (actual width)
     */
-    width: property('width', {
+    width: property({
       default_value: function() {
         return dimensions(this.base).width;
       }
@@ -1022,7 +1242,7 @@
       @type Number
       @default (actual height)
     */
-    height: property('height', {
+    height: property({
       default_value: function() {
         return dimensions(this.base).height;
       }
@@ -1035,7 +1255,7 @@
       @type Object
       @default {top: 0, right: 0, bottom: 0, left: 0}
     */
-    margins: property('margins', {
+    margins: property({
       set: function(values) {
         return {
           override: getMargins(values)
@@ -1051,7 +1271,7 @@
       @type Boolean
       @default false
     */
-    centered: property('centered', {
+    centered: property({
       default_value: false
     }),
 
@@ -1217,8 +1437,11 @@
     layer_type: 'component'
   });
 
-  var Overlay = Component.extend('Overlay', {
-    initialize: function() {
+  d3.chart().Component = Component;
+
+  var Overlay = Component.extend({
+    initialize: function(options) {
+      Component.prototype.initialize.call(this, options);
       this.base.attr('style', this.style());
     },
     skip_layout: true,
@@ -1230,7 +1453,7 @@
       @type Number
       @default 0
     */
-    x: property('x', {
+    x: property({
       default_value: 0
     }),
 
@@ -1241,7 +1464,7 @@
       @type Number
       @default 0
     */
-    y: property('y', {
+    y: property({
       default_value: 0
     }),
 
@@ -1252,7 +1475,7 @@
       @type Boolean
       @default true
     */
-    hidden: property('hidden', {
+    hidden: property({
       default_value: true
     }),
 
@@ -1264,7 +1487,7 @@
       @type String
       @default set from x, y, and hidden
     */
-    style: property('style', {
+    style: property({
       default_value: function() {
         var styles = {
           position: 'absolute',
@@ -1381,6 +1604,8 @@
     layer_type: 'overlay'
   });
 
+  d3.chart().Overlay = Overlay;
+
   function extractLayout(options) {
     if (!options)
       return;
@@ -1393,15 +1618,6 @@
     var layout = [];
     var charts = [];
     var components = [];
-
-    // DEPRECATED
-    // Convert options object to array style
-    var unknown_position = [];
-    if (!Array.isArray(options)) {
-      var converted = convertObjectLayoutToArray(options);
-      options = converted.options;
-      unknown_position = converted.unknown_position;
-    }
 
     // TEMP Idenfify charts from layered,
     // eventually no distinction between charts and components
@@ -1430,6 +1646,9 @@
           var chart_ids = [];
 
           item.items.forEach(function(chart, chart_index) {
+            if (!chart)
+              return;
+
             chart = defaults({}, chart, {id: getId(row_index, col_index, chart_index)});
 
             chart_ids.push(chart.id);
@@ -1477,8 +1696,6 @@
       layout.push(row_layout);
     });
 
-    components.push.apply(components, unknown_position);
-
     charts.forEach(extractData('_charts'));
     components.forEach(extractData('_components'));
 
@@ -1517,47 +1734,6 @@
         }
       };
     }
-  }
-
-  // DEPRECATED
-  function convertObjectLayoutToArray(options) {
-    if (typeof console != 'undefined' && console.warn)
-      console.warn('DEPRECATED - object-style options have been deprecated for array-style options and will be removed in the next version of d3.compose');
-
-    var layout = [];
-    var layered = {_layered: true, items: []};
-    var by_position = {top: [], right: [], bottom: [], left: [], unknown: []};
-
-    objectEach(options.charts, function(chart_options, id) {
-      layered.items.push(extend({id: id}, chart_options));
-    });
-
-    objectEach(options.components, function(component_options, id) {
-      component_options = extend({id: id}, component_options);
-
-      if (!by_position[component_options.position])
-        by_position.unknown.push(component_options);
-      else
-        by_position[component_options.position].push(component_options);
-    });
-
-    // Add top items (from inside-out)
-    layout = by_position.top.reverse();
-
-    // Add left items (inside-out), charts, and right items
-    if (by_position.left.length || layered.items.length || by_position.right.length) {
-      var row = by_position.left.reverse();
-      if (layered.items.length)
-        row.push(layered);
-
-      row = row.concat(by_position.right);
-      layout.push(row);
-    }
-
-    // Add bottom items
-    layout.push.apply(layout, by_position.bottom);
-
-    return {options: layout, unknown_position: by_position.unknown};
   }
 
   /*
@@ -1666,15 +1842,9 @@
     @class Compose
     @extends Base
   */
-  var Compose = Base.extend('Compose', {
-    initialize: function() {
-      // Overriding transform in init jumps it to the top of the transform cascade
-      // Therefore, data coming in hasn't been transformed and is raw
-      // (Save raw data for redraw)
-      this.transform = function(data) {
-        this.rawData(data);
-        return data;
-      };
+  var Compose = Base.extend({
+    initialize: function(options) {
+      Base.prototype.initialize.call(this, options);
 
       // Responsive svg based on the following approach (embedded + padding hack)
       // http://tympanus.net/codrops/2014/08/19/making-svgs-responsive-with-css/
@@ -1693,6 +1863,12 @@
       }
 
       this.attachHoverListeners();
+    },
+
+    transform: function(data) {
+      // Save raw data for redraw
+      this.rawData(data);
+      return Base.prototype.transform.call(this, data);
     },
 
     /**
@@ -1729,9 +1905,8 @@
       @property options
       @type Function|Object
     */
-    options: property('options', {
-      default_value: function() {},
-      type: 'Function',
+    options: property({
+      default_value: function() { return function() {}; },
       set: function(options) {
         // If options is plain object,
         // return from generic options function
@@ -1746,7 +1921,7 @@
     }),
 
     // Store raw data for container before it has been transformed
-    rawData: property('rawData'),
+    rawData: property(),
 
     /**
       Margins between edge of container and components/chart
@@ -1759,7 +1934,7 @@
       @type Object {top, right, bottom, left}
       @default {top: 10, right: 10, bottom: 10, left: 10}
     */
-    margins: property('margins', {
+    margins: property({
       default_value: default_compose_margins,
       set: function(values) {
         return {
@@ -1769,7 +1944,7 @@
     }),
 
     // Chart position
-    chartPosition: property('chartPosition', {
+    chartPosition: property({
       default_value: {top: 0, right: 0, bottom: 0, left: 0},
       set: function(values) {
         return {
@@ -1790,7 +1965,7 @@
       @property width
       @type Number
     */
-    width: property('width', {
+    width: property({
       default_value: null
     }),
 
@@ -1800,7 +1975,7 @@
       @property height
       @type Number
     */
-    height: property('height', {
+    height: property({
       default_value: null
     }),
 
@@ -1821,12 +1996,12 @@
       @type Boolean
       @default true
     */
-    responsive: property('responsive', {
+    responsive: property({
       default_value: true
     }),
 
     // Set svg viewBox attribute
-    viewBox: property('viewBox', {
+    viewBox: property({
       default_value: function() {
         if (this.responsive() && this.width() && this.height())
           return '0 0 ' + this.width() + ' ' + this.height();
@@ -1836,7 +2011,7 @@
     }),
 
     // Set svg preserveAspectRatio attribute
-    preserveAspectRatio: property('preserveAspectRatio', {
+    preserveAspectRatio: property({
       default_value: function() {
         if (this.responsive())
           return 'xMidYMid meet';
@@ -1846,7 +2021,7 @@
     }),
 
     // Set container style
-    containerStyle: property('containerStyle', {
+    containerStyle: property({
       default_value: function() {
         if (this.responsive()) {
           var aspect_ratio = 1;
@@ -1867,7 +2042,7 @@
     }),
 
     // Set base style
-    baseStyle: property('baseStyle', {
+    baseStyle: property({
       default_value: function() {
         if (this.responsive() && this.container) {
           return src_helpers__style({
@@ -1898,7 +2073,7 @@
       @property charts
       @type Array
     */
-    charts: property('charts', {
+    charts: property({
       set: function(chart_options, charts) {
         // Store actual charts rather than options
         return {
@@ -1924,7 +2099,7 @@
       @property components
       @type Array
     */
-    components: property('components', {
+    components: property({
       set: function(component_options, components) {
         // Store actual components rather than options
         return {
@@ -1942,7 +2117,7 @@
       @type Number|Function
       @default d3 default: 0
     */
-    delay: property('delay', {type: 'Function'}),
+    delay: property(),
 
     /**
       Transition duration in milliseconds.
@@ -1952,7 +2127,7 @@
       @type Number|Function
       @default d3 default: 250ms
     */
-    duration: property('duration', {type: 'Function'}),
+    duration: property(),
 
     /**
       Transition ease function.
@@ -1965,7 +2140,7 @@
       @type String|Function
       @default d3 default: 'cubic-in-out'
     */
-    ease: property('ease', {type: 'Function'}),
+    ease: property(),
 
     /**
       Draw chart with given data
@@ -2343,12 +2518,14 @@
     });
   }
 
+  d3.chart().Compose = Compose;
+
   var d3c = d3.compose = {
-    VERSION: '0.14.7',
+    VERSION: '0.15.0',
     utils: utils,
     helpers: helpers,
     Base: Base,
-    Chart: Chart,
+    Chart: src_Chart,
     Component: Component,
     Overlay: Overlay,
     Compose: Compose,
