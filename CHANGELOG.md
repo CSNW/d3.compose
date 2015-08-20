@@ -5,6 +5,7 @@
 - Update label positioning
 - Update class system to remove implicit initialize and transform cascade
 - Remove deprecated xy extension and Object-style layout
+- __0.15.1__ Fix Overlay.position and labels with stacked bars bugs
 
 # 0.14.0
 
