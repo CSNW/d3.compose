@@ -198,54 +198,6 @@
     });
 
     describe('options', function() {
-      describe('object (DEPRECATED)', function() {
-        beforeEach(function() {
-          container.options(function() {
-            return {
-              charts: {
-                a: {type: 'TestChart'},
-                b: {type: 'TestChart'}
-              },
-              components: {
-                c: {type: 'TestComponent', position: 'top'},
-                d: {type: 'TestComponent', position: 'top'},
-                e: {type: 'TestComponent', position: 'left'},
-                f: {type: 'TestComponent', position: 'left'},
-                g: {type: 'TestComponent', position: 'right'},
-                h: {type: 'TestComponent', position: 'right'},
-                i: {type: 'TestComponent', position: 'bottom'},
-                j: {type: 'TestComponent', position: 'bottom'}
-              }
-            };
-          });
-
-          container.draw([]);
-        });
-
-        it('should load charts + order + ids from options', function() {
-          expect(container.charts().length).toEqual(2);
-          expect(container.charts()[0].id).toEqual('a');
-          expect(container.charts()[1] instanceof Chart).toEqual(true);
-        });
-
-        it('should load components + order + keys from options', function() {
-          expect(container.components().length).toEqual(8);
-          expect(container.components()[0].id).toEqual('c');
-          expect(container.components()[7].id).toEqual('j');
-
-          var layout = container._extractLayout([]);
-
-          expect(layout.top[0].component.id).toEqual('c');
-          expect(layout.top[1].component.id).toEqual('d');
-          expect(layout.left[0].component.id).toEqual('e');
-          expect(layout.left[1].component.id).toEqual('f');
-          expect(layout.right[0].component.id).toEqual('g');
-          expect(layout.right[1].component.id).toEqual('h');
-          expect(layout.bottom[0].component.id).toEqual('i');
-          expect(layout.bottom[1].component.id).toEqual('j');
-        });
-      });
-
       describe('array', function() {
         beforeEach(function() {
           container.options(function() {

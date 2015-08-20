@@ -277,7 +277,7 @@
                 data: data,
                 xScale: scales.x,
                 yScale: scales.y,
-                labels: {format: d3.format(',0d')}
+                labels: {format: d3.format(',0d'), position: 'right|left', offset: 3}
               })
             ];
 
@@ -292,6 +292,7 @@
           })
           .width(600)
           .height(400)
+          .margins({right: 50, left: 50})
           .duration(1000)
           .delay(200);
 

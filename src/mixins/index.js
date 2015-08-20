@@ -17,12 +17,7 @@ var mixins = {
   Hover: Hover,
   HoverPoints: HoverPoints,
   Transition: Transition,
-  StandardLayer: StandardLayer,
-
-  // DEPRECATED: renamed to XYInverted
-  InvertedXY: XYInverted,
-  // DEPRECATED: renamed to LabelsXY
-  XYLabels: LabelsXY
+  StandardLayer: StandardLayer
 };
 
 export {

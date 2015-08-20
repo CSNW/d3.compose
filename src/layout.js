@@ -1,15 +1,13 @@
 import {
   contains,
   defaults,
-  extend,
-  isFunction,
-  objectEach
+  isFunction
 } from './utils';
 
 /*
   Extract layout from the given options
 
-  @param {Array} options (deprecated: Object)
+  @param {Array} options
   @return {Object} {data, items, layout}
 */
 export function extractLayout(options) {
@@ -24,15 +22,6 @@ export function extractLayout(options) {
   var layout = [];
   var charts = [];
   var components = [];
-
-  // DEPRECATED
-  // Convert options object to array style
-  var unknown_position = [];
-  if (!Array.isArray(options)) {
-    var converted = convertObjectLayoutToArray(options);
-    options = converted.options;
-    unknown_position = converted.unknown_position;
-  }
 
   // TEMP Idenfify charts from layered,
   // eventually no distinction between charts and components
@@ -111,8 +100,6 @@ export function extractLayout(options) {
     layout.push(row_layout);
   });
 
-  components.push.apply(components, unknown_position);
-
   charts.forEach(extractData('_charts'));
   components.forEach(extractData('_components'));
 
@@ -151,47 +138,6 @@ export function extractLayout(options) {
       }
     };
   }
-}
-
-// DEPRECATED
-function convertObjectLayoutToArray(options) {
-  if (typeof console != 'undefined' && console.warn)
-    console.warn('DEPRECATED - object-style options have been deprecated for array-style options and will be removed in the next version of d3.compose');
-
-  var layout = [];
-  var layered = {_layered: true, items: []};
-  var by_position = {top: [], right: [], bottom: [], left: [], unknown: []};
-
-  objectEach(options.charts, function(chart_options, id) {
-    layered.items.push(extend({id: id}, chart_options));
-  });
-
-  objectEach(options.components, function(component_options, id) {
-    component_options = extend({id: id}, component_options);
-
-    if (!by_position[component_options.position])
-      by_position.unknown.push(component_options);
-    else
-      by_position[component_options.position].push(component_options);
-  });
-
-  // Add top items (from inside-out)
-  layout = by_position.top.reverse();
-
-  // Add left items (inside-out), charts, and right items
-  if (by_position.left.length || layered.items.length || by_position.right.length) {
-    var row = by_position.left.reverse();
-    if (layered.items.length)
-      row.push(layered);
-
-    row = row.concat(by_position.right);
-    layout.push(row);
-  }
-
-  // Add bottom items
-  layout.push.apply(layout, by_position.bottom);
-
-  return {options: layout, unknown_position: by_position.unknown};
 }
 
 /*

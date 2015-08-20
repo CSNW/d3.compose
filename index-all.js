@@ -25,8 +25,6 @@ import Legend, { legend } from './src/components/Legend';
 import InsetLegend, { insetLegend } from './src/components/InsetLegend';
 import Gridlines, { gridlines } from './src/components/Gridlines';
 
-import xy from './src/extensions/xy';
-
 var d3c = d3.compose = {
   VERSION: '{version}',
   utils: utils,
@@ -68,9 +66,7 @@ var d3c = d3.compose = {
   InsetLegend: InsetLegend,
   insetLegend: insetLegend,
   Gridlines: Gridlines,
-  gridlines: gridlines,
-
-  xy: xy
+  gridlines: gridlines
 };
 
 export default d3c;
