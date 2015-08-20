@@ -79,62 +79,6 @@
   };
 
   //
-  // Common Charts/Components
-  //
-
-  var codes = {
-    data: code('options.data'),
-
-    scales: {
-      x: code('scales.x'),
-      y: code('scales.y'),
-      y2: code('scales.y2')
-    },
-
-    input: code('input'),
-    output: code('output')
-  };
-
-  var common = {
-    scale: function(type, options) {
-      var defaults = {
-        x: {data: codes.data, key: 'x'},
-        xOrdinal: {type: 'ordinal', data: codes.data, key: 'x', adjacent: true},
-        y: {data: codes.data, key: 'y'}
-      }[type];
-
-      return _.extend(defaults, options);
-    },
-
-    chart: function(type, options) {
-      return _.extend({
-        type: type,
-        data: codes.data,
-        xScale: codes.scales.x,
-        yScale: codes.scales.y
-      }, options);
-    },
-
-    axis: function(type, options) {
-      return _.extend({
-        scale: codes.scales[type],
-        ticks: 5
-      }, options);
-    },
-
-    title: function(options) {
-      var text = code('options.title.text');
-
-      if (!options)
-        return text;
-      else if (_.isString(options))
-        return options;
-      else
-        return _.extend({text: text}, options);
-    }
-  };
-
-  //
   // Lines
   //
 
@@ -911,8 +855,10 @@
       var helpers = d3.compose.helpers;
       var mixins = d3.compose.mixins;
 
-      d3.chart('Chart').extend('Dots', helpers.mixin(mixins.Series, mixins.XY, {
-        initialize: function() {
+      var Mixed = helpers.mixin(d3.chart('Chart'), mixins.Series, mixins.XY);
+      Mixed.extend('Dots', {
+        initialize: function(options) {
+          Mixed.prototype.initialize.call(this, options);
           var base = this.base.append('g').attr('class', 'chart-dots');
 
           // seriesLayer wraps series functionality
@@ -939,7 +885,7 @@
 
         // helpers.property creates get/set property
         // that is set automatically from Compose options
-        rValue: helpers.property('rValue', {
+        rValue: helpers.property({
           default_value: 2
         }),
 
@@ -948,15 +894,17 @@
         r: helpers.di(function(chart, d, i) {
           return chart.rValue();
         })
-      }));
+      });
     },
 
     overlay: function() {
       var helpers = d3.compose.helpers;
       var mixins = d3.compose.mixins;
 
-      d3.chart('Component').extend('OverlayLine', helpers.mixin(mixins.XY, {
-        initialize: function() {
+      var Mixed = helpers.mixin(d3.chart('Component'), mixins.XY);
+      Mixed.extend('OverlayLine', {
+        initialize: function(options) {
+          Mixed.prototype.initialize.call(this, options);
           var base = this.base.append('g').attr('class', 'chart-overlay');
           this.line = d3.svg.line().x(this.x).y(this.y);
 
@@ -981,9 +929,9 @@
 
         // helpers.property creates get/set property
         // that is set automatically from Compose options
-        value: helpers.property('value'),
+        value: helpers.property(),
 
-        orientation: helpers.property('orientation', {
+        orientation: helpers.property({
           default_value: 'vertical',
           validate: function(value) {
             return value == 'vertical' || value == 'horizontal';
@@ -1012,7 +960,7 @@
         // Position overlay as chart layer,
         // skipping standard component layout
         skip_layout: true
-      }), {
+      }, {
         layer_type: 'chart'
       });
     }
@@ -1024,136 +972,14 @@
   });
 
   //
-  // extensions
-  //
-
-  var extensions = {
-    xy: function(returns) {
-      var parsed = parseObject(returns);
-      parsed[0] = 'd3.compose.xy(' + parsed[0];
-      parsed[parsed.length - 1] += ')';
-
-      return parsed.join('\n');
-    }
-  };
-
-  //
   // helpers
   //
 
-  // Build function for display/execution
-  // - last argument is return
-  // - other arguments:
-  //   {} -> var key = value;...
-  //   function() {} -> insert body
   function buildFn() {
     var parts = _.toArray(arguments);
-    var fn;
-
-    if (parts.length == 1 && _.isFunction(parts[0])) {
-      fn = fnBody(parts[0]);
-    }
-    else {
-      var returns = parts.pop();
-
-      fn = _.map(parts, function(part) {
-        if (_.isFunction(part)) {
-          return fnBody(part);
-        }
-        else {
-          return _.map(part, function(value, key) {
-            value = toValue(value);
-
-            if (_.isArray(value))
-              value = value.join('\n');
-
-            return 'var ' + key + ' = ' + value + ';';
-          }).join('\n');
-        }
-      }).join('\n\n');
-
-      if (fn.length)
-        fn += '\n\n';
-
-      fn += 'return ' + (_.isObject(returns) ? parseObject(returns).join('\n') : returns) + ';';
-    }
+    var fn = fnBody(parts[0]);
 
     return '  ' + fn.replace(/\n/g, '\n  ');
-  }
-
-  function parseObject(obj, output_inline) {
-    var parsed = _.reduce(obj, function(memo, value, key) {
-      key = toKey(key);
-      value = toValue(value);
-
-      if (_.isArray(value)) {
-        value[0] = key + ': ' + value[0];
-        value[value.length - 1] += ',';
-
-        if (!output_inline)
-          value = _.map(value, function(item) {return '  ' + item; });
-
-        memo = memo.concat(value);
-      }
-      else {
-        memo.push((output_inline ? '' : '  ') + key + ': ' + value + ',');
-      }
-
-      return memo;
-    }, []);
-
-    // Remove trailing comma
-    if (parsed.length) {
-      var last_item = parsed[parsed.length - 1];
-      parsed[parsed.length - 1] = last_item.substring(0, last_item.length - 1);
-    }
-
-    // Add brackets depending on format
-    if (output_inline) {
-      parsed = '{' + parsed.join(' ') + '}';
-    }
-    else {
-      parsed.unshift('{');
-      parsed.push('}');
-    }
-
-    return parsed;
-  }
-
-  function inline(obj) {
-    return code(parseObject(obj, true));
-  }
-
-  function code(str) {
-    return {
-      _is_code: true,
-      code: str
-    };
-  }
-
-  function toKey(key) {
-    if (key.indexOf('.') >= 0 || key == 'class')
-      return '\'' + key + '\'';
-    else
-      return key;
-  }
-
-  function toValue(value) {
-    if (value && value._is_code) {
-      return value.code;
-    }
-    else if (_.isArray(value)) {
-      return '[' + _.map(value, function(item) { return toValue(item); }).join(', ') + ']';
-    }
-    else if (_.isObject(value)) {
-      return parseObject(value);
-    }
-    else if (_.isString(value)) {
-      return '\'' + value + '\'';
-    }
-    else {
-      return value;
-    }
   }
 
   function fnBody(fn) {
