@@ -108,6 +108,7 @@ var Overlay = Component.extend({
     @param {Object|Number} position {x,y}, {container: {x,y}}, {chart: {x,y}} or x in px from left
     @param {Number} [y] in px from top
   */
+  // TODO This conflicts with component.position(), might need a rename
   position: function(position, y) {
     if (arguments.length > 1) {
       position = {

@@ -20,6 +20,7 @@ import {
   applyLayout
 } from './layout';
 import Base from './Base';
+import Overlay from './Overlay';
 var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
 
 /**
@@ -628,7 +629,7 @@ var Compose = Base.extend({
       }
       else {
         // TEMP Changing position has nasty side effects, disable for now
-        var changed_position = item && item.position && options.position && item.position() != options.position;
+        var changed_position = item && !(item instanceof Overlay) && item.position && options.position && item.position() != options.position;
 
         if (item && (item.type != options.type || changed_position)) {
           // If chart type has changed, detach and re-create
