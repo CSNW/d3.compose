@@ -156,6 +156,7 @@ var Series = {
           .attr('class', chart.seriesClass)
           .attr('style', chart.itemStyle);
 
+        // TODO Exit layer items then exit series layer
         series.exit()
           .remove();
 

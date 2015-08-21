@@ -199,7 +199,7 @@ var Gridlines = Mixed.extend({
     selection.attr('opacity', 1);
   },
   onExit: function onExit(selection) {
-    selection.selectAll('line').remove();
+    selection.remove();
   },
 
   skip_layout: true
