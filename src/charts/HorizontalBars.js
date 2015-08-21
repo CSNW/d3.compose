@@ -94,6 +94,15 @@ var HorizontalBars = mixin(Bars, XYInverted).extend({
     selection
       .attr('x', this.barX)
       .attr('width', this.barWidth);
+  },
+
+  onExitTransition: function onExitTransition(selection) {
+    this.setupTransition(selection);
+
+    selection
+      .attr('x', this.bar0)
+      .attr('width', 0)
+      .remove();
   }
 });
 

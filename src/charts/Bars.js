@@ -172,8 +172,13 @@ var Bars = Mixed.extend({
   },
 
   // Override StandardLayer
-  onExit: function onExit(selection) {
-    selection.remove();
+  onExitTransition: function onExitTransition(selection) {
+    this.setupTransition(selection);
+
+    selection
+      .attr('y', this.bar0)
+      .attr('height', 0)
+      .remove();
   }
 });
 
