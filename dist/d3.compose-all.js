@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.1 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.2 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -2665,6 +2665,7 @@
             .attr('class', chart.seriesClass)
             .attr('style', chart.itemStyle);
 
+          // TODO Exit layer items then exit series layer
           series.exit()
             .remove();
 
@@ -3876,8 +3877,13 @@
     },
 
     // Override StandardLayer
-    onExit: function onExit(selection) {
-      selection.remove();
+    onExitTransition: function onExitTransition(selection) {
+      this.setupTransition(selection);
+
+      selection
+        .attr('y', this.bar0)
+        .attr('height', 0)
+        .remove();
     }
   });
 
@@ -3982,6 +3988,15 @@
       selection
         .attr('x', this.barX)
         .attr('width', this.barWidth);
+    },
+
+    onExitTransition: function onExitTransition(selection) {
+      this.setupTransition(selection);
+
+      selection
+        .attr('x', this.bar0)
+        .attr('width', 0)
+        .remove();
     }
   });
 
@@ -4876,7 +4891,7 @@
       selection.attr('opacity', 1);
     },
     onExit: function onExit(selection) {
-      selection.selectAll('line').remove();
+      selection.remove();
     },
 
     skip_layout: true
@@ -5820,7 +5835,7 @@
   d3.chart().InsetLegend = InsetLegend;
 
   var d3c = d3.compose = {
-    VERSION: '0.15.1',
+    VERSION: '0.15.2',
     utils: utils,
     helpers: helpers,
     Base: Base,
