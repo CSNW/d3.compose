@@ -429,14 +429,14 @@ var Labels = Mixed.extend({
     label.height = layout.height;
 
     if (options.anchor == 'end')
-      layout.x -= layout.width;
+      label.x -= layout.width;
     else if (options.anchor == 'middle')
-      layout.x -= (layout.width / 2);
+      label.x -= (layout.width / 2);
 
     if (options.alignment == 'bottom')
-      layout.y -= layout.height;
+      label.y -= layout.height;
     else if (options.alignment == 'middle')
-      layout.y -= (layout.height / 2);
+      label.y -= (layout.height / 2);
 
     // Center text in background
     label.text.layout = {
