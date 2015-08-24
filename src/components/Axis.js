@@ -122,7 +122,7 @@ var Axis = Mixed.extend({
     @type Object|d3.scale
   */
   scale: property({
-    set: function(value, previous) {
+    set: function(value) {
       if (this.orientation() == 'vertical') {
         this.yScale(value);
         value = this.yScale();
@@ -296,7 +296,7 @@ var Axis = Mixed.extend({
     selection.selectAll('g').remove();
   },
 
-  getLayout: function(data) {
+  getLayout: function() {
     // Draw layout axis
     this.setScales();
     this._setupAxis(this._layout_axis);

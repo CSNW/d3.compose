@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.2 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.3 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -4353,14 +4353,14 @@
       label.height = layout.height;
 
       if (options.anchor == 'end')
-        layout.x -= layout.width;
+        label.x -= layout.width;
       else if (options.anchor == 'middle')
-        layout.x -= (layout.width / 2);
+        label.x -= (layout.width / 2);
 
       if (options.alignment == 'bottom')
-        layout.y -= layout.height;
+        label.y -= layout.height;
       else if (options.alignment == 'middle')
-        layout.y -= (layout.height / 2);
+        label.y -= (layout.height / 2);
 
       // Center text in background
       label.text.layout = {
@@ -4909,72 +4909,23 @@
     initialize: function(options) {
       components_Axis__Mixed.prototype.initialize.call(this, options);
 
-      // Store previous values for transitioning
-      this.previous = {};
-
       // Create two axes (so that layout and transitions work)
       // 1. Display and transitions
       // 2. Layout (draw to get width, but separate so that transitions aren't affected)
       this.axis = d3.svg.axis();
+      this._layout_axis = d3.svg.axis();
 
       this.axis_base = this.base.append('g').attr('class', 'chart-axis');
       this._layout_base = this.base.append('g')
         .attr('class', 'chart-axis chart-layout')
-        .attr('style', 'display: none;');
+        .append('g')
+          .style('display', 'none');
 
       // Use standard layer for extensibility
       this.standardLayer('Axis', this.axis_base);
 
-      this.layer('_LayoutAxis', this._layout_base, {
-        dataBind: function() {
-          return this.selectAll('g').data([0]);
-        },
-        insert: function() {
-          return this.chart().onInsert(this);
-        },
-        events: {
-          'enter': function() {
-            this.chart().onEnter(this);
-          },
-          'merge': function() {
-            this.chart().onMerge(this);
-          }
-        }
-      });
-
       // Setup gridlines
-      var gridlines_options = gridlinesOptions(this);
-      var gridlines = this._gridlines = gridlines_options.display && createGridlines(this, gridlines_options);
-
-      this.on('draw', function() {
-        gridlines_options = gridlinesOptions(this);
-
-        if (gridlines)
-          gridlines.options(gridlines_options);
-        else if (gridlines_options.display)
-          gridlines = this._gridlines = createGridlines(this, gridlines_options);
-
-        if (gridlines && gridlines_options.display)
-          gridlines.draw();
-        else if (gridlines)
-          gridlines.draw([false]);
-      }.bind(this));
-
-      function gridlinesOptions(axis) {
-        return defaults({}, axis.gridlines(), {
-          parent: axis,
-          xScale: axis.xScale(),
-          yScale: axis.yScale(),
-          ticks: axis.ticks(),
-          tickValues: axis.tickValues(),
-          orientation: axis.orientation() == 'horizontal' ? 'vertical' : 'horizontal'
-        });
-      }
-
-      function createGridlines(axis, gridline_options) {
-        var base = axis.base.append('g').attr('class', 'chart-axis-gridlines');
-        return new Gridlines(base, gridline_options);
-      }
+      this.attachGridlines();
     },
 
     /**
@@ -5003,10 +4954,7 @@
       @type Object|d3.scale
     */
     scale: property({
-      set: function(value, previous) {
-        this.previous = this.previous || {};
-        this.previous.scale = previous;
-
+      set: function(value) {
         if (this.orientation() == 'vertical') {
           this.yScale(value);
           value = this.yScale();
@@ -5151,39 +5099,6 @@
     tickPadding: property(),
     tickFormat: property(),
 
-    // Store previous value for xScale, yScale, and duration
-    xScale: property({
-      set: function(value, previous) {
-        this.previous = this.previous || {};
-        this.previous.xScale = previous;
-
-        return XY.xScale.options.set.call(this, value, previous);
-      },
-      get: function(scale) {
-        return XY.xScale.options.get.call(this, scale);
-      }
-    }),
-
-    yScale: property({
-      set: function(value, previous) {
-        this.previous = this.previous || {};
-        this.previous.yScale = previous;
-
-        return XY.yScale.options.set.call(this, value, previous);
-      },
-      get: function(scale) {
-        return XY.yScale.options.get.call(this, scale);
-      }
-    }),
-
-    duration: property({
-      set: function(value, previous) {
-        this.previous = this.previous || {};
-        this.previous.duration = previous;
-      },
-      default_value: Transition.duration.default_value
-    }),
-
     onDataBind: function onDataBind(selection) {
       // Setup axis (scale and properties)
       this._setupAxis(this.axis);
@@ -5196,20 +5111,16 @@
       return selection.append('g');
     },
     onEnter: function onEnter(selection) {
-      // Place and render axis
+      // Render axis
       selection.call(this.axis);
     },
     onMerge: function onUpdate(selection) {
+      // Position axis
       selection.attr('transform', this.translation());
     },
     onUpdateTransition: function onUpdateTransition(selection) {
       // Render axis (with transition)
       this.setupTransition(selection);
-
-      if (this._skip_transition) {
-        selection.duration(0);
-        this._skip_transition = undefined;
-      }
 
       selection.call(this.axis);
     },
@@ -5217,73 +5128,64 @@
       selection.selectAll('g').remove();
     },
 
-    getLayout: function(data) {
-      // 1. Get previous values to restore after draw for proper transitions
-      var state = this.getState();
+    getLayout: function() {
+      // Draw layout axis
+      this.setScales();
+      this._setupAxis(this._layout_axis);
+      this._layout_base.call(this._layout_axis);
 
-      // 2. Draw with current values
-      this.draw(data);
-
-      // 3. Calculate layout
+      // Calculate layout
       // (make layout axis visible for width calculations in Firefox)
-      this._layout_base.attr('style', 'display: block;');
+      this._layout_base.style('display', 'block');
 
       var label_overhang = this._getLabelOverhang();
 
-      this._layout_base.attr('style', 'display: none;');
-
-      // 4. Draw with previous values
-      if (this._previous_raw_data) {
-        this.setState(extend(state.previous, {duration: 0}));
-
-        this.draw(this._previous_raw_data);
-
-        // 5. Restore current values
-        this.setState(state.current);
-      }
-      else {
-        // Skip transition after layout
-        // (Can transition from unexpected state)
-        this._skip_transition = true;
-      }
-
-      // Store raw data for future layout
-      this._previous_raw_data = data;
-
-      var position = this.position();
-      if (position == 'x0')
-        position = 'bottom';
-      else if (position == 'y0')
-        position = 'right';
+      this._layout_base.style('display', 'none');
 
       return {
-        position: position,
+        position: this.position(),
         width: label_overhang.width,
         height: label_overhang.height
       };
     },
     setLayout: function() {
-      // Axis is positioned with chartBase, so don't set layout
+      // Axis is positioned as chart layer, so don't set layout
       return;
     },
 
-    getState: function() {
-      return {
-        previous: this.previous,
-        current: {
-          scale: this.scale(),
-          xScale: this.xScale(),
-          yScale: this.yScale(),
-          duration: this.duration()
-        }
-      };
-    },
-    setState: function(state) {
-      this
-        .xScale(state.xScale)
-        .yScale(state.yScale)
-        .scale(state.scale)
-        .duration(state.duration);
+    attachGridlines: function() {
+      var gridlines_options = gridlinesOptions(this);
+      var gridlines = this._gridlines = gridlines_options.display && createGridlines(this, gridlines_options);
+
+      this.on('draw', function() {
+        gridlines_options = gridlinesOptions(this);
+
+        if (gridlines)
+          gridlines.options(gridlines_options);
+        else if (gridlines_options.display)
+          gridlines = this._gridlines = createGridlines(this, gridlines_options);
+
+        if (gridlines && gridlines_options.display)
+          gridlines.draw();
+        else if (gridlines)
+          gridlines.draw([false]);
+      }.bind(this));
+
+      function gridlinesOptions(axis) {
+        return defaults({}, axis.gridlines(), {
+          parent: axis,
+          xScale: axis.xScale(),
+          yScale: axis.yScale(),
+          ticks: axis.ticks(),
+          tickValues: axis.tickValues(),
+          orientation: axis.orientation() == 'horizontal' ? 'vertical' : 'horizontal'
+        });
+      }
+
+      function createGridlines(axis, gridline_options) {
+        var base = axis.base.append('g').attr('class', 'chart-axis-gridlines');
+        return new Gridlines(base, gridline_options);
+      }
     },
 
     _setupAxis: function(axis) {
@@ -5835,7 +5737,7 @@
   d3.chart().InsetLegend = InsetLegend;
 
   var d3c = d3.compose = {
-    VERSION: '0.15.2',
+    VERSION: '0.15.3',
     utils: utils,
     helpers: helpers,
     Base: Base,

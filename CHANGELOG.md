@@ -7,6 +7,7 @@
 - Remove deprecated xy extension and Object-style layout
 - __0.15.1__ Fix Overlay.position and labels with stacked bars bugs
 - __0.15.2__ Fix Gridlines onExit bug and slide down Bars on exit
+- __0.15.3__ Fix layout calculation and axis transition bugs
 
 # 0.14.0
 
