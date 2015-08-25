@@ -489,15 +489,19 @@ var Compose = Base.extend({
     container.on('mouseenter', function() {
       // Calculate chart position and bounds on enter and cache during move
       chart_position = chartPosition();
-      bounds = extend({}, base.getBoundingClientRect());
-      bounds.top += window.scrollY;
-      bounds.bottom += window.scrollY;
+      bounds = getBounds();
 
       was_inside = inside(bounds);
       if (was_inside)
         enter();
     });
     container.on('mousemove', function() {
+      // Mousemove may fire before mouseenter in IE
+      if (!chart_position || !bounds) {
+        chart_position = chartPosition();
+        bounds = getBounds();
+      }
+
       var is_inside = inside(bounds);
       if (was_inside && is_inside)
         move();
@@ -550,6 +554,16 @@ var Compose = Base.extend({
         container: {x: x, y: y},
         chart: {x: chart_x, y: chart_y}
       };
+    }
+
+    function getBounds() {
+      var scroll_y = 'scrollY' in window ? window.scrollY : document.documentElement.scrollTop;
+
+      bounds = extend({}, base.getBoundingClientRect());
+      bounds.top += scroll_y;
+      bounds.bottom += scroll_y;
+
+      return bounds;
     }
   },
 

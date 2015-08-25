@@ -2,7 +2,6 @@ import d3 from 'd3';
 import {
   contains,
   defaults,
-  extend,
   isBoolean,
   isUndefined
 } from '../utils';
