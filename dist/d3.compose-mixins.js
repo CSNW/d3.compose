@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.3 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.4 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -1383,10 +1383,11 @@
       var margins = this.margins();
 
       if (this.centered()) {
+        var actual_dimensions = dimensions(this.base);
         if (options.height)
-          y += (options.height - this.height()) / 2;
+          y += (options.height - actual_dimensions.height) / 2;
         if (options.width)
-          x += (options.width - this.width()) / 2;
+          x += (options.width - actual_dimensions.width) / 2;
       }
       else {
         x += margins.left;
@@ -2269,15 +2270,19 @@
       container.on('mouseenter', function() {
         // Calculate chart position and bounds on enter and cache during move
         chart_position = chartPosition();
-        bounds = extend({}, base.getBoundingClientRect());
-        bounds.top += window.scrollY;
-        bounds.bottom += window.scrollY;
+        bounds = getBounds();
 
         was_inside = inside(bounds);
         if (was_inside)
           enter();
       });
       container.on('mousemove', function() {
+        // Mousemove may fire before mouseenter in IE
+        if (!chart_position || !bounds) {
+          chart_position = chartPosition();
+          bounds = getBounds();
+        }
+
         var is_inside = inside(bounds);
         if (was_inside && is_inside)
           move();
@@ -2330,6 +2335,16 @@
           container: {x: x, y: y},
           chart: {x: chart_x, y: chart_y}
         };
+      }
+
+      function getBounds() {
+        var scroll_y = 'scrollY' in window ? window.scrollY : document.documentElement.scrollTop;
+
+        bounds = extend({}, base.getBoundingClientRect());
+        bounds.top += scroll_y;
+        bounds.bottom += scroll_y;
+
+        return bounds;
       }
     },
 
@@ -3698,7 +3713,7 @@
   };
 
   var d3c = d3.compose = {
-    VERSION: '0.15.3',
+    VERSION: '0.15.4',
     utils: utils,
     helpers: helpers,
     Base: Base,
