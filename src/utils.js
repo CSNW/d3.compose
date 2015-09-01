@@ -129,10 +129,16 @@ export function inherits(Child, Parent) {
     }
   });
 
-  if (Object.setPrototypeOf)
+  if (Object.setPrototypeOf) {
     Object.setPrototypeOf(Child, Parent);
-  else
+  }
+  else {
     Child.__proto__ = Parent; //eslint-disable-line no-proto
+
+    // __proto__ isn't supported in IE,
+    // use one-time copy of static properties to approximate
+    defaults(Child, Parent);
+  }
 }
 
 // If value isn't `undefined`, return `value`, otherwise use `default_value`
