@@ -43,10 +43,10 @@ scripts: |
     <h3>Composable</h3>
     <!-- TODO<div id="composable-chart"></div> -->
     <p>
-      Create focused charts/components that do one thing one well (e.g. Bars, Lines, Legend, Axis, etc.) and compose them to create complex visualizations.
+      Create small and sharp charts/components that do one thing one well (e.g. Bars, Lines, Legend, Axis, etc.) and compose them to create complex visualizations.
     </p>
     <p>
-      Works great with your existing charts (even those from other libraries) and it's simple to extend/customize the built-in charts and components.
+      d3.compose works great with your existing charts (even those from other libraries) and it is simple to extend/customize the built-in charts and components.
     </p>
   </div>
   <div class="col-md-4">
@@ -57,9 +57,9 @@ scripts: |
       With d3.compose, this process is automatic:
     </p>
     <ul>
-      <li>Automatically size and position components</li>
-      <li>Layer components and charts by z-index</li>
-      <li>Responsize by default, with automatic scaling</li>
+      <li>Automatically <b>size</b> and <b>position</b> components</li>
+      <li><b>Layer</b> components and charts by z-index</li>
+      <li><b>Responsize by default</b>, with automatic scaling</li>
     </ul>
   </div>
   <div class="col-md-4">
@@ -104,7 +104,7 @@ scripts: |
       </div>
 
       <section>
-        <p>We'll walk through the steps for creating this chart plotting the results and control for an experiment in the following steps. We'll start with it as a line chart and then switch to bars at then end (to see how easy that is).</p>
+        <p>We'll walk through the steps for creating this chart plotting two series: intervention and control for an experiment in the following steps. We'll start with it as a line chart and then switch to bars at then end (to see how easy that is).</p>
 
         <div class="chart-container hidden-md hidden-lg">
           {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
@@ -150,7 +150,7 @@ var data = [{x: 0, y: 25}, {x: 10, y: 52}, {x: 20, y: 73}, /* ... */];
 var chart = d3.select('#chart').chart('Compose', function(data) {
   // Options function:
   // Gets evaluated on each draw and takes in data and returns options
- 
+
   var charts = [
     // Create results chart:
     // d3c.lines -> type: 'Lines' -> d3.chart('Lines')
@@ -174,7 +174,7 @@ chart.draw(data);
       </section>
 
       <section>
-        <h3 id="3-component"><span class="step-number">3.</span> Add Component</h3>
+        <h3 id="3-component"><span class="step-number">3.</span> Add y-axis Component</h3>
 
         <p>
           The chart isn't very meaningful without knowing what the values are, so let's add a y-axis to the chart.
