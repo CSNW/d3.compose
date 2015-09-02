@@ -3,6 +3,12 @@ var path = require('path');
 var _ = require('lodash');
 
 var docs_path = process.env.docs_path || path.resolve('../_docs/');
+
+// Make sure path from env is in correct format
+docs_path = docs_path.replace(/\\/g, '/').replace(/\"/g, '');
+if (!docs_path.charAt(docs_path.length - 1) != '/')
+  docs_path += '/';
+
 var paths = {
   data: docs_path + 'data.json',
   dist: docs_path + 'additional/dist/',
@@ -10,6 +16,7 @@ var paths = {
   changelog: docs_path + 'additional/CHANGELOG.md',
   'package': docs_path + 'additional/package.json'
 };
+
 var output = {
   docs: '../_data/docs.json',
   details: '../_data/details.json',
@@ -95,7 +102,7 @@ function generateDocs(data) {
             if (param.optional)
               code = '[' + code + ']';
 
-            return code; 
+            return code;
           }).join(', ') + ')';
         }
         else if (classitem.itemtype == 'property') {
@@ -139,13 +146,13 @@ function generateDetails(input_folder, output_folder, dist) {
         path: '/d3.compose/' + file
       };
     });
-    
+
     details[key].dev.size = Math.round(fs.statSync(input_folder + files.dev).size / 1000);
-    
+
     var prod_file = fs.readFileSync(input_folder + files.prod);
     details[key].prod.size = Math.round(gzipSize.sync(prod_file) / 100) / 10;
   });
-  
+
   return details;
 }
 
