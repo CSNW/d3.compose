@@ -9,6 +9,7 @@
 - __0.15.2__ Fix Gridlines onExit bug and slide down Bars on exit
 - __0.15.3__ Fix layout calculation and axis transition bugs
 - __0.15.4__ Fix component centering and mousemove in IE bugs
+- __0.15.5__ Fix __proto__ and Overlay transform issues
 
 # 0.14.0
 

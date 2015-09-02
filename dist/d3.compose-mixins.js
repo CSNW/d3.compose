@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.4 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.5 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -139,10 +139,16 @@
       }
     });
 
-    if (Object.setPrototypeOf)
+    if (Object.setPrototypeOf) {
       Object.setPrototypeOf(Child, Parent);
-    else
+    }
+    else {
       Child.__proto__ = Parent; //eslint-disable-line no-proto
+
+      // __proto__ isn't supported in IE,
+      // use one-time copy of static properties to approximate
+      defaults(Child, Parent);
+    }
   }
 
   // If value isn't `undefined`, return `value`, otherwise use `default_value`
@@ -1490,11 +1496,14 @@
     */
     style: property({
       default_value: function() {
+        var transform = translate(this.x() + 'px', this.y() + 'px');
         var styles = {
           position: 'absolute',
           top: 0,
           left: 0,
-          transform: translate(this.x() + 'px', this.y() + 'px')
+          '-webkit-transform': transform,
+          '-ms-transform': transform,
+          transform: transform
         };
 
         if (this.hidden())
@@ -3713,7 +3722,7 @@
   };
 
   var d3c = d3.compose = {
-    VERSION: '0.15.4',
+    VERSION: '0.15.5',
     utils: utils,
     helpers: helpers,
     Base: Base,
