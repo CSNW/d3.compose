@@ -1,11 +1,11 @@
-import Series from './series';
-import XY from './xy';
-import XYValues from './xy-values';
-import XYInverted from './xy-inverted';
-import Labels, { LabelsXY } from './labels';
-import Hover, { HoverPoints } from './hover';
-import Transition from './transition';
-import StandardLayer from './standard-layer';
+import Series from './mixins/series';
+import XY from './mixins/xy';
+import XYValues from './mixins/xy-values';
+import XYInverted from './mixins/xy-inverted';
+import Labels, { LabelsXY } from './mixins/labels';
+import Hover, { HoverPoints } from './mixins/hover';
+import Transition from './mixins/transition';
+import StandardLayer from './mixins/standard-layer';
 
 var mixins = {
   Series: Series,
