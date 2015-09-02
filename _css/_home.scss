@@ -11,7 +11,7 @@
   }
 }
 .home-masthead-content {
-  
+
 }
 .home-masthead-carousel-container {
   display: flex;
@@ -31,7 +31,7 @@
 
   &:active,
   &:visited {
-    color: #fff;    
+    color: #fff;
   }
   &:hover {
     color: #fff;
@@ -71,7 +71,7 @@
   flex: 0 0 100%;
 
   @media (min-width: $screen-sm) {
-    flex: 1;  
+    flex: 1;
   }
 }
 
@@ -101,12 +101,19 @@
   }
 }
 
+.home-links {
+  margin-top: 40px;
+
+  @media (max-width: $screen-sm) {
+    margin-top: 20px;
+  }
+}
+
 .home-call-to-action {
   background-color: transparent;
   border-color: #fff;
   color: #fff;
   border-width: 2px;
-  margin-top: 40px;
 
   &:hover, &:active {
     background-color: #fff;
@@ -114,8 +121,19 @@
   }
 
   @media (max-width: $screen-sm) {
-    margin-top: 20px;
     width: 100%;
+  }
+  @media (min-width: $screen-sm) {
+    margin-top: -24px;
+    margin-right: 10px;
+  }
+}
+
+.home-github-links {
+  display: inline-block;
+
+  @media (max-width: $screen-sm) {
+    padding-top: 15px;
   }
 }
 
@@ -128,7 +146,7 @@
   section {
     margin-bottom: 20px;
   }
-  
+
   section.is-active pre {
     border-left-color: $brand-warning;
   }
