@@ -75,11 +75,14 @@ var Overlay = Component.extend({
   */
   style: property({
     default_value: function() {
+      var transform = translate(this.x() + 'px', this.y() + 'px');
       var styles = {
         position: 'absolute',
         top: 0,
         left: 0,
-        transform: translate(this.x() + 'px', this.y() + 'px')
+        '-webkit-transform': transform,
+        '-ms-transform': transform,
+        transform: transform
       };
 
       if (this.hidden())
