@@ -68,6 +68,13 @@ pre {
   }
 }
 
+.site-footer {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
 // Custom components
 @import "highlight";
 @import "header";
