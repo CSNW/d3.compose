@@ -123,7 +123,7 @@
   @media (max-width: $screen-sm) {
     width: 100%;
   }
-  @media (min-width: $screen-sm) {
+  @media (min-width: $screen-sm) and (max-width: $screen-md) {
     margin-top: -24px;
     margin-right: 10px;
   }
@@ -132,7 +132,7 @@
 .home-github-links {
   display: inline-block;
 
-  @media (max-width: $screen-sm) {
+  @media (max-width: $screen-sm), (min-width: $screen-md) {
     padding-top: 15px;
   }
 }
