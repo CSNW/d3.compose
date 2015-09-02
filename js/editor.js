@@ -69,7 +69,7 @@
           '  </div>' +
           '</div>' +
           '<div class="editor-details">' +
-          '  <a class="editor-show-options js-options-toggle" href="#show-options">Show Options</a>' +
+          '  <a class="editor-show-options js-options-toggle" href="#show-options">Show Source</a>' +
           '  <!--TODO<div class="editor-data-options">' +
           '    Data: <select class="js-data-options"><option>Simple</option></select>' +
           '  </div>-->' +
@@ -151,12 +151,12 @@
 
       if (!this.showing_options) {
         this.$('.editor-options').addClass('is-pinned');
-        this.$('.js-options-toggle').text('Hide Options');
+        this.$('.js-options-toggle').text('Hide Source');
         this.trigger('show:options');
       }
       else {
         this.$('.editor-options').removeClass('is-pinned');
-        this.$('.js-options-toggle').text('Show Options');
+        this.$('.js-options-toggle').text('Show Source');
         this.trigger('hide:options');
       }
 
