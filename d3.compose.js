@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.0 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.5 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -139,10 +139,16 @@
       }
     });
 
-    if (Object.setPrototypeOf)
+    if (Object.setPrototypeOf) {
       Object.setPrototypeOf(Child, Parent);
-    else
+    }
+    else {
       Child.__proto__ = Parent; //eslint-disable-line no-proto
+
+      // __proto__ isn't supported in IE,
+      // use one-time copy of static properties to approximate
+      defaults(Child, Parent);
+    }
   }
 
   // If value isn't `undefined`, return `value`, otherwise use `default_value`
@@ -1383,10 +1389,11 @@
       var margins = this.margins();
 
       if (this.centered()) {
+        var actual_dimensions = dimensions(this.base);
         if (options.height)
-          y += (options.height - this.height()) / 2;
+          y += (options.height - actual_dimensions.height) / 2;
         if (options.width)
-          x += (options.width - this.width()) / 2;
+          x += (options.width - actual_dimensions.width) / 2;
       }
       else {
         x += margins.left;
@@ -1489,11 +1496,14 @@
     */
     style: property({
       default_value: function() {
+        var transform = translate(this.x() + 'px', this.y() + 'px');
         var styles = {
           position: 'absolute',
           top: 0,
           left: 0,
-          transform: translate(this.x() + 'px', this.y() + 'px')
+          '-webkit-transform': transform,
+          '-ms-transform': transform,
+          transform: transform
         };
 
         if (this.hidden())
@@ -1522,6 +1532,7 @@
       @param {Object|Number} position {x,y}, {container: {x,y}}, {chart: {x,y}} or x in px from left
       @param {Number} [y] in px from top
     */
+    // TODO This conflicts with component.position(), might need a rename
     position: function(position, y) {
       if (arguments.length > 1) {
         position = {
@@ -2268,15 +2279,19 @@
       container.on('mouseenter', function() {
         // Calculate chart position and bounds on enter and cache during move
         chart_position = chartPosition();
-        bounds = extend({}, base.getBoundingClientRect());
-        bounds.top += window.scrollY;
-        bounds.bottom += window.scrollY;
+        bounds = getBounds();
 
         was_inside = inside(bounds);
         if (was_inside)
           enter();
       });
       container.on('mousemove', function() {
+        // Mousemove may fire before mouseenter in IE
+        if (!chart_position || !bounds) {
+          chart_position = chartPosition();
+          bounds = getBounds();
+        }
+
         var is_inside = inside(bounds);
         if (was_inside && is_inside)
           move();
@@ -2329,6 +2344,16 @@
           container: {x: x, y: y},
           chart: {x: chart_x, y: chart_y}
         };
+      }
+
+      function getBounds() {
+        var scroll_y = 'scrollY' in window ? window.scrollY : document.documentElement.scrollTop;
+
+        bounds = extend({}, base.getBoundingClientRect());
+        bounds.top += scroll_y;
+        bounds.bottom += scroll_y;
+
+        return bounds;
       }
     },
 
@@ -2408,7 +2433,7 @@
         }
         else {
           // TEMP Changing position has nasty side effects, disable for now
-          var changed_position = item && item.position && options.position && item.position() != options.position;
+          var changed_position = item && !(item instanceof Overlay) && item.position && options.position && item.position() != options.position;
 
           if (item && (item.type != options.type || changed_position)) {
             // If chart type has changed, detach and re-create
@@ -2521,7 +2546,7 @@
   d3.chart().Compose = Compose;
 
   var d3c = d3.compose = {
-    VERSION: '0.15.0',
+    VERSION: '0.15.5',
     utils: utils,
     helpers: helpers,
     Base: Base,

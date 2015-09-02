@@ -1,6 +1,6 @@
 {
   "name": "d3.compose",
-  "version": "0.15.0",
+  "version": "0.15.5",
   "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
   "main": "dist/d3.compose.js",
   "scripts": {
@@ -31,7 +31,7 @@
   "devDependencies": {
     "async": "~0.9.0",
     "del": "^1.2.0",
-    "esperanto": "^0.7.3",
+    "esperanto": "^0.7.5",
     "grunt": "~0.4.5",
     "grunt-contrib-concat": "~0.5.1",
     "grunt-contrib-connect": "~0.9.0",

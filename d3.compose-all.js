@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.0 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.5 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -139,10 +139,16 @@
       }
     });
 
-    if (Object.setPrototypeOf)
+    if (Object.setPrototypeOf) {
       Object.setPrototypeOf(Child, Parent);
-    else
+    }
+    else {
       Child.__proto__ = Parent; //eslint-disable-line no-proto
+
+      // __proto__ isn't supported in IE,
+      // use one-time copy of static properties to approximate
+      defaults(Child, Parent);
+    }
   }
 
   // If value isn't `undefined`, return `value`, otherwise use `default_value`
@@ -1383,10 +1389,11 @@
       var margins = this.margins();
 
       if (this.centered()) {
+        var actual_dimensions = dimensions(this.base);
         if (options.height)
-          y += (options.height - this.height()) / 2;
+          y += (options.height - actual_dimensions.height) / 2;
         if (options.width)
-          x += (options.width - this.width()) / 2;
+          x += (options.width - actual_dimensions.width) / 2;
       }
       else {
         x += margins.left;
@@ -1489,11 +1496,14 @@
     */
     style: property({
       default_value: function() {
+        var transform = translate(this.x() + 'px', this.y() + 'px');
         var styles = {
           position: 'absolute',
           top: 0,
           left: 0,
-          transform: translate(this.x() + 'px', this.y() + 'px')
+          '-webkit-transform': transform,
+          '-ms-transform': transform,
+          transform: transform
         };
 
         if (this.hidden())
@@ -1522,6 +1532,7 @@
       @param {Object|Number} position {x,y}, {container: {x,y}}, {chart: {x,y}} or x in px from left
       @param {Number} [y] in px from top
     */
+    // TODO This conflicts with component.position(), might need a rename
     position: function(position, y) {
       if (arguments.length > 1) {
         position = {
@@ -2268,15 +2279,19 @@
       container.on('mouseenter', function() {
         // Calculate chart position and bounds on enter and cache during move
         chart_position = chartPosition();
-        bounds = extend({}, base.getBoundingClientRect());
-        bounds.top += window.scrollY;
-        bounds.bottom += window.scrollY;
+        bounds = getBounds();
 
         was_inside = inside(bounds);
         if (was_inside)
           enter();
       });
       container.on('mousemove', function() {
+        // Mousemove may fire before mouseenter in IE
+        if (!chart_position || !bounds) {
+          chart_position = chartPosition();
+          bounds = getBounds();
+        }
+
         var is_inside = inside(bounds);
         if (was_inside && is_inside)
           move();
@@ -2329,6 +2344,16 @@
           container: {x: x, y: y},
           chart: {x: chart_x, y: chart_y}
         };
+      }
+
+      function getBounds() {
+        var scroll_y = 'scrollY' in window ? window.scrollY : document.documentElement.scrollTop;
+
+        bounds = extend({}, base.getBoundingClientRect());
+        bounds.top += scroll_y;
+        bounds.bottom += scroll_y;
+
+        return bounds;
       }
     },
 
@@ -2408,7 +2433,7 @@
         }
         else {
           // TEMP Changing position has nasty side effects, disable for now
-          var changed_position = item && item.position && options.position && item.position() != options.position;
+          var changed_position = item && !(item instanceof Overlay) && item.position && options.position && item.position() != options.position;
 
           if (item && (item.type != options.type || changed_position)) {
             // If chart type has changed, detach and re-create
@@ -2664,6 +2689,7 @@
             .attr('class', chart.seriesClass)
             .attr('style', chart.itemStyle);
 
+          // TODO Exit layer items then exit series layer
           series.exit()
             .remove();
 
@@ -3875,8 +3901,13 @@
     },
 
     // Override StandardLayer
-    onExit: function onExit(selection) {
-      selection.remove();
+    onExitTransition: function onExitTransition(selection) {
+      this.setupTransition(selection);
+
+      selection
+        .attr('y', this.bar0)
+        .attr('height', 0)
+        .remove();
     }
   });
 
@@ -3886,33 +3917,43 @@
 
   var StackedBars = Bars.extend({
     transform: function(data) {
-      // Re-initialize bar positions each time data changes
-      this.bar_positions = [];
-      return Bars.prototype.transform.call(this, data);
+      data = Bars.prototype.transform.call(this, data);
+
+      var grouped = {};
+      var x_key = this.xKey();
+      var y_key = this.yKey();
+      data = data.map(function(series) {
+        series = extend({}, series);
+        series.values = series.values.map(function(value) {
+          value = extend({}, value);
+          var x = value[x_key];
+          var y = value.__original_y = value[y_key];
+
+          if (!grouped[x])
+            grouped[x] = {pos: 0, neg: 0};
+
+          if (y >= 0) {
+            value.__previous = grouped[x].pos;
+            grouped[x].pos = value[y_key] = grouped[x].pos + y;
+          }
+          else {
+            value.__previous = grouped[x].neg;
+            grouped[x].neg = value[y_key] = grouped[x].neg + y;
+          }
+
+          return value;
+        }, this);
+
+        return series;
+      }, this);
+
+      return data;
     },
 
     barHeight: di(function(chart, d, i) {
-      var height = Math.abs(chart.y0() - chart.y.call(this, d, i));
+      var height = Math.abs(chart.yScale()(d.__previous) - chart.y.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
       return height > 0 ? height - offset : 0;
-    }),
-    barY: di(function(chart, d, i) {
-      var y = chart.y.call(this, d, i);
-      var y0 = chart.y0();
-
-      // Only handle positive y-values
-      if (y > y0)
-        return;
-
-      if (chart.bar_positions.length <= i)
-        chart.bar_positions.push(0);
-
-      var previous = chart.bar_positions[i] || y0;
-      var new_position = previous - (y0 - y);
-
-      chart.bar_positions[i] = new_position;
-
-      return new_position;
     })
   });
 
@@ -3971,6 +4012,15 @@
       selection
         .attr('x', this.barX)
         .attr('width', this.barWidth);
+    },
+
+    onExitTransition: function onExitTransition(selection) {
+      this.setupTransition(selection);
+
+      selection
+        .attr('x', this.bar0)
+        .attr('width', 0)
+        .remove();
     }
   });
 
@@ -3980,33 +4030,21 @@
 
   var HorizontalStackedBars = HorizontalBars.extend({
     transform: function(data) {
-      // Re-initialize bar positions each time data changes
-      this.bar_positions = [];
-      return HorizontalBars.prototype.transform.call(this, data);
+      data = StackedBars.prototype.transform.call(this, data);
+      data = HorizontalBars.prototype.transform.call(this, data);
+      return data;
     },
 
     barWidth: di(function(chart, d, i) {
-      var width = Math.abs(chart.x0() - chart.x.call(this, d, i));
+      var width = Math.abs(chart.yScale()(d.__previous) - chart.x.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
       return width > 0 ? width - offset : 0;
     }),
     barX: di(function(chart, d, i) {
       var x = chart.x.call(this, d, i);
-      var x0 = chart.x0();
+      var x0 = chart.yScale()(d.__previous);
 
-      // Only handle positive x-values
-      if (x < x0)
-        return;
-
-      if (chart.bar_positions.length <= i)
-        chart.bar_positions.push(0);
-
-      var previous = chart.bar_positions[i] || (x0 + chart.barOffset());
-      var new_position = previous + (x - x0);
-
-      chart.bar_positions[i] = new_position;
-
-      return previous;
+      return x < x0 ? x : x0 + chart.barOffset();
     })
   });
 
@@ -4156,7 +4194,7 @@
       @return {String}
     */
     labelText: di(function(chart, d, i) {
-      var value = valueOrDefault(d.label, chart.yValue.call(this, d, i));
+      var value = valueOrDefault(d.label, valueOrDefault(d.__original_y, chart.yValue.call(this, d, i)));
       var format = chart.format();
 
       return format ? format(value) : value;
@@ -4339,14 +4377,14 @@
       label.height = layout.height;
 
       if (options.anchor == 'end')
-        layout.x -= layout.width;
+        label.x -= layout.width;
       else if (options.anchor == 'middle')
-        layout.x -= (layout.width / 2);
+        label.x -= (layout.width / 2);
 
       if (options.alignment == 'bottom')
-        layout.y -= layout.height;
+        label.y -= layout.height;
       else if (options.alignment == 'middle')
-        layout.y -= (layout.height / 2);
+        label.y -= (layout.height / 2);
 
       // Center text in background
       label.text.layout = {
@@ -4877,7 +4915,7 @@
       selection.attr('opacity', 1);
     },
     onExit: function onExit(selection) {
-      selection.selectAll('line').remove();
+      selection.remove();
     },
 
     skip_layout: true
@@ -4895,72 +4933,23 @@
     initialize: function(options) {
       components_Axis__Mixed.prototype.initialize.call(this, options);
 
-      // Store previous values for transitioning
-      this.previous = {};
-
       // Create two axes (so that layout and transitions work)
       // 1. Display and transitions
       // 2. Layout (draw to get width, but separate so that transitions aren't affected)
       this.axis = d3.svg.axis();
+      this._layout_axis = d3.svg.axis();
 
       this.axis_base = this.base.append('g').attr('class', 'chart-axis');
       this._layout_base = this.base.append('g')
         .attr('class', 'chart-axis chart-layout')
-        .attr('style', 'display: none;');
+        .append('g')
+          .style('display', 'none');
 
       // Use standard layer for extensibility
       this.standardLayer('Axis', this.axis_base);
 
-      this.layer('_LayoutAxis', this._layout_base, {
-        dataBind: function() {
-          return this.selectAll('g').data([0]);
-        },
-        insert: function() {
-          return this.chart().onInsert(this);
-        },
-        events: {
-          'enter': function() {
-            this.chart().onEnter(this);
-          },
-          'merge': function() {
-            this.chart().onMerge(this);
-          }
-        }
-      });
-
       // Setup gridlines
-      var gridlines_options = gridlinesOptions(this);
-      var gridlines = this._gridlines = gridlines_options.display && createGridlines(this, gridlines_options);
-
-      this.on('draw', function() {
-        gridlines_options = gridlinesOptions(this);
-
-        if (gridlines)
-          gridlines.options(gridlines_options);
-        else if (gridlines_options.display)
-          gridlines = this._gridlines = createGridlines(this, gridlines_options);
-
-        if (gridlines && gridlines_options.display)
-          gridlines.draw();
-        else if (gridlines)
-          gridlines.draw([false]);
-      }.bind(this));
-
-      function gridlinesOptions(axis) {
-        return defaults({}, axis.gridlines(), {
-          parent: axis,
-          xScale: axis.xScale(),
-          yScale: axis.yScale(),
-          ticks: axis.ticks(),
-          tickValues: axis.tickValues(),
-          orientation: axis.orientation() == 'horizontal' ? 'vertical' : 'horizontal'
-        });
-      }
-
-      function createGridlines(axis, gridline_options) {
-        var base = axis.base.append('g').attr('class', 'chart-axis-gridlines');
-        return new Gridlines(base, gridline_options);
-      }
+      this.attachGridlines();
     },
 
     /**
@@ -4989,10 +4978,7 @@
       @type Object|d3.scale
     */
     scale: property({
-      set: function(value, previous) {
-        this.previous = this.previous || {};
-        this.previous.scale = previous;
-
+      set: function(value) {
         if (this.orientation() == 'vertical') {
           this.yScale(value);
           value = this.yScale();
@@ -5137,39 +5123,6 @@
     tickPadding: property(),
     tickFormat: property(),
 
-    // Store previous value for xScale, yScale, and duration
-    xScale: property({
-      set: function(value, previous) {
-        this.previous = this.previous || {};
-        this.previous.xScale = previous;
-
-        return XY.xScale.options.set.call(this, value, previous);
-      },
-      get: function(scale) {
-        return XY.xScale.options.get.call(this, scale);
-      }
-    }),
-
-    yScale: property({
-      set: function(value, previous) {
-        this.previous = this.previous || {};
-        this.previous.yScale = previous;
-
-        return XY.yScale.options.set.call(this, value, previous);
-      },
-      get: function(scale) {
-        return XY.yScale.options.get.call(this, scale);
-      }
-    }),
-
-    duration: property({
-      set: function(value, previous) {
-        this.previous = this.previous || {};
-        this.previous.duration = previous;
-      },
-      default_value: Transition.duration.default_value
-    }),
-
     onDataBind: function onDataBind(selection) {
       // Setup axis (scale and properties)
       this._setupAxis(this.axis);
@@ -5182,20 +5135,16 @@
       return selection.append('g');
     },
     onEnter: function onEnter(selection) {
-      // Place and render axis
+      // Render axis
       selection.call(this.axis);
     },
     onMerge: function onUpdate(selection) {
+      // Position axis
       selection.attr('transform', this.translation());
     },
     onUpdateTransition: function onUpdateTransition(selection) {
       // Render axis (with transition)
       this.setupTransition(selection);
-
-      if (this._skip_transition) {
-        selection.duration(0);
-        this._skip_transition = undefined;
-      }
 
       selection.call(this.axis);
     },
@@ -5203,73 +5152,64 @@
       selection.selectAll('g').remove();
     },
 
-    getLayout: function(data) {
-      // 1. Get previous values to restore after draw for proper transitions
-      var state = this.getState();
+    getLayout: function() {
+      // Draw layout axis
+      this.setScales();
+      this._setupAxis(this._layout_axis);
+      this._layout_base.call(this._layout_axis);
 
-      // 2. Draw with current values
-      this.draw(data);
-
-      // 3. Calculate layout
+      // Calculate layout
       // (make layout axis visible for width calculations in Firefox)
-      this._layout_base.attr('style', 'display: block;');
+      this._layout_base.style('display', 'block');
 
       var label_overhang = this._getLabelOverhang();
 
-      this._layout_base.attr('style', 'display: none;');
-
-      // 4. Draw with previous values
-      if (this._previous_raw_data) {
-        this.setState(extend(state.previous, {duration: 0}));
-
-        this.draw(this._previous_raw_data);
-
-        // 5. Restore current values
-        this.setState(state.current);
-      }
-      else {
-        // Skip transition after layout
-        // (Can transition from unexpected state)
-        this._skip_transition = true;
-      }
-
-      // Store raw data for future layout
-      this._previous_raw_data = data;
-
-      var position = this.position();
-      if (position == 'x0')
-        position = 'bottom';
-      else if (position == 'y0')
-        position = 'right';
+      this._layout_base.style('display', 'none');
 
       return {
-        position: position,
+        position: this.position(),
         width: label_overhang.width,
         height: label_overhang.height
       };
     },
     setLayout: function() {
-      // Axis is positioned with chartBase, so don't set layout
+      // Axis is positioned as chart layer, so don't set layout
       return;
     },
 
-    getState: function() {
-      return {
-        previous: this.previous,
-        current: {
-          scale: this.scale(),
-          xScale: this.xScale(),
-          yScale: this.yScale(),
-          duration: this.duration()
-        }
-      };
-    },
-    setState: function(state) {
-      this
-        .xScale(state.xScale)
-        .yScale(state.yScale)
-        .scale(state.scale)
-        .duration(state.duration);
+    attachGridlines: function() {
+      var gridlines_options = gridlinesOptions(this);
+      var gridlines = this._gridlines = gridlines_options.display && createGridlines(this, gridlines_options);
+
+      this.on('draw', function() {
+        gridlines_options = gridlinesOptions(this);
+
+        if (gridlines)
+          gridlines.options(gridlines_options);
+        else if (gridlines_options.display)
+          gridlines = this._gridlines = createGridlines(this, gridlines_options);
+
+        if (gridlines && gridlines_options.display)
+          gridlines.draw();
+        else if (gridlines)
+          gridlines.draw([false]);
+      }.bind(this));
+
+      function gridlinesOptions(axis) {
+        return defaults({}, axis.gridlines(), {
+          parent: axis,
+          xScale: axis.xScale(),
+          yScale: axis.yScale(),
+          ticks: axis.ticks(),
+          tickValues: axis.tickValues(),
+          orientation: axis.orientation() == 'horizontal' ? 'vertical' : 'horizontal'
+        });
+      }
+
+      function createGridlines(axis, gridline_options) {
+        var base = axis.base.append('g').attr('class', 'chart-axis-gridlines');
+        return new Gridlines(base, gridline_options);
+      }
     },
 
     _setupAxis: function(axis) {
@@ -5821,7 +5761,7 @@
   d3.chart().InsetLegend = InsetLegend;
 
   var d3c = d3.compose = {
-    VERSION: '0.15.0',
+    VERSION: '0.15.5',
     utils: utils,
     helpers: helpers,
     Base: Base,
