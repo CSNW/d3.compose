@@ -111,7 +111,7 @@ scripts: |
       </div>
 
       <section>
-        <p>We'll walk through the steps for creating this chart plotting two series: intervention and control for an experiment in the following steps. We'll start with it as a line chart and then switch to bars at then end (to see how easy that is).</p>
+        <p>We'll walk through the steps for creating this chart plotting two series: A and B for an experiment in the following steps. We'll start with it as a line chart and then switch to bars at then end (to see how easy that is).</p>
 
         <div class="chart-container hidden-md hidden-lg">
           {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
@@ -149,7 +149,7 @@ scripts: |
         <h3 id="2-chart"><span class="step-number">2.</span> Add Chart</h3>
 
         <p>
-          First, we'll take just the results and add a line chart to visualize the data.
+          First, we'll take just the B results and add a line chart to visualize the data.
         </p>
 
 {% highlight js %}
@@ -263,7 +263,7 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
         <h3 id="5-series"><span class="step-number">5.</span> Add Series</h3>
 
         <p>
-          With the chart taking shape, let's add another data series: the control results.
+          With the chart taking shape, let's add another data series: the B results.
           All of the standard charts handle both single or series data by default and there are helpers and mixins to add series functionality to your custom charts/components.
         </p>
 
@@ -272,13 +272,13 @@ var data = [
   {
     // required: values: [...]
     // optional: key, name
-    key: 'results',
-    name: 'Results', // (used in legend later)
+    key: 'a',
+    name: 'A', // (used in legend later)
     values: [{x: 0, y: 25}, {x: 10, y: 52}, {x: 20, y: 73}, /* ... */]
   },
   {
-    key: 'control',
-    name: 'Control',
+    key: 'b',
+    name: 'B',
     values: [/* ... */]
   }
 ];

@@ -46,10 +46,10 @@
     single: {
       series: [
         {
-          key: 'control', name: 'Control', values: generate(sequence([0, 100], 10), randomize([0, 25]))
+          key: 'a', name: 'A', values: generate(sequence([0, 100], 10), randomize([0, 25]))
         },
         {
-          key: 'results', name: 'Results', values: generate(sequence([0, 100], 10), function(x) { return 100 - 0.03 * Math.pow(x - 50, 2); })
+          key: 'b', name: 'B', values: generate(sequence([0, 100], 10), function(x) { return 100 - 0.03 * Math.pow(x - 50, 2); })
         }
       ]
     },
@@ -64,13 +64,13 @@
         ],
         output: [
           {
-            key: 'control',
-            name: 'Control',
+            key: 'a',
+            name: 'A',
             values: generate(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], randomize([0, 25]))
           },
           {
-            key: 'results',
-            name: 'Results',
+            key: 'b',
+            name: 'B',
             values: generate(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], randomize([0, 75]))
           }
         ]
