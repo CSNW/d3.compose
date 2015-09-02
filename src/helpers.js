@@ -6,7 +6,7 @@ import {
   isNumber,
   isObject,
   objectEach
-} from '../utils';
+} from './utils';
 
 /**
   `d3.compose.helpers` includes general purpose helpers that are used throughout d3.compose.
@@ -16,11 +16,11 @@ import {
   @class helpers
 */
 
-import property from './property';
-import dimensions from './dimensions';
-import createScale from './create-scale';
-import mixin from './mixin';
-import stack from './stack';
+import property from './helpers/property';
+import dimensions from './helpers/dimensions';
+import createScale from './helpers/create-scale';
+import mixin from './helpers/mixin';
+import stack from './helpers/stack';
 
 /**
   Translate by (x, y) distance

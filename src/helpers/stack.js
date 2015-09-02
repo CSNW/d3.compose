@@ -1,5 +1,5 @@
 import { extend } from '../utils';
-import { translate } from './index';
+import { translate } from '../helpers';
 
 /**
   Stack given array of elements vertically or horizontally

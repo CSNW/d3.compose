@@ -11,7 +11,7 @@ import {
   min,
   max,
   isSeriesData
-} from './index';
+} from '../helpers';
 
 /**
   Create scale from options
