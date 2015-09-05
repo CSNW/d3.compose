@@ -111,7 +111,7 @@ scripts: |
       </div>
 
       <section>
-        <p>We'll walk through the steps for creating this chart plotting two series: A and B for an experiment in the following steps. We'll start with it as a line chart and then switch to bars at then end (to see how easy that is).</p>
+        <p>We'll walk through the steps for creating this chart plotting two series, A and B, for an experiment in the following steps. We'll start with a simple line chart and progressively add components and then switch to bars at the end (to see how easy that is).</p>
 
         <div class="chart-container hidden-md hidden-lg">
           {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
@@ -219,7 +219,7 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
         <h3 id="4-scales"><span class="step-number">4.</span> Add Scales</h3>
 
         <p>
-          In the previous step, the y-axis domain coincidentally matched the line chart's scale, but if the line chart's scale needed to be changed (e.g. to given more room at the top of the chart),
+          In the previous step, the y-axis domain coincidentally matched the line chart's scale, but if the line chart's scale needs to be changed (e.g. to given more room at the top of the chart),
           a scale can be created that is shared between components and charts. Additionally, scales can be created with the domain automatically set from the given data.
           Next, let's add an x-axis and change the scale for the y-axis.
         </p>
@@ -263,7 +263,7 @@ var chart = d3.select('#chart').chart('Compose', function(data) {
         <h3 id="5-series"><span class="step-number">5.</span> Add Series</h3>
 
         <p>
-          With the chart taking shape, let's add another data series: the B results.
+          With the chart taking shape, let's add another data series: the A results.
           All of the standard charts handle both single or series data by default and there are helpers and mixins to add series functionality to your custom charts/components.
         </p>
 
