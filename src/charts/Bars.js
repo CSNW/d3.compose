@@ -8,6 +8,7 @@ import {
 } from '../helpers';
 import {
   Series,
+  XY,
   XYValues,
   LabelsXY,
   Hover,
@@ -71,10 +72,10 @@ import Chart from '../Chart';
   ]);
   ```
   @class Bars
-  @extends Chart, Series, XYValues, LabelsXY, Hover, Transition, StandardLayer
+  @extends Chart, Series, XY, XYValues, LabelsXY, Hover, Transition, StandardLayer
 */
 
-var Mixed = mixin(Chart, Series, XYValues, LabelsXY, Hover, Transition, StandardLayer);
+var Mixed = mixin(Chart, Series, XY, XYValues, LabelsXY, Hover, Transition, StandardLayer);
 var Bars = Mixed.extend({
   initialize: function(options) {
     Mixed.prototype.initialize.call(this, options);

@@ -1,15 +1,12 @@
 import { createScale } from '../helpers';
-import { extend } from '../utils';
-import XY from './xy';
 
 /**
   Mixin for charts of centered key,value data (x: index, y: value, key)
 
   @class XYValues
   @namespace mixins
-  @extends XY
 */
-var XYValues = extend({}, XY, {
+var XYValues = {
   /**
     Determine width of data-point when displayed adjacent
 
@@ -60,6 +57,6 @@ var XYValues = extend({}, XY, {
       centered: true
     });
   }
-});
+};
 
 export default XYValues;

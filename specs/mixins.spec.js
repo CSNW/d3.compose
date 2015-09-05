@@ -157,7 +157,7 @@
 
     describe('XYValues', function() {
       beforeEach(function() {
-        Chart = Chart.extend('Values', mixins.XYValues);
+        Chart = helpers.mixin(Chart, mixins.XY, mixins.XYValues);
         data = values;
         width = 100;
 
