@@ -80,11 +80,7 @@
 }
 
 .docs-section {
-  background-color: #fff;
-  border: solid 1px #eee;
-  padding: 10px 20px;
   margin-bottom: 20px;
-  box-shadow: 0px 0px 5px 0px #eee;
 
   & > h2:first-child {
     margin-top: 10px;
@@ -137,7 +133,7 @@
     margin-top: 4px;
 
     &:last-child {
-      margin-bottom: 4px;  
+      margin-bottom: 4px;
     }
     &:first-child {
       margin-top: 0;
@@ -145,7 +141,7 @@
     }
   }
 
-  & ul, 
+  & ul,
   & ol {
     padding-left: 1.5em;
   }
@@ -165,7 +161,7 @@
 .docs-return {
   margin-bottom: 1em;
   font-size: 13px;
-  
+
   & > small {
     text-transform: uppercase;
     font-size: 11px;
