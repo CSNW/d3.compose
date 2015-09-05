@@ -1,7 +1,7 @@
 {% if include.nested %}
   <h3 id="{{include.class.id}}">{{include.class.name}}</h3>
 {% else %}
-<section class="docs-section">
+<section class="page docs-section">
   <h2 id="{{include.class.id}}">{{include.class.name}}</h2>
 {% endif %}
 
@@ -69,6 +69,17 @@
       </div>
     {% endfor %}
   {% endfor %}
+
+  {% if include.class.extensions %}
+    <h3>Inherits</h3>
+
+    <ul>
+    {% for extension in include.class.extensions %}
+      <li><a href="#{{ extension.id }}">{{ extension.shortname }}</a></li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+
 {% unless include.nested %}
 </section>
 {% endunless %}

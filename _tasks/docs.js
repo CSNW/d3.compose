@@ -74,58 +74,97 @@ function generateDocs(data) {
   var formatted = {classes: {}};
 
   _.each(data.classes, function(cls, class_name) {
-    // For namespaced classes, convert dot to dash for jekyll compatibility
-    var class_id = class_name;
-    var formatted_class_name = class_name;
-
-    if (class_name.indexOf('.') >= 0) {
-      var parts = class_name.split('.');
-      class_id = class_name.replace(/\./g, '-');
-
-      formatted_class_name = parts[parts.length - 1];
-    }
-
-    var class_items = _.chain(data.classitems)
-      .filter({'class': class_name})
-      .map(function(classitem) {
-        classitem = _.extend({
-          id: class_id + '-' + classitem.name
-        }, classitem);
-
-        if (classitem.params) {
-          classitem.code = classitem.name + '(' + _.map(classitem.params, function(param) {
-            var code = param.name.trim();
-
-            if (param['optdefault'])
-              code += ' = ' + param['optdefault'].trim();
-
-            if (param.optional)
-              code = '[' + code + ']';
-
-            return code;
-          }).join(', ') + ')';
-        }
-        else if (classitem.itemtype == 'property') {
-          var code = '{' + classitem.type + '}';
-
-          if (classitem['default'])
-            code += ' [' + classitem['default'] + ']';
-
-          classitem.code = code;
-        }
-
-        return classitem;
-      })
-      .value();
-
-    formatted.classes[class_id] = _.extend({}, cls, {
-      shortname: formatted_class_name,
-      id: class_id,
-      classitems: class_items
-    });
+    var formatted_class = getClass(data, cls);
+    formatted.classes[formatted_class.id] = formatted_class;
   });
 
   return formatted;
+}
+
+function getClass(data, cls, options) {
+  options = _.defaults(options || {}, {exclude_extensions: false});
+
+  // For namespaced classes, convert dot to dash for jekyll compatibility
+  var id = cls.name.replace(/\./g, '-');
+  var parts = cls.name.split('.');
+  var short_name = parts[parts.length - 1];
+
+  var formatted_class = _.extend({}, cls, {
+    shortname: short_name,
+    id: id,
+    classitems: getItems(data, cls, id)
+  });
+
+  if (!options.exclude_extensions)
+    formatted_class.extensions = getExtensions(data, formatted_class);
+
+  return formatted_class;
+}
+
+function getItems(data, cls, class_id) {
+  var items = _.filter(data.classitems, function(item) {
+    return item.name && item['class'] == cls.name;
+  });
+  var formatted_items = items.map(function(classitem) {
+    var item = _.extend({
+      id: class_id + '-' + classitem.name
+    }, classitem);
+
+    // Generate item "code" if it has params or is a property
+    if (item.params) {
+      // For params, use name(a, [b = 2], [c]) style
+      var param_codes = _.map(item.params, function(param) {
+        var code = param.name.trim();
+
+        if (param['optdefault'])
+          code += ' = ' + param['optdefault'].trim();
+
+        if (param.optional)
+          code = '[' + code + ']';
+
+        return code;
+      });
+
+      item.code = item.name + '(' + param_codes.join(', ') + ')';
+    }
+    else if (item.itemtype == 'property') {
+      // For property, use {type} [default] style
+      var code = '{' + item.type + '}';
+
+      if (item['default'])
+        code += ' [' + item['default'] + ']';
+
+      item.code = code;
+    }
+
+    return item;
+  });
+
+  return formatted_items;
+}
+
+function getExtensions(data, formatted_class) {
+  if (!formatted_class.extends)
+    return;
+
+  var extension_names = formatted_class.extends.split(',').map(function(ext) { return ext.trim(); });
+  if (!extension_names.length)
+    return;
+
+  var extensions = extension_names.map(function(ext) {
+    var extension = data.classes[ext] || data.classes['mixins.' + ext];
+
+    if (!extension) {
+      console.warn('No extension found matching ' + ext);
+      return;
+    }
+
+    extension = getClass(data, extension, {exclude_extensions: true});
+
+    return extension;
+  });
+
+  return extensions;
 }
 
 function generateDetails(input_folder, output_folder, dist) {
