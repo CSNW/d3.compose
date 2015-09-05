@@ -25,6 +25,13 @@ import {
     range: [0, 500]
   });
 
+  // Calculate domain for data
+  var scale = createScale({
+    type: 'log',
+    data: [{y: 1}, {y: 100}, {y: 2000}, {y: 5000}],
+    key: 'y'
+  });
+
   // Scale is passed through
   var original = d3.scale.linear();
   var scale = createScale(original);
@@ -34,8 +41,16 @@ import {
   var scale = createScale({
     type: 'ordinal',
     domain: ['a', 'b', 'c', 'd', 'e'],
-    rangeRoundBands: [[0, 100], 0.1, 0.05]
+    rangeRoundBands: [[0, 100], 0.1, 0.05] // -> rangeRoundBands([0, 100], 0.1, 0.05)
   });
+
+  // Use ordinal + adjacent for bar charts
+  var scale = createScale({
+    type: 'ordinal',
+    adjacent: true,
+    domain: ['a', 'b', 'c'],
+    series: 2 // Series count is required for adjacent if data isn't given
+  })
   ```
   @method createScale
   @for helpers

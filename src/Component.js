@@ -207,6 +207,8 @@ var Component = Base.extend({
         // (the following is the default implementation)
         var margins = this.margins();
 
+        // (handle this.centered())
+
         this.base
           .attr('transform', helpers.translate(x + margins.left, y + margins.top));
         this.height(options && options.height);

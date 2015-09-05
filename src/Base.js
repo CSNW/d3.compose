@@ -13,8 +13,8 @@ import {
 } from './helpers';
 var Chart = d3.chart();
 
+// TEMP Clear namespace from mixins
 /**
-  TEMP Clear namespace from mixins
   @namespace
 */
 

@@ -49,12 +49,15 @@ var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
     ];
 
     var title = d3c.title('d3.compose');
-    var yAxis = d3c.axis({scale: scales.y});
-    var y2Axis = d3c.axis({scale: scales.y2});
+    var xAxis = d3c.axis('xAxis', {scale: scales.x});
+    var yAxis = d3c.axis('yAxis', {scale: scales.y});
+    var y2Axis = d3c.axis('y2Axis', {scale: scales.y2});
 
     // Layout charts and components
     return [
-      [yAxis, d3c.layered(charts), y2Axis]
+      title,
+      [yAxis, d3c.layered(charts), y2Axis],
+      xAxis
     ];;
   });
 
@@ -94,7 +97,7 @@ var Compose = Base.extend({
 
   /**
     Get/set the options `object/function` for the chart that takes `data` and
-    returns `{charts, components}` for composing child charts and components.
+    returns `[...layout]` for composing child charts and components.
 
     @example
     ```js
@@ -102,19 +105,17 @@ var Compose = Base.extend({
     chart.options();
 
     // set (static)
-    chart.options({
-      charts: {},
-      components: {}
-    });
+    chart.options([
+      // ...
+    ]);
 
     // set (dynamic, takes data and returns options)
     chart.options(function(data) {
       // process data...
 
-      return {
-        charts: {},
-        components: {}
-      };
+      return [
+        // ...
+      ];
     });
 
     // Set directly from d3.chart creation

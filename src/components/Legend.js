@@ -57,18 +57,15 @@ var default_legend_margins = {top: 8, right: 8, bottom: 8, left: 8};
         {key: 'output2', name: 'Output 2', values: data.output2}
       ];
 
-      return {
-        charts: {
-          a: {type: 'Lines', data: input}, // ...
-          b: {type: 'Bars', data: output} // ...
-        },
-        components: {
-          legend: {
-            type: 'Legend',
-            charts: ['a', 'b']
-          }
-        }
-      };
+      var charts = [
+        d3c.lines('a', {data: input}), // ...
+        d3c.bars('b', {data: output}) // ...
+      ];
+      var legend = d3c.legend({charts: ['a', 'b']});
+
+      return [
+        [d3c.layered(charts), legend]
+      ];
     });
 
   // -> automatically creates legend from series data for 'a' and 'b'
@@ -77,17 +74,14 @@ var default_legend_margins = {top: 8, right: 8, bottom: 8, left: 8};
   //    (Bars Swatch) Output 2
 
   // or, manually set data for legend
-  return {
-    components: {
-      legend: {
-        type: 'Legend',
-        data: [
-          {type: 'Lines', text: 'Input', class: 'series-index-0'},
-          {type: 'Bars', text: 'Output 1', class: 'series-index-0'},
-          {type: 'Bars', text: 'Output 2', class: 'series-index-1'},
-        ]
-      }
-    }
+  return [
+    d3c.legend({
+      data: [
+        {type: 'Lines', text: 'Input', class: 'series-index-0'},
+        {type: 'Bars', text: 'Output 1', class: 'series-index-0'},
+        {type: 'Bars', text: 'Output 2', class: 'series-index-1'},
+      ]
+    })
   };
   ```
   @class Legend
@@ -108,19 +102,16 @@ var Legend = Mixed.extend({
     ```js
     d3.select('#chart')
     .chart('Compose', function(data) {
-      return {
-        charts: {
-          a: {},
-          b: {},
-          c: {}
-        },
-        components: {
-          legend: {
-            type: 'Legend',
-            charts: ['a', 'c']
-          }
-        }
-      };
+      var charts = [
+        {id: 'a'},
+        {id: 'b'},
+        {id: 'c'}
+      ];
+      var legend = d3c.legend({charts: ['a', 'c']});
+
+      return [
+        [d3c.layered(charts), legend]
+      ];
     });
     ```
     @property charts
@@ -129,7 +120,7 @@ var Legend = Mixed.extend({
   charts: property(),
 
   /**
-    Dimensions of "swatch"
+    Dimensions of "swatch" in px
 
     @property swatchDimensions
     @type Object

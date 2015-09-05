@@ -1,7 +1,8 @@
 import d3 from 'd3';
 
 /**
-  Helper for robustly determining width/height of given selector
+  Helper for robustly determining width/height of given selector.
+  Checks dimensions from css, attributes, and bounding box.
 
   @method dimensions
   @for helpers
