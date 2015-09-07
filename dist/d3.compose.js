@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.5 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.6 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -343,6 +343,15 @@
     return property;
   }
 
+  /**
+    Helper for robustly determining width/height of given selector.
+    Checks dimensions from css, attributes, and bounding box.
+
+    @method dimensions
+    @for helpers
+    @param {d3.Selection} selection
+    @return {Object} `{width, height}`
+  */
   function dimensions(selection) {
     // 1. Get width/height set via css (only valid for svg and some other elements)
     var client = clientDimensions(selection);
@@ -419,6 +428,64 @@
     return selection.node().nodeName == 'svg';
   }
 
+  /**
+    Create scale from options
+
+    @example
+    ```javascript
+    // Simple type, range, and domain
+    var scale = createScale({
+      type: 'linear',
+      domain: [0, 100],
+      range: [0, 500]
+    });
+
+    // Calculate domain for data
+    var scale = createScale({
+      type: 'log',
+      data: [{y: 1}, {y: 100}, {y: 2000}, {y: 5000}],
+      key: 'y'
+    });
+
+    // Scale is passed through
+    var original = d3.scale.linear();
+    var scale = createScale(original);
+    scale === original;
+
+    // Set other properties by passing in "arguments" array
+    var scale = createScale({
+      type: 'ordinal',
+      domain: ['a', 'b', 'c', 'd', 'e'],
+      rangeRoundBands: [[0, 100], 0.1, 0.05] // -> rangeRoundBands([0, 100], 0.1, 0.05)
+    });
+
+    // Use ordinal + adjacent for bar charts
+    var scale = createScale({
+      type: 'ordinal',
+      adjacent: true,
+      domain: ['a', 'b', 'c'],
+      series: 2 // Series count is required for adjacent if data isn't given
+    })
+    ```
+    @method createScale
+    @for helpers
+    @param {Object|Function} options (passing in `Function` returns original function with no changes)
+    @param {String} [options.type='linear'] Any available `d3.scale` (`"linear"`, `"ordinal"`, `"log"`, etc.) or `"time"`
+    @param {Array} [options.domain] Domain for scale
+    @param {Array} [options.range] Range for scale
+    @param {Any} [options.data] Used to dynamically set domain (with given value or key)
+    @param {Function} [options.value] "di"-function for getting value for data
+    @param {String} [options.key] Data key to extract value
+    @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
+    @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each other
+
+    - Requires series-index as second argument to scale, otherwise centered x-value is used
+    - Requires "data" or "series" options to determine number of series
+    @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
+    @param {Number} [options.padding=0.1] For "ordinal" scales, set padding between different x-values
+    @param {Array...} [options....] Set any other scale properties with array of arguments to pass to property
+    @return {d3.Scale}
+  */
   function createScale(options) {
     options = options || {};
 
@@ -550,6 +617,35 @@
     return scale;
   }
 
+  /**
+    Combine mixins with Parent super class for extension
+
+    @example
+    ```js
+    var a = {transform: function() {}, a: 1};
+    var b = {initialize: function() {}, b: 2};
+    var c = {c: 3};
+
+    var Custom = mixin(Chart, a, b, c).extend({
+      initialize: function(options) {
+        this._super.initialize.call(this, options);
+        // d
+      },
+      transform: function(data) {
+        data = this._super.transform.call(this, data);
+        // d
+      }
+    });
+
+    // initialize: Chart, b, d
+    // transform: Chart, a, d
+    ```
+    @method mixin
+    @for helpers
+    @param {Function} Parent
+    @param {...Object} ...mixins
+    @return {Function}
+  */
   function mixin(Parent/*, ...mixins*/) {
     var mixins = slice.call(arguments, 1);
     var initializes = [];
@@ -589,6 +685,31 @@
     return Parent.extend(mixed);
   }
 
+  /**
+    Stack given array of elements vertically or horizontally
+
+    @example
+    ```js
+    // Stack all text elements vertically, from the top, with 0px padding
+    d3.selectAll('text').call(helpers.stack())
+
+    // Stack all text elements horizontally, from the right, with 5px padding
+    d3.selectAll('text').call(helpers.stack({
+      direction: 'horizontal',
+      origin: 'right',
+      padding: 5
+    }));
+    ```
+    @method stack
+    @for helpers
+    @param {Object} [options]
+    @param {String} [options.direction=vertical] `"vertical"` or `"horizontal"`
+    @param {String} [options.origin] `"top"`, `"right"`, `"bottom"`, or `"left"` (by default, `"top"` for `"vertical"` and `"left"` for `"horizontal"`)
+    @param {Number} [options.padding=0] padding (in px) between elements
+    @param {Number} [options.min_height=0] minimum spacing height (for vertical stacking)
+    @param {Number} [options.min_width=0]  minimum spacing width (for horizontal stacking)
+    @return {Function}
+  */
   function stack(options) {
     options = extend({
       direction: 'vertical',
@@ -647,6 +768,19 @@
     };
   }
 
+  /**
+    Translate by (x, y) distance
+
+    @example
+    ```javascript
+    translate(10, 15) == 'translate(10, 15)'
+    translate({x: 10, y: 15}) == 'translate(10, 15)'
+    ```
+    @method translate
+    @param {Number|Object} [x] value or `{x, y}`
+    @param {Number} [y]
+    @return {String}
+  */
   function translate(x, y) {
     if (isObject(x)) {
       y = x.y;
@@ -984,8 +1118,8 @@
 
   var Base__Chart = d3.chart();
 
+  // TEMP Clear namespace from mixins
   /**
-    TEMP Clear namespace from mixins
     @namespace
   */
 
@@ -1185,6 +1319,41 @@
   // Export to d3.chart
   Base__Chart.Base = Base;
 
+  /**
+    Common base for creating charts.
+    Standard `d3.chart` charts can be used with d3.compose, but extending `d3.chart('Chart')` includes helpers for properties and "di" functions.
+
+    ### Extending
+
+    To take advantage of "di"-binding (automatically injects `chart` into "di" methods)
+    and automatically setting properties from `options`, use `d3.compose.helpers.di`
+    and `d3.compose.helpers.property` when creating your chart.
+
+    @example
+    ```js
+    var helpers = d3.compose.helpers;
+
+    d3.chart('Chart').extend('Pie', {
+      initialize: function() {
+        // same as d3.chart
+      },
+      transform: function(data) {
+        // same as d3.chart
+      },
+
+      color: helpers.di(function(chart, d, i) {
+        // "di" function with parent chart injected ("this" = element)
+      }),
+
+      centered: helpers.property({
+        default_value: true
+        // can be automatically set from options object
+      })
+    });
+    ```
+    @class Chart
+    @extends Base
+  */
   var src_Chart__Chart = Base.extend({}, {
     /**
       Default z-index for chart
@@ -1210,6 +1379,45 @@
   d3.chart().Chart = src_Chart__Chart;
   var src_Chart = src_Chart__Chart;
 
+  /**
+    Common base for creating components that includes helpers for positioning and layout.
+
+    ### Extending
+
+    `d3.chart('Component')` contains intelligent defaults and there are no required overrides.
+    Create a component just like a chart, by creating layers in the `initialize` method in `extend`.
+
+    - To adjust layout calculation, use `prepareLayout`, `getLayout`, and `setLayout`.
+    - To layout a component within the chart, use `skip_layout: true` and the static `layer_type: 'chart'`
+
+    @example
+    ```js
+    d3.chart('Component').extend('Key', {
+      initialize: function() {
+        this.layer('Key', this.base, {
+          dataBind: function(data) {
+            return this.selectAll('text')
+              .data(data);
+          },
+          insert: function() {
+            return this.append('text');
+          },
+          events: {
+            merge: function() {
+              this.text(this.chart().keyText)
+            }
+          }
+        })
+      },
+
+      keyText: helpers.di(function(chart, d, i) {
+        return d.abbr + ' = ' + d.value;
+      })
+    });
+    ```
+    @class Component
+    @extends Base
+  */
   var Component = Base.extend({
     /**
       Component's position relative to chart
@@ -1371,6 +1579,8 @@
           // (the following is the default implementation)
           var margins = this.margins();
 
+          // (handle this.centered())
+
           this.base
             .attr('transform', helpers.translate(x + margins.left, y + margins.top));
           this.height(options && options.height);
@@ -1446,6 +1656,25 @@
 
   d3.chart().Component = Component;
 
+  /**
+    Common base for creating overlays that includes helpers for positioning and show/hide.
+
+    ### Extending
+
+    Create an overlay just like a chart, by creating layers in the `initialize` method in `extend`.
+
+    - To adjust positioning, override `position`
+    - To adjust show/hide behavior, override `show`/`hide`
+
+    @example
+    ```js
+    d3.chart('Overlay').extend('ClosestPoints', {
+      // TODO
+    });
+    ```
+    @class Overlay
+    @extends Component
+  */
   var Overlay = Component.extend({
     initialize: function(options) {
       Component.prototype.initialize.call(this, options);
@@ -1617,6 +1846,12 @@
 
   d3.chart().Overlay = Overlay;
 
+  /*
+    Extract layout from the given options
+
+    @param {Array} options
+    @return {Object} {data, items, layout}
+  */
   function extractLayout(options) {
     if (!options)
       return;
@@ -1839,12 +2074,15 @@
       ];
 
       var title = d3c.title('d3.compose');
-      var yAxis = d3c.axis({scale: scales.y});
-      var y2Axis = d3c.axis({scale: scales.y2});
+      var xAxis = d3c.axis('xAxis', {scale: scales.x});
+      var yAxis = d3c.axis('yAxis', {scale: scales.y});
+      var y2Axis = d3c.axis('y2Axis', {scale: scales.y2});
 
       // Layout charts and components
       return [
-        [yAxis, d3c.layered(charts), y2Axis]
+        title,
+        [yAxis, d3c.layered(charts), y2Axis],
+        xAxis
       ];;
     });
 
@@ -1884,7 +2122,7 @@
 
     /**
       Get/set the options `object/function` for the chart that takes `data` and
-      returns `{charts, components}` for composing child charts and components.
+      returns `[...layout]` for composing child charts and components.
 
       @example
       ```js
@@ -1892,19 +2130,17 @@
       chart.options();
 
       // set (static)
-      chart.options({
-        charts: {},
-        components: {}
-      });
+      chart.options([
+        // ...
+      ]);
 
       // set (dynamic, takes data and returns options)
       chart.options(function(data) {
         // process data...
 
-        return {
-          charts: {},
-          components: {}
-        };
+        return [
+          // ...
+        ];
       });
 
       // Set directly from d3.chart creation
@@ -2546,7 +2782,7 @@
   d3.chart().Compose = Compose;
 
   var d3c = d3.compose = {
-    VERSION: '0.15.5',
+    VERSION: '0.15.6',
     utils: utils,
     helpers: helpers,
     Base: Base,
