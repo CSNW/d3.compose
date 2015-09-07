@@ -187,21 +187,11 @@ var Legend = Mixed.extend({
         var legend_data = chart_data.reduce(function(memo, series, index) {
           // Check for exclude from legend option on series
           if (series && !series.exclude_from_legend) {
-            memo.push({
-              text: series.name || 'Series ' + (index + 1),
-              key: chart_id + '.' + (series.key || index),
-              type: chart.type,
-              'class': compact([
-                'chart-series',
-                'chart-index-' + index,
-                chart.options()['class'],
-                series['class']
-              ]).join(' ')
-            });
+            memo.push(this.getLegendData(chart, series, index));
           }
 
           return memo;
-        }, []);
+        }.bind(this), []);
 
         return combined_data.concat(legend_data);
       }.bind(this), []);
@@ -222,7 +212,7 @@ var Legend = Mixed.extend({
 
   // Class to apply to swatch (default is class from data)
   swatchClass: di(function(chart, d) {
-    return d['class'];
+    return compact(['chart-legend-swatch', d['class']]).join(' ');
   }),
 
   // Create swatch (using registered swatches based on type from data)
@@ -234,7 +224,7 @@ var Legend = Mixed.extend({
     selection
       .attr('class', chart.swatchClass);
 
-    var swatches = d3.chart('Legend').swatches;
+    var swatches = Legend.swatches;
     if (!swatches)
       return;
 
@@ -312,6 +302,20 @@ var Legend = Mixed.extend({
   },
   onExit: function onExit(selection) {
     selection.remove();
+  },
+
+  getLegendData: function getLegendData(chart, series, series_index) {
+    return {
+      text: series.name || 'Series ' + (series_index + 1),
+      key: chart.id + '.' + (series.key || series_index),
+      type: chart.type,
+      'class': compact([
+        'chart-series',
+        'chart-index-' + series_index,
+        chart.options()['class'],
+        series['class']
+      ]).join(' ')
+    }
   },
 
   _itemDetails: function _itemDetails(d, i) {

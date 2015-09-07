@@ -1,31 +1,7 @@
+// TODO Move all grunt functionality to gulp
+
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
-
-  var src = {
-    core: [
-      'src/helpers.js',
-      'src/Base.js',
-      'src/Chart.js',
-      'src/Component.js',
-      'src/Overlay.js',
-      'src/Compose.js'
-    ],
-    mixins: [
-      'src/mixins.js'
-    ],
-    lib: [
-      'src/charts/Labels.js',
-      'src/charts/Bars.js',
-      'src/charts/Lines.js',
-      'src/components/Title.js',
-      'src/components/Axis.js',
-      'src/components/Legend.js',
-      'src/extensions/xy.js'
-    ],
-    css: [
-      'src/css/base.css'
-    ]
-  };
 
   grunt.initConfig({
     env: process.env,
