@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.5 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.6 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -343,6 +343,15 @@
     return property;
   }
 
+  /**
+    Helper for robustly determining width/height of given selector.
+    Checks dimensions from css, attributes, and bounding box.
+
+    @method dimensions
+    @for helpers
+    @param {d3.Selection} selection
+    @return {Object} `{width, height}`
+  */
   function dimensions(selection) {
     // 1. Get width/height set via css (only valid for svg and some other elements)
     var client = clientDimensions(selection);
@@ -419,6 +428,64 @@
     return selection.node().nodeName == 'svg';
   }
 
+  /**
+    Create scale from options
+
+    @example
+    ```javascript
+    // Simple type, range, and domain
+    var scale = createScale({
+      type: 'linear',
+      domain: [0, 100],
+      range: [0, 500]
+    });
+
+    // Calculate domain for data
+    var scale = createScale({
+      type: 'log',
+      data: [{y: 1}, {y: 100}, {y: 2000}, {y: 5000}],
+      key: 'y'
+    });
+
+    // Scale is passed through
+    var original = d3.scale.linear();
+    var scale = createScale(original);
+    scale === original;
+
+    // Set other properties by passing in "arguments" array
+    var scale = createScale({
+      type: 'ordinal',
+      domain: ['a', 'b', 'c', 'd', 'e'],
+      rangeRoundBands: [[0, 100], 0.1, 0.05] // -> rangeRoundBands([0, 100], 0.1, 0.05)
+    });
+
+    // Use ordinal + adjacent for bar charts
+    var scale = createScale({
+      type: 'ordinal',
+      adjacent: true,
+      domain: ['a', 'b', 'c'],
+      series: 2 // Series count is required for adjacent if data isn't given
+    })
+    ```
+    @method createScale
+    @for helpers
+    @param {Object|Function} options (passing in `Function` returns original function with no changes)
+    @param {String} [options.type='linear'] Any available `d3.scale` (`"linear"`, `"ordinal"`, `"log"`, etc.) or `"time"`
+    @param {Array} [options.domain] Domain for scale
+    @param {Array} [options.range] Range for scale
+    @param {Any} [options.data] Used to dynamically set domain (with given value or key)
+    @param {Function} [options.value] "di"-function for getting value for data
+    @param {String} [options.key] Data key to extract value
+    @param {Boolean} [options.centered] For "ordinal" scales, use centered x-values
+    @param {Boolean} [options.adjacent] For "ordinal" + centered, set x-values for different series next to each other
+
+    - Requires series-index as second argument to scale, otherwise centered x-value is used
+    - Requires "data" or "series" options to determine number of series
+    @param {Number} [options.series] Used with "adjacent" if no "data" is given to set series count
+    @param {Number} [options.padding=0.1] For "ordinal" scales, set padding between different x-values
+    @param {Array...} [options....] Set any other scale properties with array of arguments to pass to property
+    @return {d3.Scale}
+  */
   function createScale(options) {
     options = options || {};
 
@@ -550,6 +617,35 @@
     return scale;
   }
 
+  /**
+    Combine mixins with Parent super class for extension
+
+    @example
+    ```js
+    var a = {transform: function() {}, a: 1};
+    var b = {initialize: function() {}, b: 2};
+    var c = {c: 3};
+
+    var Custom = mixin(Chart, a, b, c).extend({
+      initialize: function(options) {
+        this._super.initialize.call(this, options);
+        // d
+      },
+      transform: function(data) {
+        data = this._super.transform.call(this, data);
+        // d
+      }
+    });
+
+    // initialize: Chart, b, d
+    // transform: Chart, a, d
+    ```
+    @method mixin
+    @for helpers
+    @param {Function} Parent
+    @param {...Object} ...mixins
+    @return {Function}
+  */
   function mixin(Parent/*, ...mixins*/) {
     var mixins = slice.call(arguments, 1);
     var initializes = [];
@@ -589,6 +685,31 @@
     return Parent.extend(mixed);
   }
 
+  /**
+    Stack given array of elements vertically or horizontally
+
+    @example
+    ```js
+    // Stack all text elements vertically, from the top, with 0px padding
+    d3.selectAll('text').call(helpers.stack())
+
+    // Stack all text elements horizontally, from the right, with 5px padding
+    d3.selectAll('text').call(helpers.stack({
+      direction: 'horizontal',
+      origin: 'right',
+      padding: 5
+    }));
+    ```
+    @method stack
+    @for helpers
+    @param {Object} [options]
+    @param {String} [options.direction=vertical] `"vertical"` or `"horizontal"`
+    @param {String} [options.origin] `"top"`, `"right"`, `"bottom"`, or `"left"` (by default, `"top"` for `"vertical"` and `"left"` for `"horizontal"`)
+    @param {Number} [options.padding=0] padding (in px) between elements
+    @param {Number} [options.min_height=0] minimum spacing height (for vertical stacking)
+    @param {Number} [options.min_width=0]  minimum spacing width (for horizontal stacking)
+    @return {Function}
+  */
   function stack(options) {
     options = extend({
       direction: 'vertical',
@@ -647,6 +768,19 @@
     };
   }
 
+  /**
+    Translate by (x, y) distance
+
+    @example
+    ```javascript
+    translate(10, 15) == 'translate(10, 15)'
+    translate({x: 10, y: 15}) == 'translate(10, 15)'
+    ```
+    @method translate
+    @param {Number|Object} [x] value or `{x, y}`
+    @param {Number} [y]
+    @return {String}
+  */
   function translate(x, y) {
     if (isObject(x)) {
       y = x.y;
@@ -984,8 +1118,8 @@
 
   var Base__Chart = d3.chart();
 
+  // TEMP Clear namespace from mixins
   /**
-    TEMP Clear namespace from mixins
     @namespace
   */
 
@@ -1185,6 +1319,41 @@
   // Export to d3.chart
   Base__Chart.Base = Base;
 
+  /**
+    Common base for creating charts.
+    Standard `d3.chart` charts can be used with d3.compose, but extending `d3.chart('Chart')` includes helpers for properties and "di" functions.
+
+    ### Extending
+
+    To take advantage of "di"-binding (automatically injects `chart` into "di" methods)
+    and automatically setting properties from `options`, use `d3.compose.helpers.di`
+    and `d3.compose.helpers.property` when creating your chart.
+
+    @example
+    ```js
+    var helpers = d3.compose.helpers;
+
+    d3.chart('Chart').extend('Pie', {
+      initialize: function() {
+        // same as d3.chart
+      },
+      transform: function(data) {
+        // same as d3.chart
+      },
+
+      color: helpers.di(function(chart, d, i) {
+        // "di" function with parent chart injected ("this" = element)
+      }),
+
+      centered: helpers.property({
+        default_value: true
+        // can be automatically set from options object
+      })
+    });
+    ```
+    @class Chart
+    @extends Base
+  */
   var src_Chart__Chart = Base.extend({}, {
     /**
       Default z-index for chart
@@ -1210,6 +1379,45 @@
   d3.chart().Chart = src_Chart__Chart;
   var src_Chart = src_Chart__Chart;
 
+  /**
+    Common base for creating components that includes helpers for positioning and layout.
+
+    ### Extending
+
+    `d3.chart('Component')` contains intelligent defaults and there are no required overrides.
+    Create a component just like a chart, by creating layers in the `initialize` method in `extend`.
+
+    - To adjust layout calculation, use `prepareLayout`, `getLayout`, and `setLayout`.
+    - To layout a component within the chart, use `skip_layout: true` and the static `layer_type: 'chart'`
+
+    @example
+    ```js
+    d3.chart('Component').extend('Key', {
+      initialize: function() {
+        this.layer('Key', this.base, {
+          dataBind: function(data) {
+            return this.selectAll('text')
+              .data(data);
+          },
+          insert: function() {
+            return this.append('text');
+          },
+          events: {
+            merge: function() {
+              this.text(this.chart().keyText)
+            }
+          }
+        })
+      },
+
+      keyText: helpers.di(function(chart, d, i) {
+        return d.abbr + ' = ' + d.value;
+      })
+    });
+    ```
+    @class Component
+    @extends Base
+  */
   var Component = Base.extend({
     /**
       Component's position relative to chart
@@ -1371,6 +1579,8 @@
           // (the following is the default implementation)
           var margins = this.margins();
 
+          // (handle this.centered())
+
           this.base
             .attr('transform', helpers.translate(x + margins.left, y + margins.top));
           this.height(options && options.height);
@@ -1446,6 +1656,25 @@
 
   d3.chart().Component = Component;
 
+  /**
+    Common base for creating overlays that includes helpers for positioning and show/hide.
+
+    ### Extending
+
+    Create an overlay just like a chart, by creating layers in the `initialize` method in `extend`.
+
+    - To adjust positioning, override `position`
+    - To adjust show/hide behavior, override `show`/`hide`
+
+    @example
+    ```js
+    d3.chart('Overlay').extend('ClosestPoints', {
+      // TODO
+    });
+    ```
+    @class Overlay
+    @extends Component
+  */
   var Overlay = Component.extend({
     initialize: function(options) {
       Component.prototype.initialize.call(this, options);
@@ -1617,6 +1846,12 @@
 
   d3.chart().Overlay = Overlay;
 
+  /*
+    Extract layout from the given options
+
+    @param {Array} options
+    @return {Object} {data, items, layout}
+  */
   function extractLayout(options) {
     if (!options)
       return;
@@ -1839,12 +2074,15 @@
       ];
 
       var title = d3c.title('d3.compose');
-      var yAxis = d3c.axis({scale: scales.y});
-      var y2Axis = d3c.axis({scale: scales.y2});
+      var xAxis = d3c.axis('xAxis', {scale: scales.x});
+      var yAxis = d3c.axis('yAxis', {scale: scales.y});
+      var y2Axis = d3c.axis('y2Axis', {scale: scales.y2});
 
       // Layout charts and components
       return [
-        [yAxis, d3c.layered(charts), y2Axis]
+        title,
+        [yAxis, d3c.layered(charts), y2Axis],
+        xAxis
       ];;
     });
 
@@ -1884,7 +2122,7 @@
 
     /**
       Get/set the options `object/function` for the chart that takes `data` and
-      returns `{charts, components}` for composing child charts and components.
+      returns `[...layout]` for composing child charts and components.
 
       @example
       ```js
@@ -1892,19 +2130,17 @@
       chart.options();
 
       // set (static)
-      chart.options({
-        charts: {},
-        components: {}
-      });
+      chart.options([
+        // ...
+      ]);
 
       // set (dynamic, takes data and returns options)
       chart.options(function(data) {
         // process data...
 
-        return {
-          charts: {},
-          components: {}
-        };
+        return [
+          // ...
+        ];
       });
 
       // Set directly from d3.chart creation
@@ -2545,6 +2781,12 @@
 
   d3.chart().Compose = Compose;
 
+  /**
+    Mixin for handling series data
+
+    @class Series
+    @namespace mixins
+  */
   var Series = {
     /**
       Get key for given series data
@@ -2708,6 +2950,12 @@
     }
   };
 
+  /**
+    Mixin for handling XY data
+
+    @class XY
+    @namespace mixins
+  */
   var XY = {
     initialize: function() {
       // Set scale ranges once chart is ready to be rendered
@@ -2968,7 +3216,13 @@
     }
   };
 
-  var XYValues = extend({}, XY, {
+  /**
+    Mixin for charts of centered key,value data (x: index, y: value, key)
+
+    @class XYValues
+    @namespace mixins
+  */
+  var XYValues = {
     /**
       Determine width of data-point when displayed adjacent
 
@@ -3019,8 +3273,14 @@
         centered: true
       });
     }
-  });
+  };
 
+  /**
+    Mixin for inverting XY calculations with x vertical, increasing bottom-to-top and y horizontal, increasing left-to-right
+
+    @class XYInverted
+    @namespace mixins
+  */
   var XYInverted = {
     /**
       Get x-value for plotting (scaled y-value)
@@ -3093,6 +3353,12 @@
     }
   };
 
+  /**
+    Mixin for handling labels in charts
+
+    @class Labels
+    @namespace mixins
+  */
   var mixins_labels__Labels = {
     /**
       Call during chart initialization to add labels to chart
@@ -3192,6 +3458,13 @@
     proxyLabelMethods: ['x', 'y']
   });
 
+  /**
+    Mixin for handling common hover behavior that adds standard `onMouseEnter`, `onMouseMove`, and `onMouseLeave` handlers
+    and `getPoint` helper for adding helpful meta information to raw data point.
+
+    @class Hover
+    @namespace mixins
+  */
   var Hover = {
     initialize: function() {
       this.on('attach', function() {
@@ -3431,6 +3704,12 @@
     });
   }
 
+  /**
+    Mixin for handling common transition behaviors
+
+    @class Transition
+    @namespace mixins
+  */
   var Transition = {
     /**
       Delay start of transition by specified milliseconds.
@@ -3721,6 +4000,58 @@
     StandardLayer: StandardLayer
   };
 
+  /**
+    Create an XY Lines chart with single or series data.
+
+    ### Extending
+
+    Great care has been taken in making the standard charts in d3.compose extensible.
+    To extend the `Lines` chart, the following methods are available:
+
+    - `createLine`
+    - `lineKey`
+    - `lineData`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    View the `Lines.js` source for the default implementation and more information on these methods.
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      return {
+        charts: {
+          input: {
+            type: 'Lines'
+            data: data.input,
+            // xScale: ...,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([1, 2, 3]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 1}, {x: 1, y: 2}, {x: 2, y: 3}]}
+      {values: [{x: 0, y: 3}, {x: 1, y: 2}, {x: 2, y: 1}]}
+    ]);
+    ```
+    @class Lines
+    @extends Chart, Series, XY, LabelsXY, Hover, HoverPoints, Transition, StandardLayer
+  */
   var charts_Lines__Mixed = mixin(src_Chart, Series, XY, LabelsXY, Hover, HoverPoints, Transition, StandardLayer);
   var Lines = charts_Lines__Mixed.extend({
     initialize: function(options) {
@@ -3803,7 +4134,65 @@
 
   d3.chart().Lines = Lines;
 
-  var charts_Bars__Mixed = mixin(src_Chart, Series, XYValues, LabelsXY, Hover, Transition, StandardLayer);
+  /**
+    Bars chart with centered or adjacent display for single or series data.
+
+    To display bars for different series next to each other (adjacent),
+    use the `adjacent` option when creating the `xScale` (see example below).
+
+    ### Extending
+
+    To extend the `Bars` chart, the following methods are available:
+
+    - `barHeight`
+    - `barWidth`
+    - `barX`
+    - `barY`
+    - `barClass`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      // Display bars for different series next to each other (adjacent: true)
+      var xScale = {type: 'ordinal', adjacent: true, domain: [0, 1, 2]};
+
+      return {
+        charts: {
+          output: {
+            type: 'Bars',
+            data: data.output,
+            xScale: xScale,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([10, 20, 30]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 10}, {x: 1, y: 20}, {x: 2, y: 30}]},
+      {values: [{x: 0, y: 30}, {x: 1, y: 20}, {x: 2, y: 10}]}
+    ]);
+    ```
+    @class Bars
+    @extends Chart, Series, XY, XYValues, LabelsXY, Hover, Transition, StandardLayer
+  */
+
+  var charts_Bars__Mixed = mixin(src_Chart, Series, XY, XYValues, LabelsXY, Hover, Transition, StandardLayer);
   var Bars = charts_Bars__Mixed.extend({
     initialize: function(options) {
       charts_Bars__Mixed.prototype.initialize.call(this, options);
@@ -3915,6 +4304,42 @@
 
   d3.chart().Bars = Bars;
 
+  /**
+    Bars chart with values stacked on top of each other
+
+    (See `Bars` for extensibility details)
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      // Display bars for different series next to each other (adjacent: true)
+      var xScale = {type: 'ordinal', adjacent: true, domain: [0, 1, 2]};
+
+      return {
+        charts: {
+          stacked_output: {
+            type: 'StackedBars',
+            data: data.output,
+            xScale: xScale,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([10, 20, 30]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 10}, {x: 1, y: 20}, {x: 2, y: 30}]},
+      {values: [{x: 0, y: 30}, {x: 1, y: 20}, {x: 2, y: 10}]}
+    ]);
+    ```
+    @class StackedBars
+    @extends Bars
+  */
   var StackedBars = Bars.extend({
     transform: function(data) {
       data = Bars.prototype.transform.call(this, data);
@@ -3961,6 +4386,42 @@
 
   d3.chart().StackedBars = StackedBars;
 
+  /**
+    Bars chart with bars that group from left-to-right
+
+    (See `Bars` for extensibility details)
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      // Display bars for different series next to each other (adjacent: true)
+      var xScale = {type: 'ordinal', adjacent: true, domain: [0, 1, 2]};
+
+      return {
+        charts: {
+          output: {
+            type: 'HorizontalBars',
+            data: data.output,
+            xScale: xScale,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([10, 20, 30]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 10}, {x: 1, y: 20}, {x: 2, y: 30}]},
+      {values: [{x: 0, y: 30}, {x: 1, y: 20}, {x: 2, y: 10}]}
+    ]);
+    ```
+    @class HorizontalBars
+    @extends Bars, XYInverted
+  */
   var HorizontalBars = mixin(Bars, XYInverted).extend({
     barX: di(function(chart, d, i) {
       var x = chart.x.call(this, d, i);
@@ -4028,6 +4489,42 @@
 
   d3.chart().HorizontalBars = HorizontalBars;
 
+  /**
+    Horizontal Stacked Bars
+
+    (See `Bars` for extensibility details)
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      // Display bars for different series next to each other (adjacent: true)
+      var xScale = {type: 'ordinal', adjacent: true, domain: [0, 1, 2]};
+
+      return {
+        charts: {
+          output: {
+            type: 'HorizontalStackedBars',
+            data: data.output,
+            xScale: xScale,
+            // yScale: ...,
+            // other properties...
+          }
+        }
+      };
+    });
+
+    // Single y-values
+    chart.draw([10, 20, 30]);
+
+    // Series (x,y) values
+    chart.draw([
+      {values: [{x: 0, y: 10}, {x: 1, y: 20}, {x: 2, y: 30}]},
+      {values: [{x: 0, y: 30}, {x: 1, y: 20}, {x: 2, y: 10}]}
+    ]);
+    ```
+    @class HorizontalStackedBars
+    @extends HorizontalBars
+  */
   var HorizontalStackedBars = HorizontalBars.extend({
     transform: function(data) {
       data = StackedBars.prototype.transform.call(this, data);
@@ -4052,6 +4549,82 @@
 
   d3.chart().HorizontalStackedBars = HorizontalStackedBars;
 
+  /**
+    Standalone or "embeddable" labels (uses `mixins.Labels` and `attachLabels` to embed in chart)
+
+    ### Extending
+
+    To extend the `Labels` chart, the following methods are available:
+
+    - `insertLabels`
+    - `mergeLabels`
+    - `layoutLabels`
+    - `transitionLabels`
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    View the `Labels.js` source for the default implementation and more information on these methods.
+
+    @example
+    ```js
+    var chart = d3.select('#chart').chart('Compose', function(data) {
+      return {
+        charts: {
+          input: {
+            type: 'Lines',
+            data: data.input,
+            // xScale, yScale, other properties...
+
+            // Show labels with default properties
+            labels: true
+          },
+          output: {
+            type: 'Bars',
+            data: data.output,
+            // xScale, yScale, other properties...
+
+            // Pass options to labels
+            labels: {
+              offset: 2,
+              position: 'top',
+              style: {
+                'font-size': '14px'
+              },
+              format: d3.format(',0d')
+            }
+          },
+          labels: {
+            type: 'Labels',
+            data: data.labels,
+
+            // xScale, yScale, other properties...
+          }
+        }
+      };
+    });
+
+    chart.draw({
+      input: [1, 2, 3],
+      output: [10, 20, 30],
+      labels: [
+        {x: 0, y: 0},
+        {x: 0, y: 30, label: 'Override (y by default)'},
+        {x: 2, y: 0},
+        {x: 2, y: 30}
+      ]
+    });
+    ```
+    @class Labels
+    @extends Chart, Series, XY, Hover, Transition, StandardLayer
+  */
   var charts_Labels__Mixed = mixin(src_Chart, Series, XY, Hover, Transition, StandardLayer);
   var charts_Labels__Labels = charts_Labels__Mixed.extend({
     initialize: function(options) {
@@ -4514,6 +5087,11 @@
 
   d3.chart().Labels = charts_Labels__Labels;
 
+  /**
+    (in-progress)
+
+    @class HoverLabels
+  */
   var charts_HoverLabels__Mixed = mixin(charts_Labels__Labels, Hover);
   var HoverLabels = charts_HoverLabels__Mixed.extend({
     initialize: function(options) {
@@ -4573,6 +5151,50 @@
 
   d3.chart().HoverLabels = HoverLabels;
 
+  /**
+    Add text to a chart.
+
+    ### Extending
+
+    To extend the `Text` component, the following methods are available:
+
+    - `onDataBind`
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        return {
+          components: {
+            title: {
+              type: 'Text',
+              position: 'top'
+              text: 'Main Title',
+              textAlign: 'left',
+              'class': 'title'
+            },
+            notes: {
+              type: 'Text',
+              position: 'bottom',
+              text: 'Notes',
+              'class': 'notes'
+            }
+          }
+        };
+      });
+    ```
+    @class Text
+    @extends Component, StandardLayer
+  */
   var components_Text__Mixed = mixin(Component, StandardLayer);
   var Text = components_Text__Mixed.extend({
     initialize: function(options) {
@@ -4717,6 +5339,12 @@
 
   d3.chart().Text = Text;
 
+  /**
+    Title component that extends Text with defaults (styling, sensible margins, and rotated when positioned left or right)
+
+    @class Title
+    @extends Text
+  */
   var Title = Text.extend({
     initialize: function(options) {
       Text.prototype.initialize.call(this, options);
@@ -4777,6 +5405,53 @@
 
   d3.chart().Title = Title;
 
+  /**
+    Gridlines component that draws major ticks for chart
+
+    Uses d3.axis extensions for ticks:
+
+    - `ticks`
+    - `tickValues`
+
+    ### Extending
+
+    To extend the `Gridlines` component, the following methods are available
+
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    d3.select('#chart').chart('Compose', function(data) {
+      var scales = {
+        x: {data: data, key: 'x'},
+        y: {data: data, key: 'y'}
+      };
+
+      var vertical = d3c.gridlines({
+        scale: scales.x,
+        orientation: 'vertical'
+      });
+      var horizontal = d3c.gridlines({
+        scale: scales.y,
+        orientation: 'horizontal'
+      });
+
+      return [
+        vertical,
+        horizontal
+      ];
+    });
+    ```
+    @class Gridlines
+  */
   var components_Gridlines__Mixed = mixin(Component, XY, Transition, StandardLayer);
   var Gridlines = components_Gridlines__Mixed.extend({
     initialize: function(options) {
@@ -4928,6 +5603,58 @@
 
   d3.chart().Gridlines = Gridlines;
 
+  /**
+    Axis component for XY data (wraps `d3.axis`).
+
+    Available d3.axis extensions:
+
+    - `ticks`
+    - `tickValues`
+    - `tickSize`
+    - `innerTickSize`
+    - `outerTickSize`
+    - `tickPadding`
+    - `tickFormat`
+
+    ### Extending
+
+    To extend the `Axis` component, the following methods are available:
+
+    - `onInsert`
+    - `onEnter`
+    - `onEnterTransition`
+    - `onUpdate`
+    - `onUpdateTransition`
+    - `onMerge`
+    - `onMergeTransition`
+    - `onExit`
+    - `onExitTransition`
+
+    @example
+    ```js
+    d3.select('#chart')
+      .chart('Compose', function(data) {
+        var scales = {
+          x: {data: data, key: 'x'},
+          y: {data: data, key: 'y'}
+        };
+
+        var charts = [];
+        var xAxis = d3c.axis({scale: scales.x});
+        var yAxis = d3c.axis({scale: scales.y});
+
+        return [
+          // Display y-axis to left of charts
+          [yAxis, d3c.layered(charts)],
+
+          // Display x-axis below charts
+          xAxis
+        ];
+      });
+    ```
+    @class Axis
+    @extends Component, XY, Transition, StandardLayer
+  */
   var components_Axis__Mixed = mixin(Component, XY, Transition, StandardLayer);
   var Axis = components_Axis__Mixed.extend({
     initialize: function(options) {
@@ -5269,6 +5996,12 @@
 
   d3.chart().Axis = Axis;
 
+  /**
+    Axis title component that extends Title with defaults (styling)
+
+    @class AxisTitle
+    @extends Title
+  */
   var AxisTitle = Title.extend({
     initialize: function(options) {
       Title.prototype.initialize.call(this, options);
@@ -5354,18 +6087,15 @@
           {key: 'output2', name: 'Output 2', values: data.output2}
         ];
 
-        return {
-          charts: {
-            a: {type: 'Lines', data: input}, // ...
-            b: {type: 'Bars', data: output} // ...
-          },
-          components: {
-            legend: {
-              type: 'Legend',
-              charts: ['a', 'b']
-            }
-          }
-        };
+        var charts = [
+          d3c.lines('a', {data: input}), // ...
+          d3c.bars('b', {data: output}) // ...
+        ];
+        var legend = d3c.legend({charts: ['a', 'b']});
+
+        return [
+          [d3c.layered(charts), legend]
+        ];
       });
 
     // -> automatically creates legend from series data for 'a' and 'b'
@@ -5374,17 +6104,14 @@
     //    (Bars Swatch) Output 2
 
     // or, manually set data for legend
-    return {
-      components: {
-        legend: {
-          type: 'Legend',
-          data: [
-            {type: 'Lines', text: 'Input', class: 'series-index-0'},
-            {type: 'Bars', text: 'Output 1', class: 'series-index-0'},
-            {type: 'Bars', text: 'Output 2', class: 'series-index-1'},
-          ]
-        }
-      }
+    return [
+      d3c.legend({
+        data: [
+          {type: 'Lines', text: 'Input', class: 'series-index-0'},
+          {type: 'Bars', text: 'Output 1', class: 'series-index-0'},
+          {type: 'Bars', text: 'Output 2', class: 'series-index-1'},
+        ]
+      })
     };
     ```
     @class Legend
@@ -5405,19 +6132,16 @@
       ```js
       d3.select('#chart')
       .chart('Compose', function(data) {
-        return {
-          charts: {
-            a: {},
-            b: {},
-            c: {}
-          },
-          components: {
-            legend: {
-              type: 'Legend',
-              charts: ['a', 'c']
-            }
-          }
-        };
+        var charts = [
+          {id: 'a'},
+          {id: 'b'},
+          {id: 'c'}
+        ];
+        var legend = d3c.legend({charts: ['a', 'c']});
+
+        return [
+          [d3c.layered(charts), legend]
+        ];
       });
       ```
       @property charts
@@ -5426,7 +6150,7 @@
     charts: property(),
 
     /**
-      Dimensions of "swatch"
+      Dimensions of "swatch" in px
 
       @property swatchDimensions
       @type Object
@@ -5493,21 +6217,11 @@
           var legend_data = chart_data.reduce(function(memo, series, index) {
             // Check for exclude from legend option on series
             if (series && !series.exclude_from_legend) {
-              memo.push({
-                text: series.name || 'Series ' + (index + 1),
-                key: chart_id + '.' + (series.key || index),
-                type: chart.type,
-                'class': compact([
-                  'chart-series',
-                  'chart-index-' + index,
-                  chart.options()['class'],
-                  series['class']
-                ]).join(' ')
-              });
+              memo.push(this.getLegendData(chart, series, index));
             }
 
             return memo;
-          }, []);
+          }.bind(this), []);
 
           return combined_data.concat(legend_data);
         }.bind(this), []);
@@ -5528,7 +6242,7 @@
 
     // Class to apply to swatch (default is class from data)
     swatchClass: di(function(chart, d) {
-      return d['class'];
+      return compact(['chart-legend-swatch', d['class']]).join(' ');
     }),
 
     // Create swatch (using registered swatches based on type from data)
@@ -5540,7 +6254,7 @@
       selection
         .attr('class', chart.swatchClass);
 
-      var swatches = d3.chart('Legend').swatches;
+      var swatches = Legend.swatches;
       if (!swatches)
         return;
 
@@ -5620,6 +6334,20 @@
       selection.remove();
     },
 
+    getLegendData: function getLegendData(chart, series, series_index) {
+      return {
+        text: series.name || 'Series ' + (series_index + 1),
+        key: chart.id + '.' + (series.key || series_index),
+        type: chart.type,
+        'class': compact([
+          'chart-series',
+          'chart-index-' + series_index,
+          chart.options()['class'],
+          series['class']
+        ]).join(' ')
+      }
+    },
+
     _itemDetails: function _itemDetails(d, i) {
       return {
         legend: this,
@@ -5694,6 +6422,12 @@
 
   d3.chart().Legend = Legend;
 
+  /**
+    Legend positioned within chart bounds.
+
+    @class InsetLegend
+    @extends Legend
+  */
   var InsetLegend = Legend.extend({
     initialize: function(options) {
       Legend.prototype.initialize.call(this, options);
@@ -5761,7 +6495,7 @@
   d3.chart().InsetLegend = InsetLegend;
 
   var d3c = d3.compose = {
-    VERSION: '0.15.5',
+    VERSION: '0.15.6',
     utils: utils,
     helpers: helpers,
     Base: Base,
