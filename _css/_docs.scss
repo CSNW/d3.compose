@@ -1,0 +1,208 @@
+.docs-sidebar {
+  color: #444;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &.affix {
+    top: 0;
+    bottom: 0;
+    padding-top: 20px;
+  }
+
+  .nav a {
+    padding: 4px 0 4px 20px;
+    color: inherit;
+    font-size: 13px;
+
+    &:hover,
+    &:active {
+      padding-left: 18px;
+      border-left: solid 2px $primary-color;
+      color: $primary-color;
+      background-color: transparent;
+    }
+  }
+
+  .nav.is-nested {
+    display: none;
+  }
+  .nav.is-nested a {
+    padding: 1px 0 1px 30px;
+    font-size: 12px;
+    font-weight: 400;
+
+    &:hover {
+      padding-left: 28px;
+    }
+  }
+  .nav.is-nested .nav.is-nested a {
+    padding-left: 40px;
+
+    &:hover {
+      padding-left: 38px;
+    }
+  }
+
+  .nav > li.active > a {
+    padding-left: 18px;
+    border-left: solid 2px $primary-color;
+  }
+  .nav > li.active > .nav.is-nested {
+    display: block;
+  }
+  .nav.is-nested > li.active > a {
+    padding-left: 28px;
+  }
+  .nav.is-nested .nav.is-nested > li.active > a {
+    padding-left: 38px;
+  }
+
+  .back-to-top {
+    display: block;
+    margin: 15px 0 10px 20px;
+    color: #aaa;
+  }
+
+  hr {
+    padding: 0;
+    margin: 5px 0;
+  }
+
+  @media (min-width: $screen-md-min) {
+    width: 228px;
+  }
+  @media (min-width: $screen-lg-min) {
+    width: 180px;
+  }
+  @media (min-width: $screen-xl-min) {
+    width: 230px;
+  }
+}
+
+.docs-section {
+  margin-bottom: 20px;
+
+  & > h2:first-child {
+    margin-top: 10px;
+  }
+}
+
+.docs-description {}
+.docs-example {}
+.docs-item-header {
+  font-size: 15px;
+  font-weight: bold;
+}
+.docs-item-code {
+  font-weight: normal;
+  background-color: transparent;
+}
+.docs-item-static {
+  font-weight: normal;
+  background-color: transparent;
+  color: #333;
+  border: solid 1px #ccc;
+  padding: 0.1em 0.6em 0.15em;
+  margin-left: 5px;
+}
+.docs-item-description {
+  font-size: 13px;
+}
+.docs-item-example {}
+
+.docs-params {
+  padding-left: 1.5em;
+  font-size: 13px;
+}
+.docs-params code {
+  background-color: transparent;
+  font-size: inherit;
+}
+.docs-param-type {
+  font-family: $font-family-monospace;
+  font-style: italic;
+  padding: 0 0.1em;
+}
+.docs-param-description {
+  margin-left: 5px;
+  display: inline-block;
+
+  & p,
+  & ul,
+  & ol {
+    margin-top: 4px;
+
+    &:last-child {
+      margin-bottom: 4px;
+    }
+    &:first-child {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  & ul,
+  & ol {
+    padding-left: 1.5em;
+  }
+}
+.docs-props {
+  padding-left: 1.5em;
+  margin-top: 2px;
+
+  & > li:first-child {
+    margin-top: 4px;
+  }
+  & > li > code {
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+}
+.docs-return {
+  margin-bottom: 1em;
+  font-size: 13px;
+
+  & > small {
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  & > ul, & > ol {
+    padding-left: 2em;
+  }
+}
+
+.docs-content {
+  tt {
+    font-family: Monaco, Consolas, "Lucida Console", monospace;
+    font-size: 12px;
+    line-height: 18px;
+    font-style: normal;
+    padding: 0px 3px;
+    background: #fff;
+    border: 1px solid #ddd;
+    zoom: 1;
+  }
+}
+
+.docs-chart > svg {
+  width: 500px;
+  height: 300px;
+}
+
+.docs-downloads {
+  h3 {
+    font-size: 20px;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+  th {
+    font-weight: normal;
+  }
+}
+
+.changelog-section {
+  // h1 from CHANGELOG.md = h3
+  h1 {
+    font-size: 24px;
+  }
+}

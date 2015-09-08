@@ -1,0 +1,91 @@
+---
+---
+$screen-xl-min: 1500px;
+
+$container-padding: 10px;
+$header-height: 60px;
+
+$background-color: #f7f7f7;
+$primary-color: #457abb;
+$primary-color-dark: darken($primary-color, 5%);
+$icon-font-path: "fonts/";
+$font-family-sans-serif: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+$headings-font-weight: 700;
+$font-size-h1: 34px;
+
+@import "bootstrap";
+
+// General styles
+html {
+  background-color: $background-color;
+}
+body {
+  overflow-y: scroll;
+  background-color: $background-color;
+  line-height: 1.6;
+}
+
+code {
+  padding: 0.1em 0.1em;
+  margin: 0;
+  font-size: 12px;
+  border-radius: 3px;
+  color: #333;
+  font-family: $font-family-monospace;
+}
+pre {
+  border-left: solid 2px lighten($primary-color, 10%);
+  padding: 5px 0 5px 10px;
+  max-width: 50em;
+  line-height: 1.4em;
+  font-family: $font-family-monospace;
+
+  & > code {
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    background: none;
+    border-radius: 0;
+  }
+
+  .hll {
+    background-color: fade-out($primary-color, 0.93);
+    display: block;
+    margin-left: -10px;
+    padding-left: 10px;
+  }
+}
+
+.container {
+  @media (min-width: $screen-xl-min) {
+    width: (1440px + $grid-gutter-width);
+  }
+
+  .layout-narrow & {
+    @media (min-width: $screen-xl-min) {
+      width: $container-lg;
+    }
+  }
+}
+
+.page {
+  background-color: #fff;
+  border: solid 1px #eee;
+  padding: 10px 20px;
+  box-shadow: 0px 0px 5px 0px #eee;
+}
+
+.site-footer {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+// Custom components
+@import "highlight";
+@import "header";
+@import "home";
+@import "examples";
+@import "docs";
+@import "editor";

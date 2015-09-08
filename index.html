@@ -1,5 +1,426 @@
 ---
-layout: default
-title: Home
+layout: full-width
+title: Getting Started
+class: home layout-narrow
+scripts: |
+  <script type="text/javascript">examples = {};</script>
+  <script src="js/examples/index.js"></script>
+
+  <script src="js/editor.js"></script>
+  <script src="js/getting-started.js"></script>
 ---
-<h1>d3.chart.multi</h1>
+
+<section class="home-masthead"><div class="container">
+  <div class="row">
+    <div class="col-md-7 home-masthead-carousel-container">
+      <a class="home-masthead-carousel" href="#" data-prev>
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <div id="home-chart" class="editor is-constrained">
+        <!-- Statically load empty editor to avoid load flash -->
+        {% include editor-placeholder.html width=600 height=400 %}
+      </div>
+      <a class="home-masthead-carousel" href="#" data-next>
+        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+      </a>
+    </div>
+    <div class="col-md-5 home-masthead-content">
+      <h1 class="home-tagline">Compose complex, data-driven visualizations from reusable charts and components with d3.</h1>
+      <ul class="home-features">
+        <li>Get started quickly with standard charts and components</li>
+        <li>Layout charts and components automatically</li>
+        <li>Powerful foundation for creating custom charts and components</li>
+      </ul>
+      <div class="home-links">
+        <a class="btn btn-lg home-call-to-action" href="{{ site.baseurl }}/docs/#downloads">Download d3.compose</a>
+
+        <!-- <div class="home-github-links">
+          <iframe src="https://ghbtns.com/github-btn.html?user=csnw&repo=d3.compose&type=star&count=true&size=large" frameborder="0" scrolling="0" width="150px" height="30px"></iframe>
+          <iframe src="https://ghbtns.com/github-btn.html?user=csnw&repo=d3.compose&type=fork&count=true&size=large" frameborder="0" scrolling="0" width="150px" height="30px"></iframe>
+        </div> -->
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="container home-details"><div class="row">
+  <div class="col-md-4">
+    <h3>Composable</h3>
+    <!-- TODO<div id="composable-chart"></div> -->
+    <p>
+      Create small and sharp charts/components that do one thing one well (e.g. Bars, Lines, Legend, Axis, etc.) and compose them to create complex visualizations.
+    </p>
+    <p>
+      d3.compose works great with your existing charts (even those from other libraries) and it is simple to extend/customize the built-in charts and components.
+    </p>
+  </div>
+  <div class="col-md-4">
+    <h3>Automatic Layout</h3>
+    <!-- TODO<div id="layout-chart"></div> -->
+    <p>
+      When creating complex charts with D3.js and d3.chart, laying out and sizing parts of the chart are often manual processes.
+      With d3.compose, this process is automatic:
+    </p>
+    <ul>
+      <li>Automatically <b>size</b> and <b>position</b> components</li>
+      <li><b>Layer</b> components and charts by z-index</li>
+      <li><b>Responsive by default</b>, with automatic scaling</li>
+    </ul>
+  </div>
+  <div class="col-md-4">
+    <h3>Why d3.compose?</h3>
+    <ul>
+      <li><b>Customizable</b>: d3.compose makes it easy to extend, layout, and refine charts/components</li>
+      <li><b>Reusable</b>: By breaking down visualizations into focused charts and components, you can quickly reconfigure and reuse your code</li>
+      <li><b>Integrated</b>: It's straightforward to use your existing charts or charts from other libraries with d3.compose to create just the chart you're looking for</li>
+    </ul>
+  </div>
+</div></section>
+
+<!--
+  Goal: Create chart at top, iteratively
+
+  1. Download
+  2. Add Line
+  3. Add Axis
+  4. Add Scale (and x-axis)
+  5. Add Series
+  6. Add Legend
+  7. Add Title
+  8. Switch to bars
+-->
+<main class="container getting-started">
+  <h2>Getting Started</h2>
+
+  <div class="row">
+    <div class="col-md-7">
+      <!-- Currently needed for scrollspy to work properly -->
+      <div class="getting-started-nav" style="visibility: hidden; height: 0">
+        <ul class="nav">
+          <li><a href="#1-download">Download</a></li>
+          <li><a href="#2-chart">Add Chart</a></li>
+          <li><a href="#3-component">Add Component</a></li>
+          <li><a href="#4-scales">Add Scales</a></li>
+          <li><a href="#5-series">Add Series</a></li>
+          <li><a href="#6-legend">Add Legend</a></li>
+          <li><a href="#7-title">Add Title</a></li>
+          <li><a href="#8-bars">Switch to Bars</a></li>
+        </ul>
+      </div>
+
+      <section>
+        <p>We'll walk through the steps for creating this chart plotting two series, A and B, for an experiment in the following steps. We'll start with a simple line chart and progressively add components and then switch to bars at the end (to see how easy that is).</p>
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
+
+        <h3 id="1-download"><span class="step-number">1.</span> Download</h3>
+
+        <p>
+          <a href="{{ site.baseurl }}/docs/#downloads">Download</a> and add d3.compose (and its dependencies: D3.js and d3.chart) to your page.
+        </p>
+
+{% highlight html %}
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="d3.compose.css">
+  </head>
+  <body>
+    <div id="chart"></div>
+
+    <script src="d3.js"></script>
+    <script src="d3.chart.js"></script>
+
+    <script src="d3.compose-all.js"></script>
+
+    <script type="text/javascript">
+      <!-- Your code -->
+    </script>
+  </body>
+</html>
+{% endhighlight %}
+      </section>
+
+      <section>
+        <h3 id="2-chart"><span class="step-number">2.</span> Add Chart</h3>
+
+        <p>
+          First, we'll take just the B results and add a line chart to visualize the data.
+        </p>
+
+{% highlight js %}
+var data = [{x: 0, y: 25}, {x: 10, y: 52}, {x: 20, y: 73}, /* ... */];
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  // Options function:
+  // Gets evaluated on each draw and takes in data and returns options
+
+  var charts = [
+    // Create results chart:
+    // d3c.lines -> type: 'Lines' -> d3.chart('Lines')
+    // 'results' -> chart key for transitions and legend
+    // {data: data} -> pass given data to Lines chart
+    d3c.lines('results', {data: data})
+  ];
+
+  return [
+    // Add charts to chart layer (d3c.layered)
+    d3c.layered(charts)
+  ];
+});
+
+chart.draw(data);
+{% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
+      </section>
+
+      <section>
+        <h3 id="3-component"><span class="step-number">3.</span> Add y-axis Component</h3>
+
+        <p>
+          The chart isn't very meaningful without knowing what the values are, so let's add a y-axis to the chart.
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  var charts = [
+    d3c.lines('results', {data: options.data})
+  ];
+
+  // Create yAxis component:
+  // d3c.axis -> type: 'Axis' -> d3.chart('Axis')
+  // 'yAxis' -> component key for applying transitions
+  // {scale: ...} -> pass options to Axis
+  var yAxis = d3c.axis('yAxis', {
+    scale: {domain: [0, 100]}
+  });
+
+  // Return layout with rows/columns
+  return [
+    // Row with two columns
+    // (d3c.layered expands to fill remaining row width)
+    [yAxis, d3c.layered(charts)]
+  ];
+});
+{% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
+      </section>
+
+      <section>
+        <h3 id="4-scales"><span class="step-number">4.</span> Add Scales</h3>
+
+        <p>
+          In the previous step, the y-axis domain coincidentally matched the line chart's scale, but if the line chart's scale needs to be changed (e.g. to given more room at the top of the chart),
+          a scale can be created that is shared between components and charts. Additionally, scales can be created with the domain automatically set from the given data.
+          Next, let's add an x-axis and change the scale for the y-axis.
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  // Scales are created as simple objects (that are later converted into d3.scale)
+  var scales = {
+    x: {data: options.data, key: 'x'},
+    y: {domain: [0, 120]}
+  };
+
+  var charts = [
+    // Pass xScale and yScale options to Lines
+    d3c.lines('results', {
+      data: options.data,
+      xScale: scales.x,
+      yScale: scales.y
+    })
+  ];
+
+  // Pass scales to respective axes
+  var xAxis = d3c.axis('xAxis', {scale: scales.x});
+  var yAxis = d3c.axis('yAxis', {scale: scales.y});
+
+  return [
+    [yAxis, d3c.layered(charts)],
+
+    // Full-width row aligned with d3c.layered
+    xAxis
+  ];
+});
+{% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
+      </section>
+
+      <section>
+        <h3 id="5-series"><span class="step-number">5.</span> Add Series</h3>
+
+        <p>
+          With the chart taking shape, let's add another data series: the A results.
+          All of the standard charts handle both single or series data by default and there are helpers and mixins to add series functionality to your custom charts/components.
+        </p>
+
+{% highlight js %}
+var data = [
+  {
+    // required: values: [...]
+    // optional: key, name
+    key: 'a',
+    name: 'A', // (used in legend later)
+    values: [{x: 0, y: 25}, {x: 10, y: 52}, {x: 20, y: 73}, /* ... */]
+  },
+  {
+    key: 'b',
+    name: 'B',
+    values: [/* ... */]
+  }
+];
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  // Everything stays the same...
+});
+
+chart.draw(data);
+{% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
+      </section>
+
+      <section>
+        <h3 id="6-legend"><span class="step-number">6.</span> Add Legend</h3>
+
+        <p>
+          Now that there are multiple series, let's add a legend.
+          The legend component can take in a <code>data</code> property to manually create values,
+          or it can automatically load series information from each chart passed to <code>charts</code> (by key).
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  var scales = {
+    x: {data: options.data, key: 'x'},
+    y: {domain: [0, 120]}
+  };
+
+  var charts = [
+    d3c.lines('results', {
+      data: options.data,
+      xScale: scales.x,
+      yScale: scales.y
+    })
+  ];
+
+  var xAxis = d3c.axis('xAxis', {scale: scales.x});
+  var yAxis = d3c.axis('yAxis', {scale: scales.y});
+
+  // Create legend component
+  // d3c.legend -> type: 'Legend' -> d3.chart('Legend')
+  // charts: ['results'] -> generate legend from the 'results' chart
+  var legend = d3c.legend({charts: ['results']});
+
+  return [
+    // Place legend in column to the right of charts
+    [yAxis, d3c.layered(charts), legend],
+    xAxis
+  ];
+});
+{% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
+      </section>
+
+      <section>
+        <h3 id="7-title"><span class="step-number">7.</span> Add Titles</h3>
+
+        <p>
+          Finally, let's add titles to the chart and axes.
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  var scales = {
+    x: {data: options.data, key: 'x'},
+    y: {domain: [0, 120]}
+  };
+
+  var charts = [
+    d3c.lines('results', {
+      data: options.data,
+      xScale: scales.x,
+      yScale: scales.y
+    })
+  ];
+
+  var xAxis = d3c.axis('xAxis', {scale: scales.x});
+  var yAxis = d3c.axis('yAxis', {scale: scales.y});
+  var legend = d3c.legend({charts: ['results']});
+  var title = d3c.title('d3.compose');
+  var xAxisTitle = d3c.axisTitle('Input');
+  var yAxisTitle = d3c.axisTitle('Results');
+
+  return [
+    title,
+    [yAxisTitle, yAxis, d3c.layered(charts), legend],
+    xAxis,
+    xAxisTitle
+  ];
+});
+{% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
+      </section>
+
+      <section>
+        <h3 id="8-bars"><span class="step-number">8.</span> Switch to Bars</h3>
+
+        <p>
+          Your colleagues decide they want to see what the chart would look like with bars instead of lines (a potentially major change without d3.compose).
+          Just two things need to change: switch 'Lines' to 'Bars' and the x-scale needs to use an ordinal scale.
+        </p>
+
+{% highlight js %}
+var chart = d3.select('#chart').chart('Compose', function(data) {
+  var scales = {
+    // Use d3.scale.ordinal(...)
+    // and place series next to each other (adjacent)
+    x: {type: 'ordinal', data: options.data, key: 'x', adjacent: true},
+    // y: ...
+  };
+
+  var charts = [
+    d3c.bars('results', {/* ... */})
+  ];
+
+  // Everything else stays the same...
+});
+{% endhighlight %}
+
+        <div class="chart-container hidden-md hidden-lg">
+          {% include editor-placeholder.html width=600 height=400 hide_controls=true wrap=true %}
+        </div>
+      </section>
+
+      <section class="hidden-xs hidden-sm" style="height: 1000px; height: calc(100vh - 500px)"></section>
+    </div>
+
+    <div class="col-md-5">
+      <div class="getting-started-chart-container hidden-xs hidden-sm">
+        <div id="getting-started-chart" class="editor is-constrained">
+          {% include editor-placeholder.html width=450 height=340 hide_controls=true %}
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

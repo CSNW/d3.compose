@@ -1,0 +1,167 @@
+.home-masthead {
+  background-color: $primary-color;
+  border-bottom: solid 1px #ddd;
+  padding-top: 30px;
+  padding-bottom: 50px;
+  color: #fff;
+
+  @media (max-width: $screen-sm) {
+    padding-top: 10px;
+    padding-bottom: 20px;
+  }
+}
+.home-masthead-content {
+
+}
+.home-masthead-carousel-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  @media (min-width: $screen-md) {
+    margin-left: -30px;
+  }
+}
+.home-masthead-carousel {
+  flex: 0 0 35px;
+  padding-top: 30%;
+  font-size: 30px;
+  opacity: 0.3;
+  color: #fff;
+
+  &:active,
+  &:visited {
+    color: #fff;
+  }
+  &:hover {
+    color: #fff;
+    opacity: 1;
+  }
+
+  @media (max-width: $screen-sm) {
+    flex: none;
+    width: 50%;
+    padding: 5px 10px 3px 10px;
+    font-size: 20px;
+    line-height: 1.5;
+    opacity: 1;
+    background-color: #fff;
+    color: $primary-color;
+    border: solid 1px #ddd;
+    border-top: none;
+
+    &[data-prev] {
+      order: 1;
+    }
+    &[data-next] {
+      order: 2;
+      text-align: right;
+      border-left: none;
+    }
+    &:active,
+    &:visited {
+      color: $primary-color;
+    }
+    &:hover {
+      color: $primary-color-dark;
+    }
+  }
+}
+#home-chart {
+  flex: 0 0 100%;
+
+  @media (min-width: $screen-sm) {
+    flex: 1;
+  }
+}
+
+.home-tagline {
+  font-size: 30px;
+  font-weight: normal;
+  margin-top: 50px;
+  margin-bottom: 30px;
+
+  @media (max-width: $screen-sm) {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 14px;
+    line-height: 1.2;
+  }
+}
+
+.home-features {
+  font-size: 17px;
+
+  > li {
+    padding-bottom: 2px;
+  }
+
+  @media (max-width: $screen-sm) {
+    padding-left: 1.5em;
+  }
+}
+
+.home-links {
+  margin-top: 40px;
+
+  @media (max-width: $screen-sm) {
+    margin-top: 20px;
+  }
+}
+
+.home-call-to-action {
+  background-color: transparent;
+  border-color: #fff;
+  color: #fff;
+  border-width: 2px;
+
+  &:hover, &:active {
+    background-color: #fff;
+    color: $primary-color;
+  }
+
+  @media (max-width: $screen-sm) {
+    width: 100%;
+  }
+  @media (min-width: $screen-sm) and (max-width: $screen-md) {
+    margin-top: -24px;
+    margin-right: 10px;
+  }
+}
+
+.home-github-links {
+  display: inline-block;
+
+  @media (max-width: $screen-sm), (min-width: $screen-md) {
+    padding-top: 15px;
+  }
+}
+
+.home-details {
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.getting-started {
+  section {
+    margin-bottom: 20px;
+  }
+
+  section.is-active pre {
+    border-left-color: $brand-warning;
+  }
+}
+
+.getting-started-chart-container {
+  // Set width explicitly from col-width to overcome position: fixed issues
+  @media (min-width: $screen-md) {
+    width: (41 + 1/3)/100*$container-md - $grid-gutter-width;
+  }
+  @media (min-width: $screen-lg) {
+    width: (41 + 1/3)/100*$container-lg - $grid-gutter-width;
+  }
+
+  &.affix {
+    top: 50px;
+  }
+}

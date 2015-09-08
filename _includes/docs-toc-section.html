@@ -1,0 +1,11 @@
+<li>
+  <a href="#{{include.class.id}}">
+    {{include.class.shortname}}
+  </a>
+
+  <ul class="nav is-nested">
+    {% for item in include.class.classitems %}
+      <li><a href="#{{item.id}}">{{item.name}}</a></li>
+    {% endfor %}
+  </ul>
+</li>

@@ -1,0 +1,262 @@
+---
+layout: default
+title: Docs
+class: docs
+scripts: |
+  <script src="../js/docs.js"></script>
+---
+
+{% assign classes = site.data.docs.classes %}
+
+<div class="row">
+  <div class="col-md-3 col-lg-2" role="complementary">
+    <div class="docs-sidebar hidden-print hidden-xs hidden-sm affix-top">
+      <ul class="nav">
+        <li>
+          <a href="#top">
+            d3.compose <span class="version">({{ site.data.package.version }})</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="#introduction">
+            Introduction
+          </a>
+        </li>
+
+        <li>
+          <a href="#usage">
+            Usage
+          </a>
+        </li>
+
+        <hr>
+
+        {% include docs-toc-section.html class=classes.Compose %}
+        {% include docs-toc-section.html class=classes.Chart %}
+        {% include docs-toc-section.html class=classes.Component %}
+        {% include docs-toc-section.html class=classes.Overlay %}
+        {% include docs-toc-section.html class=classes.Base %}
+
+        <hr>
+
+        {% include docs-toc-section.html class=classes.Lines %}
+        {% include docs-toc-section.html class=classes.Bars %}
+        {% include docs-toc-section.html class=classes.StackedBars %}
+        {% include docs-toc-section.html class=classes.HorizontalBars %}
+        {% include docs-toc-section.html class=classes.HorizontalStackedBars %}
+        {% include docs-toc-section.html class=classes.Labels %}
+
+        <hr>
+
+        {% include docs-toc-section.html class=classes.Axis %}
+        {% include docs-toc-section.html class=classes.Legend %}
+        {% include docs-toc-section.html class=classes.InsetLegend %}
+        {% include docs-toc-section.html class=classes.Text %}
+        {% include docs-toc-section.html class=classes.Title %}
+        {% include docs-toc-section.html class=classes.AxisTitle %}
+        {% include docs-toc-section.html class=classes.Gridlines %}
+
+        <hr>
+
+        {% include docs-toc-section.html class=classes.helpers %}
+
+        <li>
+          <a href="#mixins">
+            mixins
+          </a>
+
+          <ul class="nav is-nested">
+            {% include docs-toc-section.html class=classes.mixins-Series %}
+            {% include docs-toc-section.html class=classes.mixins-XY %}
+            {% include docs-toc-section.html class=classes.mixins-XYValues %}
+            {% include docs-toc-section.html class=classes.mixins-XYInverted %}
+            {% include docs-toc-section.html class=classes.mixins-Labels %}
+            {% include docs-toc-section.html class=classes.mixins-LabelsXY %}
+            {% include docs-toc-section.html class=classes.mixins-Hover %}
+            {% include docs-toc-section.html class=classes.mixins-HoverPoints %}
+            {% include docs-toc-section.html class=classes.mixins-Transition %}
+            {% include docs-toc-section.html class=classes.mixins-StandardLayer %}
+          </ul>
+        <li>
+          <a href="#changelog">
+            Change Log
+          </a>
+        </li>
+      </ul>
+      <a class="back-to-top" href="#top">Back to top</a>
+    </div>
+  </div>
+
+  <main class="col-md-9 col-lg-6 docs-content">
+    <section class="page docs-section">
+      <h1>d3.compose</h1>
+
+      <p>
+        d3.compose adds advanced chart layout and composition to d3 and d3.chart.
+        Create rich, data-bound charts by composing charts (like Line and Bars) and components (like Axis, Title, and Legend).
+      </p>
+
+      <h2 id="downloads">
+        Downloads &amp; Dependencies
+      </h2>
+
+      <table class="docs-downloads">
+        {% include docs-downloads.html details=site.data.details.all name="d3.compose-all" dev_notes="Development: Full source with tons of comments." prod_notes="Production: minified and gzipped" description="Includes all charts, components, extensions, and mixins." include_css=true %}
+
+        {% include docs-downloads.html details=site.data.details.mixins name="d3.compose-mixins" dev_notes="Development" prod_notes="Production" description="Use if you're creating your own charts/components and want to use d3.compose's mixins to help." %}
+
+        {% include docs-downloads.html details=site.data.details.src name="d3.compose" dev_notes="Development" prod_notes="Production" description="Use if you're using your own charts/components and don't need mixins, charts, or components provided by d3.compose." %}
+      </table>
+      <br>
+      <p>
+        d3.compose depends on the following libraries:
+
+        <ul>
+          <li><a href="http://d3js.org/" target="_blank">D3.js</a> <small>(&ge; 3.0.0)</small></li>
+          <li><a href="http://misoproject.com/d3-chart/" target="_blank">d3.chart</a> <small>(&ge; 0.2.0)</small></li>
+        </ul>
+      </p>
+    </section>
+
+    <!--
+      Introduction
+      ====
+    -->
+
+    <section class="page docs-section">
+      <h2 id="introduction">Introduction</h2>
+
+      <p>
+        When creating complex charts with D3.js and d3.chart, laying out and sizing parts of the chart are often manual processes and creating composable and reusable components becomes very difficult. d3.compose creates a standard base that charts and components are built on top of that automatically handles layout and sizing and can be composed and layered to created rich, data-bound charts.
+      </p>
+    </section>
+
+    <section class="page docs-section">
+      <h2 id="usage">Usage</h2>
+
+      <p>
+        Add d3.compose and its dependencies to your page:
+      </p>
+
+{% highlight html %}
+<!doctype html>
+<html>
+  <head>
+    <!-- ... -->
+
+    <link rel="stylesheet" type="text/css" href="d3.compose.css">
+  </head>
+  <body>
+    <!-- ... -->
+
+    <script src="d3.js"></script>
+    <script src="d3.chart.js"></script>
+
+    <script src="d3.compose-all.js"></script>
+
+    <!-- Your code -->
+  </body>
+</html>
+{% endhighlight %}
+    </section>
+
+    <!--
+      Compose, Chart, Component, Overlay, and Base
+      ====
+    -->
+
+    {% include docs-section.html class=classes.Compose %}
+    {% include docs-section.html class=classes.Chart %}
+    {% include docs-section.html class=classes.Component %}
+    {% include docs-section.html class=classes.Overlay %}
+    {% include docs-section.html class=classes.Base %}
+
+    <!-- TODO
+    <h3 class="docs-item-header" id="Compose-Events">
+      Events
+    </h3>
+
+    <div class="docs-description docs-item-description">
+      <p><code>on</code>, <code>off</code>, and <code>trigger</code> can be used to work with chart events. Available events:</p>
+      <ul>
+        <li><b>mouseenter</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse enters chart</li>
+        <li><b>mousemove</b> (container: {x, y}, chart: {x, y}) &mdash; when mouse moves within chart</li>
+        <li><b>mouseleave</b> &mdash; when mouse leaves chart</li>
+      </ul>
+    </div>
+    -->
+
+    <hr>
+
+    <!--
+      Charts
+      ====
+    -->
+
+    {% include docs-section.html class=classes.Lines %}
+    {% include docs-section.html class=classes.Bars %}
+    {% include docs-section.html class=classes.StackedBars %}
+    {% include docs-section.html class=classes.HorizontalBars %}
+    {% include docs-section.html class=classes.HorizontalStackedBars %}
+    {% include docs-section.html class=classes.Labels %}
+
+    <!--
+      Components
+      ====
+    -->
+
+    {% include docs-section.html class=classes.Axis %}
+    {% include docs-section.html class=classes.Legend %}
+    {% include docs-section.html class=classes.InsetLegend %}
+    {% include docs-section.html class=classes.Text %}
+    {% include docs-section.html class=classes.Title %}
+    {% include docs-section.html class=classes.AxisTitle %}
+    {% include docs-section.html class=classes.Gridlines %}
+
+    <!--
+      helpers
+      =====
+    -->
+    {% include docs-section.html class=classes.helpers %}
+
+    <!--
+      mixins
+      ====
+    -->
+    <section class="page docs-section">
+      <h2 id="mixins">mixins</h2>
+
+      {% include docs-section.html class=classes.mixins-Series nested=true %}
+      {% include docs-section.html class=classes.mixins-XY nested=true %}
+      {% include docs-section.html class=classes.mixins-XYValues nested=true %}
+      {% include docs-section.html class=classes.mixins-XYInverted nested=true %}
+      {% include docs-section.html class=classes.mixins-Labels nested=true %}
+      {% include docs-section.html class=classes.mixins-LabelsXY nested=true %}
+      {% include docs-section.html class=classes.mixins-Hover nested=true %}
+      {% include docs-section.html class=classes.mixins-HoverPoints nested=true %}
+      {% include docs-section.html class=classes.mixins-Transition nested=true %}
+      {% include docs-section.html class=classes.mixins-StandardLayer nested=true %}
+    </section>
+
+    <!--
+      Changelog
+      ====
+    -->
+    <section class="docs-section changelog-section">
+      <h2 id="changelog">Change Log</h2>
+
+      {% capture changelog %}{% include changelog.md %}{% endcapture %}
+      {{ changelog | markdownify }}
+    </section>
+
+    <!-- <p>
+      Footer...
+    </p> -->
+
+  </main>
+
+  <div class="col-lg-4 hidden-xs hidden-sm hidden-md">
+    <!-- TODO Add dynamic chart -->
+  </div>
+</div>

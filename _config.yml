@@ -1,14 +1,16 @@
-name: d3.chart.multi
-baseurl: /d3.chart.multi
-url: http://csnw.github.io/d3.chart.multi
+name: d3.compose
+baseurl: /d3.compose
+url: http://csnw.github.io/d3.compose/
+github: https://github.com/csnw/d3.compose/
 
 exclude:
 - Gemfile
 - Gemfile.lock
 - README.md
-- node_modules
 - bower_components
-- .grunt
+- node_modules
+- _tmp
+- _docs
 
 highlighter: pygments
 markdown: redcarpet

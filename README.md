@@ -1,4 +1,4 @@
-# d3.chart.multi Docs
+# d3.compose Docs
 
 ## Developement
 

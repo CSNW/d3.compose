@@ -1,0 +1,24 @@
+// Example
+// ----------------------------------------------------- //
+
+.example-sidebar {
+  .nav > li > a {
+    padding: 4px 4px;
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+      background-color: transparent;
+    }
+  }
+  .active {
+    font-weight: bold;
+  }
+}
+
+.examples .editor.is-wide {
+  height: calc(100vh - 90px);
+}
+.examples .editor.is-constrained {
+  margin-bottom: 20px;
+}
