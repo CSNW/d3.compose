@@ -27,19 +27,19 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
     <!doctype html>
     <html>
       <head>
-        <link rel="stylesheet" type="text/css" href="css/d3.compose.css">
+        <!-- ... -->
+
+        <link rel="stylesheet" type="text/css" href="d3.compose.css">
       </head>
       <body>
-        <svg id="chart"></svg>
+        <!-- ... -->
 
-        <script src="js/d3.js"></script>
-        <script src="js/d3.chart.js"></script>
-        <script src="js/underscore.js"></script>
-        <script src="js/d3.compose-all.min.js"></script>
+        <script src="d3.js"></script>
+        <script src="d3.chart.js"></script>
 
-        <script type="text/javascript">
-          // Your code
-        </script>
+        <script src="d3.compose-all.js"></script>
+
+        <!-- Your code -->
       </body>
     </html>
     ```
@@ -54,23 +54,19 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
           y: {data: data, key: 'y'}
         };
 
-        return {
-          charts: {
-            lines: {
-              type: 'Lines',
-              data: data,
-              xScale: scales.x,
-              yScale: scales.y
-            }
-          },
-          components: {
-            y_axis: {
-              type: 'Axis',
-              position: 'right',
-              scale: scales.y
-            }
-          }
-        };
+        var charts = [
+          d3c.lines({
+            data: data, 
+            xScale: scales.x,
+            yScale: scales.y
+          })
+        ];
+
+        var yAxis = d3c.axis({scale: scales.y});
+
+        return [
+          [yAxis, d3c.layered(charts)]
+        ];
       })
       .width(600)
       .height(400);
