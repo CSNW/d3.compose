@@ -11,6 +11,8 @@
 - __0.15.4__ Fix component centering and mousemove in IE bugs
 - __0.15.5__ Fix `__proto__` and Overlay transform issues
 - __0.15.6__ Fix Legend type not updating bug
+- __0.15.7__ Add banner to dist css and tweak label defaults
+- __0.15.8__ Fix margins issue for centered components
 
 # 0.14.0
 

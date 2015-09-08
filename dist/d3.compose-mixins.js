@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.7 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.8 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -1600,10 +1600,15 @@
 
       if (this.centered()) {
         var actual_dimensions = dimensions(this.base);
-        if (options.height)
+        if ('height' in options)
           y += (options.height - actual_dimensions.height) / 2;
-        if (options.width)
+        else
+          y += margins.top;
+
+        if ('width' in options)
           x += (options.width - actual_dimensions.width) / 2;
+        else
+          x += margins.left;
       }
       else {
         x += margins.left;
@@ -4001,7 +4006,7 @@
   };
 
   var d3c = d3.compose = {
-    VERSION: '0.15.7',
+    VERSION: '0.15.8',
     utils: utils,
     helpers: helpers,
     Base: Base,
