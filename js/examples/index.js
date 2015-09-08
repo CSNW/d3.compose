@@ -279,11 +279,13 @@
         var title = d3c.title(options.title.text);
         var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5, duration: 1000});
         var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5, duration: 1000});
+        var legend = d3c.legend('legend', {charts: ['results'], centered: true});
 
         return [
           title,
           [xAxis, d3c.layered(charts)],
-          yAxis
+          yAxis,
+          legend
         ];
       });
 
@@ -336,11 +338,13 @@
         var title = d3c.title('Stacked Bars');
         var xAxis = d3c.axis('xAxis', {scale: scales.x, ticks: 5});
         var yAxis = d3c.axis('yAxis', {scale: scales.y, ticks: 5});
+        var legend = d3c.legend('legend', {charts: ['results'], centered: true});
 
         return [
           title,
           [xAxis, d3c.layered(charts)],
-          yAxis
+          yAxis,
+          legend
         ];
       });
 
