@@ -10,13 +10,14 @@
     "CSNW",
     "Tim Hall <tim.hall.engr@gmail.com>"
   ],
-  "description": "Composable charts with d3.chart",
+  "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
   "keywords": [
     "d3.compose",
     "d3",
     "d3.chart",
     "d3-chart",
-    "compose"
+    "compose",
+    "chart"
   ],
   "private": true,
   "dependencies": {
@@ -34,9 +35,11 @@
     "example",
     "tasks",
     "Gruntfile.js",
-    "package.json",
+    "gulpfile.js"
     ".gitattributes",
     ".gitignore",
-    ".jshintrc"
+    ".eslintrc",
+    ".codeclimate.yml",
+    "yuidoc.json"
   ]
 }
