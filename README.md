@@ -2,11 +2,11 @@
 
 Compose rich, data-bound charts from charts (like Lines and Bars) and components (like Axis, Title, and Legend) with d3 and d3.chart.
 
-- Advanced layout engine automatically positions and sizes charts and components
+- Advanced layout engine automatically positions and sizes charts and components, layers by z-index, and is responsive by default with automatic scaling
 - Standard library of charts and components for quickly creating beautiful charts
 - `Chart` and `Component` bases for creating composable and reusable charts and components
 - Includes helpers and mixins that cover a range of standard functionality
-- Class-based styling is extensible and easy to customize to match your site
+- CSS class-based styling is extensible and easy to customize to match your site
 
 ## Getting Started
 
