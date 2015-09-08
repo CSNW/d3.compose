@@ -68,7 +68,7 @@ gulp.task('watch', function() {
 
 /**
   serve:
-  - build and serve example at localhost:4001
+  - build and serve example at localhost:5000
 */
 gulp.task('serve', function(cb) {
   runSequence('build', ['connect', 'watch-build'], cb);
@@ -139,7 +139,7 @@ gulp.task('watch-build', function() {
 gulp.task('connect', function() {
   connect.server({
     root: ['.', 'example'],
-    port: 4001
+    port: 5000
   });
 });
 

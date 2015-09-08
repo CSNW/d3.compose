@@ -85,7 +85,7 @@ Install bower (if necessary) `npm install -g bower`
 1. Install components `npm install` and `bower install`
 2. Develop with `npm run dev` (automatically builds, tests, and runs example server)
 3. Build with `npm run build`
-4. Open example with `grunt serve` and `localhost:4001`
+4. Open example with `npm run serve` and `localhost:5000`
 5. Test with `npm test`
 
 ### Release
