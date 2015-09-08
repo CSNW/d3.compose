@@ -29,7 +29,7 @@
   fill: black;
 }
 .chart-label-bg {
-  opacity: 0;
+  opacity: 0.2;
   fill: white;
   stroke: none;
 }
