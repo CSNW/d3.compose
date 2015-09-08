@@ -1,4 +1,7 @@
-/* Base styles for d3.compose */
+/*!
+ * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
+ * v0.15.7 - https://github.com/CSNW/d3.compose - license: MIT
+ */
 
 .chart-compose {
   font-size: 14px;
@@ -63,7 +66,7 @@
 }
 
 .chart-label-bg {
-  opacity: 0.6;
+  opacity: 0;
   fill: white;
   stroke: none;
 }
@@ -77,8 +80,6 @@
   font-size: 1.1em;
   font-weight: bold;
 }
-
-
 
 .chart-axis path {
   fill: none;
