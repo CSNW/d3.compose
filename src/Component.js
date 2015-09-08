@@ -228,10 +228,15 @@ var Component = Base.extend({
 
     if (this.centered()) {
       var actual_dimensions = dimensions(this.base);
-      if (options.height)
+      if ('height' in options)
         y += (options.height - actual_dimensions.height) / 2;
-      if (options.width)
+      else
+        y += margins.top;
+
+      if ('width' in options)
         x += (options.width - actual_dimensions.width) / 2;
+      else
+        x += margins.left;
     }
     else {
       x += margins.left;
