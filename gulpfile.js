@@ -111,7 +111,7 @@ gulp.task('build-and-test', function(cb) {
 
 // css
 gulp.task('css-tmp', createCss(tmp));
-gulp.task('css-dist', createCss(dist));
+gulp.task('css-dist', createCss(dist, {header: true}));
 
 // lint
 var compiled_options = {
@@ -143,6 +143,11 @@ gulp.task('connect', function() {
   });
 });
 
+var banner = '/*!\n' +
+  ' * <%= pkg.name %> - <%= pkg.description %>\n' +
+  ' * v<%= pkg.version %> - <%= pkg.homepage %> - license: <%= pkg.license %>\n' +
+  ' */\n';
+
 function createClean(folder) {
   return function(cb) {
     del([folder], cb);
@@ -152,11 +157,6 @@ function createClean(folder) {
 function createBuild(input, output, folder, options) {
   options = options || {};
   return function() {
-    var banner = '/*!\n' +
-      ' * <%= pkg.name %> - <%= pkg.description %>\n' +
-      ' * v<%= pkg.version %> - <%= pkg.homepage %> - license: <%= pkg.license %>\n' +
-      ' */\n';
-
     var build = gulp.src(input)
       .pipe(plumber(handleError))
       .pipe(sourcemaps.init({loadMaps: true}))
@@ -192,9 +192,16 @@ function createBuild(input, output, folder, options) {
   };
 }
 
-function createCss(folder) {
+function createCss(folder, options) {
+  options = options || {};
+
   return function() {
-    return gulp.src(['src/css/base.css'])
+    var css = gulp.src(['src/css/base.css']);
+
+    if (options.header)
+      css.pipe(header(banner, {pkg: pkg}));
+
+    return css
       .pipe(concatCss('d3.compose.css'))
       .pipe(gulp.dest(folder));
   };
@@ -216,7 +223,6 @@ function handleError(err) {
 }
 
 // Wrap esperanto.bundle for pipe with options
-// TODO: PR to gulp-esperanto
 var through = require('through2');
 var applySourceMap = require('vinyl-sourcemaps-apply');
 var assign = require('object-assign');
