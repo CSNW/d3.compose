@@ -315,7 +315,7 @@ var Legend = Mixed.extend({
         chart.options()['class'],
         series['class']
       ]).join(' ')
-    }
+    };
   },
 
   _itemDetails: function _itemDetails(d, i) {
