@@ -101,9 +101,9 @@
       }
 
       config.components.yAxis = yAxis = d3c.axis('axis', {scale: scales.y, delay: 250, duration: 750});
-      var legend = d3c.legend('component_2', {position: 'right', charts: ['lines', 'chart_2']});
-      var bottomXAxis = d3c.axis('component_2', {position: 'bottom', scale: scales.x});
-      var topXAxis = d3c.axis('component_2', {position: 'top', scale: scales.x});
+      var legend = d3c.legend('component_2', {charts: ['lines', 'chart_2']});
+      var bottomXAxis = d3c.axis('component_2', {scale: scales.x});
+      var topXAxis = d3c.axis('component_2', {scale: scales.x, gridlines: true});
 
       if (options.components == 'remove') {
         delete config.components.legend;
@@ -124,6 +124,7 @@
         delete config.components.legend;
         delete config.components.bottomXAxis;
         config.components.topXAxis = topXAxis;
+        config.components.yAxis.gridlines = true;
       }
 
       return [

@@ -70,10 +70,17 @@ var Gridlines = Mixed.extend({
     var parent = this.options().parent;
     if (parent) {
       this.parent = parent;
-      parent.on('attach', function() {
+
+      if (parent.container) {
         this.container = parent.container;
         this.trigger('attach');
-      }.bind(this));
+      }
+      else {
+        parent.on('attach', function() {
+          this.container = parent.container;
+          this.trigger('attach');
+        }.bind(this));
+      }
     }
 
     // Use standard layer for extensibility
