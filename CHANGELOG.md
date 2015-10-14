@@ -13,7 +13,7 @@
 - __0.15.6__ Fix Legend type not updating bug
 - __0.15.7__ Add banner to dist css and tweak label defaults
 - __0.15.8__ Fix margins issue for centered components
-- Fix delayed gridlines attachment bug
+- __0.15.9__ Fix delayed gridlines attachment bug and fix undefined config issue
 
 # 0.14.0
 

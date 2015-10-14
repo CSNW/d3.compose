@@ -1,7 +1,7 @@
 {
   "name": "d3.compose",
   "homepage": "https://github.com/CSNW/d3.compose",
-  "version": "0.15.8",
+  "version": "0.15.9",
   "main": [
     "./dist/d3.compose.js",
     "./dist/d3.compose.css"
@@ -19,7 +19,6 @@
     "compose",
     "chart"
   ],
-  "private": true,
   "dependencies": {
     "d3": "~3",
     "d3.chart": "~0"
@@ -35,7 +34,7 @@
     "example",
     "tasks",
     "Gruntfile.js",
-    "gulpfile.js"
+    "gulpfile.js",
     ".gitattributes",
     ".gitignore",
     ".eslintrc",

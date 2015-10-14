@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.8 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.9 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -2419,7 +2419,7 @@
     draw: function(data) {
       var config = this._prepareConfig(this.options(), data);
       if (!config)
-        config = {data: {_charts: {}, _components: {}}, layout: []};
+        config = {data: {_charts: {}, _components: {}}, layout: [], charts: [], components: []};
 
       // Set charts and components from config
       this.charts(config.charts);
@@ -5466,10 +5466,17 @@
       var parent = this.options().parent;
       if (parent) {
         this.parent = parent;
-        parent.on('attach', function() {
+
+        if (parent.container) {
           this.container = parent.container;
           this.trigger('attach');
-        }.bind(this));
+        }
+        else {
+          parent.on('attach', function() {
+            this.container = parent.container;
+            this.trigger('attach');
+          }.bind(this));
+        }
       }
 
       // Use standard layer for extensibility
@@ -6500,7 +6507,7 @@
   d3.chart().InsetLegend = InsetLegend;
 
   var d3c = d3.compose = {
-    VERSION: '0.15.8',
+    VERSION: '0.15.9',
     utils: utils,
     helpers: helpers,
     Base: Base,
@@ -6543,8 +6550,8 @@
     gridlines: gridlines
   };
 
-  var index_all = d3c;
+  var d3_compose_all = d3c;
 
-  return index_all;
+  return d3_compose_all;
 
 }));

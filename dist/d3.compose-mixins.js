@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.8 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.9 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
@@ -2419,7 +2419,7 @@
     draw: function(data) {
       var config = this._prepareConfig(this.options(), data);
       if (!config)
-        config = {data: {_charts: {}, _components: {}}, layout: []};
+        config = {data: {_charts: {}, _components: {}}, layout: [], charts: [], components: []};
 
       // Set charts and components from config
       this.charts(config.charts);
@@ -4006,7 +4006,7 @@
   };
 
   var d3c = d3.compose = {
-    VERSION: '0.15.8',
+    VERSION: '0.15.9',
     utils: utils,
     helpers: helpers,
     Base: Base,
@@ -4019,8 +4019,8 @@
     mixins: mixins
   };
 
-  var index_mixins = d3c;
+  var d3_compose_mixins = d3c;
 
-  return index_mixins;
+  return d3_compose_mixins;
 
 }));
