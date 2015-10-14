@@ -389,7 +389,7 @@ var Compose = Base.extend({
   draw: function(data) {
     var config = this._prepareConfig(this.options(), data);
     if (!config)
-      config = {data: {_charts: {}, _components: {}}, layout: []};
+      config = {data: {_charts: {}, _components: {}}, layout: [], charts: [], components: []};
 
     // Set charts and components from config
     this.charts(config.charts);
