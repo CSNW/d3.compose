@@ -185,7 +185,7 @@
           {'class': 'chart-component-layer', id: 'component-8', z_index: 200}
         ];
 
-        container.draw([]);
+        container.layout();
 
         expect(d3.select('#chart').selectAll('g')[0].length).toEqual(expected.length);
         d3.select('#chart').selectAll('g').each(function(d, i) {
