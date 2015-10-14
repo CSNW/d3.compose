@@ -96,14 +96,14 @@ gulp.task('clean-tmp', createClean(tmp));
 gulp.task('clean-dist', createClean(dist));
 
 // build
-gulp.task('build-tmp-library', createBuild('index.js', 'd3.compose', tmp));
-gulp.task('build-tmp-mixins', createBuild('index-mixins.js', 'd3.compose-mixins', tmp));
-gulp.task('build-tmp-all', createBuild('index-all.js', 'd3.compose-all', tmp));
+gulp.task('build-tmp-library', createBuild('d3.compose.js', 'd3.compose', tmp));
+gulp.task('build-tmp-mixins', createBuild('d3.compose-mixins.js', 'd3.compose-mixins', tmp));
+gulp.task('build-tmp-all', createBuild('d3.compose-all.js', 'd3.compose-all', tmp));
 
 var dist_options = {header: true, minify: true};
-gulp.task('build-dist-library', createBuild('index.js', 'd3.compose', dist, dist_options));
-gulp.task('build-dist-mixins', createBuild('index-mixins.js', 'd3.compose-mixins', dist, dist_options));
-gulp.task('build-dist-all', createBuild('index-all.js', 'd3.compose-all', dist, dist_options));
+gulp.task('build-dist-library', createBuild('d3.compose.js', 'd3.compose', dist, dist_options));
+gulp.task('build-dist-mixins', createBuild('d3.compose-mixins.js', 'd3.compose-mixins', dist, dist_options));
+gulp.task('build-dist-all', createBuild('d3.compose-all.js', 'd3.compose-all', dist, dist_options));
 
 gulp.task('build-and-test', function(cb) {
   runSequence('build', 'test', cb);

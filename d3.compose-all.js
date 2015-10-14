@@ -1,4 +1,4 @@
-import d3 from 'd3'; //eslint-disable-line no-unused-vars
+import d3 from 'd3';
 import utils from './src/utils';
 import helpers from './src/helpers';
 import Base from './src/Base';
