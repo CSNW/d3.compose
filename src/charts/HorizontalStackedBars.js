@@ -63,7 +63,6 @@ var HorizontalStackedBars = HorizontalBars.extend({
 
 var horizontalStackedBars = createHelper('HorizontalStackedBars');
 
-d3.chart().HorizontalStackedBars = HorizontalStackedBars;
 export {
   HorizontalStackedBars as default,
   horizontalStackedBars

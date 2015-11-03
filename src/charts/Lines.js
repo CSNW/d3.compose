@@ -148,7 +148,6 @@ var Lines = Mixed.extend({
 
 var lines = createHelper('Lines');
 
-d3.chart().Lines = Lines;
 export {
   Lines as default,
   lines

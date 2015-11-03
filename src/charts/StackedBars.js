@@ -87,7 +87,6 @@ var StackedBars = Bars.extend({
 
 var stackedBars = createHelper('StackedBars');
 
-d3.chart().StackedBars = StackedBars;
 export {
   StackedBars as default,
   stackedBars

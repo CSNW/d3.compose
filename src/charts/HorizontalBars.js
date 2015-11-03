@@ -108,7 +108,6 @@ var HorizontalBars = mixin(Bars, XYInverted).extend({
 
 var horizontalBars = createHelper('HorizontalBars');
 
-d3.chart().HorizontalBars = HorizontalBars;
 export {
   HorizontalBars as default,
   horizontalBars

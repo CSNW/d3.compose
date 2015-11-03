@@ -161,8 +161,10 @@ function createBuild(input, output, folder, options) {
       .pipe(plumber(handleError))
       .pipe(sourcemaps.init({loadMaps: true}))
       .pipe(bundle({
-        name: 'd3c',
-        sourceMapFile: output + '.js'
+        moduleName: 'd3c',
+        sourceMapFile: output + '.js',
+        external: ['d3'],
+        format: 'umd'
       }))
       .pipe(replace(/\{version\}/g, pkg.version))
       .pipe(rename(output + '.js'));
@@ -226,36 +228,40 @@ function handleError(err) {
 var through = require('through2');
 var applySourceMap = require('vinyl-sourcemaps-apply');
 var assign = require('object-assign');
-var esperanto = require('esperanto');
+var rollup = require('rollup');
 
 function bundle(options) {
   return through.obj(function(file, enc, cb) {
     if (file.isNull())
       return cb(null, file);
 
-    var file_options = assign({}, {
+    var file_options = assign({
       entry: file.relative,
       sourceMap: !!file.sourceMap,
       sourceMapSource: file.relative,
       sourceMapFile: file.relative
     }, options);
+    var bundle_options = assign({
+      format: 'es6'
+    }, file_options)
 
-    esperanto.bundle(file_options).then(function(bundled) {
-      try {
-        var res = bundled.toUmd(file_options);
+    rollup.rollup(file_options)
+      .then(function(bundle) {
+        try {
+          var result = bundle.generate(bundle_options);
 
-        if (file_options.sourceMap && res.map)
-          applySourceMap(file, res.map);
+          if (file_options.sourceMap && result.map)
+            applySourceMap(file, result.map);
 
-        file.contents = new Buffer(res.code);
-        cb(null, file);
-      } catch(err) {
+          file.contents = new Buffer(result.code);
+          cb(null, file);
+        } catch(err) {
+          cb(createError(err));
+        }
+      })
+      .catch(function(err) {
         cb(createError(err));
-      }
-    })
-    ['catch'](function(err) {
-      cb(createError(err));
-    });
+      });
   });
 
   function createError(err) {

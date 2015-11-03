@@ -410,7 +410,6 @@ var Axis = Mixed.extend({
 
 var axis = createHelper('Axis');
 
-d3.chart().Axis = Axis;
 export {
   Axis as default,
   axis

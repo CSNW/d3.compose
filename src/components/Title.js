@@ -68,7 +68,6 @@ function title(id, options) {
   return textOptions(id, options, {type: 'Title'});
 }
 
-d3.chart().Title = Title;
 export {
   Title as default,
   title

@@ -217,7 +217,6 @@ var Gridlines = Mixed.extend({
 
 var gridlines = createHelper('Gridlines');
 
-d3.chart().Gridlines = Gridlines;
 export {
   Gridlines as default,
   gridlines

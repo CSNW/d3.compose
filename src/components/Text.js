@@ -199,7 +199,6 @@ function text(id, options) {
   return textOptions(id, options, {type: 'Text'});
 }
 
-d3.chart().Text = Text;
 export {
   Text as default,
   text,
