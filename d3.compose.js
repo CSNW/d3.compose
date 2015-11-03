@@ -7,6 +7,15 @@ import Component from './src/Component';
 import Overlay from './src/Overlay';
 import Compose, { layered } from './src/Compose';
 
+// Export charts/components to d3.chart
+utils.extend(d3.chart(), {
+  Base: Base,
+  Chart: Chart,
+  Component: Component,
+  Overlay: Overlay,
+  Compose: Compose
+});
+
 var d3c = d3.compose = {
   VERSION: '{version}',
   utils: utils,

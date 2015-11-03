@@ -25,6 +25,29 @@ import Legend, { legend } from './src/components/Legend';
 import InsetLegend, { insetLegend } from './src/components/InsetLegend';
 import Gridlines, { gridlines } from './src/components/Gridlines';
 
+// Export charts/components to d3.chart
+utils.extend(d3.chart(), {
+  Base: Base,
+  Chart: Chart,
+  Component: Component,
+  Overlay: Overlay,
+  Compose: Compose,
+  Lines: Lines,
+  Bars: Bars,
+  StackedBars: StackedBars,
+  HorizontalBars: HorizontalBars,
+  HorizontalStackedBars: HorizontalStackedBars,
+  Labels: Labels,
+  HoverLabels: HoverLabels,
+  Text: Text,
+  Title: Title,
+  Axis: Axis,
+  AxisTitle: AxisTitle,
+  Legend: Legend,
+  InsetLegend: InsetLegend,
+  Gridlines: Gridlines
+});
+
 var d3c = d3.compose = {
   VERSION: '{version}',
   utils: utils,

@@ -70,7 +70,6 @@ var HoverLabels = Mixed.extend({
 
 var hoverLabels = createHelper('HoverLabels');
 
-d3.chart().HoverLabels = HoverLabels;
 export {
   HoverLabels as default,
   hoverLabels

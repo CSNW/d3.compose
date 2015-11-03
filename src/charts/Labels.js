@@ -564,7 +564,6 @@ var Labels = Mixed.extend({
 
 var labels = createHelper('Labels');
 
-d3.chart().Labels = Labels;
 export {
   Labels as default,
   labels

@@ -57,5 +57,4 @@ var Chart = Base.extend({}, {
   layer_type: 'chart'
 });
 
-d3.chart().Chart = Chart;
 export default Chart;

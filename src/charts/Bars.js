@@ -185,7 +185,6 @@ var Bars = Mixed.extend({
 
 var bars = createHelper('Bars');
 
-d3.chart().Bars = Bars;
 export {
   Bars as default,
   bars

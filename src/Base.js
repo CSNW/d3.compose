@@ -211,6 +211,4 @@ Base.extend = function(proto_props, static_props) {
   return Child;
 };
 
-// Export to d3.chart
-Chart.Base = Base;
 export default Base;

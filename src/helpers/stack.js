@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import { extend } from '../utils';
 import { translate } from '../helpers';
 

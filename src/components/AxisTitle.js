@@ -54,7 +54,6 @@ function axisTitle(id, options) {
   return textOptions(id, options, {type: 'AxisTitle'});
 }
 
-d3.chart().AxisTitle = AxisTitle;
 export {
   AxisTitle as default,
   axisTitle

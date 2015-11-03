@@ -390,7 +390,6 @@ Legend.registerSwatch(['Bars', 'StackedBars', 'HorizontalBars', 'HorizontalStack
 
 var legend = createHelper('Legend');
 
-d3.chart().Legend = Legend;
 export {
   Legend as default,
   legend

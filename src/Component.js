@@ -287,5 +287,4 @@ var Component = Base.extend({
   layer_type: 'component'
 });
 
-d3.chart().Component = Component;
 export default Component;

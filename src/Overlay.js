@@ -194,5 +194,4 @@ var Overlay = Component.extend({
   layer_type: 'overlay'
 });
 
-d3.chart().Overlay = Overlay;
 export default Overlay;

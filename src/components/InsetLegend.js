@@ -76,7 +76,6 @@ var InsetLegend = Legend.extend({
 
 var insetLegend = createHelper('InsetLegend');
 
-d3.chart().InsetLegend = InsetLegend;
 export {
   InsetLegend as default,
   insetLegend

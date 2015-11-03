@@ -754,7 +754,6 @@ function findById(items, id) {
   });
 }
 
-d3.chart().Compose = Compose;
 export {
   Compose as default,
   layered
