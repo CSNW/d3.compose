@@ -14,6 +14,7 @@
 - __0.15.7__ Add banner to dist css and tweak label defaults
 - __0.15.8__ Fix margins issue for centered components
 - __0.15.9__ Fix delayed gridlines attachment bug and fix undefined config issue
+- __0.15.10__ Fix legend expanding on redraw issue
 
 # 0.14.0
 
