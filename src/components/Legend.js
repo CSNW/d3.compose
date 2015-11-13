@@ -293,11 +293,19 @@ var Legend = Mixed.extend({
     selection.each(function() {
       sizes.push(this.getBBox());
     });
-    selection.select('.chart-legend-hover').each(function() {
-      var size = sizes.shift();
+    selection.select('.chart-legend-hover').each(function(d, i) {
+      var size = sizes[i];
+      var transform = null;
+
+      if (size.height > swatch.height) {
+        var offset = (size.height - swatch.height) / 2;
+        transform = translate(0, -offset);
+      }
+
       d3.select(this)
         .attr('width', size.width)
-        .attr('height', size.height);
+        .attr('height', size.height)
+        .attr('transform', transform);
     });
   },
   onExit: function onExit(selection) {

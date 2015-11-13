@@ -40,7 +40,7 @@
 
       <script type="text/javascript">
         var utils = d3.compose.utils;
-        var chart = d3.select('#chart-1')
+        var chart_1 = d3.select('#chart-1')
           .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', domain: [2000, 2005, 2010, 2015, 2020], centered: true},
@@ -81,7 +81,7 @@
                 d3c.layered(charts),
                 d3c.axis('y2', {scale: scales.y2}),
                 d3c.axisTitle('Y2 Title'),
-                d3c.insetLegend({charts: ['lines', 'bars']}),
+                d3c.insetLegend({charts: ['lines', 'bars'], swatchDimensions: {height: 5, width: 40}}),
                 d3c.gridlines('y-gridlines', {orientation: 'horizontal', scale: scales.y}),
               ],
               d3c.axis('x', {scale: scales.x, gridlines: true}),
@@ -91,7 +91,7 @@
           .width(600)
           .height(400);
 
-        chart.draw(data['chart-1']);
+        chart_1.draw(data['chart-1']);
       </script>
     </section>
 
@@ -150,7 +150,7 @@
           }
         });
 
-        var chart = d3.select('#chart-2')
+        var chart_2 = d3.select('#chart-2')
           .chart('Compose', function(data) {
             var scales = {
               x: {domain: [2000, 2020]},
@@ -178,7 +178,7 @@
           .margins({right: 30})
           .responsive(false);
 
-        chart.draw(data['chart-2']);
+        chart_2.draw(data['chart-2']);
       </script>
     </section>
 
@@ -187,7 +187,7 @@
       <div id="chart-3"></div>
 
       <script type="text/javascript">
-        var chart = d3.select('#chart-3')
+        var chart_3 = d3.select('#chart-3')
           .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
@@ -216,7 +216,7 @@
           .width(600)
           .height(400);
 
-        chart.draw(data['chart-3']);
+        chart_3.draw(data['chart-3']);
       </script>
     </section>
 
@@ -225,7 +225,7 @@
       <div id="chart-4"></div>
 
       <script type="text/javascript">
-        var chart = d3.select('#chart-4')
+        var chart_4 = d3.select('#chart-4')
           .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
@@ -248,7 +248,7 @@
           .height(200)
           .margins({bottom: 20});
 
-        chart.draw({
+        chart_4.draw({
           stacked: [
             {key: 'a', name: 'A', values: [{x: 0, y: 10}, {x: 1, y: 50}]},
             {key: 'b', name: 'B', values: [{x: 0, y: 20}, {x: 1, y: 40}]},
@@ -265,7 +265,7 @@
       <div id="chart-5"></div>
 
       <script type="text/javascript">
-        var chart = d3.select('#chart-5')
+        var chart_5 = d3.select('#chart-5')
           .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
@@ -295,7 +295,7 @@
           .duration(1000)
           .delay(200);
 
-        chart.draw(data['chart-3']);
+        chart_5.draw(data['chart-3']);
       </script>
     </section>
 
@@ -304,7 +304,7 @@
       <div id="chart-6"></div>
 
       <script type="text/javascript">
-        var chart = d3.select('#chart-6')
+        var chart_6 = d3.select('#chart-6')
           .chart('Compose', function(data) {
             var scales = {
               x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
@@ -326,7 +326,7 @@
           .width(600)
           .height(240);
 
-        chart.draw({
+        chart_6.draw({
           stacked: [
             {key: 'a', name: 'A', values: [{x: 0, y: 10}, {x: 1, y: 50}]},
             {key: 'b', name: 'B', values: [{x: 0, y: 20}, {x: 1, y: 40}]},
