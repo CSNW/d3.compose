@@ -1,12 +1,14 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.9 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.10 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
   typeof define === 'function' && define.amd ? define(['d3'], factory) :
-  global.d3c = factory(global.d3)
+  global.d3c = factory(global.d3);
 }(this, function (d3) { 'use strict';
+
+  d3 = 'default' in d3 ? d3['default'] : d3;
 
   // Many utils inlined from Underscore.js
   // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -344,88 +346,154 @@
   }
 
   /**
-    Helper for robustly determining width/height of given selector.
-    Checks dimensions from css, attributes, and bounding box.
+    Combine mixins with Parent super class for extension
 
-    @method dimensions
+    @example
+    ```js
+    var a = {transform: function() {}, a: 1};
+    var b = {initialize: function() {}, b: 2};
+    var c = {c: 3};
+
+    var Custom = mixin(Chart, a, b, c).extend({
+      initialize: function(options) {
+        this._super.initialize.call(this, options);
+        // d
+      },
+      transform: function(data) {
+        data = this._super.transform.call(this, data);
+        // d
+      }
+    });
+
+    // initialize: Chart, b, d
+    // transform: Chart, a, d
+    ```
+    @method mixin
     @for helpers
-    @param {d3.Selection} selection
-    @return {Object} `{width, height}`
+    @param {Function} Parent
+    @param {...Object} ...mixins
+    @return {Function}
   */
-  function dimensions(selection) {
-    // 1. Get width/height set via css (only valid for svg and some other elements)
-    var client = clientDimensions(selection);
+  function mixin(Parent/*, ...mixins*/) {
+    var mixins = slice.call(arguments, 1);
+    var initializes = [];
+    var transforms = [];
+    var mixed = {};
 
-    if (client.width && client.height)
-      return client;
+    mixins.forEach(function(mix) {
+      objectEach(mix, function(value, key) {
+        if (key == 'initialize')
+          initializes.push(value);
+        else if (key == 'transform')
+          transforms.push(value);
+        else
+          mixed[key] = value;
+      });
+    });
 
-    // 2. Get width/height set via attribute
-    var attr = attrDimensions(selection);
-
-    if (isSVG(selection)) {
-      return {
-        width: client.width != null ? client.width : attr.width || 0,
-        height: client.height != null ? client.height : attr.height || 0
+    if (initializes.length) {
+      mixed.initialize = function initialize() {
+        var args = slice.call(arguments);
+        Parent.prototype.initialize.apply(this, args);
+        initializes.forEach(function(init) {
+          init.apply(this, args);
+        }, this);
       };
     }
-    else {
-      var bbox = bboxDimensions(selection);
 
-      // Size set by css -> client (only valid for svg and some other elements)
-      // Size set by svg -> attr override or bounding_box
-      // -> Take maximum
-      return {
-        width: d3.max([client.width, attr.width || bbox.width]) || 0,
-        height: d3.max([client.height, attr.height || bbox.height]) || 0
+    if (transforms.length) {
+      mixed.transform = function transform(data) {
+        data = Parent.prototype.transform.call(this, data);
+        return transforms.reduce(function(memo, trans) {
+          return trans.call(this, memo);
+        }.bind(this), data);
       };
     }
+
+    return Parent.extend(mixed);
   }
 
-  function clientDimensions(selection) {
-    var element = selection.node();
+  /**
+    Stack given array of elements vertically or horizontally
 
-    var client_dimensions = {
-      width: element && element.clientWidth,
-      height: element && element.clientHeight
+    @example
+    ```js
+    // Stack all text elements vertically, from the top, with 0px padding
+    d3.selectAll('text').call(helpers.stack())
+
+    // Stack all text elements horizontally, from the right, with 5px padding
+    d3.selectAll('text').call(helpers.stack({
+      direction: 'horizontal',
+      origin: 'right',
+      padding: 5
+    }));
+    ```
+    @method stack
+    @for helpers
+    @param {Object} [options]
+    @param {String} [options.direction=vertical] `"vertical"` or `"horizontal"`
+    @param {String} [options.origin] `"top"`, `"right"`, `"bottom"`, or `"left"` (by default, `"top"` for `"vertical"` and `"left"` for `"horizontal"`)
+    @param {Number} [options.padding=0] padding (in px) between elements
+    @param {Number} [options.min_height=0] minimum spacing height (for vertical stacking)
+    @param {Number} [options.min_width=0]  minimum spacing width (for horizontal stacking)
+    @return {Function}
+  */
+  function stack(options) {
+    options = extend({
+      direction: 'vertical',
+      origin: 'top',
+      padding: 0,
+      min_height: 0,
+      min_width: 0
+    }, options);
+
+    // Ensure valid origin based on direction
+    if (options.direction == 'horizontal' && !(options.origin == 'left' || options.origin == 'right'))
+      options.origin = 'left';
+    else if (options.direction == 'vertical' && !(options.origin == 'top' || options.origin == 'bottom'))
+      options.origin = 'top';
+
+    function padding(i) {
+      return i > 0 && options.padding ? options.padding : 0;
+    }
+
+    return function(elements) {
+      if (elements && elements.attr) {
+        var previous = 0;
+
+        elements.attr('transform', function(d, i) {
+          var element_dimensions = this.getBBox();
+          var spacing_width = d3.max([element_dimensions.width, options.min_width]);
+          var spacing_height = d3.max([element_dimensions.height, options.min_height]);
+          var x = 0;
+          var y = 0;
+          var next_position;
+
+          if (options.direction == 'horizontal') {
+            next_position = previous + spacing_width + padding(i);
+
+            if (options.origin == 'left')
+              x = previous + padding(i);
+            else
+              x = next_position;
+
+            previous = next_position;
+          }
+          else {
+            next_position = previous + spacing_height + padding(i);
+
+            if (options.origin == 'top')
+              y = previous + padding(i);
+            else
+              y = next_position;
+
+            previous = next_position;
+          }
+
+          return translate(x, y);
+        });
+      }
     };
-
-    // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
-    //        calculate from css
-    //        http://stackoverflow.com/questions/13122790/how-to-get-svg-element-dimensions-in-firefox
-    //        Note: This makes assumptions about the box model in use and that width/height are not percent values
-    if (isSVG(selection) && (!element.clientWidth || !element.clientHeight) && typeof window !== 'undefined' && window.getComputedStyle) {
-      var styles = window.getComputedStyle(element);
-      client_dimensions.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
-      client_dimensions.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
-    }
-
-    return client_dimensions;
-  }
-
-  function attrDimensions(selection) {
-    return {
-      width: selection && selection.attr && parseFloat(selection.attr('width')),
-      height: selection && selection.attr && parseFloat(selection.attr('height'))
-    };
-  }
-
-  function bboxDimensions(selection) {
-    var element = selection.node();
-    var bbox;
-    try {
-      bbox = element && typeof element.getBBox == 'function' && element.getBBox();
-    }
-    catch(ex) {
-      // Firefox throws error when calling getBBox when svg hasn't been displayed
-      // Ignore error and set to empty
-      bbox = {width: 0, height: 0};
-    }
-
-    return bbox;
-  }
-
-  function isSVG(selection) {
-    return selection.node().nodeName == 'svg';
   }
 
   /**
@@ -618,154 +686,88 @@
   }
 
   /**
-    Combine mixins with Parent super class for extension
+    Helper for robustly determining width/height of given selector.
+    Checks dimensions from css, attributes, and bounding box.
 
-    @example
-    ```js
-    var a = {transform: function() {}, a: 1};
-    var b = {initialize: function() {}, b: 2};
-    var c = {c: 3};
-
-    var Custom = mixin(Chart, a, b, c).extend({
-      initialize: function(options) {
-        this._super.initialize.call(this, options);
-        // d
-      },
-      transform: function(data) {
-        data = this._super.transform.call(this, data);
-        // d
-      }
-    });
-
-    // initialize: Chart, b, d
-    // transform: Chart, a, d
-    ```
-    @method mixin
+    @method dimensions
     @for helpers
-    @param {Function} Parent
-    @param {...Object} ...mixins
-    @return {Function}
+    @param {d3.Selection} selection
+    @return {Object} `{width, height}`
   */
-  function mixin(Parent/*, ...mixins*/) {
-    var mixins = slice.call(arguments, 1);
-    var initializes = [];
-    var transforms = [];
-    var mixed = {};
+  function dimensions(selection) {
+    // 1. Get width/height set via css (only valid for svg and some other elements)
+    var client = clientDimensions(selection);
 
-    mixins.forEach(function(mix) {
-      objectEach(mix, function(value, key) {
-        if (key == 'initialize')
-          initializes.push(value);
-        else if (key == 'transform')
-          transforms.push(value);
-        else
-          mixed[key] = value;
-      });
-    });
+    if (client.width && client.height)
+      return client;
 
-    if (initializes.length) {
-      mixed.initialize = function initialize() {
-        var args = slice.call(arguments);
-        Parent.prototype.initialize.apply(this, args);
-        initializes.forEach(function(init) {
-          init.apply(this, args);
-        }, this);
+    // 2. Get width/height set via attribute
+    var attr = attrDimensions(selection);
+
+    if (isSVG(selection)) {
+      return {
+        width: client.width != null ? client.width : attr.width || 0,
+        height: client.height != null ? client.height : attr.height || 0
       };
     }
+    else {
+      var bbox = bboxDimensions(selection);
 
-    if (transforms.length) {
-      mixed.transform = function transform(data) {
-        data = Parent.prototype.transform.call(this, data);
-        return transforms.reduce(function(memo, trans) {
-          return trans.call(this, memo);
-        }.bind(this), data);
+      // Size set by css -> client (only valid for svg and some other elements)
+      // Size set by svg -> attr override or bounding_box
+      // -> Take maximum
+      return {
+        width: d3.max([client.width, attr.width || bbox.width]) || 0,
+        height: d3.max([client.height, attr.height || bbox.height]) || 0
       };
     }
-
-    return Parent.extend(mixed);
   }
 
-  /**
-    Stack given array of elements vertically or horizontally
+  function clientDimensions(selection) {
+    var element = selection.node();
 
-    @example
-    ```js
-    // Stack all text elements vertically, from the top, with 0px padding
-    d3.selectAll('text').call(helpers.stack())
+    var client_dimensions = {
+      width: element && element.clientWidth,
+      height: element && element.clientHeight
+    };
 
-    // Stack all text elements horizontally, from the right, with 5px padding
-    d3.selectAll('text').call(helpers.stack({
-      direction: 'horizontal',
-      origin: 'right',
-      padding: 5
-    }));
-    ```
-    @method stack
-    @for helpers
-    @param {Object} [options]
-    @param {String} [options.direction=vertical] `"vertical"` or `"horizontal"`
-    @param {String} [options.origin] `"top"`, `"right"`, `"bottom"`, or `"left"` (by default, `"top"` for `"vertical"` and `"left"` for `"horizontal"`)
-    @param {Number} [options.padding=0] padding (in px) between elements
-    @param {Number} [options.min_height=0] minimum spacing height (for vertical stacking)
-    @param {Number} [options.min_width=0]  minimum spacing width (for horizontal stacking)
-    @return {Function}
-  */
-  function stack(options) {
-    options = extend({
-      direction: 'vertical',
-      origin: 'top',
-      padding: 0,
-      min_height: 0,
-      min_width: 0
-    }, options);
-
-    // Ensure valid origin based on direction
-    if (options.direction == 'horizontal' && !(options.origin == 'left' || options.origin == 'right'))
-      options.origin = 'left';
-    else if (options.direction == 'vertical' && !(options.origin == 'top' || options.origin == 'bottom'))
-      options.origin = 'top';
-
-    function padding(i) {
-      return i > 0 && options.padding ? options.padding : 0;
+    // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
+    //        calculate from css
+    //        http://stackoverflow.com/questions/13122790/how-to-get-svg-element-dimensions-in-firefox
+    //        Note: This makes assumptions about the box model in use and that width/height are not percent values
+    if (isSVG(selection) && (!element.clientWidth || !element.clientHeight) && typeof window !== 'undefined' && window.getComputedStyle) {
+      var styles = window.getComputedStyle(element);
+      client_dimensions.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
+      client_dimensions.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
     }
 
-    return function(elements) {
-      if (elements && elements.attr) {
-        var previous = 0;
+    return client_dimensions;
+  }
 
-        elements.attr('transform', function(d, i) {
-          var element_dimensions = this.getBBox();
-          var spacing_width = d3.max([element_dimensions.width, options.min_width]);
-          var spacing_height = d3.max([element_dimensions.height, options.min_height]);
-          var x = 0;
-          var y = 0;
-          var next_position;
-
-          if (options.direction == 'horizontal') {
-            next_position = previous + spacing_width + padding(i);
-
-            if (options.origin == 'left')
-              x = previous + padding(i);
-            else
-              x = next_position;
-
-            previous = next_position;
-          }
-          else {
-            next_position = previous + spacing_height + padding(i);
-
-            if (options.origin == 'top')
-              y = previous + padding(i);
-            else
-              y = next_position;
-
-            previous = next_position;
-          }
-
-          return translate(x, y);
-        });
-      }
+  function attrDimensions(selection) {
+    return {
+      width: selection && selection.attr && parseFloat(selection.attr('width')),
+      height: selection && selection.attr && parseFloat(selection.attr('height'))
     };
+  }
+
+  function bboxDimensions(selection) {
+    var element = selection.node();
+    var bbox;
+    try {
+      bbox = element && typeof element.getBBox == 'function' && element.getBBox();
+    }
+    catch(ex) {
+      // Firefox throws error when calling getBBox when svg hasn't been displayed
+      // Ignore error and set to empty
+      bbox = {width: 0, height: 0};
+    }
+
+    return bbox;
+  }
+
+  function isSVG(selection) {
+    return selection.node().nodeName == 'svg';
   }
 
   /**
@@ -955,7 +957,7 @@
   // @method style
   // @param {Object} styles
   // @return {String}
-  function src_helpers__style(styles) {
+  function style(styles) {
     if (!styles)
       return '';
 
@@ -1105,7 +1107,7 @@
     max: max,
     min: min,
     createScale: createScale,
-    style: src_helpers__style,
+    style: style,
     getMargins: getMargins,
     stack: stack,
     di: di,
@@ -1116,7 +1118,7 @@
     createHelper: createHelper
   };
 
-  var Base__Chart = d3.chart();
+  var Chart = d3.chart();
 
   // TEMP Clear namespace from mixins
   /**
@@ -1151,7 +1153,7 @@
     this.initialize(options);
   }
 
-  inherits(Base, Base__Chart);
+  inherits(Base, Chart);
 
   extend(Base.prototype, {
     initialize: function() {},
@@ -1181,13 +1183,13 @@
     },
 
     // Explicitly load d3.chart prototype
-    layer: Base__Chart.prototype.layer,
-    unlayer: Base__Chart.prototype.unlayer,
-    attach: Base__Chart.prototype.attach,
-    on: Base__Chart.prototype.on,
-    once: Base__Chart.prototype.once,
-    off: Base__Chart.prototype.off,
-    trigger: Base__Chart.prototype.trigger,
+    layer: Chart.prototype.layer,
+    unlayer: Chart.prototype.unlayer,
+    attach: Chart.prototype.attach,
+    on: Chart.prototype.on,
+    once: Chart.prototype.once,
+    off: Chart.prototype.off,
+    trigger: Chart.prototype.trigger,
 
     /**
       Store fully-transformed data for direct access from the chart
@@ -1311,73 +1313,210 @@
 
     // If name is given, register with d3.chart
     if (name)
-      Base__Chart[name] = Child;
+      Chart[name] = Child;
 
     return Child;
   };
 
-  // Export to d3.chart
-  Base__Chart.Base = Base;
+  /*
+    Extract layout from the given options
 
-  /**
-    Common base for creating charts.
-    Standard `d3.chart` charts can be used with d3.compose, but extending `d3.chart('Chart')` includes helpers for properties and "di" functions.
-
-    ### Extending
-
-    To take advantage of "di"-binding (automatically injects `chart` into "di" methods)
-    and automatically setting properties from `options`, use `d3.compose.helpers.di`
-    and `d3.compose.helpers.property` when creating your chart.
-
-    @example
-    ```js
-    var helpers = d3.compose.helpers;
-
-    d3.chart('Chart').extend('Pie', {
-      initialize: function() {
-        // same as d3.chart
-      },
-      transform: function(data) {
-        // same as d3.chart
-      },
-
-      color: helpers.di(function(chart, d, i) {
-        // "di" function with parent chart injected ("this" = element)
-      }),
-
-      centered: helpers.property({
-        default_value: true
-        // can be automatically set from options object
-      })
-    });
-    ```
-    @class Chart
-    @extends Base
+    @param {Array} options
+    @return {Object} {data, items, layout}
   */
-  var src_Chart__Chart = Base.extend({}, {
-    /**
-      Default z-index for chart
-      (Components are 50 by default, so Chart = 100 is above component by default)
+  function extractLayout(options) {
+    if (!options)
+      return;
 
-      @example
-      ```js
-      d3.chart('Chart').extend('BelowComponentLayers', {
-        // ...
-      }, {
-        z_index: 40
+    var data = {
+      _charts: {},
+      _components: {}
+    };
+    var items = {};
+    var layout = [];
+    var charts = [];
+    var components = [];
+
+    // TEMP Idenfify charts from layered,
+    // eventually no distinction between charts and components
+    var found = {
+      row: false,
+      charts: false
+    };
+
+    // Components are added from inside-out
+    // so for position: top, position: left, use unshift
+    options.forEach(function(row, row_index) {
+      var row_components = [];
+
+      if (!Array.isArray(row))
+        row = [row];
+      if (row.length > 1)
+        found.row = true;
+
+      var row_layout = row.map(function(item, col_index) {
+        if (!item)
+          return;
+
+        if (item._layered) {
+          // Charts
+          found.charts = found.row = true;
+          var chart_ids = [];
+
+          item.items.forEach(function(chart, chart_index) {
+            if (!chart)
+              return;
+
+            chart = defaults({}, chart, {id: getId(row_index, col_index, chart_index)});
+
+            chart_ids.push(chart.id);
+            charts.push(chart);
+            items[chart.id] = chart;
+          });
+
+          return chart_ids;
+        }
+
+        var component = prepareComponent(item, row_index, col_index);
+        items[component.id] = component;
+
+        if (row.length > 1) {
+          if (!found.charts) {
+            // Left
+            setPosition(component, 'left');
+            row_components.unshift(component);
+          }
+          else {
+            // Right
+            setPosition(component, 'right');
+            row_components.push(component);
+          }
+        }
+        else {
+          if (!found.row) {
+            // Top
+            setPosition(component, 'top');
+            components.unshift(component);
+          }
+          else {
+            // Bottom
+            setPosition(component, 'bottom');
+            components.push(component);
+          }
+        }
+
+        return component.id;
       });
-      ```
-      @attribute z_index
-      @static
-      @type Number
-      @default 100
-    */
-    z_index: 100,
-    layer_type: 'chart'
-  });
 
-  d3.chart().Chart = src_Chart__Chart;
-  var src_Chart = src_Chart__Chart;
+      if (row_components.length)
+        components = components.concat(row_components);
+
+      layout.push(row_layout);
+    });
+
+    charts.forEach(extractData('_charts'));
+    components.forEach(extractData('_components'));
+
+    return {
+      data: data,
+      items: items,
+      layout: layout,
+
+      charts: charts,
+      components: components
+    };
+
+    function prepareComponent(component, row_index, col_index) {
+      return defaults({}, component, {id: getId(row_index, col_index)});
+    }
+    function setPosition(component, position) {
+      if (component && isFunction(component.position))
+        component.position(position);
+      else
+        component.position = position;
+    }
+    function getId(row_index, col_index, layered_index) {
+      var id = 'item-' + (row_index + 1) + '-' + (col_index + 1);
+      if (layered_index != null)
+        id += '-' + (layered_index + 1);
+
+      return id;
+    }
+
+    function extractData(type) {
+      return function(item) {
+        if (item.data && !isFunction(item.data)) {
+          data[type][item.id] = item.data;
+          data[item.id] = item.data;
+          delete item.data;
+        }
+      };
+    }
+  }
+
+  /*
+    Calculate component and chart coordinates for given layout
+  */
+  function calculateLayout(components, data, demux) {
+    var overall_layout = {top: [], right: [], bottom: [], left: []};
+    components.forEach(function(component) {
+      if (component.skip_layout || !component.getLayout)
+        return;
+
+      var layout = component.getLayout(demux(component.id, data));
+      var position = layout && layout.position;
+
+      if (!contains(['top', 'right', 'bottom', 'left'], position))
+        return;
+
+      overall_layout[position].push({
+        offset: position == 'top' || position == 'bottom' ? layout.height : layout.width,
+        component: component
+      });
+    });
+
+    return overall_layout;
+  }
+
+  /*
+    Apply calculated layout to charts and components
+  */
+  function applyLayout(layout, chart_position, width, height) {
+    layout.top.reduce(function(previous, part) {
+      var y = previous - part.offset;
+      setLayout(part.component, chart_position.left, y, {width: chart_position.width});
+
+      return y;
+    }, chart_position.top);
+
+    layout.right.reduce(function(previous, part, index, parts) {
+      var previousPart = parts[index - 1] || {offset: 0};
+      var x = previous + previousPart.offset;
+      setLayout(part.component, x, chart_position.top, {height: chart_position.height});
+
+      return x;
+    }, width - chart_position.right);
+
+    layout.bottom.reduce(function(previous, part, index, parts) {
+      var previousPart = parts[index - 1] || {offset: 0};
+      var y = previous + previousPart.offset;
+      setLayout(part.component, chart_position.left, y, {width: chart_position.width});
+
+      return y;
+    }, height - chart_position.bottom);
+
+    layout.left.reduce(function(previous, part) {
+      var x = previous - part.offset;
+      setLayout(part.component, x, chart_position.top, {height: chart_position.height});
+
+      return x;
+    }, chart_position.left);
+
+    function setLayout(component, x, y, options) {
+      if (component && isFunction(component.setLayout))
+        component.setLayout(x, y, options);
+    }
+  }
 
   /**
     Common base for creating components that includes helpers for positioning and layout.
@@ -1659,8 +1798,6 @@
     layer_type: 'component'
   });
 
-  d3.chart().Component = Component;
-
   /**
     Common base for creating overlays that includes helpers for positioning and show/hide.
 
@@ -1743,7 +1880,7 @@
         if (this.hidden())
           styles.display = 'none';
 
-        return src_helpers__style(styles);
+        return style(styles);
       }
     }),
 
@@ -1848,208 +1985,6 @@
   }, {
     layer_type: 'overlay'
   });
-
-  d3.chart().Overlay = Overlay;
-
-  /*
-    Extract layout from the given options
-
-    @param {Array} options
-    @return {Object} {data, items, layout}
-  */
-  function extractLayout(options) {
-    if (!options)
-      return;
-
-    var data = {
-      _charts: {},
-      _components: {}
-    };
-    var items = {};
-    var layout = [];
-    var charts = [];
-    var components = [];
-
-    // TEMP Idenfify charts from layered,
-    // eventually no distinction between charts and components
-    var found = {
-      row: false,
-      charts: false
-    };
-
-    // Components are added from inside-out
-    // so for position: top, position: left, use unshift
-    options.forEach(function(row, row_index) {
-      var row_components = [];
-
-      if (!Array.isArray(row))
-        row = [row];
-      if (row.length > 1)
-        found.row = true;
-
-      var row_layout = row.map(function(item, col_index) {
-        if (!item)
-          return;
-
-        if (item._layered) {
-          // Charts
-          found.charts = found.row = true;
-          var chart_ids = [];
-
-          item.items.forEach(function(chart, chart_index) {
-            if (!chart)
-              return;
-
-            chart = defaults({}, chart, {id: getId(row_index, col_index, chart_index)});
-
-            chart_ids.push(chart.id);
-            charts.push(chart);
-            items[chart.id] = chart;
-          });
-
-          return chart_ids;
-        }
-
-        var component = prepareComponent(item, row_index, col_index);
-        items[component.id] = component;
-
-        if (row.length > 1) {
-          if (!found.charts) {
-            // Left
-            setPosition(component, 'left');
-            row_components.unshift(component);
-          }
-          else {
-            // Right
-            setPosition(component, 'right');
-            row_components.push(component);
-          }
-        }
-        else {
-          if (!found.row) {
-            // Top
-            setPosition(component, 'top');
-            components.unshift(component);
-          }
-          else {
-            // Bottom
-            setPosition(component, 'bottom');
-            components.push(component);
-          }
-        }
-
-        return component.id;
-      });
-
-      if (row_components.length)
-        components = components.concat(row_components);
-
-      layout.push(row_layout);
-    });
-
-    charts.forEach(extractData('_charts'));
-    components.forEach(extractData('_components'));
-
-    return {
-      data: data,
-      items: items,
-      layout: layout,
-
-      charts: charts,
-      components: components
-    };
-
-    function prepareComponent(component, row_index, col_index) {
-      return defaults({}, component, {id: getId(row_index, col_index)});
-    }
-    function setPosition(component, position) {
-      if (component && isFunction(component.position))
-        component.position(position);
-      else
-        component.position = position;
-    }
-    function getId(row_index, col_index, layered_index) {
-      var id = 'item-' + (row_index + 1) + '-' + (col_index + 1);
-      if (layered_index != null)
-        id += '-' + (layered_index + 1);
-
-      return id;
-    }
-
-    function extractData(type) {
-      return function(item) {
-        if (item.data && !isFunction(item.data)) {
-          data[type][item.id] = item.data;
-          data[item.id] = item.data;
-          delete item.data;
-        }
-      };
-    }
-  }
-
-  /*
-    Calculate component and chart coordinates for given layout
-  */
-  function calculateLayout(components, data, demux) {
-    var overall_layout = {top: [], right: [], bottom: [], left: []};
-    components.forEach(function(component) {
-      if (component.skip_layout || !component.getLayout)
-        return;
-
-      var layout = component.getLayout(demux(component.id, data));
-      var position = layout && layout.position;
-
-      if (!contains(['top', 'right', 'bottom', 'left'], position))
-        return;
-
-      overall_layout[position].push({
-        offset: position == 'top' || position == 'bottom' ? layout.height : layout.width,
-        component: component
-      });
-    });
-
-    return overall_layout;
-  }
-
-  /*
-    Apply calculated layout to charts and components
-  */
-  function applyLayout(layout, chart_position, width, height) {
-    layout.top.reduce(function(previous, part) {
-      var y = previous - part.offset;
-      setLayout(part.component, chart_position.left, y, {width: chart_position.width});
-
-      return y;
-    }, chart_position.top);
-
-    layout.right.reduce(function(previous, part, index, parts) {
-      var previousPart = parts[index - 1] || {offset: 0};
-      var x = previous + previousPart.offset;
-      setLayout(part.component, x, chart_position.top, {height: chart_position.height});
-
-      return x;
-    }, width - chart_position.right);
-
-    layout.bottom.reduce(function(previous, part, index, parts) {
-      var previousPart = parts[index - 1] || {offset: 0};
-      var y = previous + previousPart.offset;
-      setLayout(part.component, chart_position.left, y, {width: chart_position.width});
-
-      return y;
-    }, height - chart_position.bottom);
-
-    layout.left.reduce(function(previous, part) {
-      var x = previous - part.offset;
-      setLayout(part.component, x, chart_position.top, {height: chart_position.height});
-
-      return x;
-    }, chart_position.left);
-
-    function setLayout(component, x, y, options) {
-      if (component && isFunction(component.setLayout))
-        component.setLayout(x, y, options);
-    }
-  }
 
   var default_compose_margins = {top: 10, right: 10, bottom: 10, left: 10};
 
@@ -2280,7 +2215,7 @@
           if (this.width() && this.height())
             aspect_ratio = this.height() / this.width();
 
-          return src_helpers__style({
+          return style({
             width: '100%',
             height: 0,
             'padding-top': (aspect_ratio * 100) + '%',
@@ -2288,7 +2223,7 @@
           });
         }
         else {
-          return src_helpers__style({position: 'relative'});
+          return style({position: 'relative'});
         }
       }
     }),
@@ -2297,7 +2232,7 @@
     baseStyle: property({
       default_value: function() {
         if (this.responsive() && this.container) {
-          return src_helpers__style({
+          return style({
             position: 'absolute',
             top: 0,
             left: 0
@@ -2784,22 +2719,84 @@
     });
   }
 
-  d3.chart().Compose = Compose;
+  /**
+    Common base for creating charts.
+    Standard `d3.chart` charts can be used with d3.compose, but extending `d3.chart('Chart')` includes helpers for properties and "di" functions.
+
+    ### Extending
+
+    To take advantage of "di"-binding (automatically injects `chart` into "di" methods)
+    and automatically setting properties from `options`, use `d3.compose.helpers.di`
+    and `d3.compose.helpers.property` when creating your chart.
+
+    @example
+    ```js
+    var helpers = d3.compose.helpers;
+
+    d3.chart('Chart').extend('Pie', {
+      initialize: function() {
+        // same as d3.chart
+      },
+      transform: function(data) {
+        // same as d3.chart
+      },
+
+      color: helpers.di(function(chart, d, i) {
+        // "di" function with parent chart injected ("this" = element)
+      }),
+
+      centered: helpers.property({
+        default_value: true
+        // can be automatically set from options object
+      })
+    });
+    ```
+    @class Chart
+    @extends Base
+  */
+  var Chart$1 = Base.extend({}, {
+    /**
+      Default z-index for chart
+      (Components are 50 by default, so Chart = 100 is above component by default)
+
+      @example
+      ```js
+      d3.chart('Chart').extend('BelowComponentLayers', {
+        // ...
+      }, {
+        z_index: 40
+      });
+      ```
+      @attribute z_index
+      @static
+      @type Number
+      @default 100
+    */
+    z_index: 100,
+    layer_type: 'chart'
+  });
+
+  // Export charts/components to d3.chart
+  utils.extend(d3.chart(), {
+    Base: Base,
+    Chart: Chart$1,
+    Component: Component,
+    Overlay: Overlay,
+    Compose: Compose
+  });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.9',
+    VERSION: '0.15.10',
     utils: utils,
     helpers: helpers,
     Base: Base,
-    Chart: src_Chart,
+    Chart: Chart$1,
     Component: Component,
     Overlay: Overlay,
     Compose: Compose,
     layered: layered
   };
 
-  var d3_compose = d3c;
-
-  return d3_compose;
+  return d3c;
 
 }));
