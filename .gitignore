@@ -2,7 +2,7 @@ node_modules
 .grunt
 specs/index.html
 npm-debug.log
-_tmp/
+.tmp/
 _docs/
 
 _site/

@@ -35,7 +35,7 @@ module.exports = function(grunt) {
       },
 
       temp: {
-        src: '_tmp/<%= pkg.name %>-mixins.js',
+        src: '.tmp/<%= pkg.name %>-mixins.js',
         options: {
           outfile: 'specs/index.html',
           keepRunner: true
@@ -54,7 +54,7 @@ module.exports = function(grunt) {
       release: {
         cwd: 'dist/',
         src: ['dist/*'],
-        dest: '_tmp/<%= pkg.name %>-v<%= pkg.version %>.zip'
+        dest: '.tmp/<%= pkg.name %>-v<%= pkg.version %>.zip'
       }
     }
   });
@@ -141,7 +141,7 @@ module.exports = function(grunt) {
         var repo = pkg.name;
         var tag = 'v' + version;
         var name = pkg.name + ' ' + tag;
-        var asset_path = path.resolve(__dirname, '_tmp', pkg.name + '-' + tag + '.zip');
+        var asset_path = path.resolve(__dirname, '.tmp', pkg.name + '-' + tag + '.zip');
 
         async.series([
           git.commit.bind(git, tag),

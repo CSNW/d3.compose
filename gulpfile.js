@@ -16,7 +16,7 @@ var runSequence = require('run-sequence');
 require('gulp-grunt')(gulp);
 
 var pkg = require('./package.json');
-var tmp = './_tmp/';
+var tmp = './.tmp/';
 var dist = './dist/';
 var src = ['src/**/*.js', 'src/**/*.css'];
 var specs = ['specs/**/*.spec.js'];
@@ -31,7 +31,7 @@ gulp.task('default', ['connect', 'watch', 'build-and-test']);
 
 /**
   build:
-  - Bundle d3.compose.js, d3.compose-mixins.js, d3.compose-all.js, and d3.compose.css to _tmp/
+  - Bundle d3.compose.js, d3.compose-mixins.js, d3.compose-all.js, and d3.compose.css to .tmp/
 */
 gulp.task('build', function(cb) {
   runSequence(
@@ -127,8 +127,8 @@ var compiled_options = {
 
 gulp.task('lint-src', createLint(['src/**/*.js', 'index.js', 'index-mixins.js', 'index-all.js']));
 gulp.task('lint-specs', createLint(['specs/**/*.spec.js']));
-gulp.task('lint-tmp', createLint(['_tmp/d3.compose-all.js'], compiled_options));
-gulp.task('lint-dist', createLint(['dist/d3.compose-all.js'], compiled_options));
+gulp.task('lint-tmp', createLint([tmp + 'd3.compose-all.js'], compiled_options));
+gulp.task('lint-dist', createLint([dist + 'd3.compose-all.js'], compiled_options));
 
 // watch
 gulp.task('watch-build', function() {
