@@ -56,7 +56,7 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
 
         var charts = [
           d3c.lines({
-            data: data, 
+            data: data,
             xScale: scales.x,
             yScale: scales.y
           })
@@ -80,9 +80,7 @@ See [http://CSNW.github.io/d3.compose/](http://CSNW.github.io/d3.compose/) for l
 
 ## Development
 
-Install bower (if necessary) `npm install -g bower`
-
-1. Install components `npm install` and `bower install`
+1. Install components `npm install`
 2. Develop with `npm run dev` (automatically builds, tests, and runs example server)
 3. Build with `npm run build`
 4. Open example with `npm run serve` and `localhost:5000`

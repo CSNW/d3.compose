@@ -24,10 +24,6 @@
     "d3.chart": "~0"
   },
   "license": "MIT",
-  "devDependencies": {
-    "jquery": "~2",
-    "jasmine-jquery": "~2"
-  },
   "ignore": [
     "src",
     "specs",

@@ -25,12 +25,12 @@ module.exports = function(grunt) {
       options: {
         specs: ['specs/**/*.spec.js'],
         helpers: [
-          'bower_components/jquery/dist/jquery.js',
-          'bower_components/jasmine-jquery/lib/jasmine-jquery.js'
+          'node_modules/jquery/dist/jquery.js',
+          'node_modules/jasmine-jquery/lib/jasmine-jquery.js'
         ],
         vendor: [
-          'bower_components/d3/d3.js',
-          'bower_components/d3.chart/d3.chart.js'
+          'node_modules/d3/d3.js',
+          'node_modules/d3.chart/d3.chart.js'
         ]
       },
 
