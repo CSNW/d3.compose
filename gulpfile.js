@@ -1,16 +1,11 @@
+'use strict';
+
 var gulp = require('gulp');
 var del = require('del');
-var concatCss = require('gulp-concat-css');
-var connect = require('gulp-connect');
-var eslint = require('gulp-eslint');
-var header = require('gulp-header');
-var plumber = require('gulp-plumber');
-var rename = require('gulp-rename');
-var replace = require('gulp-replace');
-var sourcemaps = require('gulp-sourcemaps');
-var uglify = require('gulp-uglify');
-var gutil = require('gulp-util');
 var runSequence = require('run-sequence');
+var gulpLoadPlugins = require('gulp-load-plugins');
+
+var $ = gulpLoadPlugins();
 
 // TEMP Load grunt dependencies
 require('gulp-grunt')(gulp);
@@ -80,7 +75,7 @@ gulp.task('serve', function(cb) {
 */
 gulp.task('release', function(cb) {
   runSequence('dist', ['lint-dist', 'grunt-jasmine:release'], function() {
-    gutil.log(gutil.colors.yellow('The release has successfully built, to publish run "grunt release"'));
+    $.util.log($.util.colors.yellow('The release has successfully built, to publish run "grunt release"'));
     cb();
   });
 });
@@ -137,7 +132,7 @@ gulp.task('watch-build', function() {
 
 // connect
 gulp.task('connect', function() {
-  connect.server({
+  $.connect.server({
     root: ['.', 'example'],
     port: 5000
   });
@@ -158,36 +153,36 @@ function createBuild(input, output, folder, options) {
   options = options || {};
   return function() {
     var build = gulp.src(input)
-      .pipe(plumber(handleError))
-      .pipe(sourcemaps.init({loadMaps: true}))
+      .pipe($.plumber(handleError))
+      .pipe($.sourcemaps.init({loadMaps: true}))
       .pipe(bundle({
         moduleName: 'd3c',
         sourceMapFile: output + '.js',
         external: ['d3'],
         format: 'umd'
       }))
-      .pipe(replace(/\{version\}/g, pkg.version))
-      .pipe(rename(output + '.js'));
+      .pipe($.replace(/\{version\}/g, pkg.version))
+      .pipe($.rename(output + '.js'));
 
     if (options.minify) {
       // Add header to unminified
       if (options.header)
-        build = build.pipe(header(banner, {pkg: pkg}));
+        build = build.pipe($.header(banner, {pkg: pkg}));
 
       // Remove sourcemap from unminified and save
       // then rename and uglify
       build = build
-        .pipe(replace(/\/\/# sourceMappingURL=.*/g, ''))
+        .pipe($.replace(/\/\/# sourceMappingURL=.*/g, ''))
         .pipe(gulp.dest(folder))
-        .pipe(rename(output + '.min.js'))
-        .pipe(uglify());
+        .pipe($.rename(output + '.min.js'))
+        .pipe($.uglify());
     }
 
     if (options.header)
-      build = build.pipe(header(banner, {pkg: pkg}));
+      build = build.pipe($.header(banner, {pkg: pkg}));
 
     build = build
-      .pipe(sourcemaps.write('./', {addComment: options.minify ? true : false}))
+      .pipe($.sourcemaps.write('./', {addComment: options.minify ? true : false}))
       .pipe(gulp.dest(folder));
 
     return build;
@@ -201,10 +196,10 @@ function createCss(folder, options) {
     var css = gulp.src(['src/css/base.css']);
 
     if (options.header)
-      css.pipe(header(banner, {pkg: pkg}));
+      css.pipe($.header(banner, {pkg: pkg}));
 
     return css
-      .pipe(concatCss('d3.compose.css'))
+      .pipe($.concatCss('d3.compose.css'))
       .pipe(gulp.dest(folder));
   };
 }
@@ -212,15 +207,15 @@ function createCss(folder, options) {
 function createLint(files, options) {
   return function() {
     return gulp.src(files)
-      .pipe(eslint(options))
-      .pipe(eslint.format())
-      .pipe(eslint.failOnError());
+      .pipe($.eslint(options))
+      .pipe($.eslint.format())
+      .pipe($.eslint.failOnError());
   };
 }
 
 function handleError(err) {
-  gutil.log(gutil.colors.red('Error (' + err.plugin + '): ' + err.message));
-  gutil.log(err);
+  $.util.log($.util.colors.red('Error (' + err.plugin + '): ' + err.message));
+  $.util.log(err);
   this.emit('end');
 }
 
@@ -269,6 +264,6 @@ function bundle(options) {
     if (err.file)
       message += ' [' + err.file + ']';
 
-    return new gutil.PluginError('gulp-esperanto', message);
+    return new $.util.PluginError('gulp-esperanto', message);
   }
 }
