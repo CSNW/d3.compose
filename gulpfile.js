@@ -152,11 +152,12 @@ function createClean(folder) {
 function createBuild(input, output, folder, options) {
   options = options || {};
   return function() {
-    var build = gulp.src(input)
+    var build = gulp.src(input, {read: false})
       .pipe($.plumber(handleError))
       .pipe($.sourcemaps.init({loadMaps: true}))
-      .pipe(bundle({
+      .pipe($.rollup({
         moduleName: 'd3c',
+        sourceMap: true,
         sourceMapFile: output + '.js',
         external: ['d3'],
         format: 'umd'
@@ -217,53 +218,4 @@ function handleError(err) {
   $.util.log($.util.colors.red('Error (' + err.plugin + '): ' + err.message));
   $.util.log(err);
   this.emit('end');
-}
-
-// Wrap esperanto.bundle for pipe with options
-var through = require('through2');
-var applySourceMap = require('vinyl-sourcemaps-apply');
-var assign = require('object-assign');
-var rollup = require('rollup');
-
-function bundle(options) {
-  return through.obj(function(file, enc, cb) {
-    if (file.isNull())
-      return cb(null, file);
-
-    var file_options = assign({
-      entry: file.relative,
-      sourceMap: !!file.sourceMap,
-      sourceMapSource: file.relative,
-      sourceMapFile: file.relative
-    }, options);
-    var bundle_options = assign({
-      format: 'es6'
-    }, file_options)
-
-    rollup.rollup(file_options)
-      .then(function(bundle) {
-        try {
-          var result = bundle.generate(bundle_options);
-
-          if (file_options.sourceMap && result.map)
-            applySourceMap(file, result.map);
-
-          file.contents = new Buffer(result.code);
-          cb(null, file);
-        } catch(err) {
-          cb(createError(err));
-        }
-      })
-      .catch(function(err) {
-        cb(createError(err));
-      });
-  });
-
-  function createError(err) {
-    var message = err.message;
-    if (err.file)
-      message += ' [' + err.file + ']';
-
-    return new $.util.PluginError('gulp-esperanto', message);
-  }
 }

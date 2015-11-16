@@ -55,6 +55,7 @@
     "gulp-plumber": "^1.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.3",
+    "gulp-rollup": "^1.4.0",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.6",
@@ -62,12 +63,8 @@
     "jasmine-jquery": "^2.1.1",
     "jquery": "^2.1.4",
     "load-grunt-tasks": "~3.1.0",
-    "object-assign": "^3.0.0",
     "request": "~2.53.0",
-    "rollup": "^0.20.3",
     "run-sequence": "^1.1.2",
-    "semver": "~4.3.1",
-    "through2": "^2.0.0",
-    "vinyl-sourcemaps-apply": "^0.1.4"
+    "semver": "~4.3.1"
   }
 }
