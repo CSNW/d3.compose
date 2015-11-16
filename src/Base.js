@@ -11,7 +11,7 @@ import {
   bindAllDi,
   dimensions
 } from './helpers';
-var Chart = d3.chart();
+var d3Chart = d3.chart();
 
 // TEMP Clear namespace from mixins
 /**
@@ -46,7 +46,7 @@ function Base(selection, options) {
   this.initialize(options);
 }
 
-inherits(Base, Chart);
+inherits(Base, d3Chart);
 
 extend(Base.prototype, {
   initialize: function() {},
@@ -76,13 +76,13 @@ extend(Base.prototype, {
   },
 
   // Explicitly load d3.chart prototype
-  layer: Chart.prototype.layer,
-  unlayer: Chart.prototype.unlayer,
-  attach: Chart.prototype.attach,
-  on: Chart.prototype.on,
-  once: Chart.prototype.once,
-  off: Chart.prototype.off,
-  trigger: Chart.prototype.trigger,
+  layer: d3Chart.prototype.layer,
+  unlayer: d3Chart.prototype.unlayer,
+  attach: d3Chart.prototype.attach,
+  on: d3Chart.prototype.on,
+  once: d3Chart.prototype.once,
+  off: d3Chart.prototype.off,
+  trigger: d3Chart.prototype.trigger,
 
   /**
     Store fully-transformed data for direct access from the chart
@@ -206,7 +206,7 @@ Base.extend = function(proto_props, static_props) {
 
   // If name is given, register with d3.chart
   if (name)
-    Chart[name] = Child;
+    d3Chart[name] = Child;
 
   return Child;
 };
