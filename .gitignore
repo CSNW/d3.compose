@@ -14,3 +14,5 @@ Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 .DS_Store
+bower_components
+_tmp
