@@ -5,6 +5,7 @@ import {
   first,
   isNumber,
   isObject,
+  isUndefined,
   objectEach
 } from './utils';
 
@@ -349,6 +350,95 @@ export function createHelper(type) {
   };
 }
 
+var types = {
+  string: {},
+  number: {},
+  object: {},
+  any: {}
+};
+
+export function checkProp(value, definition) {
+  if (definition.validate && !definition.validate(value))
+    throw new Error('Invalid value for property: ' + JSON.stringify(value));
+}
+
+export function createPrepare(steps) {
+  if (!Array.isArray(steps))
+    steps = Array.prototype.slice.call(arguments);
+
+  return function() {
+    var selection = this.base;
+    var context = this;
+
+    return steps.reduce(function(props, step) {
+      return step(selection, props, context);
+    }, this.props);
+  };
+}
+
+export function createTransition(props) {
+  return function() {
+    if (!isUndefined(props.duration))
+      this.duration(props.duration);
+    if (!isUndefined(props.delay))
+      this.delay(props.delay);
+    if (!isUndefined(props.ease))
+      this.ease(props.ease);
+  };
+}
+
+export function getLayer(selection, id) {
+  var layer = selection.select('[data-layer="' + id + '"]');
+  if (layer.empty())
+    layer = selection.append('g').attr('data-layer', id);
+
+  return layer;
+}
+
+// TODO Move to Chart/Base
+var architecture = {
+  update: function(selection, props) {
+    this.base = selection;
+    this.props = this.prepareProps(props);
+  },
+  prepareProps: function(props) {
+    var properties = this.constructor && this.constructor.properties;
+    if (!properties)
+      return props;
+
+    var prepared = extend({}, props);
+
+    objectEach(properties, function(definition, key) {
+      var prop = prepared[key];
+
+      if (!isUndefined(prop))
+        checkProp(prop, definition);
+      else if (definition.getDefault)
+        prepared[key] = definition.getDefault(this.base, prepared, this);
+    }, this);
+
+    return prepared;
+  },
+  attach: function(id, Type, selection, props) {
+    var attached = this.attached[id];
+
+    if (attached)
+      attached.options(props);
+    else
+      attached = new Type(selection, props);
+
+    attached.draw();
+    this.attached[id] = attached;
+  },
+  detach: function(id) {
+    var attached = this.attached[id];
+    if (attached) {
+      attached.base.remove();
+      delete this.attached[id];
+    }
+  }
+};
+
 var helpers = {
   property: property,
   dimensions: dimensions,
@@ -367,7 +457,13 @@ var helpers = {
   bindAllDi: bindAllDi,
   getParentData: getParentData,
   mixin: mixin,
-  createHelper: createHelper
+  createHelper: createHelper,
+
+  types: types,
+  checkProp: checkProp,
+  createPrepare: createPrepare,
+  createTransition: createTransition,
+  getLayer: getLayer
 };
 
 export {
@@ -376,5 +472,8 @@ export {
   dimensions,
   createScale,
   mixin,
-  stack
+  stack,
+
+  types,
+  architecture
 };

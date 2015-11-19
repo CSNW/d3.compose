@@ -10,9 +10,14 @@ import {
 import {
   createHelper,
   createScale,
-  dimensions,
   mixin,
-  translate
+  translate,
+
+  architecture,
+  types,
+  createPrepare,
+  createTransition,
+  getLayer
 } from '../helpers';
 import {
   Transition,
@@ -20,71 +25,6 @@ import {
 } from '../mixins';
 import Component from '../Component';
 import Gridlines from './Gridlines';
-
-// *** TODO Move to other files
-var types = {
-  string: {},
-  number: {},
-  object: {},
-  any: {}
-};
-function checkProp(/* prop, definition */) {}
-
-function createPrepare() {
-  var steps = Array.prototype.slice.call(arguments);
-
-  return function() {
-    var selection = this.base;
-    var context = this;
-
-    return steps.reduce(function(props, step) {
-      return step(selection, props, context);
-    }, this.props);
-  };
-}
-
-function createTransition(props) {
-  return function() {
-    if (!isUndefined(props.duration))
-      this.duration(props.duration);
-    if (!isUndefined(props.delay))
-      this.delay(props.delay);
-    if (!isUndefined(props.ease))
-      this.ease(props.ease);
-  };
-}
-
-function getLayer(selection, id) {
-  var layer = selection.select('[data-layer="' + id + '"]');
-  if (layer.empty())
-    layer = selection.append('g').attr('data-layer', id);
-
-  return layer;
-}
-
-Component.properties = {
-  position: {
-    type: types.string,
-    validate: function(value) {
-      return contains(['top', 'right', 'bottom', 'left'], value);
-    }
-  },
-  width: {
-    type: types.number,
-    getDefault: function(selection) {
-      // TODO Move to Component.prepare
-      return dimensions(selection).width;
-    }
-  },
-  height: {
-    type: types.number,
-    getDefault: function(selection) {
-      // TODO Move to Component.prepare
-      return dimensions(selection).height;
-    }
-  }
-};
-// ***
 
 /**
   Axis component for XY data (wraps `d3.axis`).
@@ -124,51 +64,9 @@ Component.properties = {
   @class Axis
   @extends Component, Transition
 */
-var Mixed = mixin(Component, Transition);
+var Mixed = mixin(Component, Transition, architecture);
+
 var Axis = Mixed.extend({
-  // --- TODO Move to Chart/Base
-  update: function(selection, props) {
-    this.base = selection;
-    this.props = this.prepareProps(props);
-  },
-  prepareProps: function(props) {
-    var properties = this.constructor && this.constructor.properties;
-    if (!properties)
-      return props;
-
-    var prepared = extend({}, props);
-
-    objectEach(properties, function(definition, key) {
-      var prop = prepared[key];
-
-      if (!isUndefined(prop))
-        checkProp(prop, definition);
-      else if (definition.getDefault)
-        prepared[key] = definition.getDefault(this.base, prepared, this);
-    }, this);
-
-    return prepared;
-  },
-  attach: function(id, Type, selection, props) {
-    var attached = this.attached[id];
-
-    if (attached)
-      attached.options(props);
-    else
-      attached = new Type(selection, props);
-
-    attached.draw();
-    this.attached[id] = attached;
-  },
-  detach: function(id) {
-    var attached = this.attached[id];
-    if (attached) {
-      attached.base.remove();
-      delete this.attached[id];
-    }
-  },
-  // ---
-
   prepare: createPrepare(
     prepareScales,
     prepareAxis,
