@@ -1,4 +1,4 @@
-import { contains } from './utils';
+import {contains, isUndefined} from './utils';
 import {
   dimensions,
   getMargins,
@@ -259,16 +259,18 @@ var Component = Base.extend({
     },
     width: {
       type: types.number,
-      getDefault: function(selection) {
+      getDefault: function(selection, props, context) {
         // TODO Move to Component.prepare
-        return dimensions(selection).width;
+        var width = context.width();
+        return !isUndefined(width) ? width : dimensions(selection).width;
       }
     },
     height: {
       type: types.number,
-      getDefault: function(selection) {
+      getDefault: function(selection, props, context) {
         // TODO Move to Component.prepare
-        return dimensions(selection).height;
+        var height = context.height();
+        return !isUndefined(height) ? height : dimensions(selection).height;
       }
     }
   },

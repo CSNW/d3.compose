@@ -1,8 +1,12 @@
+import {extend} from '../utils';
 import {
   getMargins,
-  property
+
+  types,
+  createPrepare,
+  getLayer,
 } from '../helpers';
-import Text, { textOptions } from './Text';
+import Text, { textOptions, prepareText } from './Text';
 
 /**
   Title component that extends Text with defaults (styling, sensible margins, and rotated when positioned left or right)
@@ -11,47 +15,62 @@ import Text, { textOptions } from './Text';
   @extends Text
 */
 var Title = Text.extend({
-  initialize: function(options) {
-    Text.prototype.initialize.call(this, options);
-    this.base.select('.chart-text').classed('chart-title', true);
+  prepare: createPrepare(
+    prepareMargins,
+    prepareText
+  ),
+
+  render: function() {
+    Text.prototype.render.call(this);
+    getLayer(this.base, 'text').classed('chart-title', true);
   },
 
-  /**
-    Margins (in pixels) around Title
+  // === TODO Remove, compatibility with current system
+  margins: function() {
+    return this.props.margins;
+  }
+  // ===
+}, {
+  properties: extend({}, Text.properties, {
+    /**
+      Margins (in pixels) around Title
 
-    @property margins
-    @type Object
-    @default (set based on `position`)
-  */
-  margins: property({
-    set: function(values) {
-      return {
-        override: getMargins(values, defaultMargins(this.position()))
-      };
+      @property margins
+      @type Object
+      @default (set based on `position`)
+    */
+    margins: {
+      type: types.any,
+      getDefault: function(selection, props) {
+        return defaultMargins(props.position);
+      }
     },
-    default_value: function() {
-      return defaultMargins(this.position());
-    }
-  }),
 
-  /**
-    Rotation of title. (Default is `-90` for `position = "right"`, `90` for `position = "left"`, and `0` otherwise).
+    /**
+      Rotation of title. (Default is `-90` for `position = "right"`, `90` for `position = "left"`, and `0` otherwise).
 
-    @property rotation
-    @type Number
-    @default (set based on `position`)
-  */
-  rotation: property({
-    default_value: function() {
-      var rotate_by_position = {
-        right: 90,
-        left: -90
-      };
+      @property rotation
+      @type Number
+      @default (set based on `position`)
+    */
+    rotation: extend({}, Text.properties.rotation, {
+      getDefault: function(selection, props) {
+        var rotate_by_position = {
+          right: 90,
+          left: -90
+        };
 
-      return rotate_by_position[this.position()] || 0;
-    }
+        return rotate_by_position[props.position] || 0;
+      }
+    })
   })
 });
+
+function prepareMargins(selection, props) {
+  return extend({}, props, {
+    margins: getMargins(props.margins, defaultMargins(props.position))
+  });
+}
 
 function defaultMargins(position) {
   var default_margin = 8;

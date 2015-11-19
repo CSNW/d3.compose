@@ -1,8 +1,11 @@
+import {extend} from '../utils';
 import {
   getMargins,
-  property
+
+  createPrepare,
+  getLayer
 } from '../helpers';
-import { textOptions } from './Text';
+import { textOptions, prepareText } from './Text';
 import Title from './Title';
 
 /**
@@ -12,31 +15,43 @@ import Title from './Title';
   @extends Title
 */
 var AxisTitle = Title.extend({
-  initialize: function(options) {
-    Title.prototype.initialize.call(this, options);
-    this.base.select('.chart-text')
-      .classed('chart-title', false)
-      .classed('chart-axis-title', true);
+  prepare: createPrepare(
+    prepareMargins,
+    prepareText
+  ),
+
+  setLayout: function(x, y, options) {
+    Title.prototype.setLayout.call(this, x, y, options);
   },
 
-  /**
-    Margins (in pixels) around axis title
+  render: function() {
+    Title.prototype.render.call(this);
+    getLayer(this.base, 'text')
+      .classed('chart-title', false)
+      .classed('chart-axis-title', true);
+  }
+}, {
+  properties: extend({}, Title.properties, {
+    /**
+      Margins (in pixels) around axis title
 
-    @property margins
-    @type Object
-    @default (set based on `position`)
-  */
-  margins: property({
-    set: function(values) {
-      return {
-        override: getMargins(values, defaultMargins(this.position()))
-      };
-    },
-    default_value: function() {
-      return defaultMargins(this.position());
-    }
+      @property margins
+      @type Object
+      @default (set based on `position`)
+    */
+    margins: extend({}, Title.properties.margins, {
+      getDefault: function(selection, props) {
+        return defaultMargins(props.position);
+      }
+    })
   })
 });
+
+function prepareMargins(selection, props) {
+  return extend({}, props, {
+    margins: getMargins(props.margins, defaultMargins(props.position))
+  });
+}
 
 function defaultMargins(position) {
   var default_margin = 8;
