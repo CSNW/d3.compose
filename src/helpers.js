@@ -353,6 +353,7 @@ export function createHelper(type) {
 var types = {
   string: {},
   number: {},
+  array: {},
   object: {},
   any: {}
 };
@@ -373,6 +374,47 @@ export function createPrepare(steps) {
     return steps.reduce(function(props, step) {
       return step(selection, props, context);
     }, this.props);
+  };
+}
+
+export function createDraw(steps) {
+  return function(selection, props) {
+    var prepared = prepareSteps(steps, props);
+
+    // TODO transitions
+    var selected = prepared.select.call(selection);
+    selected.exit().call(prepared.exit);
+    selected.call(prepared.update);
+    selected.enter().call(prepared.enter);
+    selected.call(prepared.merge);
+  };
+}
+
+export function prepareSteps(steps, props) {
+  steps = defaults({}, steps, {
+    select: function() { return this; },
+    enter: function() {},
+    update: function() {},
+    merge: function() {},
+    exit: function() { this.remove(); }
+  });
+  // TODO transitions
+
+  return {
+    select: curry(steps.select, props),
+    enter: curry(steps.enter, props),
+    update: curry(steps.update, props),
+    merge: curry(steps.merge, props),
+    exit: curry(steps.exit, props)
+  };
+}
+
+export function curry(fn) {
+  var values = Array.prototype.slice.call(arguments, 1);
+
+  return function() {
+    var args = Array.prototype.slice.call(arguments);
+    return fn.apply(this, values.concat(args));
   };
 }
 
@@ -462,6 +504,7 @@ var helpers = {
   types: types,
   checkProp: checkProp,
   createPrepare: createPrepare,
+  createDraw: createDraw,
   createTransition: createTransition,
   getLayer: getLayer
 };
