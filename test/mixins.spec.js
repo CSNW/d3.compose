@@ -20,7 +20,7 @@ describe('mixins', () => {
 
       return series;
     });
-  }
+  };
 
   beforeEach(() => {
     const data = [
@@ -29,8 +29,8 @@ describe('mixins', () => {
       {key: 'C', values: [{x: 9, y: 9}, {x: 10, y: 10}, {x: 11, y: 11}, {x: 12, y: 12}]}
     ];
     const values = [
-      {key: 'A', values: [{x:'A',y:0},{x:'B',y:1},{x:'C',y:2},{x:'D',y:3},{x:'E',y:4}]},
-      {key: 'B', values: [{x:'A',y:5},{x:'B',y:6},{x:'C',y:7},{x:'D',y:8},{x:'E',y:9}]}
+      {key: 'A', values: [{x: 'A', y: 0}, {x: 'B', y: 1}, {x: 'C', y: 2}, {x: 'D', y: 3}, {x: 'E', y: 4}]},
+      {key: 'B', values: [{x: 'A', y: 5}, {x: 'B', y: 6}, {x: 'C', y: 7}, {x: 'D', y: 8}, {x: 'E', y: 9}]}
     ];
     const width = 600;
     const height = 400;
@@ -46,7 +46,7 @@ describe('mixins', () => {
               context.transformed = chart_data;
             }
           }
-        }
+        };
       },
       data() {
         return context.data || [];

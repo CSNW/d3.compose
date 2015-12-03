@@ -6,6 +6,8 @@
   "scripts": {
     "test": "SET NODE_ENV=test&& mocha --compilers js:babel-core/register --recursive --require ./test/setup.js",
     "test:watch": "npm test -- --watch",
+    "lint": "eslint src test d3.compose.js d3.compose-mixins.js d3.compose-all.js",
+
     "dev": "gulp",
     "build": "gulp build",
     "serve": "gulp serve",

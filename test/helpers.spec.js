@@ -429,7 +429,7 @@ describe('helpers', () => {
         spy,
         wrapped,
         instance
-      })
+      });
     });
 
     it('should call callback when bound di is called', function() {

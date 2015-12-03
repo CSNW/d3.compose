@@ -1,6 +1,13 @@
 {
   "ecmaFeatures": {
-    "modules": true
+    "arrowFunctions": true,
+    "blockBindings": true,
+    "classes": true,
+    "modules": true,
+    "objectLiteralShorthandMethods": true,
+    "objectLiteralShorthandProperties": true,
+    "spread": true,
+    "templateStrings": true
   },
   "rules": {
     "camelcase": [0],
