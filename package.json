@@ -38,7 +38,6 @@
     "async": "~0.9.0",
     "babel-core": "^6.2.1",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.2.0",
-    "babel-preset-es2015-rollup": "^1.0.0",
     "del": "^1.2.0",
     "expect": "^1.13.0",
     "grunt": "~0.4.5",

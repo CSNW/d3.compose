@@ -159,7 +159,7 @@ function createBuild(input, output, folder, options) {
         moduleName: 'd3c',
         sourceMap: true,
         sourceMapFile: output + '.js',
-        external: ['d3'],
+        external: ['d3', 'd3.chart'],
         format: 'umd'
       }))
       .pipe($.replace(/\{version\}/g, pkg.version))
