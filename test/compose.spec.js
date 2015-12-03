@@ -2,7 +2,7 @@ import expect, {createSpy, spyOn, restoreSpies} from 'expect';
 import {property, translate, dimensions} from '../src/helpers';
 import Chart from '../src/Chart';
 import Component from '../src/Component';
-import Compose from '../src/Compose';
+import Compose, {layered} from '../src/Compose';
 
 describe('Compose', () => {
   var context = {};
@@ -13,6 +13,11 @@ describe('Compose', () => {
     name: property()
   });
   const Container = Compose.extend();
+
+  Object.assign(d3.chart(), {
+    TestChart,
+    TestComponent
+  });
 
   beforeEach(() => {
     const selection = d3.select('body').append('div').attr('id', 'chart');
@@ -202,6 +207,112 @@ describe('Compose', () => {
         expect(g.attr('data-id')).toEqual(expected[i].id);
         expect(parseInt(g.attr('data-zIndex'), 10)).toEqual(expected[i].z_index);
       });
+    });
+  });
+
+  describe('options', () => {
+    beforeEach(() => {
+      context.container.options(function() {
+        var charts = [
+          {id: 'a', type: 'TestChart'},
+          {id: 'b', type: 'TestChart'}
+        ];
+
+        return [
+          {id: 'd', type: 'TestComponent'},
+          {id: 'c', type: 'TestComponent'},
+          [
+            {id: 'f', type: 'TestComponent'},
+            {id: 'e', type: 'TestComponent'},
+            layered(charts),
+            {id: 'g', type: 'TestComponent'},
+            {id: 'h', type: 'TestComponent'}
+          ],
+          {id: 'i', type: 'TestComponent'},
+          {id: 'j', type: 'TestComponent'}
+        ];
+      });
+
+      context.container.draw([]);
+    });
+
+    it('should load charts from options', function() {
+      const charts = context.container.charts();
+
+      expect(charts.length).toEqual(2);
+      expect(charts[0].id).toEqual('a');
+      expect(charts[1] instanceof Chart).toEqual(true);
+    });
+
+    it('should load components from options', function() {
+      const container = context.container;
+      const components = container.components();
+
+      expect(components.length).toEqual(8);
+      expect(components[0].id).toEqual('c');
+      expect(components[7].id).toEqual('j');
+
+      const layout = container._extractLayout([]);
+
+      expect(layout.top[0].component.id).toEqual('c');
+      expect(layout.top[1].component.id).toEqual('d');
+      expect(layout.left[0].component.id).toEqual('e');
+      expect(layout.left[1].component.id).toEqual('f');
+      expect(layout.right[0].component.id).toEqual('g');
+      expect(layout.right[1].component.id).toEqual('h');
+      expect(layout.bottom[0].component.id).toEqual('i');
+      expect(layout.bottom[1].component.id).toEqual('j');
+    });
+
+    it('should automatically assign ids by type + position', function() {
+      const container = context.container;
+      container.options(function() {
+        var charts = [
+          {name: 'a', type: 'TestChart'},
+          {name: 'b', type: 'TestChart'}
+        ];
+
+        return [
+          {name: 'd', type: 'TestComponent'},
+          {name: 'c', type: 'TestComponent'},
+          [
+            {name: 'f', type: 'TestComponent'},
+            {name: 'e', type: 'TestComponent'},
+            layered(charts),
+            {name: 'g', type: 'TestComponent'},
+            {name: 'h', type: 'TestComponent'}
+          ],
+          {name: 'i', type: 'TestComponent'},
+          {name: 'j', type: 'TestComponent'}
+        ];
+      });
+
+      container.draw([]);
+
+      const charts = container.charts();
+      const components = container.components();
+
+      expect(charts[0].name()).toEqual('a');
+      expect(charts[0].id).toEqual('item-3-3-1');
+      expect(charts[1].name()).toEqual('b');
+      expect(charts[1].id).toEqual('item-3-3-2');
+
+      expect(components[0].name()).toEqual('c');
+      expect(components[0].id).toEqual('item-2-1');
+      expect(components[1].name()).toEqual('d');
+      expect(components[1].id).toEqual('item-1-1');
+      expect(components[2].name()).toEqual('e');
+      expect(components[2].id).toEqual('item-3-2');
+      expect(components[3].name()).toEqual('f');
+      expect(components[3].id).toEqual('item-3-1');
+      expect(components[4].name()).toEqual('g');
+      expect(components[4].id).toEqual('item-3-4');
+      expect(components[5].name()).toEqual('h');
+      expect(components[5].id).toEqual('item-3-5');
+      expect(components[6].name()).toEqual('i');
+      expect(components[6].id).toEqual('item-4-1');
+      expect(components[7].name()).toEqual('j');
+      expect(components[7].id).toEqual('item-5-1');
     });
   });
 });
