@@ -4,14 +4,17 @@
   "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
   "main": "dist/d3.compose.js",
   "scripts": {
+    "clean": "gulp clean:tmp",
+    "lint": "eslint src test d3.compose.js d3.compose-mixins.js d3.compose-all.js",
     "test": "SET NODE_ENV=test&& mocha --compilers js:babel-core/register --recursive --require ./test/setup.js",
     "test:watch": "npm test -- --watch",
-    "lint": "eslint src test d3.compose.js d3.compose-mixins.js d3.compose-all.js",
-    "dev": "gulp",
-    "build": "gulp build",
-    "serve": "gulp serve",
-    "release": "node -e \"require('grunt').tasks(['prerelease']);\" && gulp release && node -e \"require('grunt').tasks(['release']);\"",
-    "docs": "yuidoc && node -e \"require('grunt').tasks(['docs']);\""
+    "check": "npm run lint && npm run test",
+    "build": "gulp build:tmp",
+    "build:dist": "gulp build:dist",
+    "build:watch": "gulp build:watch",
+    "examples": "gulp serve",
+    "preversion": "npm run check",
+    "postversion": "npm run build:dist && gulp version:bower"
   },
   "repository": {
     "type": "git",
@@ -25,7 +28,10 @@
     "compose",
     "chart"
   ],
-  "author": "CSNW",
+  "author": "Tim Hall <timhall@cornerstonenw.com> (https://github.com/timhall)",
+  "contributors": [
+    "CSNW"
+  ],
   "bugs": {
     "url": "https://github.com/CSNW/d3.compose/issues"
   },
@@ -39,7 +45,6 @@
     "async": "~0.9.0",
     "babel-core": "^6.2.1",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.2.0",
-    "del": "^1.2.0",
     "expect": "^1.13.0",
     "grunt": "~0.4.5",
     "grunt-contrib-concat": "~0.5.1",
@@ -50,10 +55,6 @@
     "grunt-contrib-watch": "~0.6.1",
     "grunt-zip": "~0.16.2",
     "gulp": "^3.9.0",
-    "gulp-concat-css": "^2.2.0",
-    "gulp-connect": "^2.2.0",
-    "gulp-eslint": "^0.15.0",
-    "gulp-grunt": "^0.5.2",
     "gulp-header": "^1.7.1",
     "gulp-load-plugins": "^1.1.0",
     "gulp-plumber": "^1.0.1",
@@ -69,7 +70,10 @@
     "load-grunt-tasks": "~3.1.0",
     "mocha": "^2.3.4",
     "request": "~2.53.0",
+    "rimraf": "^2.4.4",
+    "rollup": "^0.21.1",
     "run-sequence": "^1.1.2",
-    "semver": "~4.3.1"
+    "semver": "~4.3.1",
+    "yuidocjs": "^0.9.0"
   }
 }

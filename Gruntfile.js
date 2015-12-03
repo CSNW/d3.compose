@@ -66,7 +66,6 @@ module.exports = function(grunt) {
       fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
       fs.writeFileSync('bower.json', JSON.stringify(bower, null, 2) + '\n');
 
-
       done();
     });
   });

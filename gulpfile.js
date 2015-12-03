@@ -1,197 +1,192 @@
 'use strict';
 
-var gulp = require('gulp');
-var del = require('del');
-var runSequence = require('run-sequence');
-var gulpLoadPlugins = require('gulp-load-plugins');
+const path = require('path');
+const gulp = require('gulp');
+const runSequence = require('run-sequence');
+const gulpLoadPlugins = require('gulp-load-plugins');
+const rimraf = require('rimraf');
 
-var $ = gulpLoadPlugins();
-
-// TEMP Load grunt dependencies
-require('gulp-grunt')(gulp);
-
-var pkg = require('./package.json');
-var tmp = './.tmp/';
-var dist = './dist/';
-var src = ['src/**/*.js', 'src/**/*.css'];
-
-/**
-  default: build
-*/
-gulp.task('default', ['build']);
-
-/**
-  build:
-  - Bundle d3.compose.js, d3.compose-mixins.js, d3.compose-all.js, and d3.compose.css to .tmp/
-*/
-gulp.task('build', function(cb) {
-  runSequence(
-    'clean-tmp',
-    ['build-tmp-library', 'build-tmp-mixins', 'build-tmp-all', 'css-tmp'],
-    cb);
-});
-
-/**
-  dist:
-  - Bundle and minify d3.compose.js, d3.compose-mixins.js, d3.compose-all.js, and d3.compose.css to dist/
-*/
-gulp.task('dist', function(cb) {
-  runSequence(
-    'clean-dist',
-    ['build-dist-library', 'build-dist-mixins', 'build-dist-all', 'css-dist'],
-    cb);
-});
-
-/**
-  serve:
-  - build and serve example at localhost:5000
-*/
-gulp.task('serve', function(cb) {
-  runSequence('build', ['connect', 'watch-build'], cb);
-});
-
-/**
-  release:
-  - build dist, lint dist, and publish
-*/
-gulp.task('release', function(cb) {
-  runSequence('dist', ['lint-dist'], function() {
-    $.util.log($.util.colors.yellow('The release has successfully built, to publish run "grunt release"'));
-    cb();
-  });
-});
-
-/**
-  docs:
-  - copy files for gh-pages
-*/
-gulp.task('docs', ['grunt-docs']);
-
-// clean
-gulp.task('clean-tmp', createClean(tmp));
-gulp.task('clean-dist', createClean(dist));
-
-// build
-gulp.task('build-tmp-library', createBuild('d3.compose.js', 'd3.compose', tmp));
-gulp.task('build-tmp-mixins', createBuild('d3.compose-mixins.js', 'd3.compose-mixins', tmp));
-gulp.task('build-tmp-all', createBuild('d3.compose-all.js', 'd3.compose-all', tmp));
-
-var dist_options = {header: true, minify: true};
-gulp.task('build-dist-library', createBuild('d3.compose.js', 'd3.compose', dist, dist_options));
-gulp.task('build-dist-mixins', createBuild('d3.compose-mixins.js', 'd3.compose-mixins', dist, dist_options));
-gulp.task('build-dist-all', createBuild('d3.compose-all.js', 'd3.compose-all', dist, dist_options));
-
-// css
-gulp.task('css-tmp', createCss(tmp));
-gulp.task('css-dist', createCss(dist, {header: true}));
-
-// lint
-var compiled_options = {
-  rules: {
-    'eol-last': [0],
-    'no-extra-strict': [0],
-    'no-shadow': [0],
-    'no-unused-expressions': [0],
-    'semi': [0],
-    'strict': [0]
-  }
+const $ = gulpLoadPlugins();
+const pkg = require('./package.json');
+const tmp = './.tmp/';
+const dist = './dist/';
+const paths = {
+  src: 'src/**/*.js',
+  css: 'src/css/*.css',
+  test: 'test/**/*.test.js',
+  library: 'd3.compose.js',
+  mixins: 'd3.compose-mixins.js',
+  all: 'd3.compose-all.js'
 };
-
-gulp.task('lint-src', createLint(['src/**/*.js', 'index.js', 'index-mixins.js', 'index-all.js']));
-gulp.task('lint-tmp', createLint([tmp + 'd3.compose-all.js'], compiled_options));
-gulp.task('lint-dist', createLint([dist + 'd3.compose-all.js'], compiled_options));
-
-// watch
-gulp.task('watch-build', function() {
-  return gulp.watch(src, ['build']);
-});
-
-// connect
-gulp.task('connect', function() {
-  $.connect.server({
-    root: ['.', 'example'],
-    port: 5000
-  });
-});
-
-var banner = '/*!\n' +
+const banner = '/*!\n' +
   ' * <%= pkg.name %> - <%= pkg.description %>\n' +
   ' * v<%= pkg.version %> - <%= pkg.homepage %> - license: <%= pkg.license %>\n' +
   ' */\n';
 
-function createClean(folder) {
-  return function(cb) {
-    del([folder], cb);
-  };
-}
+// Build temporary version of library
+gulp.task('build:tmp', series(
+  'clean:tmp',
+  parallel('build:tmp:all', 'build:tmp:css')
+));
+gulp.task('build:tmp:library', build(paths.library, tmp));
+gulp.task('build:tmp:mixins', build(paths.mixins, tmp));
+gulp.task('build:tmp:all', build(paths.all, tmp));
+gulp.task('build:tmp:css', css(paths.css, tmp));
 
-function createBuild(input, output, folder, options) {
-  options = options || {};
-  return function() {
-    var build = gulp.src(input, {read: false})
-      .pipe($.plumber(handleError))
-      .pipe($.sourcemaps.init({loadMaps: true}))
+// Rebuild temp on change in js/css
+gulp.task('build:watch', series(
+  'build:tmp',
+  parallel('build:watch:js', 'build:watch:css')
+));
+gulp.task('build:watch:js', () => {
+  gulp.watch([paths.src, paths.all], parallel('build:tmp:all'));
+});
+gulp.task('build:watch:css', () => {
+  gulp.watch([paths.css], parallel('build:tmp:css'));
+});
+
+// Build distribution version of library
+const dist_options = {minify: true, banner: true};
+gulp.task('build:dist', series(
+  'clean:dist',
+  parallel('build:dist:library', 'build:dist:mixins', 'build:dist:all', 'build:dist:css')
+));
+gulp.task('build:dist:library', build(paths.library, dist, dist_options));
+gulp.task('build:dist:mixins', build(paths.mixins, dist, dist_options));
+gulp.task('build:dist:all', build(paths.all, dist, dist_options));
+gulp.task('build:dist:css', css(paths.css, dist, dist_options));
+
+// Clean output folders
+gulp.task('clean:tmp', done => rimraf(tmp, done));
+gulp.task('clean:dist', done => rimraf(dist, done));
+
+// Bump the bower version to match package.json
+gulp.task('version:bower', () => {
+  console.log('version:bower');
+});
+
+/**
+  Create js library build function
+
+  @method build
+  @param {String} entry file for rollup
+  @param {String} output folder
+  @param {Object} options
+  @param {Boolean} [options.minify = false] Output minified build
+  @param {Boolean} [options.banner = false] Include banner with build
+  @return {Function}
+*/
+function build(entry, output, options) {
+  options = Object.assign({
+    minify: false,
+    banner: false
+  }, options);
+  const filename = path.basename(entry, '.js');
+
+  return () => {
+    var build = gulp.src(entry, {read: false})
+      .pipe($.plumber(onError));
+
+    // For minify, use bundled for sourcemap
+    if (!options.minify)
+      build = build.pipe($.sourcemaps.init());
+
+    build = build
       .pipe($.rollup({
         moduleName: 'd3c',
-        sourceMap: true,
-        sourceMapFile: output + '.js',
+        sourceMap: !options.minify,
+        sourceMapFile: filename + '.js.map',
         external: ['d3', 'd3.chart'],
         format: 'umd'
       }))
-      .pipe($.replace(/\{version\}/g, pkg.version))
-      .pipe($.rename(output + '.js'));
+      .pipe($.replace(/\{version\}/g, pkg.version));
+
+    if (options.banner)
+      build = build.pipe($.header(banner, {pkg}));
 
     if (options.minify) {
-      // Add header to unminified
-      if (options.header)
-        build = build.pipe($.header(banner, {pkg: pkg}));
-
       // Remove sourcemap from unminified and save
       // then rename and uglify
       build = build
-        .pipe($.replace(/\/\/# sourceMappingURL=.*/g, ''))
-        .pipe(gulp.dest(folder))
-        .pipe($.rename(output + '.min.js'))
+        .pipe(gulp.dest(output))
+        .pipe($.sourcemaps.init())
+        .pipe($.rename(filename + '.min.js'))
         .pipe($.uglify());
     }
 
-    if (options.header)
-      build = build.pipe($.header(banner, {pkg: pkg}));
-
     build = build
-      .pipe($.sourcemaps.write('./', {addComment: options.minify ? true : false}))
-      .pipe(gulp.dest(folder));
+      .pipe($.sourcemaps.write('./'))
+      .pipe(gulp.dest(output));
 
     return build;
   };
 }
 
-function createCss(folder, options) {
-  options = options || {};
+/**
+  Create css build function
 
-  return function() {
-    var css = gulp.src(['src/css/base.css']);
+  @method css
+  @param {String|Array} files glob
+  @param {String} output folder
+  @param {Object} [options]
+  @param {Boolean} [options.banner = false] Include banner with build
+  @return {Function}
+*/
+function css(files, output, options) {
+  options = Object.assign({
+    banner: false
+  }, options);
 
-    if (options.header)
-      css.pipe($.header(banner, {pkg: pkg}));
+  return () => {
+    var build = gulp.src(files)
 
-    return css
-      .pipe($.concatCss('d3.compose.css'))
-      .pipe(gulp.dest(folder));
+    if (options.banner)
+      build = build.pipe($.header(banner, {pkg}));
+
+    build = build
+      .pipe($.rename('d3.compose.css'))
+      .pipe(gulp.dest(output));
+
+    return build;
   };
 }
 
-function createLint(files, options) {
-  return function() {
-    return gulp.src(files)
-      .pipe($.eslint(options))
-      .pipe($.eslint.format())
-      .pipe($.eslint.failOnError());
-  };
-}
-
-function handleError(err) {
+function onError(err) {
   $.util.log($.util.colors.red('Error (' + err.plugin + '): ' + err.message));
   $.util.log(err);
   this.emit('end');
+}
+
+/**
+  Approximate gulp 4.0 series
+
+  @param {...String} ...tasks
+  @param {Function} [fn] Function to call at end of series
+  @return {Function}
+*/
+function series() {
+  const tasks = Array.prototype.slice.call(arguments);
+  var fn = done => done();
+
+  if (typeof tasks[tasks.length - 1] === 'function')
+    fn = tasks.pop();
+
+  return (cb) => {
+    const tasks_with_cb = tasks.concat([(err) => {
+      if (err) return cb(err);
+      fn(cb);
+    }]);
+
+    runSequence.apply(this, tasks_with_cb);
+  }
+}
+
+/**
+  Approximate gulp 4.0 parallel
+
+  @param {...String} ...tasks
+  @return {Array}
+*/
+function parallel() {
+  return Array.prototype.slice.call(arguments);
 }
