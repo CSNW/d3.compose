@@ -14,15 +14,11 @@ var pkg = require('./package.json');
 var tmp = './.tmp/';
 var dist = './dist/';
 var src = ['src/**/*.js', 'src/**/*.css'];
-var specs = ['specs/**/*.spec.js'];
 
 /**
-  default:
-  - start example server
-  - watch for changes in src/ and specs/
-  - build and test on changes
+  default: build
 */
-gulp.task('default', ['connect', 'watch', 'build-and-test']);
+gulp.task('default', ['build']);
 
 /**
   build:
@@ -47,21 +43,6 @@ gulp.task('dist', function(cb) {
 });
 
 /**
-  test:
-  - eslint src and specs
-  - run specs through jasmine
-*/
-gulp.task('test', ['lint-src', 'lint-specs', 'grunt-jasmine:temp']);
-
-/**
-  watch:
-  - build and test on changes in src/ and specs/
-*/
-gulp.task('watch', function() {
-  return gulp.watch(src.concat(specs), ['build-and-test']);
-});
-
-/**
   serve:
   - build and serve example at localhost:5000
 */
@@ -71,10 +52,10 @@ gulp.task('serve', function(cb) {
 
 /**
   release:
-  - build dist, test dist, and publish
+  - build dist, lint dist, and publish
 */
 gulp.task('release', function(cb) {
-  runSequence('dist', ['lint-dist', 'grunt-jasmine:release'], function() {
+  runSequence('dist', ['lint-dist'], function() {
     $.util.log($.util.colors.yellow('The release has successfully built, to publish run "grunt release"'));
     cb();
   });
@@ -100,10 +81,6 @@ gulp.task('build-dist-library', createBuild('d3.compose.js', 'd3.compose', dist,
 gulp.task('build-dist-mixins', createBuild('d3.compose-mixins.js', 'd3.compose-mixins', dist, dist_options));
 gulp.task('build-dist-all', createBuild('d3.compose-all.js', 'd3.compose-all', dist, dist_options));
 
-gulp.task('build-and-test', function(cb) {
-  runSequence('build', 'test', cb);
-});
-
 // css
 gulp.task('css-tmp', createCss(tmp));
 gulp.task('css-dist', createCss(dist, {header: true}));
@@ -121,7 +98,6 @@ var compiled_options = {
 };
 
 gulp.task('lint-src', createLint(['src/**/*.js', 'index.js', 'index-mixins.js', 'index-all.js']));
-gulp.task('lint-specs', createLint(['specs/**/*.spec.js']));
 gulp.task('lint-tmp', createLint([tmp + 'd3.compose-all.js'], compiled_options));
 gulp.task('lint-dist', createLint([dist + 'd3.compose-all.js'], compiled_options));
 

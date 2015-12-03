@@ -1,4 +1,4 @@
-// TODO Move all grunt functionality to gulp
+// TODO Move all grunt functionality to gulp/npm
 
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
@@ -18,35 +18,6 @@ module.exports = function(grunt) {
           src: ['package.json', 'CHANGELOG.md'],
           dest: '_docs/additional/'
         }]
-      }
-    },
-
-    jasmine: {
-      options: {
-        specs: ['specs/**/*.spec.js'],
-        helpers: [
-          'node_modules/jquery/dist/jquery.js',
-          'node_modules/jasmine-jquery/lib/jasmine-jquery.js'
-        ],
-        vendor: [
-          'node_modules/d3/d3.js',
-          'node_modules/d3.chart/d3.chart.js'
-        ]
-      },
-
-      temp: {
-        src: '.tmp/<%= pkg.name %>-mixins.js',
-        options: {
-          outfile: 'specs/index.html',
-          keepRunner: true
-        }
-      },
-      release: {
-        src: 'dist/<%= pkg.name %>-mixins.js',
-        options: {
-          outfile: 'specs/index.html',
-          keepRunner: false
-        }
       }
     },
 
