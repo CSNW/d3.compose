@@ -34,42 +34,6 @@ module.exports = function(grunt) {
     'copy:docs'
   ]);
 
-  grunt.registerTask('prerelease', 'Prepare package.json for release', function() {
-    var done = this.async();
-    var inquirer = require('inquirer');
-    var semver = require('semver');
-    var fs = require('fs');
-    var pkg = grunt.config('pkg');
-    var bower = grunt.file.readJSON('bower.json');
-
-    inquirer.prompt([{
-      type: 'input',
-      name: 'version',
-      message: 'Version ("major", "minor", "patch", or [version] (e.g. 0.1.2 or 1.0.0-beta.1)'
-    }], function(answers) {
-      var version = answers.version;
-
-      if (version == 'major' || version == 'minor' || version == 'patch')
-        version = semver.inc(pkg.version, version);
-      else if (version && version.indexOf('v') === 0)
-        version = version.substring(1);
-
-      if (!version || !semver.valid(version))
-        return done(new Error('version of "major", "minor", "patch", or [version] (e.g. 0.1.2 or 1.0.0-beta.1) is required for release'));
-
-      grunt.log.writeln('Releasing ' + version + '...');
-
-      // Update package.json, bower.json, and TODO gh-pages/config.yml with new version number
-      pkg.version = version;
-      bower.version = version;
-
-      fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-      fs.writeFileSync('bower.json', JSON.stringify(bower, null, 2) + '\n');
-
-      done();
-    });
-  });
-
   grunt.registerTask('release', 'Build a new release of the library', function() {
     var pkg = grunt.config('pkg');
 

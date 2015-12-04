@@ -62,7 +62,9 @@ gulp.task('clean:dist', done => rimraf(dist, done));
 
 // Bump the bower version to match package.json
 gulp.task('version:bower', () => {
-  console.log('version:bower');
+  return gulp.src('./bower.json')
+    .pipe($.bump({version: pkg.version}))
+    .pipe(gulp.dest('./'));
 });
 
 /**
