@@ -13,6 +13,7 @@
     "build:dist": "gulp build:dist",
     "build:watch": "gulp build:watch",
     "examples": "gulp serve",
+    "docs": "rimraf _docs && yuidoc && gulp docs",
     "preversion": "npm run check",
     "version": "npm run build:dist && gulp version:bower && git add -A",
     "postversion": "git push && git push --tags",

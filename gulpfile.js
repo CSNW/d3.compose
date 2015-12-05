@@ -81,6 +81,14 @@ gulp.task('version:bower', () => {
 });
 
 /**
+  Prepare files for docs
+*/
+gulp.task('docs', () => {
+  return gulp.src([`${paths.dist}*`, 'package.json', 'CHANGELOG.md'])
+    .pipe($.copy('_docs/additional/'));
+});
+
+/**
   Create zip for github
 */
 gulp.task('zip:github', () => {
