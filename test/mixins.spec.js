@@ -1,5 +1,3 @@
-'use strict';
-
 import expect, {spyOn, restoreSpies} from 'expect';
 import Chart from '../src/Chart';
 import {mixin} from '../src/helpers';
