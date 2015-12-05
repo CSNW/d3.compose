@@ -4,32 +4,20 @@ import {
   isString
 } from '../utils';
 import {
-  property,
   style,
   translate,
   rotate,
-  mixin
+  mixin,
+
+  architecture,
+  types,
+  createPrepare,
+  getLayer
 } from '../helpers';
-import { StandardLayer } from '../mixins';
 import Component from '../Component';
 
 /**
   Add text to a chart.
-
-  ### Extending
-
-  To extend the `Text` component, the following methods are available:
-
-  - `onDataBind`
-  - `onInsert`
-  - `onEnter`
-  - `onEnterTransition`
-  - `onUpdate`
-  - `onUpdateTransition`
-  - `onMerge`
-  - `onMergeTransition`
-  - `onExit`
-  - `onExitTransition`
 
   @example
   ```js
@@ -57,132 +45,164 @@ import Component from '../Component';
   @class Text
   @extends Component, StandardLayer
 */
-var Mixed = mixin(Component, StandardLayer);
+var Mixed = mixin(Component, architecture);
 var Text = Mixed.extend({
-  initialize: function(options) {
-    Mixed.prototype.initialize.call(this, options);
+  prepare: createPrepare(
+    prepareText
+  ),
 
-    // Use standard layer for extensibility
-    this.standardLayer('Text', this.base.append('g').classed('chart-text', true));
+  render: function() {
+    // TODO Move to lifecycle
+    this.update(this.base, this.options());
+
+    var layer = getLayer(this.base, 'text')
+      .classed('chart-text', true);
+    var props = this.prepare();
+
+    drawText(layer, props);
   },
 
-  /**
-    Text to display
-
-    @property text
-    @type String
-  */
-  text: property(),
-
-  /**
-    Rotation of text
-
-    @property rotation
-    @type Number
-    @default 0
-  */
-  rotation: property({
-    default_value: 0
-  }),
-
-  /**
-    Horizontal text-alignment of text (`"left"`, `"center"`, or `"right"`)
-
-    @property textAlign
-    @type String
-    @default "center"
-  */
-  textAlign: property({
-    default_value: 'center',
-    validate: function(value) {
-      return contains(['left', 'center', 'right'], value);
-    }
-  }),
-
-  /**
-    text-anchor for text (`"start"`, `"middle"`, or `"end"`)
-
-    @property anchor
-    @type String
-    @default (set by `textAlign`)
-  */
-  anchor: property({
-    default_value: function() {
-      return {
-        left: 'start',
-        center: 'middle',
-        right: 'end'
-      }[this.textAlign()];
-    },
-    validate: function(value) {
-      return contains(['start', 'middle', 'end', 'inherit'], value);
-    }
-  }),
-
-  /**
-    Vertical aligment for text (`"top"`, `"middle"`, `"bottom"`)
-
-    @property verticalAlign
-    @type String
-    @default "middle"
-  */
-  verticalAlign: property({
-    default_value: 'middle',
-    validate: function(value) {
-      return contains(['top', 'middle', 'bottom'], value);
-    }
-  }),
-
-  /**
-    Style object containing styles for text
-
-    @property style
-    @type Object
-    @default {}
-  */
-  style: property({
-    default_value: {},
-    get: function(value) {
-      return style(value) || null;
-    }
-  }),
-
-  onDataBind: function onDataBind(selection) {
-    return selection.selectAll('text')
-      .data([0]);
+  // === TODO Remove, compatibility with current system
+  initialize: function() {
+    Mixed.prototype.initialize.apply(this, arguments);
+    this.attached = {};
   },
-  onInsert: function onInsert(selection) {
-    return selection.append('text');
-  },
-  onMerge: function onMerge(selection) {
-    selection
-      .attr('transform', this.transformation())
-      .attr('style', this.style())
-      .attr('text-anchor', this.anchor())
-      .attr('class', this.options()['class'])
-      .text(this.text());
-  },
-
-  transformation: function() {
-    var x = {
-      left: 0,
-      center: this.width() / 2,
-      right: this.width()
-    }[this.textAlign()];
-    var y = {
-      top: 0,
-      middle: this.height() / 2,
-      bottom: this.height()
-    }[this.verticalAlign()];
-
-    var translation = translate(x, y);
-    var rotation = rotate(this.rotation());
-
-    return translation + ' ' + rotation;
+  draw: function() {
+    this.render();
   }
+  // ===
 }, {
+  properties: extend({}, Component.properties, {
+    /**
+      Text to display
+
+      @property text
+      @type String
+    */
+    text: types.string,
+
+    /**
+      Rotation of text
+
+      @property rotation
+      @type Number
+      @default 0
+    */
+    rotation: {
+      type: types.number,
+      getDefault: function() {
+        return 0;
+      }
+    },
+
+    /**
+      Horizontal text-alignment of text (`"left"`, `"center"`, or `"right"`)
+
+      @property textAlign
+      @type String
+      @default "center"
+    */
+    textAlign: {
+      type: types.string,
+      validate: function(value) {
+        return contains(['left', 'center', 'right'], value);
+      },
+      getDefault: function() {
+        return 'center';
+      }
+    },
+
+    /**
+      text-anchor for text (`"start"`, `"middle"`, or `"end"`)
+
+      @property anchor
+      @type String
+      @default (set by `textAlign`)
+    */
+    anchor: {
+      type: types.string,
+      validate: function(value) {
+        return contains(['start', 'middle', 'end', 'inherit'], value);
+      },
+      getDefault: function(selection, props) {
+        return {
+          left: 'start',
+          center: 'middle',
+          right: 'end'
+        }[props.textAlign];
+      }
+    },
+
+    /**
+      Vertical aligment for text (`"top"`, `"middle"`, `"bottom"`)
+
+      @property verticalAlign
+      @type String
+      @default "middle"
+    */
+    verticalAlign: {
+      type: types.string,
+      validate: function(value) {
+        return contains(['top', 'middle', 'bottom'], value);
+      },
+      getDefault: function() {
+        return 'middle';
+      }
+    },
+
+    /**
+      Style object containing styles for text
+
+      @property style
+      @type Object
+      @default {}
+    */
+    style: {
+      type: types.object,
+      getDefault: function() {
+        return {};
+      }
+    }
+  }),
+
   z_index: 70
 });
+
+function prepareText(selection, props) {
+  // Calculate transform
+  var x = {
+    left: 0,
+    center: props.width / 2,
+    right: props.width
+  }[props.textAlign];
+  var y = {
+    top: 0,
+    middle: props.height / 2,
+    bottom: props.height
+  }[props.verticalAlign];
+
+  var translation = translate(x, y);
+  var rotation = rotate(props.rotation);
+  var transform = translation + ' ' + rotation;
+
+  return extend({}, props, {
+    transform: transform
+  });
+}
+
+function drawText(selection, props) {
+  var text_selection = selection.selectAll('text');
+
+  if (text_selection.empty())
+    text_selection = selection.append('text');
+
+  text_selection
+    .attr('transform', props.transform)
+    .attr('style', style(props.style))
+    .attr('text-anchor', props.anchor)
+    .attr('class', props['class'])
+    .text(props.text);
+}
 
 function textOptions(id, options, default_options) {
   if (!options) {
@@ -202,5 +222,7 @@ function text(id, options) {
 export {
   Text as default,
   text,
-  textOptions
+  textOptions,
+  prepareText,
+  drawText
 };

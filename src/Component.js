@@ -1,9 +1,11 @@
-import { contains } from './utils';
+import {contains, isUndefined} from './utils';
 import {
   dimensions,
   getMargins,
   property,
-  translate
+  translate,
+
+  types
 } from './helpers';
 import Base from './Base';
 
@@ -248,6 +250,31 @@ var Component = Base.extend({
     this.width(options && options.width);
   }
 }, {
+  properties: {
+    position: {
+      type: types.string,
+      validate: function(value) {
+        return contains(['top', 'right', 'bottom', 'left'], value);
+      }
+    },
+    width: {
+      type: types.number,
+      getDefault: function(selection, props, context) {
+        // TODO Move to Component.prepare
+        var width = context.width();
+        return !isUndefined(width) ? width : dimensions(selection).width;
+      }
+    },
+    height: {
+      type: types.number,
+      getDefault: function(selection, props, context) {
+        // TODO Move to Component.prepare
+        var height = context.height();
+        return !isUndefined(height) ? height : dimensions(selection).height;
+      }
+    }
+  },
+
   /**
     Default z-index for component
     (Charts are 100 by default, so Component = 50 is below chart by default)
