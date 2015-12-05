@@ -1,12 +1,12 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.10 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.11 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3')) :
-  typeof define === 'function' && define.amd ? define(['d3'], factory) :
-  global.d3c = factory(global.d3);
-}(this, function (d3) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('d3.chart')) :
+  typeof define === 'function' && define.amd ? define(['d3', 'd3.chart'], factory) :
+  global.d3c = factory(global.d3,global.d3_chart);
+}(this, function (d3,d3_chart) { 'use strict';
 
   d3 = 'default' in d3 ? d3['default'] : d3;
 
@@ -725,11 +725,8 @@
 
   function clientDimensions(selection) {
     var element = selection.node();
-
-    var client_dimensions = {
-      width: element && element.clientWidth,
-      height: element && element.clientHeight
-    };
+    var width = element && element.clientWidth;
+    var height = element && element.clientHeight;
 
     // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
     //        calculate from css
@@ -737,11 +734,14 @@
     //        Note: This makes assumptions about the box model in use and that width/height are not percent values
     if (isSVG(selection) && (!element.clientWidth || !element.clientHeight) && typeof window !== 'undefined' && window.getComputedStyle) {
       var styles = window.getComputedStyle(element);
-      client_dimensions.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
-      client_dimensions.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
+      height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
+      width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
     }
 
-    return client_dimensions;
+    return {
+      width: width && !isNaN(width) ? width : null,
+      height: height && !isNaN(height) ? height : null
+    };
   }
 
   function attrDimensions(selection) {
@@ -1097,6 +1097,137 @@
     };
   }
 
+  var types = {
+    string: {},
+    number: {},
+    array: {},
+    object: {},
+    any: {}
+  };
+
+  function checkProp(value, definition) {
+    if (definition.validate && !definition.validate(value))
+      throw new Error('Invalid value for property: ' + JSON.stringify(value));
+  }
+
+  function createPrepare(steps) {
+    if (!Array.isArray(steps))
+      steps = Array.prototype.slice.call(arguments);
+
+    return function() {
+      var selection = this.base;
+      var context = this;
+
+      return steps.reduce(function(props, step) {
+        return step(selection, props, context);
+      }, this.props);
+    };
+  }
+
+  function createDraw(steps) {
+    return function(selection, props) {
+      var prepared = prepareSteps(steps, props);
+
+      // TODO transitions
+      var selected = prepared.select.call(selection);
+      selected.exit().call(prepared.exit);
+      selected.call(prepared.update);
+      selected.enter().call(prepared.enter);
+      selected.call(prepared.merge);
+    };
+  }
+
+  function prepareSteps(steps, props) {
+    steps = defaults({}, steps, {
+      select: function() { return this; },
+      enter: function() {},
+      update: function() {},
+      merge: function() {},
+      exit: function() { this.remove(); }
+    });
+    // TODO transitions
+
+    return {
+      select: curry(steps.select, props),
+      enter: curry(steps.enter, props),
+      update: curry(steps.update, props),
+      merge: curry(steps.merge, props),
+      exit: curry(steps.exit, props)
+    };
+  }
+
+  function curry(fn) {
+    var values = Array.prototype.slice.call(arguments, 1);
+
+    return function() {
+      var args = Array.prototype.slice.call(arguments);
+      return fn.apply(this, values.concat(args));
+    };
+  }
+
+  function createTransition(props) {
+    return function() {
+      if (!isUndefined(props.duration))
+        this.duration(props.duration);
+      if (!isUndefined(props.delay))
+        this.delay(props.delay);
+      if (!isUndefined(props.ease))
+        this.ease(props.ease);
+    };
+  }
+
+  function getLayer(selection, id) {
+    var layer = selection.select('[data-layer="' + id + '"]');
+    if (layer.empty())
+      layer = selection.append('g').attr('data-layer', id);
+
+    return layer;
+  }
+
+  // TODO Move to Chart/Base
+  var architecture = {
+    update: function(selection, props) {
+      this.base = selection;
+      this.props = this.prepareProps(props);
+    },
+    prepareProps: function(props) {
+      var properties = this.constructor && this.constructor.properties;
+      if (!properties)
+        return props;
+
+      var prepared = extend({}, props);
+
+      objectEach(properties, function(definition, key) {
+        var prop = prepared[key];
+
+        if (!isUndefined(prop))
+          checkProp(prop, definition);
+        else if (definition.getDefault)
+          prepared[key] = definition.getDefault(this.base, prepared, this);
+      }, this);
+
+      return prepared;
+    },
+    attach: function(id, Type, selection, props) {
+      var attached = this.attached[id];
+
+      if (attached)
+        attached.options(props);
+      else
+        attached = new Type(selection, props);
+
+      attached.draw();
+      this.attached[id] = attached;
+    },
+    detach: function(id) {
+      var attached = this.attached[id];
+      if (attached) {
+        attached.base.remove();
+        delete this.attached[id];
+      }
+    }
+  };
+
   var helpers = {
     property: property,
     dimensions: dimensions,
@@ -1115,10 +1246,17 @@
     bindAllDi: bindAllDi,
     getParentData: getParentData,
     mixin: mixin,
-    createHelper: createHelper
+    createHelper: createHelper,
+
+    types: types,
+    checkProp: checkProp,
+    createPrepare: createPrepare,
+    createDraw: createDraw,
+    createTransition: createTransition,
+    getLayer: getLayer
   };
 
-  var Chart = d3.chart();
+  var d3Chart = d3.chart();
 
   // TEMP Clear namespace from mixins
   /**
@@ -1153,7 +1291,7 @@
     this.initialize(options);
   }
 
-  inherits(Base, Chart);
+  inherits(Base, d3Chart);
 
   extend(Base.prototype, {
     initialize: function() {},
@@ -1183,13 +1321,13 @@
     },
 
     // Explicitly load d3.chart prototype
-    layer: Chart.prototype.layer,
-    unlayer: Chart.prototype.unlayer,
-    attach: Chart.prototype.attach,
-    on: Chart.prototype.on,
-    once: Chart.prototype.once,
-    off: Chart.prototype.off,
-    trigger: Chart.prototype.trigger,
+    layer: d3Chart.prototype.layer,
+    unlayer: d3Chart.prototype.unlayer,
+    attach: d3Chart.prototype.attach,
+    on: d3Chart.prototype.on,
+    once: d3Chart.prototype.once,
+    off: d3Chart.prototype.off,
+    trigger: d3Chart.prototype.trigger,
 
     /**
       Store fully-transformed data for direct access from the chart
@@ -1313,7 +1451,7 @@
 
     // If name is given, register with d3.chart
     if (name)
-      Chart[name] = Child;
+      d3Chart[name] = Child;
 
     return Child;
   };
@@ -1759,6 +1897,31 @@
       this.width(options && options.width);
     }
   }, {
+    properties: {
+      position: {
+        type: types.string,
+        validate: function(value) {
+          return contains(['top', 'right', 'bottom', 'left'], value);
+        }
+      },
+      width: {
+        type: types.number,
+        getDefault: function(selection, props, context) {
+          // TODO Move to Component.prepare
+          var width = context.width();
+          return !isUndefined(width) ? width : dimensions(selection).width;
+        }
+      },
+      height: {
+        type: types.number,
+        getDefault: function(selection, props, context) {
+          // TODO Move to Component.prepare
+          var height = context.height();
+          return !isUndefined(height) ? height : dimensions(selection).height;
+        }
+      }
+    },
+
     /**
       Default z-index for component
       (Charts are 100 by default, so Component = 50 is below chart by default)
@@ -2754,7 +2917,7 @@
     @class Chart
     @extends Base
   */
-  var Chart$1 = Base.extend({}, {
+  var Chart = Base.extend({}, {
     /**
       Default z-index for chart
       (Components are 50 by default, so Chart = 100 is above component by default)
@@ -3998,18 +4161,18 @@
   // Export charts/components to d3.chart
   utils.extend(d3.chart(), {
     Base: Base,
-    Chart: Chart$1,
+    Chart: Chart,
     Component: Component,
     Overlay: Overlay,
     Compose: Compose
   });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.10',
+    VERSION: '0.15.11',
     utils: utils,
     helpers: helpers,
     Base: Base,
-    Chart: Chart$1,
+    Chart: Chart,
     Component: Component,
     Overlay: Overlay,
     Compose: Compose,
