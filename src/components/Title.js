@@ -1,10 +1,9 @@
 import {extend} from '../utils';
 import {
   getMargins,
-
   types,
   createPrepare,
-  getLayer,
+  getLayer
 } from '../helpers';
 import Text, { textOptions, prepareText } from './Text';
 
