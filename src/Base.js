@@ -1,4 +1,5 @@
 import d3 from 'd3';
+import 'd3.chart';
 import {
   difference,
   extend,

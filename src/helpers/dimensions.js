@@ -40,11 +40,8 @@ export default function dimensions(selection) {
 
 function clientDimensions(selection) {
   var element = selection.node();
-
-  var client_dimensions = {
-    width: element && element.clientWidth,
-    height: element && element.clientHeight
-  };
+  var width = element && element.clientWidth;
+  var height = element && element.clientHeight;
 
   // Issue: Firefox does not correctly calculate clientWidth/clientHeight for svg
   //        calculate from css
@@ -52,11 +49,14 @@ function clientDimensions(selection) {
   //        Note: This makes assumptions about the box model in use and that width/height are not percent values
   if (isSVG(selection) && (!element.clientWidth || !element.clientHeight) && typeof window !== 'undefined' && window.getComputedStyle) {
     var styles = window.getComputedStyle(element);
-    client_dimensions.height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
-    client_dimensions.width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
+    height = parseFloat(styles.height) - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
+    width = parseFloat(styles.width) - parseFloat(styles.borderLeftWidth) - parseFloat(styles.borderRightWidth);
   }
 
-  return client_dimensions;
+  return {
+    width: width && !isNaN(width) ? width : null,
+    height: height && !isNaN(height) ? height : null
+  };
 }
 
 function attrDimensions(selection) {
