@@ -80,27 +80,25 @@ See [http://CSNW.github.io/d3.compose/](http://CSNW.github.io/d3.compose/) for l
 
 ## Development
 
-1. Install components `npm install`
-2. Develop with `npm run dev` (automatically builds, tests, and runs example server)
+1. Install modules `npm install`
+2. Test with `npm test` or `npm run test:watch`
 3. Build with `npm run build`
-4. Open example with `npm run serve` and `localhost:5000`
-5. Test with `npm test`
 
 ### Release
 
 (With all changes merged to master and on master branch)
 
-1. Build and publish release with `npm run release`
+1. `npm version {patch|minor|major|version}`
+2. `npm publish`
 
 ### Docs
-
-Install yuidoc (if necessary) `npm install -g yuidocjs`
 
 1. On master, run `npm run docs`
 2. Switch to `gh-pages` branch
 3. Navigate to `_tasks` directory (`cd _tasks`)
-4. Run docs task `npm run docs`
-5. Navigate back to root
-6. View site with `bundle exec jekyll serve`
+4. (`npm install` _tasks, if necessary)
+5. Run docs task `npm run docs`
+6. Navigate back to root
+7. View site with `bundle exec jekyll serve`
 
 Note: For faster iteration, create a separate clone, switch to `gh-pages` branch, set `docs_path` environment variable to original clone (e.g. Windows: `SET docs_path=C:\...\d3.compose\_docs\`), and then run steps 3-6.

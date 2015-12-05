@@ -1,6 +1,4 @@
 node_modules
-.grunt
-specs/index.html
 npm-debug.log
 .tmp/
 _docs/
