@@ -84,6 +84,9 @@ See [http://CSNW.github.io/d3.compose/](http://CSNW.github.io/d3.compose/) for l
 2. Test with `npm test` or `npm run test:watch`
 3. Build with `npm run build`
 
+Note on testing: Requires Node 4+ (for latest jsdom) and d3.chart doesn't currently support running from within node
+and requires the following line be added inside the IIFE in `node_modules/d3.chart.js`: `window = this;` (before `use strict`). This will be resolved by a [pending PR](https://github.com/misoproject/d3.chart/pull/113) to fix this issue with d3.chart (also, the dependency on d3.chart is likely to be removed in a later version of d3.compose).
+
 ### Release
 
 (With all changes merged to master and on master branch)
