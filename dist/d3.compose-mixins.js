@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.11 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.12 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('d3.chart')) :
@@ -11,7 +11,7 @@
   d3 = 'default' in d3 ? d3['default'] : d3;
 
   // Many utils inlined from Underscore.js
-  // (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+  // 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 
   var slice = Array.prototype.slice;
   var toString = Object.prototype.toString;
@@ -4168,7 +4168,7 @@
   });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.11',
+    VERSION: '0.15.12',
     utils: utils,
     helpers: helpers,
     Base: Base,
