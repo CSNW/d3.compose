@@ -3,7 +3,7 @@
   "homepage": "https://github.com/CSNW/d3.compose",
   "version": "0.15.11",
   "main": [
-    "./dist/d3.compose.js",
+    "./dist/d3.compose-all.js",
     "./dist/d3.compose.css"
   ],
   "authors": [
@@ -25,16 +25,14 @@
   },
   "license": "MIT",
   "ignore": [
-    "src",
-    "specs",
+    "test",
     "example",
-    "tasks",
-    "Gruntfile.js",
     "gulpfile.js",
+    ".babelrc",
+    ".codeclimate.yml",
+    ".eslintrc",
     ".gitattributes",
     ".gitignore",
-    ".eslintrc",
-    ".codeclimate.yml",
     "yuidoc.json"
   ]
 }

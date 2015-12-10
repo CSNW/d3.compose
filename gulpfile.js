@@ -187,13 +187,13 @@ function build(entry, output, options) {
       build = build.pipe($.header(banner, {pkg}));
 
     if (options.minify) {
-      // Remove sourcemap from unminified and save
-      // then rename and uglify
       build = build
         .pipe(gulp.dest(output))
         .pipe($.sourcemaps.init())
         .pipe($.rename(filename + '.min.js'))
-        .pipe($.uglify());
+        .pipe($.uglify({
+          preserveComments: 'license'
+        }));
     }
 
     build = build

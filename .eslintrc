@@ -23,7 +23,7 @@
     "browser": true,
     "node": true,
     "amd": true,
-    "jasmine": true
+    "mocha": true
   },
   "globals": {
     "d3": true

@@ -3,11 +3,10 @@ engines:
     enabled: true
 ratings:
   paths:
-  - "src/**"
+  - "src/**/*"
 exclude_paths:
 - "dist/*"
 - "example/**/*"
-- "Gruntfile.js"
 - "gulpfile.js"
 - "*.md"
 - "LICENSE"
@@ -16,3 +15,4 @@ exclude_paths:
 - ".eslintrc"
 - ".gitattributes"
 - ".gitignore"
+- ".babelrc"
