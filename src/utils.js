@@ -1,5 +1,5 @@
 // Many utils inlined from Underscore.js
-// (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+// 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 
 export var slice = Array.prototype.slice;
 export var toString = Object.prototype.toString;
