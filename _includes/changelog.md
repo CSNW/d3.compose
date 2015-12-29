@@ -13,6 +13,11 @@
 - __0.15.6__ Fix Legend type not updating bug
 - __0.15.7__ Add banner to dist css and tweak label defaults
 - __0.15.8__ Fix margins issue for centered components
+- __0.15.9__ Fix delayed gridlines attachment bug and fix undefined config issue
+- __0.15.10__ Fix legend expanding on redraw issue
+- __0.15.11__ Update build (remove grunt), start new draw architecture, convert tests to mocha + jsdom
+- __0.15.12__ Include license/version in minified dist
+- __0.15.13__ Improve backwards compatibility with new architecture
 
 # 0.14.0
 

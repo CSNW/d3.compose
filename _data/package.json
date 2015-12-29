@@ -1,15 +1,22 @@
 {
   "name": "d3.compose",
-  "version": "0.15.8",
+  "version": "0.15.13",
   "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
   "main": "dist/d3.compose.js",
   "scripts": {
-    "test": "gulp test",
-    "dev": "gulp",
-    "build": "gulp build",
-    "serve": "gulp serve",
-    "release": "node -e \"require('grunt').tasks(['prerelease']);\" && gulp release && node -e \"require('grunt').tasks(['release']);\"",
-    "docs": "yuidoc && node -e \"require('grunt').tasks(['docs']);\""
+    "clean": "gulp clean:tmp",
+    "lint": "eslint src test d3.compose.js d3.compose-mixins.js d3.compose-all.js",
+    "test": "SET NODE_ENV=test&& mocha --compilers js:babel-core/register --recursive --require ./test/setup.js",
+    "test:watch": "npm test -- --watch",
+    "check": "npm run lint && npm run test",
+    "build": "gulp build:tmp",
+    "build:dist": "gulp build:dist",
+    "build:watch": "gulp build:watch",
+    "docs": "rimraf _docs && yuidoc && gulp docs",
+    "preversion": "npm run check",
+    "version": "npm run build:dist && gulp version:bower && git add -A",
+    "postversion": "git push && git push --tags",
+    "postpublish": "gulp publish:github"
   },
   "repository": {
     "type": "git",
@@ -23,44 +30,44 @@
     "compose",
     "chart"
   ],
-  "author": "CSNW",
+  "author": "Tim Hall <timhall@cornerstonenw.com> (https://github.com/timhall)",
+  "contributors": [
+    "CSNW"
+  ],
   "bugs": {
     "url": "https://github.com/CSNW/d3.compose/issues"
   },
   "homepage": "https://github.com/CSNW/d3.compose",
   "license": "MIT",
+  "dependencies": {
+    "d3": "^3.5.8",
+    "d3.chart": "^0.2.1"
+  },
   "devDependencies": {
-    "async": "~0.9.0",
-    "del": "^1.2.0",
-    "esperanto": "^0.7.5",
-    "grunt": "~0.4.5",
-    "grunt-contrib-concat": "~0.5.1",
-    "grunt-contrib-connect": "~0.9.0",
-    "grunt-contrib-copy": "^0.8.0",
-    "grunt-contrib-jasmine": "~0.8.2",
-    "grunt-contrib-jshint": "~0.11.0",
-    "grunt-contrib-uglify": "~0.8.0",
-    "grunt-contrib-watch": "~0.6.1",
-    "grunt-zip": "~0.16.2",
+    "babel-core": "^6.2.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.2.0",
+    "expect": "^1.13.0",
+    "github": "^0.2.4",
     "gulp": "^3.9.0",
-    "gulp-concat-css": "^2.2.0",
-    "gulp-connect": "^2.2.0",
-    "gulp-eslint": "^0.15.0",
-    "gulp-grunt": "^0.5.2",
+    "gulp-bump": "^1.0.0",
+    "gulp-copy": "0.0.2",
     "gulp-header": "^1.7.1",
+    "gulp-load-plugins": "^1.1.0",
     "gulp-plumber": "^1.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.3",
+    "gulp-rollup": "^1.4.0",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.6",
+    "gulp-zip": "^3.0.2",
     "inquirer": "~0.8.0",
-    "load-grunt-tasks": "~3.1.0",
-    "object-assign": "^3.0.0",
-    "request": "~2.53.0",
+    "jquery": "^2.1.4",
+    "jsdom": "^7.1.1",
+    "mocha": "^2.3.4",
+    "rimraf": "^2.4.4",
+    "rollup": "^0.21.1",
     "run-sequence": "^1.1.2",
-    "semver": "~4.3.1",
-    "through2": "^2.0.0",
-    "vinyl-sourcemaps-apply": "^0.1.4"
+    "yuidocjs": "^0.9.0"
   }
 }
