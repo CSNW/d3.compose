@@ -3,7 +3,9 @@ import {
   getMargins,
 
   createPrepare,
-  getLayer
+  getLayer,
+
+  createProperties
 } from '../helpers';
 import { textOptions, prepareText } from './Text';
 import Title from './Title';
@@ -46,6 +48,9 @@ var AxisTitle = Title.extend({
     })
   })
 });
+
+// DEPRECATED Backwards compatibility for properties
+createProperties(AxisTitle);
 
 function prepareMargins(selection, props) {
   return extend({}, props, {

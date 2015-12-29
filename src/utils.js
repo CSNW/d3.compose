@@ -151,6 +151,11 @@ export function valueOrDefault(value, default_value) {
   return !isUndefined(value) ? value : default_value;
 }
 
+export function deprecate(message, version) {
+  if (typeof console != 'undefined' && console.warn)
+    console.warn('DEPRECATED (will be removed in ' + version + ') - ' + message);
+}
+
 var utils = {
   slice: slice,
   toString: toString,

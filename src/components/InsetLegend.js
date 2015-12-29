@@ -5,7 +5,9 @@ import {
   createHelper,
 
   types,
-  getLayer
+  getLayer,
+
+  createProperties
 } from '../helpers';
 import Legend from './Legend';
 
@@ -62,6 +64,9 @@ var InsetLegend = Legend.extend({
 
   layer_type: 'chart'
 });
+
+// DEPRECATED Backwards compatibility for properties
+createProperties(InsetLegend);
 
 function getTransform(layer, props) {
   var value = props.translation;

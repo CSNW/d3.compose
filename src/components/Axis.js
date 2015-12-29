@@ -17,7 +17,9 @@ import {
   types,
   createPrepare,
   createTransition,
-  getLayer
+  getLayer,
+
+  createProperties
 } from '../helpers';
 import {
   Transition,
@@ -168,6 +170,10 @@ var Axis = Mixed.extend({
     */
     scale: types.any,
 
+    xScale: types.any,
+
+    yScale: types.any,
+
     /**
       {x,y} translation of axis relative to chart
       (set by default based on position)
@@ -249,6 +255,9 @@ var Axis = Mixed.extend({
   layer_type: 'chart',
   z_index: 60
 });
+
+// DEPRECATED Backwards compatibility for properties
+createProperties(Axis);
 
 // TODO Move to xy.prepare
 function prepareScales(selection, props) {

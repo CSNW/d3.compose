@@ -1,4 +1,5 @@
 import {
+  deprecate,
   isFunction,
   isUndefined,
   valueOrDefault
@@ -98,8 +99,7 @@ var unique_index = 0;
 export default function property(options) {
   // DEPRECATED: name as first argument
   if (arguments.length == 2) {
-    if (typeof console != 'undefined' && console.warn)
-      console.warn('DEPRECATED - name argument for property is no longer supported will be removed in the next version of d3.compose');
+    deprecate('"name" as the first argument for property is no longer required/supported and will be removed in the next version of d3.compose.', 'v0.17.0');
     options = arguments[1];
   }
 

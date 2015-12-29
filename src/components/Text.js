@@ -12,7 +12,9 @@ import {
   architecture,
   types,
   createPrepare,
-  getLayer
+  getLayer,
+
+  createProperties
 } from '../helpers';
 import Component from '../Component';
 
@@ -167,6 +169,9 @@ var Text = Mixed.extend({
 
   z_index: 70
 });
+
+// DEPRECATED Backwards compatibility for properties
+createProperties(Text);
 
 function prepareText(selection, props) {
   // Calculate transform

@@ -1,6 +1,7 @@
 import d3 from 'd3';
 import {
   defaults,
+  deprecate,
   extend,
   first,
   isNumber,
@@ -480,6 +481,26 @@ var architecture = {
     }
   }
 };
+
+export function createProperties(Item, keys) {
+  keys = keys || Object.keys(Item.properties);
+
+  keys.forEach(function(key) {
+    if (Item.prototype[key])
+      return;
+
+    Item.prototype[key] = property({
+      get: function() {
+        deprecate('The ' + key + ' property will be removed and replaced by "this.props.' + key + '"');
+        return this.options()[key];
+      },
+      set: function(value) {
+        // Deliberately mutate underlying options to avoid firing options setter
+        this.options()[key] = value;
+      }
+    });
+  });
+}
 
 var helpers = {
   property: property,

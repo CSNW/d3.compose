@@ -3,7 +3,9 @@ import {
   getMargins,
   types,
   createPrepare,
-  getLayer
+  getLayer,
+
+  createProperties
 } from '../helpers';
 import Text, { textOptions, prepareText } from './Text';
 
@@ -64,6 +66,9 @@ var Title = Text.extend({
     })
   })
 });
+
+// DEPRECATED Backwards compatibility for properties
+createProperties(Title);
 
 function prepareMargins(selection, props) {
   return extend({}, props, {

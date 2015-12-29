@@ -19,7 +19,9 @@ import {
   createPrepare,
   createDraw,
   getLayer,
-  curry
+  curry,
+
+  createProperties
 } from '../helpers';
 import Component from '../Component';
 
@@ -275,6 +277,9 @@ var Legend = Mixed.extend({
     }, this);
   }
 });
+
+// DEPRECATED Backwards compatibility for properties
+createProperties(Legend);
 
 function prepareMargins(selection, props) {
   return extend({}, props, {
