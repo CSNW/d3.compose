@@ -1,6 +1,6 @@
 {
   "name": "d3.compose",
-  "version": "0.15.12",
+  "version": "0.15.13",
   "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
   "main": "dist/d3.compose.js",
   "scripts": {

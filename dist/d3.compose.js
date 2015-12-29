@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.12 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.13 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('d3.chart')) :
@@ -163,6 +163,11 @@
     return !isUndefined(value) ? value : default_value;
   }
 
+  function deprecate(message, version) {
+    if (typeof console != 'undefined' && console.warn)
+      console.warn('DEPRECATED (will be removed in ' + version + ') - ' + message);
+  }
+
   var utils = {
     slice: slice,
     toString: toString,
@@ -283,8 +288,7 @@
   function property(options) {
     // DEPRECATED: name as first argument
     if (arguments.length == 2) {
-      if (typeof console != 'undefined' && console.warn)
-        console.warn('DEPRECATED - name argument for property is no longer supported will be removed in the next version of d3.compose');
+      deprecate('"name" as the first argument for property is no longer required/supported and will be removed in the next version of d3.compose.', 'v0.17.0');
       options = arguments[1];
     }
 
@@ -2949,7 +2953,7 @@
   });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.12',
+    VERSION: '0.15.13',
     utils: utils,
     helpers: helpers,
     Base: Base,

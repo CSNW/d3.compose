@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.12 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.13 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('d3.chart')) :
@@ -361,6 +361,11 @@
     return !isUndefined(value) ? value : default_value;
   }
 
+  function deprecate(message, version) {
+    if (typeof console != 'undefined' && console.warn)
+      console.warn('DEPRECATED (will be removed in ' + version + ') - ' + message);
+  }
+
   var utils = {
     slice: slice,
     toString: toString,
@@ -481,8 +486,7 @@
   function property(options) {
     // DEPRECATED: name as first argument
     if (arguments.length == 2) {
-      if (typeof console != 'undefined' && console.warn)
-        console.warn('DEPRECATED - name argument for property is no longer supported will be removed in the next version of d3.compose');
+      deprecate('"name" as the first argument for property is no longer required/supported and will be removed in the next version of d3.compose.', 'v0.17.0');
       options = arguments[1];
     }
 
@@ -1425,6 +1429,26 @@
       }
     }
   };
+
+  function createProperties(Item, keys) {
+    keys = keys || Object.keys(Item.properties);
+
+    keys.forEach(function(key) {
+      if (Item.prototype[key])
+        return;
+
+      Item.prototype[key] = property({
+        get: function() {
+          deprecate('The ' + key + ' property will be removed and replaced by "this.props.' + key + '"');
+          return this.options()[key];
+        },
+        set: function(value) {
+          // Deliberately mutate underlying options to avoid firing options setter
+          this.options()[key] = value;
+        }
+      });
+    });
+  }
 
   var helpers = {
     property: property,
@@ -3436,6 +3460,9 @@
     }
   });
 
+  // DEPRECATED Backwards compatibility for properties
+  createProperties(Legend);
+
   function prepareMargins$2(selection, props) {
     return extend({}, props, {
       margins: getMargins(props.margins, default_legend_margins)
@@ -3646,6 +3673,9 @@
     layer_type: 'chart'
   });
 
+  // DEPRECATED Backwards compatibility for properties
+  createProperties(InsetLegend);
+
   function getTransform(layer, props) {
     var value = props.translation;
     var x = value.x || 0;
@@ -3816,6 +3846,9 @@
     z_index: 70
   });
 
+  // DEPRECATED Backwards compatibility for properties
+  createProperties(Text);
+
   function prepareText(selection, props) {
     // Calculate transform
     var x = {
@@ -3925,6 +3958,9 @@
     })
   });
 
+  // DEPRECATED Backwards compatibility for properties
+  createProperties(Title);
+
   function prepareMargins(selection, props) {
     return extend({}, props, {
       margins: getMargins(props.margins, defaultMargins(props.position))
@@ -3984,6 +4020,9 @@
       })
     })
   });
+
+  // DEPRECATED Backwards compatibility for properties
+  createProperties(AxisTitle);
 
   function prepareMargins$1(selection, props) {
     return extend({}, props, {
@@ -4149,6 +4188,10 @@
       */
       scale: types.any,
 
+      xScale: types.any,
+
+      yScale: types.any,
+
       /**
         {x,y} translation of axis relative to chart
         (set by default based on position)
@@ -4230,6 +4273,9 @@
     layer_type: 'chart',
     z_index: 60
   });
+
+  // DEPRECATED Backwards compatibility for properties
+  createProperties(Axis);
 
   // TODO Move to xy.prepare
   function prepareScales(selection, props) {
@@ -6695,7 +6741,7 @@
   });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.12',
+    VERSION: '0.15.13',
     utils: utils,
     helpers: helpers,
     Base: Base,
