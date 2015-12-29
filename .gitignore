@@ -1,17 +1,12 @@
 node_modules
-bower_components
-.grunt
-specs/index.html
 npm-debug.log
-example/data
-_tmp/
+.tmp/
 _docs/
 
-# gh-pages
 _site/
-.sass-cache/
-_tasks/node_modules/
-_taks/npm-debug.log
+.sass-cache
+_tasks/node_modules
+_task/npm-debug.log
 
 # OS Junk
 Thumbs.db
