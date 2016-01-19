@@ -13,7 +13,8 @@ Title.properties = {
   text: types.string
 };
 
-export default const bars = component(Bars);
+const title = component(Title);
+export default title;
 
 export function select(props) {
 

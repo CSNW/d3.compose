@@ -1,4 +1,5 @@
 {
+  "presets": ["es2015-rollup"],
   "env": {
     "test": {
       "plugins": ["transform-es2015-modules-commonjs"]

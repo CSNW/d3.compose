@@ -1,4 +1,5 @@
-export default const types = {
+const types = {
   number: {},
   string: {}
 };
+export default types;

@@ -7,6 +7,7 @@ const gulpLoadPlugins = require('gulp-load-plugins');
 const rimraf = require('rimraf');
 const GithubApi = require('github');
 const inquirer = require('inquirer');
+const babel = require('rollup-plugin-babel');
 
 const $ = gulpLoadPlugins();
 const pkg = require('./package.json');
@@ -133,7 +134,7 @@ gulp.task('publish:github', series('zip:github', (cb) => {
       name
     }, (err, response) => {
       if (err) return cb(err);
-      
+
       console.log(`Uploading zip: "${paths.zip}"`);
 
       github.releases.uploadAsset({
@@ -177,9 +178,13 @@ function build(entry, output, options) {
       .pipe($.rollup({
         moduleName: 'd3c',
         sourceMap: !options.minify,
-        sourceMapFile: filename + '.js.map',
         external: ['d3', 'd3.chart'],
-        format: 'umd'
+        format: 'umd',
+        plugins: [
+          babel({
+            exclude: 'node_modules/**'
+          })
+        ]
       }))
       .pipe($.replace(/\{version\}/g, pkg.version));
 

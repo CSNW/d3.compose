@@ -22,7 +22,8 @@ export const mapState = (state) => {
   };
 };
 
-export default const bars = chart(connect(mapState)(Bars));
+const bars = chart(connect(mapState)(Bars));
+export default bars;
 
 export function select(props) {
 
