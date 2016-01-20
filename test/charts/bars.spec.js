@@ -1,7 +1,7 @@
 import expect from 'expect';
-import InsetLegend from '../../src/components/InsetLegend';
+import {Bars} from '../../src/charts/bars';
 
-describe('InsetLegend', () => {
+describe('Bars', () => {
   var context = {};
 
   beforeEach(() => {
@@ -16,12 +16,5 @@ describe('InsetLegend', () => {
   afterEach(() => {
     context.chart.remove();
     context = {};
-  });
-
-  describe('prototype properties (deprecated)', () => {
-    it('should have translation', () => {
-      const legend = new InsetLegend(context.layer);
-      expect(legend.translation).toExist();
-    });
   });
 });

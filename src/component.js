@@ -1,9 +1,14 @@
 import {Chart} from './chart';
 
-export const Component = Chart.extend({
+const Component = Chart.extend({
 
 });
 
-export default function component() {
+function component() {
 
 }
+
+export {
+  Component,
+  component as default
+};

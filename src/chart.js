@@ -10,11 +10,9 @@ extend(Chart.prototype, {
   }
 });
 
-extend(Chart, {
-  extend(protoProps, staticProps) {
+Chart.extend = function extend(protoProps, staticProps) {
 
-  }
-});
+}
 
 export default function chart() {
 

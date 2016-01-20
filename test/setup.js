@@ -1,3 +1,7 @@
+// Explicitly load babelHelpers (used in rollup build)
+// TODO There must be a better way to do this
+eval(require('babel-core').buildExternalHelpers());
+
 // Setup browser globals
 var jsdom = require('jsdom').jsdom;
 global.document = jsdom('<!doctype html><html><body></body></html>');

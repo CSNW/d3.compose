@@ -1,7 +1,7 @@
 import {createSeriesDraw, types, connect} from '../helpers';
 import chart from '../chart';
 
-export const Bars = createSeriesDraw({
+const Bars = createSeriesDraw({
   select,
   enter,
   update,
@@ -23,7 +23,11 @@ export const mapState = (state) => {
 };
 
 const bars = chart(connect(mapState)(Bars));
-export default bars;
+
+export {
+  Bars,
+  bars as default
+};
 
 export function select(props) {
 
