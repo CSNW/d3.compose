@@ -3,8 +3,9 @@ const slice = Array.prototype.slice;
 export function _assign(obj, extensions, undefinedOnly) {
   extensions.forEach((extension) => {
     Object.keys(extension).forEach((key) => {
-      if (!undefinedOnly || obj[key] === void 0)
+      if (!undefinedOnly || obj[key] === void 0) {
         obj[key] = extension[key];
+      }
     });
   });
 
@@ -28,7 +29,9 @@ export function defaults(obj) {
 }
 
 export function objectEach(obj, fn) {
-  if (!obj) return;
+  if (!obj) {
+    return;
+  }
 
   Object.keys(obj).forEach((key) => {
     fn(obj[key], key, obj);

@@ -21,17 +21,18 @@ assign(Chart, {
       // inherits sets constructor, remove from protoProps
       protoProps = assign({}, protoProps);
       delete protoProps.constructor;
-    }
-    else {
+    } else {
       Child = function() { return Parent.apply(this, arguments); };
     }
 
     inherits(Child, Parent);
 
-    if (staticProps)
+    if (staticProps) {
       assign(Child, staticProps);
-    if (protoProps)
+    }
+    if (protoProps) {
       assign(Child.prototype, protoProps);
+    }
 
     return Child;
   }

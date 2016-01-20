@@ -20,9 +20,9 @@ describe('createDraw', () => {
       subselection,
       props: {}
     });
-  })
+  });
   afterEach(() => {
-    context = {}
+    context = {};
   });
 
   it('should select in draw function', () => {
