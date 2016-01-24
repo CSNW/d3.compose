@@ -1,5 +1,5 @@
-export default function connect(mapStateToProps, mapDispatchToProps, merge) {
+export default function connect(mapStateToProps, mapDispatchToProps, mergeProps, options) {
   return (Chart) => {
-
+    return Chart;
   };
 }

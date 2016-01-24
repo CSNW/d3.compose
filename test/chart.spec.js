@@ -1,6 +1,6 @@
 import expect from 'expect';
 import {objectEach} from '../src/utils';
-import {Chart} from '../src/Chart';
+import {Chart} from '../src/chart';
 
 describe('Chart', () => {
   describe('extend', () => {

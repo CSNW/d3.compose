@@ -1,5 +1,6 @@
 const types = {
   number: {},
-  string: {}
+  string: {},
+  any: {}
 };
 export default types;

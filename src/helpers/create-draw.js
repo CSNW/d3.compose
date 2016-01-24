@@ -1,5 +1,15 @@
 import {curry} from '../utils';
 
+const selectError = `d3.compose: select did not return a properly joined / data-bound selection
+
+Example: createDraw({
+  select: function(props) {
+    return this.selectAll('rect').data(props.data, props.key);
+    //          ^ join elements   ^ to data
+    //   ^ return joined / data-bound selection
+  }
+});`
+
 export default function createDraw(steps) {
   return (selection, props) => {
     const {
@@ -11,6 +21,10 @@ export default function createDraw(steps) {
     } = prepareSteps(steps, props);
 
     const selected = select.call(selection);
+
+    if (!selected || !selected.exit)
+      throw new Error(selectError);
+
     selected.exit().call(exit);
     selected.call(update);
     selected.enter().call(enter);
@@ -20,7 +34,7 @@ export default function createDraw(steps) {
 
 export function prepareSteps(steps, props) {
   const {
-    select = function() { return this; },
+    select,
     enter = () => {},
     update = () => {},
     merge = () => {},

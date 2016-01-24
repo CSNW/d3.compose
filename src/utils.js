@@ -11,18 +11,10 @@ export function _assign(obj, extensions, undefinedOnly) {
 
   return obj;
 }
+
 export const assign = Object.assign || function(obj) {
   return _assign(obj, slice.call(arguments, 1));
 };
-
-export function curry(fn) {
-  const values = slice.call(arguments, 1);
-
-  return function() {
-    var args = slice.call(arguments);
-    return fn.apply(this, values.concat(args));
-  };
-}
 
 export function defaults(obj) {
   return _assign(obj, slice.call(arguments, 1), true);
@@ -36,6 +28,19 @@ export function objectEach(obj, fn) {
   Object.keys(obj).forEach((key) => {
     fn(obj[key], key, obj);
   });
+}
+
+export function curry(fn) {
+  const values = slice.call(arguments, 1);
+
+  return function() {
+    var args = slice.call(arguments);
+    return fn.apply(this, values.concat(args));
+  };
+}
+
+export function isUndefined(value) {
+  return value === void 0;
 }
 
 export function inherits(Child, Parent) {
@@ -64,6 +69,8 @@ const utils = {
   assign,
   defaults,
   objectEach,
+  curry,
+  isUndefined,
   inherits
 };
 export default utils;

@@ -1,10 +1,35 @@
-import {assign, inherits} from './utils';
+import {assign, inherits, objectEach, isUndefined} from './utils';
+import {checkProp} from './helpers';
+
+const defaultProps = {};
 
 export function Chart(selection, props) {
-
+  this.base = selection;
+  this.setProps(props);
 }
 
 assign(Chart.prototype, {
+  setProps(props) {
+    const properties = this.constructor && this.constructor.properties;
+    if (!properties) {
+      this.props = props;
+      return;
+    }
+
+    // Get defaults and check props
+    const loaded = assign({}, props);
+    objectEach(properties, (definition, key) => {
+      const prop = loaded[key];
+
+      if (!isUndefined(prop))
+        checkProp(prop, definition);
+      else if (definition.getDefault)
+        loaded[key] = definition.getDefault.call(this, props);
+    });
+
+    this.props = loaded;
+  },
+
   render() {
 
   }
@@ -38,6 +63,13 @@ assign(Chart, {
   }
 });
 
-export default function chart() {
+export default function chart(Type) {
+  return (id, props) => {
+    if (!props) {
+      props = id;
+      id = undefined;
+    }
 
+    return {type: Type, id, props};
+  };
 }
