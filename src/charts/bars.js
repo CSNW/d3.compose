@@ -32,7 +32,7 @@ export const Bars = series.createSeriesDraw({
 
   enter({yValue, yScale, offset, onMouseEnterBar, onMouseLeaveBar}) {
     this.append('rect')
-      .attr('y', (d, i) => bar0(yValue, yScale, offset, d, i))
+      .attr('y', (d, i, j) => bar0(yValue, yScale, offset, d, i, j))
       .attr('height', 0)
       .on('mouseenter', onMouseEnterBar)
       .on('mouseleave', onMouseLeaveBar);
@@ -43,16 +43,16 @@ export const Bars = series.createSeriesDraw({
       .attr('x', (d, i, j) => barX(xValue, xScale, d, i, j))
       .attr('width', barWidth(xScale))
       .attr('class', className)
-      .style(style)
+      .style(style); // TODO Applies to all bars, update for (d, i)
 
     this.transition().call(prepareTransition(transition))
-      .attr('y', (d, i) => barY(yValue, yScale, offset, d, i))
-      .attr('height', (d, i) => barHeight(yValue, yScale, offset, d, i));
+      .attr('y', (d, i, j) => barY(yValue, yScale, offset, d, i, j))
+      .attr('height', (d, i, j) => barHeight(yValue, yScale, offset, d, i, j));
   },
 
   exit({yValue, yScale, offset, transition}) {
     this.transition().call(prepareTransition(transition))
-      .attr('y', (d, i) => bar0(yValue, yScale, offset, d, i))
+      .attr('y', (d, i, j) => bar0(yValue, yScale, offset, d, i, j))
       .attr('height', 0)
       .remove();
   }
@@ -94,9 +94,9 @@ export default bars;
 // Helpers
 // -------
 
-export function bar0(yValue, yScale, offset, d, i) {
+export function bar0(yValue, yScale, offset, d, i, j) {
   const y0 = yScale(0);
-  const y = getY(yValue, yScale, d, i);
+  const y = getY(yValue, yScale, d, i, j);
 
   return y <= y0 ? y0 - offset : y0 + offset;
 }
@@ -113,9 +113,9 @@ export function barX(xValue, xScale, d, i, j) {
   return x - (width / 2);
 }
 
-export function barY(yValue, yScale, offset, d, i) {
+export function barY(yValue, yScale, offset, d, i, j) {
   const y0 = yScale(0);
-  const y = getY(yValue, yScale, d, i);
+  const y = getY(yValue, yScale, d, i, j);
 
   return y < y0 ? y : y0 + offset;
 }
@@ -124,9 +124,9 @@ export function barWidth(xScale) {
   return getWidth(xScale);
 }
 
-export function barHeight(yValue, yScale, offset, d, i) {
+export function barHeight(yValue, yScale, offset, d, i, j) {
   const y0 = yScale(0);
-  const y = getY(yValue, yScale, d, i);
+  const y = getY(yValue, yScale, d, i, j);
 
   const height = Math.abs(y0 - y - offset);
   return height > 0 ? height : 0;

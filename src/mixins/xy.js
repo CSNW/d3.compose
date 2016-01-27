@@ -54,8 +54,8 @@ export function getX(xValue, xScale, d, i, j) {
   return xScale(xValue(d, i), j);
 }
 
-export function getY(yValue, yScale, d, i) {
-  return yScale(yValue(d, i));
+export function getY(yValue, yScale, d, i, j) {
+  return yScale(yValue(d, i), j);
 }
 
 export function getMinMaxDomain(data, getValue) {

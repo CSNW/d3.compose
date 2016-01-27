@@ -1,12 +1,15 @@
 import d3 from 'd3';
 import {assign} from '../utils';
-import {getDimensions, types} from '../helpers';
+import {getDimensions, types, scaleBandSeries} from '../helpers';
+import {isSeriesData} from './series';
 import {properties as xyProperties, getX, getY, defaultXValue} from './xy';
 
-const defaultXScale = ({data, xValue}) => {
-  // TODO Use seriesOrdinal scale
-  return d3.scale.ordinal()
-    .domain(getOrdinalDomain(data, xValue || defaultXValue));
+const unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
+
+const getDefaultXScale = ({data, xValue}) => {
+  return scaleBandSeries()
+    .domain(getOrdinalDomain(data, xValue || defaultXValue))
+    .seriesCount(isSeriesData(data) ? data.length : 1);
 }
 
 export const properties = assign({},
@@ -14,7 +17,7 @@ export const properties = assign({},
   {
     xScale: {
       type: types.fn,
-      getDefault: defaultXScale
+      getDefault: getDefaultXScale
     },
     xScalePadding: {
       type: types.number,
@@ -33,8 +36,14 @@ export const prepare = (selection, props) => {
   var {xScale, yScale} = props;
 
   const dimensions = getDimensions(selection);
+
   xScale = xScale.copy()
-    .rangeRoundBands([0, dimensions.width], xScalePadding, xScaleOuterPadding);
+  if (xScale.rangeRoundBands) {
+    xScale.rangeRoundBands([0, dimensions.width], xScalePadding, xScaleOuterPadding);
+  } else {
+    throw new Error(unsupportedScale);
+  }
+
   yScale = yScale.copy()
     .range([dimensions.height, 0]);
 
@@ -47,17 +56,31 @@ export {
 };
 
 export function getWidth(xScale) {
-  // TODO Handle linear scales
-  return xScale.rangeBand ? xScale.rangeBand() : 1;
+  if (xScale.rangeBand) {
+    return xScale.rangeBand();
+  } else {
+    throw new Error(unsupportedScale);
+  }
 }
 
 export function getOrdinalDomain(data, getValue) {
-  // TODO
-  return [0, 1, 2];
+  if (!isSeriesData(data)) {
+    return data.map(getValue);
+  }
+
+  const values = data.reduce((memo, series, j) => {
+    const uniq = series.values
+      .map(getValue)
+      .filter(value => memo.indexOf(value < 0));
+
+    return memo.concat(uniq);
+  }, []);
+
+  return values.sort();
 }
 
 const xyValues = {
-  defaultXScale,
+  getDefaultXScale,
   properties,
   prepare,
   getX,

@@ -1,3 +1,3 @@
-export default function isChart(Chart) {
-  return Chart && Chart.prototype.render && Chart.prototype.setProps;
+export default function isChart(PossibleChart) {
+  return PossibleChart && PossibleChart.prototype && PossibleChart.prototype.render && PossibleChart.prototype.setProps && true || false;
 }

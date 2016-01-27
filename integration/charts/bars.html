@@ -7,35 +7,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="../../.tmp/d3.compose.css">
   <style>
-    .d3c-index-1 {
+    svg {
+      width: 400px;
+      height: 300px;
+      border: solid 1px #ccc;
+    }
+
+    .test {
       fill: red;
     }
   </style>
 </head>
 <body>
-  <svg id="chart" width="400" height="300" style="border: solid 1px #ccc;"></svg>
-  <svg id="chart2" width="400" height="300" style="border: solid 1px #ccc;"></svg>
+  <svg id="chart"></svg>
+  <svg id="chart2"></svg>
+  <svg id="chart3"></svg>
+  <svg id="chart4"></svg>
+  <svg id="chart5"></svg>
 
   <script src="../../node_modules/d3/d3.js"></script>
   <script src="../../.tmp/d3.compose-all.js"></script>
   <script type="text/javascript">
-    d3c.render(d3c.bars({
-      data: [1, 2, 3]
-    }), d3.select('#chart'));
+    function draw(props, id) {
+      d3c.render(d3c.bars(props), d3.select(id));
+    }
 
-    var xScale = d3c.helpers.scaleBandSeries()
-      .domain([0, 1, 2])
-      .seriesCount(2)
-      .seriesPadding(0.05);
+    draw({data: [1, 2, 3]}, '#chart');
 
-    d3c.render(d3c.bars({
-      xScale: xScale,
+    draw({
+      xScale: d3c.helpers.scaleBandSeries()
+        .domain([0, 1, 2])
+        .seriesCount(2)
+        .seriesPadding(0.05),
       yScale: d3.scale.linear().domain([0, 5]),
       data: [
         {values: [1, 2, 3]},
         {values: [3, 2, 1]}
       ]
-    }), d3.select('#chart2'));
+    }, '#chart2');
+
+    draw({
+      data: [
+        {values: [1, 2, 3]},
+        {values: [-3, -2, -1]}
+      ]
+    }, '#chart3');
+
+    draw({
+      data: [
+        {values: [{x: 0, y: 1, 'class': 'test'}, 2, 3]},
+        {values: [-3, -2, -1]}
+      ],
+      className: (d) => d['class']
+    }, '#chart4');
+
+    draw({
+      data: [
+        {values: [1, 2, 3]},
+        {values: [-3, -2, -1]}
+      ],
+      style: {fill: 'green'}
+    }, '#chart5');
   </script>
 </body>
 </html>

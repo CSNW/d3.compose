@@ -15,6 +15,7 @@ export default function scaleBandSeries() {
   var _range, _innerPadding, _outerPadding;
 
   function scale(value, seriesIndex) {
+    seriesIndex = _seriesCount > 1 && _adjacent && seriesIndex ? seriesIndex : 0;
     const scaled = underlying(value);
     const width = scale.rangeBand();
     const padding = getPadding();
@@ -46,8 +47,7 @@ export default function scaleBandSeries() {
   };
 
   scale.domain = function(values) {
-    if (!arguments.length)
-      return underlying.domain();
+    if (!arguments.length) return underlying.domain();
 
     underlying.domain(values);
     return scale;
@@ -57,11 +57,23 @@ export default function scaleBandSeries() {
     _range = range;
     _innerPadding = innerPadding;
     _outerPadding = outerPadding;
-    underlying.rangeRoundBands(range, innerPadding, outerPadding);
+
+    if (!isUndefined(outerPadding)) {
+      underlying.rangeRoundBands(range, innerPadding, outerPadding);
+    } else if (!isUndefined(innerPadding)) {
+      underlying.rangeRoundBands(range, innerPadding);
+    } else {
+      underlying.rangeRoundBands(range);
+    }
+
     return scale;
   };
 
   scale.rangeBand = function() {
+    if (!_adjacent || _seriesCount <= 1) {
+      return underlying.rangeBand();
+    }
+
     return (underlying.rangeBand() / _seriesCount) - getPadding();
   };
 
@@ -85,7 +97,11 @@ export default function scaleBandSeries() {
   scale._ordinalSeries = true;
 
   function getPadding() {
-    var width = underlying.rangeBand() / _seriesCount;
+    if (!_adjacent || _seriesCount <= 1) {
+      return 0;
+    }
+
+    const width = underlying.rangeBand() / _seriesCount;
     return _seriesPadding * width;
   }
 
