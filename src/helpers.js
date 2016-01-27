@@ -6,7 +6,7 @@ import createDraw from './helpers/create-draw';
 import getDimensions from './helpers/get-dimensions';
 import isChart from './helpers/is-chart';
 import prepareTransition from './helpers/prepare-transition';
-import ordinalSeriesScale from './helpers/ordinal-series-scale';
+import scaleBandSeries from './helpers/scale-band-series';
 import types from './helpers/types';
 
 const helpers = {
@@ -18,7 +18,7 @@ const helpers = {
   getDimensions,
   isChart,
   prepareTransition,
-  ordinalSeriesScale,
+  scaleBandSeries,
   types
 };
 
@@ -32,6 +32,6 @@ export {
   getDimensions,
   isChart,
   prepareTransition,
-  ordinalSeriesScale,
+  scaleBandSeries,
   types
 };

@@ -4,8 +4,12 @@ import {
   isUndefined
 } from '../utils';
 
-export default function ordinalSeriesScale(props) {
+// Note: Will need to be updated for compatibility with v3 and v4
+// (v3 = ordinal + rangeRoundBands, v4 = band + rangeRound)
+
+export default function scaleBandSeries() {
   const underlying = d3.scale.ordinal();
+  var _adjacent = true;
   var _seriesCount = 1;
   var _seriesPadding = 0;
   var _range, _innerPadding, _outerPadding;
@@ -16,22 +20,26 @@ export default function ordinalSeriesScale(props) {
     const padding = getPadding();
 
     return scaled + (padding / 2) + (seriesIndex * (width + padding)) + (width / 2);
-  };
+  }
 
-  // TODO scale.adjacent: true/false
   // TODO centered value
 
+  scale.adjacent = function(value) {
+    if (!arguments.length) return _adjacent;
+
+    _adjacent = value;
+    return scale;
+  };
+
   scale.seriesCount = function(count) {
-    if (!arguments.length)
-      return _seriesCount;
+    if (!arguments.length) return _seriesCount;
 
     _seriesCount = count;
     return scale;
   };
 
   scale.seriesPadding = function(value) {
-    if (!arguments.length)
-      return _seriesPadding;
+    if (!arguments.length) return _seriesPadding;
 
     _seriesPadding = value;
     return scale;
@@ -58,12 +66,20 @@ export default function ordinalSeriesScale(props) {
   };
 
   scale.copy = function() {
-    return ordinalSeriesScale({
-      seriesCount: _seriesCount,
-      seriesPadding: _seriesPadding,
-      domain: underlying.domain(),
-      rangeRoundBands: [_range, _innerPadding, _outerPadding]
-    });
+    const copied = scaleBandSeries()
+      .seriesCount(_seriesCount)
+      .seriesPadding(_seriesPadding)
+      .domain(underlying.domain());
+
+    if (!isUndefined(_outerPadding)) {
+      copied.rangeRoundBands(_range, _innerPadding, _outerPadding);
+    } else if (!isUndefined(_innerPadding)) {
+      copied.rangeRoundBands(_range, _innerPadding);
+    } else if (!isUndefined(_range)) {
+      copied.rangeRoundBands(_range);
+    }
+
+    return copied;
   };
 
   scale._ordinalSeries = true;
@@ -72,20 +88,6 @@ export default function ordinalSeriesScale(props) {
     var width = underlying.rangeBand() / _seriesCount;
     return _seriesPadding * width;
   }
-
-  objectEach(props, (value, key) => {
-    if (key == 'rangeRoundBands') {
-      if (!isUndefined(value[2])) {
-        scale.rangeRoundBands(value[0], value[1], value[2]);
-      } else if (!isUndefined(value[1])) {
-        scale.rangeRoundBands(value[0], value[1]);
-      } else if (!isUndefined(value[0])) {
-        scale.rangeRoundBands(value[0]);
-      }
-    } else if (scale[key]) {
-      scale[key](value);
-    }
-  });
 
   return scale;
 }

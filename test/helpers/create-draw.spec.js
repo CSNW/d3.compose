@@ -52,6 +52,7 @@ describe('createDraw', () => {
 
     const enter = createSpy();
     const draw = createDraw({
+      select: () => subselection,
       enter
     });
 
@@ -66,6 +67,7 @@ describe('createDraw', () => {
 
     const update = createSpy();
     const draw = createDraw({
+      select: () => subselection,
       update
     });
 
@@ -80,6 +82,7 @@ describe('createDraw', () => {
 
     const merge = createSpy();
     const draw = createDraw({
+      select: () => subselection,
       merge
     });
 
@@ -94,6 +97,7 @@ describe('createDraw', () => {
 
     const exit = createSpy();
     const draw = createDraw({
+      select: () => subselection,
       exit
     });
 

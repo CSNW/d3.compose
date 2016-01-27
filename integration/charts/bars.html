@@ -23,11 +23,10 @@
       data: [1, 2, 3]
     }), d3.select('#chart'));
 
-    var xScale = d3c.helpers.ordinalSeriesScale({
-      domain: [0, 1, 2],
-      seriesCount: 2,
-      seriesPadding: 0.05
-    });
+    var xScale = d3c.helpers.scaleBandSeries()
+      .domain([0, 1, 2])
+      .seriesCount(2)
+      .seriesPadding(0.05);
 
     d3c.render(d3c.bars({
       xScale: xScale,

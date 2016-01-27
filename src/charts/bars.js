@@ -1,12 +1,10 @@
 import {
-  assign,
-  isUndefined
+  assign
 } from '../utils';
 import {
   types,
   createPrepare,
   connect,
-  getDimensions,
   prepareTransition
 } from '../helpers';
 import {

@@ -52,6 +52,7 @@ export function getWidth(xScale) {
 }
 
 export function getOrdinalDomain(data, getValue) {
+  // TODO
   return [0, 1, 2];
 }
 
