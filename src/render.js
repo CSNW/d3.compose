@@ -1,3 +1,4 @@
 export default function render(chart, selection, options) {
-  chart.type(selection, chart.props);
+  const instance = new chart.type(selection, chart.props);
+  instance.render();
 }

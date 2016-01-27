@@ -18,7 +18,7 @@ export default function createDraw(steps) {
       update,
       merge,
       exit
-    } = prepareSteps(steps, props);
+    } = prepareSteps(steps, selection, props);
 
     const selected = select.call(selection);
 
@@ -32,14 +32,17 @@ export default function createDraw(steps) {
   };
 }
 
-export function prepareSteps(steps, props) {
+export function prepareSteps(steps, selection, props) {
   const {
+    prepare = (selection, props) => props,
     select,
     enter = () => {},
     update = () => {},
     merge = () => {},
     exit = function() { this.remove(); }
   } = steps;
+
+  props = prepare(selection, props);
 
   return {
     select: curry(select, props),

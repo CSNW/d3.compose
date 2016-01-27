@@ -28,15 +28,21 @@ export const properties = {
 }
 
 export function createSeriesDraw(steps) {
-  const drawValues = createDraw(steps);
+  const {prepare} = steps;
+  const drawValues = createDraw(assign({}, steps, {prepare: undefined}));
+  const draw = (selection, props) => {
+    if (prepare)
+      props = prepare(selection, props);
 
-  return (selection, props) => {
     const {
-      data,
       seriesKey,
       seriesClass,
       seriesStyle
     } = props;
+    var {data} = props;
+
+    if (!isSeriesData(data))
+      data = [{values: data}];
 
     // Create series layers
     const series = selection.selectAll('[data-series]')
@@ -54,6 +60,10 @@ export function createSeriesDraw(steps) {
 
     drawValues(series, props);
   };
+
+  assign(draw, steps);
+
+  return draw;
 }
 
 export function isSeriesData(data) {

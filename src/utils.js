@@ -39,8 +39,30 @@ export function curry(fn) {
   };
 }
 
-export function isUndefined(value) {
-  return value === void 0;
+export function isBoolean(obj) {
+  return obj === true || obj === false;
+}
+export function isObject(obj) {
+  var type = typeof obj;
+  return type === 'function' || type === 'object' && !!obj;
+}
+export function isNumber(obj) {
+  return toString.call(obj) === '[object Number]';
+}
+export function isString(obj) {
+  return toString.call(obj) === '[object String]';
+}
+export function isUndefined(obj) {
+  return obj === void 0;
+}
+
+export var isFunction = function(obj) {
+  return toString.call(obj) === '[object Function]';
+};
+if (typeof /./ != 'function' && typeof Int8Array != 'object') {
+  isFunction = function(obj) {
+    return typeof obj == 'function' || false;
+  };
 }
 
 export function inherits(Child, Parent) {
@@ -70,7 +92,12 @@ const utils = {
   defaults,
   objectEach,
   curry,
+  isBoolean,
+  isObject,
+  isNumber,
+  isString,
   isUndefined,
+  isFunction,
   inherits
 };
 export default utils;
