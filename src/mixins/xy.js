@@ -4,8 +4,12 @@ import {getDimensions, types} from '../helpers';
 import {getSeriesMin, getSeriesMax} from './series';
 
 export const defaultKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;
-export const defaultXValue = (d, i) => !isUndefined(d && d.x) ? d.x : Array.isArray(d) ? d[0] : i;
-export const defaultYValue = (d) => !isUndefined(d && d.y) ? d.y : Array.isArray(d) ? d[1] : d;
+export const defaultXValue = (d, i) => {
+  return !isUndefined(d) && !isUndefined(d.x) ? d.x : (Array.isArray(d) ? d[0] : i);
+}
+export const defaultYValue = (d) => {
+  return !isUndefined(d) && !isUndefined(d.y) ? d.y : (Array.isArray(d) ? d[1] : d);
+}
 export const getDefaultXScale = ({data, xValue}) => {
   return d3.scale.linear()
     .domain(getMinMaxDomain(data, xValue || defaultXValue));
