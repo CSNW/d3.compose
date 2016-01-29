@@ -7,6 +7,8 @@ import render from './src/render';
 
 import bars, {Bars} from './src/charts/bars';
 import lines, {Lines} from './src/charts/lines';
+
+import text, {Text} from './src/components/text';
 import title, {Title} from './src/components/title';
 
 const d3c = d3.compose = {
@@ -23,6 +25,9 @@ const d3c = d3.compose = {
   Bars,
   lines,
   Lines,
+
+  text,
+  Text,
   title,
   Title
 };

@@ -1,14 +1,14 @@
 import expect from 'expect';
-import {Title} from '../../src/components/title';
+import {Text} from '../../src/components/text';
 
-describe('Title', () => {
+describe('Text', () => {
   var context = {};
 
   beforeEach(() => {
     const chart = d3.select('body').append('svg').attr('id', 'chart');
     const layer = chart.append('g');
 
-    context ={
+    context = {
       chart,
       layer
     };

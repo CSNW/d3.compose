@@ -16,6 +16,19 @@ export const assign = Object.assign || function(obj) {
   return _assign(obj, slice.call(arguments, 1));
 };
 
+export function contains(arr, item) {
+  return arr.indexOf(item) >= 0;
+}
+
+export function curry(fn) {
+  const values = slice.call(arguments, 1);
+
+  return function() {
+    var args = slice.call(arguments);
+    return fn.apply(this, values.concat(args));
+  };
+}
+
 export function defaults(obj) {
   return _assign(obj, slice.call(arguments, 1), true);
 }
@@ -28,15 +41,6 @@ export function objectEach(obj, fn) {
   Object.keys(obj).forEach((key) => {
     fn(obj[key], key, obj);
   });
-}
-
-export function curry(fn) {
-  const values = slice.call(arguments, 1);
-
-  return function() {
-    var args = slice.call(arguments);
-    return fn.apply(this, values.concat(args));
-  };
 }
 
 export function isBoolean(obj) {
@@ -89,9 +93,10 @@ export function inherits(Child, Parent) {
 
 const utils = {
   assign,
+  contains,
+  curry,
   defaults,
   objectEach,
-  curry,
   isBoolean,
   isObject,
   isNumber,

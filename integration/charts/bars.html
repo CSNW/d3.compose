@@ -19,20 +19,19 @@
   </style>
 </head>
 <body>
-  <svg id="chart"></svg>
-  <svg id="chart2"></svg>
-  <svg id="chart3"></svg>
-  <svg id="chart4"></svg>
-  <svg id="chart5"></svg>
+  <div id="charts"></div>
 
   <script src="../../node_modules/d3/d3.js"></script>
   <script src="../../.tmp/d3.compose-all.js"></script>
   <script type="text/javascript">
-    function draw(props, id) {
-      d3c.render(d3c.bars(props), d3.select(id));
+    var charts = d3.select('#charts');
+    var id = 1;
+    function draw(props) {
+      var selection = charts.append('svg').attr('id', 'chart-' + (id++));
+      d3c.render(d3c.bars(props), selection);
     }
 
-    draw({data: [1, 2, 3]}, '#chart');
+    draw({data: [1, 2, 3]});
 
     draw({
       xScale: d3c.helpers.scaleBandSeries()
@@ -44,14 +43,14 @@
         {values: [1, 2, 3]},
         {values: [3, 2, 1]}
       ]
-    }, '#chart2');
+    });
 
     draw({
       data: [
         {values: [1, 2, 3]},
         {values: [-3, -2, -1]}
       ]
-    }, '#chart3');
+    });
 
     draw({
       data: [
@@ -59,7 +58,7 @@
         {values: [-3, -2, -1]}
       ],
       className: (d) => d['class']
-    }, '#chart4');
+    });
 
     draw({
       data: [
@@ -67,7 +66,7 @@
         {values: [-3, -2, -1]}
       ],
       style: {fill: 'green'}
-    }, '#chart5');
+    });
   </script>
 </body>
 </html>

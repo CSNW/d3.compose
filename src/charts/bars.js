@@ -62,6 +62,12 @@ Bars.properties = assign({},
   series.properties,
   xyValues.properties,
   {
+    className: {
+      type: types.any
+    },
+    style: {
+      type: types.any
+    },
     offset: {
       type: types.number,
       getDefault: () => 0

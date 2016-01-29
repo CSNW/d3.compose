@@ -1,14 +1,15 @@
 import expect from 'expect';
-import {Title} from '../../src/components/title';
+import d3 from 'd3';
+import {Lines} from '../../src/charts/lines';
 
-describe('Title', () => {
+describe('Lines', () => {
   var context = {};
 
   beforeEach(() => {
     const chart = d3.select('body').append('svg').attr('id', 'chart');
     const layer = chart.append('g');
 
-    context ={
+    context = {
       chart,
       layer
     };

@@ -9,10 +9,10 @@ describe('Bars', () => {
     const chart = d3.select('body').append('svg').attr('id', 'chart');
     const layer = chart.append('g');
 
-    Object.assign(context, {
+    context = {
       chart,
       layer
-    });
+    };
   });
   afterEach(() => {
     context.chart.remove();

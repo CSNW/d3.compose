@@ -4,6 +4,8 @@ import createPrepare from './helpers/create-prepare';
 import connect from './helpers/connect';
 import createDraw from './helpers/create-draw';
 import getDimensions from './helpers/get-dimensions';
+import getRotate from './helpers/get-rotate';
+import getTranslate from './helpers/get-translate';
 import isChart from './helpers/is-chart';
 import prepareTransition from './helpers/prepare-transition';
 import scaleBandSeries from './helpers/scale-band-series';
@@ -16,6 +18,8 @@ const helpers = {
   connect,
   createDraw,
   getDimensions,
+  getRotate,
+  getTranslate,
   isChart,
   prepareTransition,
   scaleBandSeries,
@@ -30,6 +34,8 @@ export {
   connect,
   createDraw,
   getDimensions,
+  getRotate,
+  getTranslate,
   isChart,
   prepareTransition,
   scaleBandSeries,

@@ -1,27 +1,18 @@
-import {createDraw, types} from '../helpers';
+import {assign} from '../utils';
+import {} from '../helpers';
 import component from '../component';
+import {Text} from './text';
 
-export const Title = createDraw({
-  select(props) {
+export const Title = (selection, props) => {
+  Text(selection, props);
+};
 
-  },
-  enter(props) {
-
-  },
-  update(props) {
-
-  },
-  merge(props) {
-
-  },
-  exit(props) {
+Title.properties = assign({},
+  Text.properties,
+  {
 
   }
-});
-
-Title.properties = {
-  text: types.string
-};
+);
 
 const title = component(Title);
 export default title;
