@@ -113,8 +113,8 @@ export function prepareLabel(element, props, d, i, j) {
   const {xValue, xScale, yValue, yScale} = props;
   const textElement = d3.select(element).select('text').node();
 
-  const x = xy.getX(xValue, xScale, d, i, j);
-  const y = xy.getY(yValue, yScale, d, i, j);
+  const x = xy.getValue(xValue, xScale, d, i, j);
+  const y = xy.getValue(yValue, yScale, d, i, j);
   const layout = calculateLabelLayout(textElement, x, y, props);
 
   return {

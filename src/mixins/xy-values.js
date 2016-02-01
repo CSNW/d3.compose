@@ -1,12 +1,11 @@
-import d3 from 'd3';
 import {assign} from '../utils';
 import {getDimensions, types, scaleBandSeries} from '../helpers';
 import {isSeriesData} from './series';
-import {properties as xyProperties, getX, getY, defaultXValue} from './xy';
+import {properties as xyProperties, getValue, defaultXValue} from './xy';
 
-const unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
+export const unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
 
-const getDefaultXScale = ({data, xValue}) => {
+export const getDefaultXScale = ({data, xValue}) => {
   return scaleBandSeries()
     .domain(getOrdinalDomain(data, xValue || defaultXValue))
     .seriesCount(isSeriesData(data) ? data.length : 1);
@@ -51,8 +50,7 @@ export const prepare = (selection, props) => {
 };
 
 export {
-  getX,
-  getY
+  getValue
 };
 
 export function getWidth(xScale) {
@@ -83,8 +81,7 @@ const xyValues = {
   getDefaultXScale,
   properties,
   prepare,
-  getX,
-  getY,
+  getValue,
   getWidth,
   getOrdinalDomain
 }

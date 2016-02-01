@@ -103,3 +103,16 @@ export function getSeriesMin(data, getValue) {
     return getMin(data);
   }
 }
+
+const series = {
+  defaultSeriesKey,
+  defaultSeriesClass,
+  defaultSeriesStyle,
+  defaultSeriesValues,
+  properties,
+  createSeriesDraw,
+  isSeriesData,
+  getSeriesMax,
+  getSeriesMin
+}
+export default series;

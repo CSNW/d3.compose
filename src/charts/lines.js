@@ -13,11 +13,6 @@ import {
 } from '../mixins';
 import chart from '../chart';
 
-const {
-  getX,
-  getY
-} = xy;
-
 /**
   Lines
 */
@@ -37,8 +32,8 @@ export const Lines = series.createSeriesDraw({
 
   merge({xValue, xScale, yValue, yScale, interpolate}) {
     const line = d3.svg.line()
-      .x((d, i, j) => getX(xValue, xScale, d, i, j))
-      .y((d, i, j) => getY(yValue, yScale, d, i, j));
+      .x((d, i, j) => xy.getValue(xValue, xScale, d, i, j))
+      .y((d, i, j) => xy.getValue(yValue, yScale, d, i, j));
 
     if (interpolate) {
       line.interpolate(interpolate);

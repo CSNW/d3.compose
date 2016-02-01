@@ -1,16 +1,22 @@
-import * as series from './mixins/series';
-import * as xy from './mixins/xy';
+import series from './mixins/series';
+import xy from './mixins/xy';
+import xyInverted from './mixins/xy-inverted';
 import xyValues from './mixins/xy-values';
+import xyValuesInverted from './mixins/xy-values-inverted';
 
 const mixins = {
   series,
   xy,
-  xyValues
+  xyValues,
+  xyInverted,
+  xyValuesInverted
 };
 
 export {
   mixins as default,
   series,
   xy,
-  xyValues
+  xyInverted,
+  xyValues,
+  xyValuesInverted
 };

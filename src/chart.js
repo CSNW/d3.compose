@@ -9,7 +9,7 @@ export function Chart(selection, props) {
 }
 
 assign(Chart.prototype, {
-  setProps(props) {
+  setProps(props = defaultProps) {
     const properties = this.constructor && this.constructor.properties;
     if (!properties) {
       this.props = props;

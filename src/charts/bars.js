@@ -14,8 +14,7 @@ import {
 import chart from '../chart';
 
 const {
-  getX,
-  getY,
+  getValue,
   getWidth
 } = xyValues;
 
@@ -89,7 +88,10 @@ Bars.properties = assign({},
 export const mapState = (state) => {
   // TODO Get offset axis / offset from state
 };
-export const connection = connect(mapState);
+export const mapDispatch = (dispatch) => {
+  // TODO "bind" onMouseEnterBar and onMouseLeaveBar
+}
+export const connection = connect(mapState, mapDispatch);
 
 /**
   bars
@@ -102,13 +104,13 @@ export default bars;
 
 export function bar0(yValue, yScale, offset, d, i, j) {
   const y0 = yScale(0);
-  const y = getY(yValue, yScale, d, i, j);
+  const y = getValue(yValue, yScale, d, i, j);
 
   return y <= y0 ? y0 - offset : y0 + offset;
 }
 
 export function barX(xValue, xScale, d, i, j) {
-  const x = getX(xValue, xScale, d, i, j);
+  const x = getValue(xValue, xScale, d, i, j);
 
   if (!xScale._ordinalSeries) {
     return x;
@@ -121,7 +123,7 @@ export function barX(xValue, xScale, d, i, j) {
 
 export function barY(yValue, yScale, offset, d, i, j) {
   const y0 = yScale(0);
-  const y = getY(yValue, yScale, d, i, j);
+  const y = getValue(yValue, yScale, d, i, j);
 
   return y < y0 ? y : y0 + offset;
 }
@@ -132,7 +134,7 @@ export function barWidth(xScale) {
 
 export function barHeight(yValue, yScale, offset, d, i, j) {
   const y0 = yScale(0);
-  const y = getY(yValue, yScale, d, i, j);
+  const y = getValue(yValue, yScale, d, i, j);
 
   const height = Math.abs(y0 - y - offset);
   return height > 0 ? height : 0;

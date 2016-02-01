@@ -5,8 +5,7 @@ import {mockSelection} from '../helpers/get-dimensions.spec';
 import {
   properties,
   prepare,
-  getX,
-  getY,
+  getValue,
   getMinMaxDomain
 } from '../../src/mixins/xy';
 
@@ -28,29 +27,16 @@ describe('xy', () => {
     }
   });
 
-  describe('getX', () => {
-    it('should get x for given values', () => {
-      const xScale = scaleBandSeries()
+  describe('getValue', () => {
+    it('should get value for given values and scale', () => {
+      const scale = scaleBandSeries()
         .seriesCount(2)
         .domain([1, 2, 3, 4])
         .rangeRoundBands([0, 100], 0, 0);
-      const xValue = (d, i) => d.x;
+      const value = (d, i) => d.x;
       const bandWidth = 25/2;
 
-      expect(getX(xValue, xScale, {x: 3}, 2, 1)).toEqual(50 + bandWidth + (bandWidth/2));
-    });
-  });
-
-  describe('getY', () => {
-    it('should get y for given values', () => {
-      const yScale = scaleBandSeries()
-        .seriesCount(2)
-        .domain([1, 2, 3, 4])
-        .rangeRoundBands([0, 200], 0, 0);
-      const yValue = (d, i) => d.y;
-      const bandWidth = 50/2;
-
-      expect(getY(yValue, yScale, {y: 3}, 2, 1)).toEqual(100 + bandWidth + (bandWidth/2));
+      expect(getValue(value, scale, {x: 3}, 2, 1)).toEqual(50 + bandWidth + (bandWidth/2));
     });
   });
 

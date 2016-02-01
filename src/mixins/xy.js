@@ -53,13 +53,9 @@ export const prepare = (selection, props) => {
   return assign({}, props, {xScale, yScale});
 };
 
-export function getX(xValue, xScale, d, i, j) {
-  // TODO verify series index
-  return xScale(xValue(d, i), j);
-}
-
-export function getY(yValue, yScale, d, i, j) {
-  return yScale(yValue(d, i), j);
+export function getValue(value, scale, d, i, j) {
+  // TODO verify series index for all cases (enter, update, merge, exit)
+  return scale(value(d, i), j);
 }
 
 export function getMinMaxDomain(data, getValue) {
@@ -70,3 +66,16 @@ export function getMinMaxDomain(data, getValue) {
 
   return [min, max];
 }
+
+const xy = {
+  defaultKey,
+  defaultXValue,
+  defaultYValue,
+  getDefaultXScale,
+  getDefaultYScale,
+  properties,
+  prepare,
+  getValue,
+  getMinMaxDomain
+}
+export default xy;
