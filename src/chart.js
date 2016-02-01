@@ -1,5 +1,5 @@
 import {assign, inherits, objectEach, isUndefined} from './utils';
-import {checkProp} from './helpers';
+import {checkProp, createChart, isChart, types} from './helpers';
 
 const defaultProps = {};
 
@@ -21,13 +21,30 @@ assign(Chart.prototype, {
     objectEach(properties, (definition, key) => {
       const prop = loaded[key];
 
-      if (!isUndefined(prop))
+      if (!isUndefined(prop)) {
+        // TODO Skip in production
         checkProp(prop, definition);
-      else if (definition.getDefault)
+      } else if (definition.getDefault) {
         loaded[key] = definition.getDefault.call(this, props);
+      }
     });
 
     this.props = loaded;
+  },
+
+  getLayout() {
+    // TODO Defaults
+    const {
+      top,
+      right,
+      bottom,
+      left,
+      width,
+      height,
+      margin
+    } = this.props;
+
+    return {top, right, bottom, left, width, height, margin};
   },
 
   render() {
@@ -36,6 +53,16 @@ assign(Chart.prototype, {
 });
 
 assign(Chart, {
+  properties: {
+    top: types.any,
+    right: types.any,
+    bottom: types.any,
+    left: types.any,
+    width: types.any,
+    height: types.any,
+    margin: types.any
+  },
+
   extend(protoProps, staticProps) {
     var Parent = this;
     var Child;
@@ -64,6 +91,10 @@ assign(Chart, {
 });
 
 export default function chart(Type) {
+  if (!isChart(Type)) {
+    Type = createChart(Type);
+  }
+
   return (id, props) => {
     if (!props) {
       props = id;

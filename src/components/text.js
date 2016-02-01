@@ -1,4 +1,4 @@
-import {assign, contains} from '../utils';
+import {assign} from '../utils';
 import {
   createDraw,
   getDimensions,
@@ -15,7 +15,9 @@ export const Text = createDraw({
     return assign({}, dimensions, props);
   },
   select({text}) {
-    return this.selectAll('text').data([text])
+    return this
+      .classed('d3c-text', true)
+      .selectAll('text').data(text ? [text] : []);
   },
   enter() {
     this.append('text');
@@ -39,20 +41,17 @@ Text.properties = {
   },
 
   textAlign: {
-    type: types.string,
-    validate: (value) => contains(['left', 'center', 'right'], value),
+    type: types.enum('left', 'center', 'right'),
     getDefault: () => 'center'
   },
 
   verticalAlign: {
-    type: types.string,
-    validate: (value) => contains(['top', 'middle', 'bottom'], value),
+    type: types.enum('top', 'middle', 'bottom'),
     getDefault: () => 'middle'
   },
 
   anchor: {
-    type: types.string,
-    validate: (value) => contains(['start', 'middle', 'end', 'inherit'], value),
+    type: types.enum('start', 'middle', 'end', 'inherit'),
     getDefault: ({textAlign}) => {
       return {
         left: 'start',

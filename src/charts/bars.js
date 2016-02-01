@@ -2,10 +2,10 @@ import {
   assign
 } from '../utils';
 import {
-  types,
   createPrepare,
   connect,
-  prepareTransition
+  prepareTransition,
+  types
 } from '../helpers';
 import {
   series,

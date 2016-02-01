@@ -1,3 +1,4 @@
+import alignText from './helpers/align-text';
 import checkProp from './helpers/check-prop';
 import createChart from './helpers/create-chart';
 import createPrepare from './helpers/create-prepare';
@@ -12,6 +13,7 @@ import scaleBandSeries from './helpers/scale-band-series';
 import types from './helpers/types';
 
 const helpers = {
+  alignText,
   checkProp,
   createChart,
   createPrepare,
@@ -28,6 +30,7 @@ const helpers = {
 
 export {
   helpers as default,
+  alignText,
   checkProp,
   createChart,
   createPrepare,

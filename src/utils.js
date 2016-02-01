@@ -43,6 +43,10 @@ export function objectEach(obj, fn) {
   });
 }
 
+export function toArray(arr) {
+  return slice.call(arr);
+}
+
 export function isBoolean(obj) {
   return obj === true || obj === false;
 }
