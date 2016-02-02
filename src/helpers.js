@@ -5,6 +5,7 @@ import createPrepare from './helpers/create-prepare';
 import connect from './helpers/connect';
 import createDraw from './helpers/create-draw';
 import getDimensions from './helpers/get-dimensions';
+import getLayer from './helpers/get-layer';
 import getRotate from './helpers/get-rotate';
 import getTranslate from './helpers/get-translate';
 import isChart from './helpers/is-chart';
@@ -20,6 +21,7 @@ const helpers = {
   connect,
   createDraw,
   getDimensions,
+  getLayer,
   getRotate,
   getTranslate,
   isChart,
@@ -37,6 +39,7 @@ export {
   connect,
   createDraw,
   getDimensions,
+  getLayer,
   getRotate,
   getTranslate,
   isChart,

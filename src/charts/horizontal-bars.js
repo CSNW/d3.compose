@@ -16,7 +16,8 @@ import {
   barX,
   barY,
   barWidth,
-  barHeight
+  barHeight,
+  mapDispatch
 } from './bars';
 
 /**
@@ -67,9 +68,6 @@ HorizontalBars.properties = assign({},
 
 export const mapState = (state) => {
   // TODO Get offset axis from state
-};
-export const mapDispatch = (dispatch) => {
-  // TODO "bind" onMouseEnterBar and onMouseLeaveBar
 };
 export const connection = connect(mapState, mapDispatch);
 

@@ -16,7 +16,7 @@ export const assign = Object.assign || function(obj) {
   return _assign(obj, slice.call(arguments, 1));
 };
 
-export function contains(arr, item) {
+export function includes(arr, item) {
   return arr.indexOf(item) >= 0;
 }
 
@@ -97,7 +97,7 @@ export function inherits(Child, Parent) {
 
 const utils = {
   assign,
-  contains,
+  includes,
   curry,
   defaults,
   objectEach,
