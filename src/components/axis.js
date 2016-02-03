@@ -6,7 +6,6 @@ import {
   objectEach
 } from '../utils';
 import {
-  getDimensions,
   getLayer,
   getTranslate,
   prepareTransition,
@@ -18,13 +17,6 @@ import component, {Component} from '../component';
   Axis
 */
 export const Axis = Component.extend({
-  setProps(props) {
-    const dimensions = getDimensions(this.base);
-    props = assign({}, dimensions, props);
-
-    return Component.prototype.setProps.call(this, props);
-  },
-
   render() {
     const {transform, axis, gridlines} = prepareProps(this.base, this.props);
     const layer = getLayer(this.base, 'axis')

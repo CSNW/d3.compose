@@ -1,5 +1,5 @@
 import {assign, inherits, objectEach, isUndefined} from './utils';
-import {checkProp, createChart, isChart, types} from './helpers';
+import {checkProp, createChart, getDimensions, isChart, types} from './helpers';
 
 const defaultProps = {};
 
@@ -29,7 +29,9 @@ assign(Chart.prototype, {
       }
     });
 
-    this.props = loaded;
+    // TODO Add during layout
+    const dimensions = getDimensions(this.base);
+    this.props = assign({}, dimensions, loaded);
   },
 
   getLayout() {

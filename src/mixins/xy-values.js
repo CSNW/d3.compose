@@ -1,5 +1,5 @@
 import {assign} from '../utils';
-import {getDimensions, types, scaleBandSeries} from '../helpers';
+import {types, scaleBandSeries} from '../helpers';
 import {isSeriesData} from './series';
 import {properties as xyProperties, getValue, defaultXValue} from './xy';
 
@@ -31,20 +31,18 @@ export const properties = assign({},
 
 export const prepare = (selection, props) => {
   // TODO Get dimensions from props
-  const {xScalePadding, xScaleOuterPadding} = props;
+  const {xScalePadding, xScaleOuterPadding, width, height} = props;
   var {xScale, yScale} = props;
-
-  const dimensions = getDimensions(selection);
 
   xScale = xScale.copy()
   if (xScale.rangeRoundBands) {
-    xScale.rangeRoundBands([0, dimensions.width], xScalePadding, xScaleOuterPadding);
+    xScale.rangeRoundBands([0, width], xScalePadding, xScaleOuterPadding);
   } else {
     throw new Error(unsupportedScale);
   }
 
   yScale = yScale.copy()
-    .range([dimensions.height, 0]);
+    .range([height, 0]);
 
   return assign({}, props, {xScale, yScale});
 };

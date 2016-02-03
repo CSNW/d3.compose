@@ -13,6 +13,7 @@ import labels, {Labels} from './src/charts/labels';
 import text, {Text} from './src/components/text';
 import title, {Title} from './src/components/title';
 import axis, {Axis} from './src/components/axis';
+import gridlines, {Gridlines} from './src/components/gridlines';
 
 const d3c = d3.compose = {
   VERSION: '{version}',
@@ -38,7 +39,9 @@ const d3c = d3.compose = {
   title,
   Title,
   axis,
-  Axis
+  Axis,
+  gridlines,
+  Gridlines
 };
 
 export default d3c;

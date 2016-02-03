@@ -1,7 +1,6 @@
 import {assign} from '../utils';
 import {
   createDraw,
-  getDimensions,
   getRotate,
   getTranslate,
   types
@@ -9,11 +8,6 @@ import {
 import component from '../component';
 
 export const Text = createDraw({
-  prepare(selection, props) {
-    // TODO Move to layout lifecycle
-    const dimensions = getDimensions(selection);
-    return assign({}, dimensions, props);
-  },
   select({text}) {
     return this
       .classed('d3c-text', true)

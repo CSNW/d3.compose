@@ -1,6 +1,6 @@
 import d3 from 'd3';
 import {assign, isUndefined} from '../utils';
-import {getDimensions, types} from '../helpers';
+import {types} from '../helpers';
 import {getSeriesMin, getSeriesMax} from './series';
 
 export const defaultKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;
@@ -43,12 +43,13 @@ export const properties = {
 };
 
 export const prepare = (selection, props) => {
-  // TODO Get dimensions from props
-  const dimensions = getDimensions(selection);
-  const xScale = props.xScale.copy()
-    .range([0, dimensions.width]);
-  const yScale = props.yScale.copy()
-    .range([dimensions.height, 0]);
+  const {width, height} = props;
+  var {xScale, yScale} = props;
+
+  xScale = xScale.copy()
+    .range([0, width]);
+  yScale = yScale.copy()
+    .range([height, 0]);
 
   return assign({}, props, {xScale, yScale});
 };
