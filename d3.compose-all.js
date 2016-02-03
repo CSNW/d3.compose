@@ -14,6 +14,7 @@ import text, {Text} from './src/components/text';
 import title, {Title} from './src/components/title';
 import axis, {Axis} from './src/components/axis';
 import gridlines, {Gridlines} from './src/components/gridlines';
+import legend, {Legend} from './src/components/legend';
 
 const d3c = d3.compose = {
   VERSION: '{version}',
@@ -41,7 +42,9 @@ const d3c = d3.compose = {
   axis,
   Axis,
   gridlines,
-  Gridlines
+  Gridlines,
+  legend,
+  Legend
 };
 
 export default d3c;

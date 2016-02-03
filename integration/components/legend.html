@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>d3.compose - gridlines</title>
+  <title>d3.compose - legend</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="../../.tmp/d3.compose.css">
   <style>
@@ -11,11 +11,6 @@
       width: 400px;
       height: 300px;
       border: solid 1px #ccc;
-    }
-
-    .d3c-gridline {
-      stroke: black;
-      fill: none;
     }
   </style>
 </head>
@@ -30,12 +25,16 @@
     function draw(props) {
       var chart = charts.append('svg').attr('id', 'chart-' + (id++));
 
-      d3c.render(d3c.gridlines(props), chart);
+      d3c.render(d3c.legend(props), chart);
     }
 
-    draw({scale: d3.scale.linear()});
+    var data = [
+      {text: 'A', key: 'a'},
+      {text: 'B', key: 'b'},
+      {text: 'C', key: 'c'}
+    ];
 
-    draw({scale: d3.scale.linear(), orientation: 'horizontal'});
+    draw({data: data});
   </script>
 </body>
 </html>

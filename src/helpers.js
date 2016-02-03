@@ -11,6 +11,7 @@ import getTranslate from './helpers/get-translate';
 import isChart from './helpers/is-chart';
 import prepareTransition from './helpers/prepare-transition';
 import scaleBandSeries from './helpers/scale-band-series';
+import stack from './helpers/stack';
 import types from './helpers/types';
 
 const helpers = {
@@ -27,6 +28,7 @@ const helpers = {
   isChart,
   prepareTransition,
   scaleBandSeries,
+  stack,
   types
 };
 
@@ -45,5 +47,6 @@ export {
   isChart,
   prepareTransition,
   scaleBandSeries,
+  stack,
   types
 };
