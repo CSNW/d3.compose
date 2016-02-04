@@ -79,6 +79,7 @@ export default function scaleBandSeries() {
 
   scale.copy = function() {
     const copied = scaleBandSeries()
+      .adjacent(_adjacent)
       .seriesCount(_seriesCount)
       .seriesPadding(_seriesPadding)
       .domain(underlying.domain());

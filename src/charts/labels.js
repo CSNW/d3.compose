@@ -70,7 +70,15 @@ export default labels;
 // -------
 
 export function getText(format, yValue, d, i) {
-  const value = !isUndefined(d) && !isUndefined(d.label) ? d.label : yValue(d, i);
+  var value;
+  if (d && !isUndefined(d.label)) {
+    value = d.label;
+  } else if (d && !isUndefined(d.__original_y)) {
+    value = d.__original_y;
+  } else {
+    value = yValue(d, i);
+  }
+
   return format ? format(value) : value;
 }
 
