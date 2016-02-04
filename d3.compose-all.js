@@ -3,7 +3,7 @@ import utils from './src/utils';
 import helpers from './src/helpers';
 import chart, {Chart} from './src/chart';
 import component, {Component} from './src/component';
-import render from './src/render';
+import Compose from './src/compose';
 
 import bars, {Bars} from './src/charts/bars';
 import lines, {Lines} from './src/charts/lines';
@@ -22,11 +22,11 @@ const d3c = d3.compose = {
   VERSION: '{version}',
   utils,
   helpers,
-  render,
   chart,
   Chart,
   component,
   Component,
+  Compose,
 
   bars,
   Bars,

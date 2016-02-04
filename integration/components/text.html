@@ -40,7 +40,8 @@
       var layer = group.append('g')
         .attr('width', 400).attr('height', 100);
 
-      d3c.render(d3c.text(props), layer);
+      var container = new d3c.Compose(layer);
+      container.draw(d3c.text(props));
     }
 
     draw({text: 'center x middle'});

@@ -1,15 +1,18 @@
 const slice = Array.prototype.slice;
 
-export function _assign(obj, extensions, undefinedOnly) {
+export function _assign(target, extensions, undefinedOnly) {
   extensions.forEach((extension) => {
-    Object.keys(extension).forEach((key) => {
-      if (!undefinedOnly || obj[key] === void 0) {
-        obj[key] = extension[key];
+    const keys = Object.keys(extension);
+    var key;
+    for (var i = 0, length = keys.length; i < length; i++) {
+      key = keys[i];
+      if (!undefinedOnly || target[key] === void 0) {
+        target[key] = extension[key];
       }
-    });
+    }
   });
 
-  return obj;
+  return target;
 }
 
 export const assign = Object.assign || function(obj) {
@@ -38,9 +41,12 @@ export function objectEach(obj, fn) {
     return;
   }
 
-  Object.keys(obj).forEach((key) => {
+  const keys = Object.keys(obj);
+  var key;
+  for (var i = 0, length = keys.length; i < length; i++) {
+    key = keys[i];
     fn(obj[key], key, obj);
-  });
+  }
 }
 
 export function toArray(arr) {

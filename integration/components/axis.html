@@ -35,8 +35,8 @@
     var id = 1;
     function draw(props) {
       var chart = charts.append('svg').attr('id', 'chart-' + (id++));
-
-      d3c.render(d3c.axis(props), chart);
+      var container = new d3c.Compose(chart);
+      container.draw(d3c.axis(props));
     }
 
     draw({scale: d3.scale.linear(), translation: {x: 50, y: 0}});

@@ -30,7 +30,8 @@
     var id = 1;
     function draw(props) {
       var selection = charts.append('svg').attr('id', 'chart-' + (id++));
-      d3c.render(d3c.lines(props), selection);
+      var container = new d3c.Compose(selection);
+      container.draw(d3c.lines(props));
     }
 
     // Simple
