@@ -1,7 +1,6 @@
 import d3 from 'd3';
 import {
   assign,
-  includes,
   isUndefined,
   objectEach
 } from '../utils';
@@ -24,10 +23,9 @@ export const Axis = Component.extend({
       .attr('transform', transform);
 
     if (gridlines) {
-      const gridlinesLayer = getLayer(this.base, 'gridlines')
-        .attr('class', 'd3c-axis-gridlines');
-
       // TODO Attach gridlines
+      // const gridlinesLayer = getLayer(this.base, 'gridlines')
+      //   .attr('class', 'd3c-axis-gridlines');
     } else {
       // TODO Detach gridlines
     }
@@ -96,7 +94,7 @@ export function drawAxis(selection, props) {
   const axis = createAxis(props);
 
   if (props.transition && !selection.selectAll('*').empty()) {
-    selection = selection.transition().call(prepareTransition(transition));
+    selection = selection.transition().call(prepareTransition(props.transition));
   }
 
   selection.call(axis);

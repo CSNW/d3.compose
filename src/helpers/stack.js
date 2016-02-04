@@ -1,8 +1,8 @@
 import d3 from 'd3';
-import {assign} from '../utils';
 import getTranslate from './get-translate';
 
 export default function stack(options) {
+  options = options || {};
   var {
     direction = 'vertical',
     origin = 'top',

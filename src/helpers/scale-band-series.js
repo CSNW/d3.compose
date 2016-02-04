@@ -1,8 +1,5 @@
 import d3 from 'd3';
-import {
-  objectEach,
-  isUndefined
-} from '../utils';
+import {isUndefined} from '../utils';
 
 // Note: Will need to be updated for compatibility with v3 and v4
 // (v3 = ordinal + rangeRoundBands, v4 = band + rangeRound)

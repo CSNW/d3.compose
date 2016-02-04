@@ -85,10 +85,10 @@ Bars.properties = assign({},
 // Connection
 // ----------
 
-export const mapState = (state) => {
+export const mapState = () => {
   // TODO Get offset axis / offset from state
 };
-export const mapDispatch = (dispatch) => {
+export const mapDispatch = () => {
   // TODO "bind" onMouseEnterBar and onMouseLeaveBar
 }
 export const connection = connect(mapState, mapDispatch);

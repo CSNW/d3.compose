@@ -1,5 +1,4 @@
 import d3 from 'd3';
-import {isFunction} from '../utils';
 import {alignText, createDraw, stack, getTranslate, types} from '../helpers';
 import component from '../component';
 
@@ -40,7 +39,7 @@ export const Legend = createDraw({
     // Label: Set text and vertically center
     this.select('.d3c-legend-label')
       .text(labelText)
-      .attr('transform', function(d, i, j) {
+      .attr('transform', function() {
         const offset = alignText(this, swatchHeight);
         return getTranslate(swatchWidth + 5, offset);
       });

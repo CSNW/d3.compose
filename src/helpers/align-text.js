@@ -9,8 +9,9 @@ export default function alignText(element, lineHeight) {
 
     // If line-height: normal, use estimate 1.14em
     // (actual line-height depends on browser and font)
+    // http://meyerweb.com/eric/thoughts/2008/05/06/line-height-abnormal/
     if (isNaN(cssLineHeight)) {
-      cssLineHeight = 1.15 * cssFontSize;
+      cssLineHeight = 1.14 * cssFontSize;
     }
 
     var cssAdjustment = -(cssLineHeight - cssFontSize) / 2;

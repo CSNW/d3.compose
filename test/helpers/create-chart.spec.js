@@ -1,5 +1,6 @@
 import expect, {createSpy} from 'expect';
 import {Chart} from '../../src/chart';
+import mockSelection from '../_helpers/mock-selection';
 import createChart from '../../src/helpers/create-chart';
 
 describe('createChart', () => {
@@ -15,7 +16,7 @@ describe('createChart', () => {
 
     const Wrapped = createChart(Draw);
 
-    const selection = {};
+    const selection = mockSelection();
     const props = {};
     const instance = new Wrapped(selection, props);
 
@@ -23,6 +24,7 @@ describe('createChart', () => {
 
     instance.render();
     expect(Draw).toHaveBeenCalled();
-    expect(Draw).toHaveBeenCalledWith(selection, props);
+    expect(Draw.calls[0].arguments[0]).toBe(selection);
+    expect(Draw.calls[0].arguments[1]).toEqual({width: 0, height: 0});
   });
 });

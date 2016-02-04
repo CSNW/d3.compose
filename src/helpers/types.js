@@ -6,8 +6,8 @@ const types = {
   any: {},
   object: {},
   enum: () => {
-    const values = toArray(arguments);
-    // TODO
+    const valid = toArray(arguments);
+    return {valid};
   }
 };
 export default types;

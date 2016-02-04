@@ -2,8 +2,7 @@ import {assign} from '../utils';
 import {
   connect,
   createPrepare,
-  prepareTransition,
-  types
+  prepareTransition
 } from '../helpers';
 import {
   series,
@@ -66,7 +65,7 @@ HorizontalBars.properties = assign({},
 // Connection
 // ----------
 
-export const mapState = (state) => {
+export const mapState = () => {
   // TODO Get offset axis from state
 };
 export const connection = connect(mapState, mapDispatch);

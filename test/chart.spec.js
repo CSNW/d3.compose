@@ -1,5 +1,6 @@
 import expect from 'expect';
 import {objectEach} from '../src/utils';
+import mockSelection from './_helpers/mock-selection';
 import {Chart} from '../src/chart';
 
 describe('Chart', () => {
@@ -35,7 +36,7 @@ describe('Chart', () => {
         c: 3
       });
 
-      const c = new C();
+      const c = new C(mockSelection());
 
       expect(c.a).toEqual(1);
       expect(c.b).toEqual(2);

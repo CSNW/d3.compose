@@ -64,7 +64,7 @@ export function getOrdinalDomain(data, getValue) {
     return data.map(getValue);
   }
 
-  const values = data.reduce((memo, series, j) => {
+  const values = data.reduce((memo, series) => {
     const uniq = series.values
       .map(getValue)
       .filter(value => memo.indexOf(value < 0));

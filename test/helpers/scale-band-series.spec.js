@@ -1,5 +1,4 @@
 import expect from 'expect';
-import d3 from 'd3';
 import scaleBandSeries from '../../src/helpers/scale-band-series';
 
 describe('scaleBandSeries', () => {

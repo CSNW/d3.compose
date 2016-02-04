@@ -1,4 +1,3 @@
-import {assign} from '../utils';
 import {
   createDraw,
   getRotate,

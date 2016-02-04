@@ -5,8 +5,8 @@ import {types, createDraw} from '../helpers';
 // TODO Move to series "mixin"
 const defaultSeriesKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;
 const defaultSeriesClass = (d, i) => `d3c-series d3c-index-${i}` + (d['class'] ? ' ' + d['class'] : '');
-const defaultSeriesStyle = (d, i) => d.style || null;
-const defaultSeriesValues = (d, i) => d.values || [];
+const defaultSeriesStyle = d => d.style || null;
+const defaultSeriesValues = d => d.values || [];
 
 export const properties = {
   seriesKey: {
