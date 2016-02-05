@@ -1,5 +1,11 @@
 import d3 from 'd3';
-import {alignText, createDraw, stack, getTranslate, types} from '../helpers';
+import {
+  alignText,
+  createDraw,
+  stack,
+  getTranslate,
+  types
+} from '../helpers';
 import component from '../component';
 
 export const Legend = createDraw({

@@ -1,23 +1,26 @@
 import d3 from 'd3';
-import {
-  assign
-} from '../utils';
+import {assign} from '../utils';
 import {
   types,
   createPrepare,
   connect
 } from '../helpers';
 import {
-  series,
-  xy
-} from '../mixins';
+  createSeriesDraw,
+  properties as seriesProperties
+} from '../mixins/series';
+import {
+  getValue,
+  prepare as xyPrepare,
+  properties as xyProperties
+} from '../mixins/xy';
 import chart from '../chart';
 
 /**
   Lines
 */
-export const Lines = series.createSeriesDraw({
-  prepare: createPrepare(xy.prepare),
+export const Lines = createSeriesDraw({
+  prepare: createPrepare(xyPrepare),
 
   select({seriesValues, key}) {
     return this.selectAll('path')
@@ -32,8 +35,8 @@ export const Lines = series.createSeriesDraw({
 
   merge({xValue, xScale, yValue, yScale, interpolate}) {
     const line = d3.svg.line()
-      .x((d, i, j) => xy.getValue(xValue, xScale, d, i, j))
-      .y((d, i, j) => xy.getValue(yValue, yScale, d, i, j));
+      .x((d, i, j) => getValue(xValue, xScale, d, i, j))
+      .y((d, i, j) => getValue(yValue, yScale, d, i, j));
 
     if (interpolate) {
       line.interpolate(interpolate);
@@ -44,8 +47,8 @@ export const Lines = series.createSeriesDraw({
 });
 
 Lines.properties = assign({},
-  series.properties,
-  xy.properties,
+  seriesProperties,
+  xyProperties,
   {
     interpolate: {
       type: types.any,

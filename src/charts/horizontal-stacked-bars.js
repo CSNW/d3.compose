@@ -1,30 +1,25 @@
 import {assign} from '../utils';
-import {createPrepare, prepareTransition} from '../helpers';
 import {
-  series,
-  xyValues,
-  xyValuesInverted
-} from '../mixins';
+  createPrepare,
+  prepareTransition
+} from '../helpers';
+import {createSeriesDraw} from '../mixins/series';
+import {getValue} from '../mixins/xy-values';
+import {prepare as xyValuesInvertedPrepare} from '../mixins/xy-values-inverted';
 import {
   barX,
   barWidth
 } from './bars';
-import {
-  HorizontalBars
-} from './horizontal-bars';
-import {
-  prepareStackedBars
-} from './stacked-bars';
+import {HorizontalBars} from './horizontal-bars';
+import {prepareStackedBars} from './stacked-bars';
 import chart from '../chart';
-
-const {createSeriesDraw} = series;
 
 /**
   HorizontalStackedBars
 */
 export const HorizontalStackedBars = createSeriesDraw({
   prepare: createPrepare(
-    xyValuesInverted.prepare,
+    xyValuesInvertedPrepare,
     prepareStackedBars
   ),
 
@@ -59,14 +54,14 @@ export default horizontalStackedBars;
 
 export function barY(yValue, yScale, offset, d, i, j) {
   const yPrevious = yScale(d.__previous || 0);
-  const y = xyValues.getValue(yValue, yScale, d, i, j);
+  const y = getValue(yValue, yScale, d, i, j);
 
   return y < yPrevious ? y : yPrevious + offset;
 }
 
 export function barHeight(yValue, yScale, offset, d, i, j) {
   const yPrevious = yScale(d.__previous || 0);
-  const y = xyValues.getValue(yValue, yScale, d, i, j);
+  const y = getValue(yValue, yScale, d, i, j);
 
   const height = Math.abs(yPrevious - y - offset);
   return height > 0 ? height : 0;

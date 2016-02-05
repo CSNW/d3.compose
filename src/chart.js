@@ -1,5 +1,16 @@
-import {assign, inherits, objectEach, isUndefined} from './utils';
-import {checkProp, createChart, getDimensions, isChart, types} from './helpers';
+import {
+  assign,
+  inherits,
+  objectEach,
+  isUndefined
+} from './utils';
+import {
+  checkProp,
+  createChart,
+  getDimensions,
+  isChart,
+  types
+} from './helpers';
 
 const defaultProps = {};
 

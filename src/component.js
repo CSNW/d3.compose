@@ -1,4 +1,7 @@
-import {isChart, createChart} from './helpers';
+import {
+  isChart,
+  createChart
+} from './helpers';
 import {Chart} from './chart';
 
 const Component = Chart.extend({

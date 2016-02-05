@@ -179,6 +179,9 @@ function build(entry, output, options) {
         moduleName: 'd3c',
         sourceMap: !options.minify,
         external: ['d3', 'd3.chart'],
+        globals: {
+          d3: 'd3'
+        },
         format: 'umd',
         plugins: [
           babel({

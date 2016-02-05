@@ -4,10 +4,8 @@ import {
   createPrepare,
   prepareTransition
 } from '../helpers';
-import {
-  series,
-  xyValuesInverted
-} from '../mixins';
+import {createSeriesDraw} from '../mixins/series';
+import {prepare as xyValuesInvertedPrepare} from '../mixins/xy-values-inverted';
 import chart from '../chart';
 import {
   Bars,
@@ -22,8 +20,8 @@ import {
 /**
   HorizontalBars
 */
-export const HorizontalBars = series.createSeriesDraw({
-  prepare: createPrepare(xyValuesInverted.prepare),
+export const HorizontalBars = createSeriesDraw({
+  prepare: createPrepare(xyValuesInvertedPrepare),
 
   select({seriesValues, key}) {
     return this.selectAll('rect')

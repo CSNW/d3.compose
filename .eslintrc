@@ -3,12 +3,22 @@
   "ecmaFeatures": {
     "arrowFunctions": true,
     "blockBindings": true,
-    "classes": true,
+    "classes": false,
+    "defaultParams": true,
+    "destructuring": true,
+    "forOf": false,
+    "generators": false,
     "modules": true,
+    "objectLiteralComputedProperties": true,
+    "objectLiteralDuplicateProperties": false,
     "objectLiteralShorthandMethods": true,
     "objectLiteralShorthandProperties": true,
     "spread": true,
+    "superInFunctions": false,
     "templateStrings": true
+  },
+  "rules": {
+    "no-empty": 0
   },
   "env": {
     "browser": true,

@@ -1,4 +1,5 @@
-import {isChart, createChart} from '../helpers';
+import isChart from './is-chart';
+import createChart from './create-chart';
 
 export default function connect(mapStateToProps, mapDispatchToProps, mergeProps, options) {
   return (Connectee) => {

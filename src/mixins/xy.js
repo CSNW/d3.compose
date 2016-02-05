@@ -1,7 +1,12 @@
 import d3 from 'd3';
-import {assign, isUndefined} from '../utils';
+import {
+  assign,
+  isUndefined} from '../utils';
 import {types} from '../helpers';
-import {getSeriesMin, getSeriesMax} from './series';
+import {
+  getSeriesMin,
+  getSeriesMax
+} from './series';
 
 export const defaultKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;
 export const defaultXValue = (d, i) => {

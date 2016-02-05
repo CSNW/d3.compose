@@ -1,6 +1,13 @@
 import d3 from 'd3';
-import {assign, isUndefined} from '../utils';
-import {createDraw, prepareTransition, types} from '../helpers';
+import {
+  assign,
+  isUndefined
+} from '../utils';
+import {
+  createDraw,
+  prepareTransition,
+  types
+} from '../helpers';
 import {getValue} from '../mixins/xy';
 import component from '../component';
 

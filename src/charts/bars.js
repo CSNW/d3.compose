@@ -8,21 +8,22 @@ import {
   types
 } from '../helpers';
 import {
-  series,
-  xyValues
-} from '../mixins';
-import chart from '../chart';
-
-const {
+  createSeriesDraw,
+  properties as seriesProperties
+} from '../mixins/series';
+import {
   getValue,
-  getWidth
-} = xyValues;
+  getWidth,
+  properties as xyValuesProperties,
+  prepare as xyValuesPrepare
+} from '../mixins/xy-values';
+import chart from '../chart';
 
 /**
   Bars
 */
-export const Bars = series.createSeriesDraw({
-  prepare: createPrepare(xyValues.prepare),
+export const Bars = createSeriesDraw({
+  prepare: createPrepare(xyValuesPrepare),
 
   select({seriesValues, key}) {
     return this.selectAll('rect')
@@ -58,8 +59,8 @@ export const Bars = series.createSeriesDraw({
 });
 
 Bars.properties = assign({},
-  series.properties,
-  xyValues.properties,
+  seriesProperties,
+  xyValuesProperties,
   {
     className: {
       type: types.any

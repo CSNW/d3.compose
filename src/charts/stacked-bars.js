@@ -1,6 +1,13 @@
 import {assign} from '../utils';
-import {createPrepare, prepareTransition} from '../helpers';
-import {series, xyValues} from '../mixins';
+import {
+  createPrepare,
+  prepareTransition
+} from '../helpers';
+import {
+  createSeriesDraw,
+  isSeriesData
+} from '../mixins/series';
+import {getValue} from '../mixins/xy-values';
 import {
   Bars,
   barX,
@@ -8,8 +15,6 @@ import {
   barWidth
 } from './bars';
 import chart from '../chart';
-
-const {createSeriesDraw, isSeriesData} = series;
 
 /**
   StackedBars
@@ -88,7 +93,7 @@ export function prepareStackedBars(selection, props) {
 
 export function barHeight(yValue, yScale, offset, d, i, j) {
   const yPrevious = yScale(d.__previous || 0);
-  const y = xyValues.getValue(yValue, yScale, d, i, j);
+  const y = getValue(yValue, yScale, d, i, j);
   offset = j === 0 ? offset : 0;
 
   const height = Math.abs(yPrevious - y - offset);

@@ -1,6 +1,12 @@
 import d3 from 'd3';
-import {assign, isUndefined} from '../utils';
-import {types, createDraw} from '../helpers';
+import {
+  assign,
+  isUndefined
+} from '../utils';
+import {
+  types,
+  createDraw
+} from '../helpers';
 
 // TODO Move to series "mixin"
 const defaultSeriesKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;

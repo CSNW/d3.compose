@@ -1,14 +1,30 @@
 import d3 from 'd3';
-import {assign, isUndefined} from '../utils';
-import {alignText, getTranslate, prepareTransition, types} from '../helpers';
-import {series, xy} from '../mixins';
+import {
+  assign,
+  isUndefined
+} from '../utils';
+import {
+  alignText,
+  getTranslate,
+  prepareTransition,
+  types
+} from '../helpers';
+import {
+  createSeriesDraw,
+  properties as seriesProperties
+} from '../mixins/series';
+import {
+  getValue,
+  prepare as xyPrepare,
+  properties as xyProperties
+} from '../mixins/xy';
 import chart from '../chart';
 
 /**
   Labels
 */
-export const Labels = series.createSeriesDraw({
-  prepare: xy.prepare,
+export const Labels = createSeriesDraw({
+  prepare: xyPrepare,
 
   select({seriesValues, key}) {
     return this.selectAll('g')
@@ -46,8 +62,8 @@ export const Labels = series.createSeriesDraw({
 });
 
 Labels.properties = assign({},
-  series.properties,
-  xy.properties,
+  seriesProperties,
+  xyProperties,
   {
     className: types.any,
     style: types.any,
@@ -121,8 +137,8 @@ export function prepareLabel(element, props, d, i, j) {
   const {xValue, xScale, yValue, yScale} = props;
   const textElement = d3.select(element).select('text').node();
 
-  const x = xy.getValue(xValue, xScale, d, i, j);
-  const y = xy.getValue(yValue, yScale, d, i, j);
+  const x = getValue(xValue, xScale, d, i, j);
+  const y = getValue(yValue, yScale, d, i, j);
   const layout = calculateLabelLayout(textElement, x, y, props);
 
   return {

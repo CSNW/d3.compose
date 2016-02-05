@@ -1,7 +1,14 @@
 import {assign} from '../utils';
-import {types, scaleBandSeries} from '../helpers';
+import {
+  types,
+  scaleBandSeries
+} from '../helpers';
 import {isSeriesData} from './series';
-import {properties as xyProperties, getValue, defaultXValue} from './xy';
+import {
+  properties as xyProperties,
+  getValue,
+  defaultXValue
+} from './xy';
 
 export const unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
 
