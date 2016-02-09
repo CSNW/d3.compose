@@ -9,12 +9,13 @@ import {
 } from './helpers';
 import {Chart} from './chart';
 import {prepareDescription, calculateLayout} from './layout';
+import layered from './layouts/layered';
 
 const Compose = Chart.extend({
   render() {
     var description = this.props.description || [];
     if (!Array.isArray(description)) {
-      description = [description];
+      description = [layered([description])];
     }
 
     const dimensions = getDimensions(this.base);

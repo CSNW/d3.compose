@@ -4,6 +4,7 @@ import {
 } from '../utils';
 
 const types = {
+  boolean: {},
   number: {},
   string: {},
   any: {},

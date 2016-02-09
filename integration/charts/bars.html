@@ -11,6 +11,8 @@
       width: 400px;
       height: 300px;
       border: solid 1px #ccc;
+      margin-right: 10px;
+      margin-bottom: 6px;
     }
 
     .test {
@@ -67,6 +69,33 @@
         {values: [-3, -2, -1]}
       ],
       style: {fill: 'green'}
+    });
+
+    draw({
+      data: [
+        {values: [1, 2, 3]},
+        {values: [-3, -2, -1]}
+      ],
+      horizontal: true
+    });
+
+    draw({
+      yScale: d3.scale.linear().domain([-2, 6]),
+      data: [
+        {values: [1, 2, 3]},
+        {values: [1, -2, 3]}
+      ],
+      stacked: true
+    });
+
+    draw({
+      yScale: d3.scale.linear().domain([-2, 6]),
+      data: [
+        {values: [1, 2, 3]},
+        {values: [1, -2, 3]}
+      ],
+      horizontal: true,
+      stacked: true
     });
   </script>
 </body>

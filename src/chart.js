@@ -12,6 +12,7 @@ import {
   isChart,
   types
 } from './helpers';
+import {constraint} from './layout';
 
 const defaultProps = {};
 const defaultMargin = {top: 0, right: 0, bottom: 0, left: 0};
@@ -70,8 +71,10 @@ assign(Chart.prototype, {
   },
 
   getDimensions() {
-    this.render();
-    return getDimensions(this.base);
+    return {
+      width: constraint.flex(),
+      height: constraint.flex()
+    };
   },
 
   getMargin() {

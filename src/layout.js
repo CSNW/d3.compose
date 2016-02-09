@@ -131,7 +131,7 @@ export function calculateLayout(layout, dimensions) {
 }
 
 // Placeholder until formal constraints
-const constraint = {
+export const constraint = {
   eq(item, key) {
     if (item) {
       return {_id: item._id, type: 'equal', key};

@@ -25,6 +25,6 @@ describe('createChart', () => {
     instance.render();
     expect(Draw).toHaveBeenCalled();
     expect(Draw.calls[0].arguments[0]).toBe(selection);
-    expect(Draw.calls[0].arguments[1]).toEqual({width: 0, height: 0});
+    expect(Draw.calls[0].arguments[1]).toEqual(props);
   });
 });

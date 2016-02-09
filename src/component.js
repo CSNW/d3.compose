@@ -5,7 +5,10 @@ import {
 import {Chart} from './chart';
 
 const Component = Chart.extend({
-
+  getDimensions() {
+    this.render();
+    return getDimensions(this.base);
+  }
 });
 
 function component(Type) {
