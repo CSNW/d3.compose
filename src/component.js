@@ -1,4 +1,5 @@
 import {
+  getDimensions,
   isChart,
   createChart
 } from './helpers';

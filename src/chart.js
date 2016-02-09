@@ -8,7 +8,6 @@ import {
 import {
   checkProp,
   createChart,
-  getDimensions,
   isChart,
   types
 } from './helpers';
@@ -82,6 +81,10 @@ assign(Chart.prototype, {
   },
 
   render() {
+
+  },
+
+  remove() {
 
   }
 });

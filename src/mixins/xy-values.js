@@ -52,7 +52,7 @@ export function prepare(selection, props) {
     .range([height, 0]);
 
   return assign({}, props, {xScale, yScale});
-};
+}
 
 export {
   getValue

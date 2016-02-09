@@ -10,7 +10,7 @@ export function prepare(selection, props) {
     .range([0, width]);
 
   return assign({}, props, {xScale, yScale});
-};
+}
 
 const xyInverted = {
   prepare

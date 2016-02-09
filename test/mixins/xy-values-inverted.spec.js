@@ -1,3 +1,4 @@
+import d3 from 'd3';
 import expect, {createSpy} from 'expect';
 import mockSelection from '../_helpers/mock-selection';
 import getDimensions from '../../src/helpers/get-dimensions';
@@ -28,7 +29,7 @@ describe('xyValuesInverted', () => {
 
       const selection = mockSelection({client: {width: 200, height: 100}});
       const props = generateProps(selection, {xScale});
-      const result = prepare(selection, props);
+      prepare(selection, props);
 
       expect(xScale.rangeRoundBands).toHaveBeenCalled();
       expect(xScale.rangeRoundBands.calls[0].arguments).toEqual([[100, 0], 0, 0]);
@@ -44,7 +45,7 @@ describe('xyValuesInverted', () => {
 
       const selection = mockSelection({client: {width: 200, height: 100}});
       const props = generateProps(selection, {yScale});
-      const result = prepare(selection, props);
+      prepare(selection, props);
 
       expect(yScale.range).toHaveBeenCalled();
       expect(yScale.range.calls[0].arguments).toEqual([[0, 200]]);

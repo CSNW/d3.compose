@@ -18,11 +18,11 @@ export const defaultYValue = (d) => {
 export function getDefaultXScale({data, xValue}) {
   return d3.scale.linear()
     .domain(getMinMaxDomain(data, xValue || defaultXValue));
-};
+}
 export function getDefaultYScale({data, yValue}) {
   return d3.scale.linear()
     .domain(getMinMaxDomain(data, yValue || defaultYValue));
-};
+}
 
 export const properties = {
   key: {
@@ -57,7 +57,7 @@ export function prepare(selection, props) {
     .range([height, 0]);
 
   return assign({}, props, {xScale, yScale});
-};
+}
 
 export function getValue(value, scale, d, i, j) {
   // TODO verify series index for all cases (enter, update, merge, exit)

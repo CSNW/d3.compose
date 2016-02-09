@@ -1,3 +1,3 @@
-export default function checkProp(prop, definition) {
+export default function checkProp(/*prop, definition*/) {
   // TODO
 }

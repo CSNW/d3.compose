@@ -1,7 +1,7 @@
 import expect from 'expect';
 import {
-  properties,
-  createSeriesDraw,
+  // properties,
+  // createSeriesDraw,
   isSeriesData,
   getSeriesMax,
   getSeriesMin

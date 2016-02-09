@@ -1,5 +1,6 @@
-import expect from 'expect';
-import {Title} from '../../src/components/title';
+import d3 from 'd3';
+// import expect from 'expect';
+// import {Title} from '../../src/components/title';
 
 describe('Title', () => {
   var context = {};

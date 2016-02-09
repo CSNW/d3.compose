@@ -1,6 +1,6 @@
-import expect from 'expect';
 import d3 from 'd3';
-import {Lines} from '../../src/charts/lines';
+// import expect from 'expect';
+// import {Lines} from '../../src/charts/lines';
 
 describe('Lines', () => {
   var context = {};

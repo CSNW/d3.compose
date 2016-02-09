@@ -4,7 +4,7 @@ import getDimensions from '../../src/helpers/get-dimensions';
 import scaleBandSeries from '../../src/helpers/scale-band-series';
 import mockSelection from '../_helpers/mock-selection';
 import {
-  properties,
+  // properties,
   prepare,
   getValue,
   getMinMaxDomain

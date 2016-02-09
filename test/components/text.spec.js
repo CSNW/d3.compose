@@ -1,5 +1,6 @@
-import expect from 'expect';
-import {Text} from '../../src/components/text';
+import d3 from 'd3';
+// import expect from 'expect';
+// import {Text} from '../../src/components/text';
 
 describe('Text', () => {
   var context = {};

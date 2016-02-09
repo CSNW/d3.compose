@@ -37,7 +37,7 @@ export function calculateLayout(layout, dimensions) {
   };
 
   // 2. Replace constraints with references
-  objectEach(byId, (item, _id) => {
+  objectEach(byId, (item) => {
     layoutProps.forEach((key) => {
       const constraint = item[key];
       if (constraint._id) {
@@ -229,7 +229,7 @@ function toSurround(description) {
     item.props = assign(layout, item.props);
     return item;
   });
-  middle = middle.map((item, i, items) => {
+  middle = middle.map((item) => {
     const layout = {
       _position: 'middle',
       top: topEdge,

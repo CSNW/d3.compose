@@ -146,7 +146,7 @@ export function select({seriesValues, key}) {
     .data(seriesValues, key);
 }
 
-export function enterVertical({yValue, yScale, offset, onMouseEnterBar, onMouseLeaveBar, width, height}) {
+export function enterVertical({yValue, yScale, offset, onMouseEnterBar, onMouseLeaveBar}) {
   this.append('rect')
     .attr('y', (d, i, j) => bar0(yValue, yScale, offset, d, i, j))
     .attr('height', 0)
