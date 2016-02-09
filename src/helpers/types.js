@@ -1,4 +1,7 @@
-import {toArray} from '../utils';
+import {
+  includes,
+  toArray
+} from '../utils';
 
 const types = {
   number: {},
@@ -7,7 +10,9 @@ const types = {
   object: {},
   enum: () => {
     const valid = toArray(arguments);
-    return {valid};
+    return {
+      validate: (value) => includes(valid, value)
+    };
   }
 };
 export default types;

@@ -8,7 +8,6 @@ import {
   createDraw
 } from '../helpers';
 
-// TODO Move to series "mixin"
 const defaultSeriesKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;
 const defaultSeriesClass = (d, i) => `d3c-series d3c-index-${i}` + (d['class'] ? ' ' + d['class'] : '');
 const defaultSeriesStyle = d => d.style || null;

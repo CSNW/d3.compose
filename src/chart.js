@@ -2,6 +2,7 @@ import {
   assign,
   inherits,
   objectEach,
+  isObject,
   isUndefined
 } from './utils';
 import {
@@ -13,6 +14,7 @@ import {
 } from './helpers';
 
 const defaultProps = {};
+const defaultMargin = {top: 0, right: 0, bottom: 0, left: 0};
 
 export function Chart(selection, props) {
   this.base = selection;
@@ -40,24 +42,40 @@ assign(Chart.prototype, {
       }
     });
 
-    // TODO Add during layout
-    const dimensions = getDimensions(this.base);
-    this.props = assign({}, dimensions, loaded);
+    this.props = loaded;
   },
 
-  getLayout() {
-    // TODO Defaults
-    const {
-      top,
-      right,
-      bottom,
-      left,
-      width,
-      height,
-      margin
-    } = this.props;
+  prepareLayout(layout) {
+    var {width, height, margin} = layout;
 
-    return {top, right, bottom, left, width, height, margin};
+    // Load width/height (if necessary)
+    if (isUndefined(width) || isUndefined(height)) {
+      const dimensions = this.getDimensions();
+      if (isUndefined(width)) {
+        width = dimensions.width;
+      }
+      if (isUndefined(height)) {
+        height = dimensions.height;
+      }
+    }
+
+    // Load default margins
+    if (!isUndefined(margin) && !isObject(margin)) {
+      margin = {top: margin, right: margin, bottom: margin, left: margin};
+    } else {
+      margin = assign({}, this.getMargin(), margin);
+    }
+
+    return assign({}, layout, {width, height, margin});
+  },
+
+  getDimensions() {
+    this.render();
+    return getDimensions(this.base);
+  },
+
+  getMargin() {
+    return defaultMargin;
   },
 
   render() {
@@ -73,7 +91,8 @@ assign(Chart, {
     left: types.any,
     width: types.any,
     height: types.any,
-    margin: types.any
+    margin: types.any,
+    zIndex: types.any
   },
 
   extend(protoProps, staticProps) {

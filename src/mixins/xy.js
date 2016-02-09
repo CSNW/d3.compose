@@ -15,11 +15,11 @@ export const defaultXValue = (d, i) => {
 export const defaultYValue = (d) => {
   return !isUndefined(d) && !isUndefined(d.y) ? d.y : (Array.isArray(d) ? d[1] : d);
 }
-export const getDefaultXScale = ({data, xValue}) => {
+export function getDefaultXScale({data, xValue}) {
   return d3.scale.linear()
     .domain(getMinMaxDomain(data, xValue || defaultXValue));
 };
-export const getDefaultYScale = ({data, yValue}) => {
+export function getDefaultYScale({data, yValue}) {
   return d3.scale.linear()
     .domain(getMinMaxDomain(data, yValue || defaultYValue));
 };
@@ -47,7 +47,7 @@ export const properties = {
   }
 };
 
-export const prepare = (selection, props) => {
+export function prepare(selection, props) {
   const {width, height} = props;
   var {xScale, yScale} = props;
 

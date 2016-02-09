@@ -12,7 +12,7 @@ import {
 
 export const unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
 
-export const getDefaultXScale = ({data, xValue}) => {
+export function getDefaultXScale({data, xValue}) {
   return scaleBandSeries()
     .domain(getOrdinalDomain(data, xValue || defaultXValue))
     .seriesCount(isSeriesData(data) ? data.length : 1);
@@ -36,7 +36,7 @@ export const properties = assign({},
   }
 );
 
-export const prepare = (selection, props) => {
+export function prepare(selection, props) {
   // TODO Get dimensions from props
   const {xScalePadding, xScaleOuterPadding, width, height} = props;
   var {xScale, yScale} = props;

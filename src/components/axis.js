@@ -48,10 +48,10 @@ Axis.properties = {
     type: types.object,
     getDefault: ({position = defaultPosition, width, height}) => {
       return {
-        top: {x: 0, y: 0},
-        right: {x: width, y: 0},
-        bottom: {x: 0, y: height},
-        left: {x: 0, y: 0}
+        top: {x: 0, y: height},
+        right: {x: 0, y: 0},
+        bottom: {x: 0, y: 0},
+        left: {x: width, y: 0}
       }[position];
     }
   },

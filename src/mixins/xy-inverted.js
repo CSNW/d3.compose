@@ -1,6 +1,6 @@
 import {assign} from '../utils';
 
-export const prepare = (selection, props) => {
+export function prepare(selection, props) {
   const {width, height} = props;
   var {xScale, yScale} = props;
 

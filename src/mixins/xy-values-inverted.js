@@ -1,7 +1,7 @@
 import {assign} from '../utils';
 import {unsupportedScale} from './xy-values';
 
-export const prepare = (selection, props) => {
+export function prepare(selection, props) {
   const {xScalePadding, xScaleOuterPadding, width, height} = props;
   var {xScale, yScale} = props;
 

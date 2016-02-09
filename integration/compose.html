@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.compose - compose</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="../.tmp/d3.compose.css">
+  <style>
+    svg {width: 800px; height: 600px;}
+    path {stroke: black;}
+  </style>
+</head>
+<body>
+  <div id="charts"></div>
+
+  <script src="../node_modules/d3/d3.js"></script>
+  <script src="../.tmp/d3.compose-all.js"></script>
+  <script type="text/javascript">
+    var charts = d3.select('#charts');
+    var id = 1;
+    function draw(description) {
+      var selection = charts.append('svg').attr('id', 'chart-' + (id++));
+      var container = new d3c.Compose(selection);
+      container.draw(description);
+    }
+
+    var xScale = d3.scale.linear();
+    var yScale = d3.scale.linear();
+    draw([
+      d3c.title({text: 'Title'}),
+      [
+        d3c.axisTitle({text: 'y-axis', rotation: -90}),
+        d3c.axis({position: 'left', scale: yScale}),
+        d3c.layered([d3c.lines({data: [
+          {x: 0, y: 0},
+          {x: 0.5, y: 0.5},
+          {x: 1, y: 1}
+        ], xScale: xScale, yScale: yScale})])
+      ],
+      d3c.axis({position: 'bottom', scale: xScale}),
+      d3c.axisTitle({text: 'x-axis'})
+    ])
+  </script>
+</body>
+</html>

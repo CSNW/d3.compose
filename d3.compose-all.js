@@ -14,9 +14,12 @@ import horizontalStackedBars, {HorizontalStackedBars} from './src/charts/horizon
 
 import text, {Text} from './src/components/text';
 import title, {Title} from './src/components/title';
+import axisTitle, {AxisTitle} from './src/components/axis-title';
 import axis, {Axis} from './src/components/axis';
 import gridlines, {Gridlines} from './src/components/gridlines';
 import legend, {Legend} from './src/components/legend';
+
+import layered from './src/layouts/layered';
 
 const d3c = d3.compose = {
   VERSION: '{version}',
@@ -45,12 +48,16 @@ const d3c = d3.compose = {
   Text,
   title,
   Title,
+  axisTitle,
+  AxisTitle,
   axis,
   Axis,
   gridlines,
   Gridlines,
   legend,
-  Legend
+  Legend,
+
+  layered
 };
 
 export default d3c;
