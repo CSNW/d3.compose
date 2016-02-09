@@ -133,7 +133,7 @@ gulp.task('publish:github', series('zip:github', (cb) => {
       name
     }, (err, response) => {
       if (err) return cb(err);
-      
+
       console.log(`Uploading zip: "${paths.zip}"`);
 
       github.releases.uploadAsset({
@@ -177,7 +177,6 @@ function build(entry, output, options) {
       .pipe($.rollup({
         moduleName: 'd3c',
         sourceMap: !options.minify,
-        sourceMapFile: filename + '.js.map',
         external: ['d3', 'd3.chart'],
         format: 'umd'
       }))
