@@ -18,6 +18,7 @@
 - __0.15.11__ Update build (remove grunt), start new draw architecture, convert tests to mocha + jsdom
 - __0.15.12__ Include license/version in minified dist
 - __0.15.13__ Improve backwards compatibility with new architecture
+- __0.15.14__ Fix small height issue for stacked bars
 
 # 0.14.0
 
