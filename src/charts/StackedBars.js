@@ -81,7 +81,8 @@ var StackedBars = Bars.extend({
   barHeight: di(function(chart, d, i) {
     var height = Math.abs(chart.yScale()(d.__previous) - chart.y.call(this, d, i));
     var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
-    return height > 0 ? height - offset : 0;
+    height = height - offset;
+    return height > 0 ? height : 0;
   })
 });
 
