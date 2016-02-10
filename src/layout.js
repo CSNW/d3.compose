@@ -59,32 +59,32 @@ export function calculateLayout(layout, dimensions) {
 
       // Top
       if (!has.top && has.bottom && has.height) {
-        item.top.result = item.bottom.result - item.height.result;
+        item.top.result = item.bottom.result - (item.margin.top + item.height.result + item.margin.bottom);
       }
 
       // Right
       if (!has.right && has.left && has.width) {
-        item.right.result = item.left.result + item.width.result;
+        item.right.result = item.left.result + (item.margin.left + item.width.result + item.margin.right);
       }
 
       // Bottom
       if (!has.bottom && has.top && has.height) {
-        item.bottom.result = item.top.result + item.height.result;
+        item.bottom.result = item.top.result + (item.margin.top + item.height.result + item.margin.bottom);
       }
 
       // Left
       if (!has.left && has.right && has.width) {
-        item.left.result = item.right.result - item.width.result;
+        item.left.result = item.right.result - (item.margin.left + item.width.result + item.margin.right);
       }
 
       // Width
       if (!has.width && has.right && has.left) {
-        item.width.result = item.right.result - item.left.result;
+        item.width.result = item.right.result - item.left.result - item.margin.left - item.margin.right;
       }
 
       // Height
       if (!has.height && has.bottom && has.top) {
-        item.height.result = item.bottom.result - item.top.result;
+        item.height.result = item.bottom.result - item.top.result - item.margin.top - item.margin.bottom;
       }
 
       has = hasResults();

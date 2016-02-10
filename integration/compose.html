@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="../.tmp/d3.compose.css">
   <style>
-    svg {width: 800px; height: 600px;}
+    #charts {width: 600px;}
     path {stroke: black;}
   </style>
 </head>
@@ -20,15 +20,17 @@
     var charts = d3.select('#charts');
     var id = 1;
     function draw(description) {
-      var selection = charts.append('svg').attr('id', 'chart-' + (id++));
-      var container = new d3c.Compose(selection);
+      var selection = charts.append('div')
+        .attr('id', 'chart-' + (id++))
+        .attr('class', 'chart');
+      var container = new d3c.Compose(selection, {responsive: false});
       container.draw(description);
     }
 
     var xScale = d3.scale.linear();
     var yScale = d3.scale.linear();
     draw([
-      d3c.title({text: 'Title'}),
+      d3c.title({text: 'Title', margin: {top: 30, bottom: 30}}),
       [
         d3c.axisTitle({text: 'y-axis', rotation: -90}),
         d3c.axis({position: 'left', scale: yScale}),

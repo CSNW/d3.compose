@@ -7,9 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="../../.tmp/d3.compose.css">
   <style>
-    svg {
+    .chart {
+      float: left;
       width: 400px;
-      height: 300px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    svg {
       border: solid 1px #ccc;
     }
   </style>
@@ -23,9 +27,13 @@
     var charts = d3.select('#charts');
     var id = 1;
     function draw(props) {
-      var chart = charts.append('svg').attr('id', 'chart-' + (id++));
-      var group = chart.append('g')
-        .attr('transform', 'translate(0, 100)')
+      var chart = charts.append('div')
+        .attr('id', 'chart-' + (id++))
+        .attr('class', 'chart');
+      var container = new d3c.Compose(chart);
+
+      var group = container.svg.append('g')
+        .attr('transform', 'translate(0, 100)');
 
       var rect = group.append('rect')
         .attr('width', 400).attr('height', 100)
@@ -37,11 +45,7 @@
         .attr('cx', 200).attr('cy', 50).attr('r', 2)
         .style({fill: 'red'});
 
-      var layer = group.append('g')
-        .attr('width', 400).attr('height', 100);
-
-      var container = new d3c.Compose(layer);
-      container.draw(d3c.text(props));
+      container.draw(d3c.text(d3c.utils.assign({width: 400, height: 100, top: 100}, props)));
     }
 
     draw({text: 'center x middle'});

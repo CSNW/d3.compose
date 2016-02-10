@@ -8,6 +8,7 @@ import {
 import {
   checkProp,
   createChart,
+  getTranslate,
   isChart,
   types
 } from './helpers';
@@ -100,6 +101,7 @@ assign(Chart, {
     margin: types.any,
     zIndex: types.any
   },
+  layerType: 'g',
 
   extend(protoProps, staticProps) {
     var Parent = this;

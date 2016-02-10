@@ -3,6 +3,7 @@ import utils from './src/utils';
 import helpers from './src/helpers';
 import chart, {Chart} from './src/chart';
 import component, {Component} from './src/component';
+import overlay, {Overlay} from './src/overlay';
 import Compose from './src/compose';
 
 import bars, {Bars} from './src/charts/bars';
@@ -26,6 +27,8 @@ const d3c = d3.compose = {
   Chart,
   component,
   Component,
+  overlay,
+  Overlay,
   Compose,
 
   bars,

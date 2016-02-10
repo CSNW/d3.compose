@@ -14,7 +14,7 @@ const Component = Chart.extend({
 
 function component(Type) {
   if (!isChart(Type)) {
-    Type = createChart(Type);
+    Type = createChart(Type, Component);
   }
 
   return (id, props) => {
