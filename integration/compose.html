@@ -23,7 +23,10 @@
       var selection = charts.append('div')
         .attr('id', 'chart-' + (id++))
         .attr('class', 'chart');
-      var container = new d3c.Compose(selection, {responsive: false});
+      var container = new d3c.Compose(selection, {
+        responsive: true,
+        width: 1200
+      });
       container.draw(description);
     }
 

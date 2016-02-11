@@ -19,6 +19,17 @@ export const assign = Object.assign || function(obj) {
   return _assign(obj, slice.call(arguments, 1));
 };
 
+export function extend(target) {
+  const extensions = slice.call(arguments, 1);
+  extensions.forEach((extension) => {
+    for (var key in extension) {
+      target[key] = extension[key];
+    }
+  });
+
+  return target;
+}
+
 export function includes(arr, item) {
   return arr.indexOf(item) >= 0;
 }
@@ -103,6 +114,7 @@ export function inherits(Child, Parent) {
 
 const utils = {
   assign,
+  extend,
   includes,
   curry,
   defaults,

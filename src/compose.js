@@ -1,5 +1,6 @@
 import {
   assign,
+  extend,
   objectEach
 } from './utils';
 import {
@@ -33,6 +34,22 @@ const Compose = Chart.extend({
       .attr('xlmns', 'http://www.w3.org/2000/svg')
       .attr('version', '1.1')
       .attr('class', 'd3c-svg');
+
+    // Setup events source
+    const subscriptions = this.subscriptions = [];
+    this.events = {
+      subscribe(listener) {
+        subscriptions.push(listener);
+
+        return function unsubscribe() {
+          const index = subscriptions.indexOf(subscription);
+          subscriptions.splice(index, 1);
+        }
+      }
+    };
+
+    // Attach mouse event source
+    this.attachMouseEvents();
   },
 
   render() {
@@ -132,7 +149,7 @@ const Compose = Chart.extend({
         height: dimensions.height
       });
 
-      const child = new type(getLayer(this.svg, _id), withLayout);
+      const child = new type(getLayer(this.svg, _id), withLayout, this);
       child._id = _id;
 
       return child;
@@ -164,6 +181,94 @@ const Compose = Chart.extend({
       // TODO Set position for div layer type
       child.base.attr('transform', getTranslate(x, y));
     });
+  },
+
+  attachMouseEvents() {
+    const base = this.base.node();
+    const container = this.container.node();
+    const subscriptions = this.subscriptions;
+    var {responsive, width} = this.props;
+    var scale = 1.0;
+    var bounds, wasInside;
+
+    this.container.on('mouseenter', () => {
+      if (responsive && width) {
+        scale = base.clientWidth / width;
+      }
+      bounds = getBounds();
+      wasInside = getInside();
+
+      if (wasInside) {
+        mouseEnter();
+      }
+    });
+    this.container.on('mousemove', () => {
+      // Mousemove may fire before mouseenter in IE
+      if (!bounds) {
+        if (responsive && width) {
+          scale = base.clientWidth / width;
+        }
+        bounds = getBounds();
+      }
+
+      const isInside = getInside();
+      if (wasInside && isInside) {
+        mouseMove();
+      } else if (wasInside) {
+        mouseLeave();
+      } else {
+        mouseEnter();
+      }
+
+      wasInside = isInside;
+    });
+    this.container.on('mouseleave', () => {
+      if (wasInside) {
+        wasInside = false;
+        mouseLeave();
+      }
+    });
+
+    function mouseEnter() {
+      publish(subscriptions, {type: 'mouseenter', coordinates: getCoordinates()});
+    }
+    function mouseMove() {
+      publish(subscriptions, {type: 'mousemove', coordinates: getCoordinates()});
+    }
+    function mouseLeave() {
+      publish(subscriptions, {type: 'mouseleave'});
+    }
+
+    function getCoordinates() {
+      const mouse = d3.mouse(container);
+      const x = mouse[0];
+      const y = mouse[1];
+
+      // Scale to svg dimensions
+      const coordinates = {
+        x: x * (1/scale),
+        y: y * (1/scale)
+      };
+
+      return coordinates;
+    }
+
+    function getBounds() {
+      // Get bounds of container relative to document
+      const scrollY = 'scrollY' in window ? window.scrollY : document.documentElement.scrollTop;
+      const bounds = extend({}, container.getBoundingClientRect());
+      bounds.top += scrollY;
+      bounds.bottom += scrollY;
+
+      return bounds;
+    }
+    function getInside() {
+      // Check if the current mouse position is within the container bounds
+      const mouse = d3.mouse(document.documentElement);
+      const x = mouse[0];
+      const y = mouse[1];
+      return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
+    }
   }
 });
 
@@ -185,4 +290,10 @@ export default Compose;
 function extractLayout(props) {
   const {width, height, top, right, bottom, left, zIndex, margin} = props;
   return {width, height, top, right, bottom, left, zIndex, margin};
+}
+
+function publish(subscriptions, event) {
+  for (var i = 0, length = subscriptions.length; i < length; i++) {
+    subscriptions[i](event);
+  }
 }

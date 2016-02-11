@@ -17,8 +17,9 @@ import {constraint} from './layout';
 const defaultProps = {};
 const defaultMargin = {top: 0, right: 0, bottom: 0, left: 0};
 
-export function Chart(selection, props) {
+export function Chart(selection, props, context) {
   this.base = selection;
+  this.context = context;
   this.setProps(props);
 }
 

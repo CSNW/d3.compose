@@ -37,7 +37,6 @@ export const properties = assign({},
 );
 
 export function prepare(selection, props) {
-  // TODO Get dimensions from props
   const {xScalePadding, xScaleOuterPadding, width, height} = props;
   var {xScale, yScale} = props;
 
