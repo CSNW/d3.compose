@@ -4,9 +4,47 @@ import {
   isUndefined,
   objectEach
 } from './utils';
+import layered from './layouts/layered';
 
 export function prepareDescription(description) {
-  return toSurround(description);
+  if (!description) {
+    return;
+  }
+
+  if (description._layered) {
+    const allItems = description.items.reduce((memo, item, index) => {
+      if (Array.isArray(item)) {
+        const asSurround = toSurround(item);
+        const items = asSurround.ordered.map(_id => asSurround.byId[_id]);
+        return memo.concat(items);
+      } else {
+        const container = {_id: '_container'};
+        const layout = {
+          top: 0,
+          right: constraint.eq(container, 'right'),
+          bottom: constraint.eq(container, 'bottom'),
+          left: 0,
+          width: constraint.flex(),
+          height: constraint.flex()
+        };
+        item = assign({_id: 'item-0-' + index}, item);
+        item.props = assign(layout, item.props);
+
+        return memo.concat([item]);
+      }
+    }, []);
+
+    const byId = {};
+    const ordered = [];
+    allItems.forEach((item) => {
+      byId[item._id] = item;
+      ordered.push(item._id);
+    });
+
+    return {byId, ordered};
+  } else {
+    return toSurround(description);
+  }
 }
 
 const layoutProps = ['top', 'right', 'bottom', 'left', 'width', 'height'];
@@ -142,6 +180,11 @@ export const constraint = {
   }
 }
 
+export function extractLayout(props) {
+  const {width, height, top, right, bottom, left, zIndex, margin} = props;
+  return {width, height, top, right, bottom, left, zIndex, margin};
+}
+
 function layoutReference(value) {
   if (isObject(value)) {
     return value;
@@ -163,6 +206,10 @@ function getDefaultMargin(margin) {
 
 // Placeholder until formal constraints/layouts are added
 function toSurround(description) {
+  if (!Array.isArray(description)) {
+    description = [layered(description)];
+  }
+
   var {
     top,
     right,

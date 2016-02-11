@@ -2,6 +2,10 @@ const slice = Array.prototype.slice;
 
 export function _assign(target, extensions, undefinedOnly) {
   extensions.forEach((extension) => {
+    if (!extension) {
+      return;
+    }
+
     const keys = Object.keys(extension);
     var key;
     for (var i = 0, length = keys.length; i < length; i++) {

@@ -30,22 +30,33 @@
       container.draw(description);
     }
 
+    var Custom = d3c.Overlay.extend({
+      render: function() {
+        this.base.text('Howdy!');
+      }
+    });
+
     var xScale = d3.scale.linear();
     var yScale = d3.scale.linear();
-    draw([
-      d3c.title({text: 'Title', margin: {top: 30, bottom: 30}}),
-      [
-        d3c.axisTitle({text: 'y-axis', rotation: -90}),
-        d3c.axis({position: 'left', scale: yScale}),
-        d3c.layered([d3c.lines({data: [
-          {x: 0, y: 0},
-          {x: 0.5, y: 0.5},
-          {x: 1, y: 1}
-        ], xScale: xScale, yScale: yScale})])
-      ],
-      d3c.axis({position: 'bottom', scale: xScale}),
-      d3c.axisTitle({text: 'x-axis'})
-    ])
+    draw(
+      d3c.layered(
+         [
+          d3c.title({text: 'Title', margin: {top: 30, bottom: 30}}),
+          [
+            d3c.axisTitle({text: 'y-axis', rotation: -90}),
+            d3c.axis({position: 'left', scale: yScale}),
+            d3c.layered([d3c.lines({data: [
+              {x: 0, y: 0},
+              {x: 0.5, y: 0.5},
+              {x: 1, y: 1}
+            ], xScale: xScale, yScale: yScale})])
+          ],
+          d3c.axis({position: 'bottom', scale: xScale}),
+          d3c.axisTitle({text: 'x-axis'})
+        ],
+        {type: Custom, props: {left: 100, top: 100}}
+      )
+    )
   </script>
 </body>
 </html>

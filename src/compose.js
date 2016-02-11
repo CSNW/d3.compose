@@ -10,7 +10,11 @@ import {
   types
 } from './helpers';
 import {Chart} from './chart';
-import {prepareDescription, calculateLayout} from './layout';
+import {
+  prepareDescription,
+  calculateLayout,
+  extractLayout
+} from './layout';
 import layered from './layouts/layered';
 
 const selectionError = 'svg is not supported for the base selection'
@@ -60,10 +64,6 @@ const Compose = Chart.extend({
       height,
       aspectRatio
     } = this.props;
-
-    if (!Array.isArray(description)) {
-      description = [layered([description])];
-    }
 
     // 1. Size and style container/svg
     //    - Use given width/height or base clientWidth and aspect ratio
@@ -119,7 +119,7 @@ const Compose = Chart.extend({
     const layout = calculateLayout(extracted, dimensions);
 
     // 4. Apply calculated layout
-    this.applyLayout(prepared, layout, dimensions);
+    this.applyLayout(prepared, layout, scale);
 
     // 5. Render children
     this.children.forEach(child => child.render());
@@ -149,7 +149,12 @@ const Compose = Chart.extend({
         height: dimensions.height
       });
 
-      const child = new type(getLayer(this.svg, _id), withLayout, this);
+      var child;
+      if (type.layerType == 'div') {
+        child = new type(getLayer(this.container, _id, type.layerType), withLayout, this);
+      } else {
+        child = new type(getLayer(this.svg, _id), withLayout, this);
+      }
       child._id = _id;
 
       return child;
@@ -164,7 +169,8 @@ const Compose = Chart.extend({
     });
   },
 
-  applyLayout(prepared, layout) {
+  applyLayout(prepared, layout, scale) {
+    console.log('scale', scale);
     const byId = {};
     this.children.forEach((child) => {
       byId[child._id] = child;
@@ -178,8 +184,21 @@ const Compose = Chart.extend({
       const x = values.x + values.margin.left;
       const y = values.y + values.margin.top;
 
-      // TODO Set position for div layer type
-      child.base.attr('transform', getTranslate(x, y));
+      if (child.constructor && child.constructor.layerType == 'div') {
+        const translate = getTranslate((x * scale) + 'px', (y * scale) + 'px');
+        const transform = `${translate} scale(${scale},${scale})`;
+
+        child.base.style({
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform,
+          '-ms-transform': transform,
+          '-webkit-transform': transform
+        });
+      } else {
+        child.base.attr('transform', getTranslate(x, y));
+      }
     });
   },
 
@@ -286,11 +305,6 @@ Compose.properties = {
 };
 
 export default Compose;
-
-function extractLayout(props) {
-  const {width, height, top, right, bottom, left, zIndex, margin} = props;
-  return {width, height, top, right, bottom, left, zIndex, margin};
-}
 
 function publish(subscriptions, event) {
   for (var i = 0, length = subscriptions.length; i < length; i++) {
