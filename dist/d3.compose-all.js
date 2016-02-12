@@ -1,11 +1,11 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.13 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.15 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('d3.chart')) :
   typeof define === 'function' && define.amd ? define(['d3', 'd3.chart'], factory) :
-  global.d3c = factory(global.d3,global.d3_chart);
+  (global.d3c = factory(global.d3,global.d3_chart));
 }(this, function (d3,d3_chart) { 'use strict';
 
   d3 = 'default' in d3 ? d3['default'] : d3;
@@ -5400,7 +5400,8 @@
     barHeight: di(function(chart, d, i) {
       var height = Math.abs(chart.yScale()(d.__previous) - chart.y.call(this, d, i));
       var offset = chart.seriesIndex.call(this, d, i) === 0 ? chart.barOffset() : 0;
-      return height > 0 ? height - offset : 0;
+      height = height - offset;
+      return height > 0 ? height : 0;
     })
   });
 
@@ -6741,7 +6742,7 @@
   });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.13',
+    VERSION: '0.15.15',
     utils: utils,
     helpers: helpers,
     Base: Base,
