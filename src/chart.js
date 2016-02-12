@@ -8,7 +8,6 @@ import {
 import {
   checkProp,
   createChart,
-  getTranslate,
   isChart,
   types
 } from './helpers';

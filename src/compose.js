@@ -1,10 +1,10 @@
+import d3 from 'd3';
 import {
   assign,
   extend,
   objectEach
 } from './utils';
 import {
-  getDimensions,
   getLayer,
   getTranslate,
   types
@@ -15,7 +15,6 @@ import {
   calculateLayout,
   extractLayout
 } from './layout';
-import layered from './layouts/layered';
 
 const selectionError = 'svg is not supported for the base selection'
 
@@ -46,7 +45,7 @@ const Compose = Chart.extend({
         subscriptions.push(listener);
 
         return function unsubscribe() {
-          const index = subscriptions.indexOf(subscription);
+          const index = subscriptions.indexOf(listener);
           subscriptions.splice(index, 1);
         }
       }
@@ -170,7 +169,6 @@ const Compose = Chart.extend({
   },
 
   applyLayout(prepared, layout, scale) {
-    console.log('scale', scale);
     const byId = {};
     this.children.forEach((child) => {
       byId[child._id] = child;
