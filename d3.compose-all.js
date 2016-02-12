@@ -1,95 +1,57 @@
 import d3 from 'd3';
 import utils from './src/utils';
 import helpers from './src/helpers';
-import Base from './src/Base';
-import Chart from './src/Chart';
-import Component from './src/Component';
-import Overlay from './src/Overlay';
-import Compose, { layered } from './src/Compose';
+import chart, {Chart} from './src/chart';
+import component, {Component} from './src/component';
+import overlay, {Overlay} from './src/overlay';
+import Compose from './src/compose';
 
-import mixins from './src/mixins';
+import bars, {Bars} from './src/charts/bars';
+import lines, {Lines} from './src/charts/lines';
+import labels, {Labels} from './src/charts/labels';
 
-import Lines, { lines } from './src/charts/Lines';
-import Bars, { bars } from './src/charts/Bars';
-import StackedBars, { stackedBars } from './src/charts/StackedBars';
-import HorizontalBars, { horizontalBars } from './src/charts/HorizontalBars';
-import HorizontalStackedBars, { horizontalStackedBars } from './src/charts/HorizontalStackedBars';
-import Labels, { labels } from './src/charts/Labels';
-import HoverLabels, { hoverLabels } from './src/charts/HoverLabels';
+import text, {Text} from './src/components/text';
+import title, {Title} from './src/components/title';
+import axisTitle, {AxisTitle} from './src/components/axis-title';
+import axis, {Axis} from './src/components/axis';
+import gridlines, {Gridlines} from './src/components/gridlines';
+import legend, {Legend} from './src/components/legend';
 
-import Text, { text } from './src/components/Text';
-import Title, { title } from './src/components/Title';
-import Axis, { axis } from './src/components/Axis';
-import AxisTitle, { axisTitle } from './src/components/AxisTitle';
-import Legend, { legend } from './src/components/Legend';
-import InsetLegend, { insetLegend } from './src/components/InsetLegend';
-import Gridlines, { gridlines } from './src/components/Gridlines';
+import layered from './src/layouts/layered';
 
-// Export charts/components to d3.chart
-utils.extend(d3.chart(), {
-  Base: Base,
-  Chart: Chart,
-  Component: Component,
-  Overlay: Overlay,
-  Compose: Compose,
-  Lines: Lines,
-  Bars: Bars,
-  StackedBars: StackedBars,
-  HorizontalBars: HorizontalBars,
-  HorizontalStackedBars: HorizontalStackedBars,
-  Labels: Labels,
-  HoverLabels: HoverLabels,
-  Text: Text,
-  Title: Title,
-  Axis: Axis,
-  AxisTitle: AxisTitle,
-  Legend: Legend,
-  InsetLegend: InsetLegend,
-  Gridlines: Gridlines
-});
-
-var d3c = d3.compose = {
+const d3c = d3.compose = {
   VERSION: '{version}',
-  utils: utils,
-  helpers: helpers,
-  Base: Base,
-  Chart: Chart,
-  Component: Component,
-  Overlay: Overlay,
-  Compose: Compose,
-  layered: layered,
+  utils,
+  helpers,
+  chart,
+  Chart,
+  component,
+  Component,
+  overlay,
+  Overlay,
+  Compose,
 
-  mixins: mixins,
+  bars,
+  Bars,
+  lines,
+  Lines,
+  labels,
+  Labels,
 
-  Lines: Lines,
-  lines: lines,
-  Bars: Bars,
-  bars: bars,
-  StackedBars: StackedBars,
-  stackedBars: stackedBars,
-  HorizontalBars: HorizontalBars,
-  horizontalBars: horizontalBars,
-  HorizontalStackedBars: HorizontalStackedBars,
-  horizontalStackedBars: horizontalStackedBars,
-  Labels: Labels,
-  labels: labels,
-  HoverLabels: HoverLabels,
-  hoverLabels: hoverLabels,
+  text,
+  Text,
+  title,
+  Title,
+  axisTitle,
+  AxisTitle,
+  axis,
+  Axis,
+  gridlines,
+  Gridlines,
+  legend,
+  Legend,
 
-  Text: Text,
-  text: text,
-  Title: Title,
-  title: title,
-  Axis: Axis,
-  axis: axis,
-  AxisTitle: AxisTitle,
-  axisTitle: axisTitle,
-  Legend: Legend,
-  legend: legend,
-  InsetLegend: InsetLegend,
-  insetLegend: insetLegend,
-  Gridlines: Gridlines,
-  gridlines: gridlines
+  layered
 };
 
 export default d3c;

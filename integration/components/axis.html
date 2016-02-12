@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.compose - axis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="../../.tmp/d3.compose.css">
+  <style>
+    .chart {
+      float: left;
+      width: 400px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    svg {
+      border: solid 1px #ccc;
+    }
+
+    .d3c-axis .domain {
+      stroke-width: 1px;
+      stroke: black;
+      fill: none;
+    }
+    .d3c-axis .tick line {
+      stroke-width: 1px;
+      stroke: black;
+      fill: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="charts"></div>
+
+  <script src="../../node_modules/d3/d3.js"></script>
+  <script src="../../.tmp/d3.compose-all.js"></script>
+  <script type="text/javascript">
+    var charts = d3.select('#charts');
+    var id = 1;
+    function draw(props) {
+      var chart = charts.append('div')
+        .attr('id', 'chart-' + (id++))
+        .attr('class', 'chart');
+      var container = new d3c.Compose(chart);
+      container.draw(d3c.axis(props));
+    }
+
+    draw({scale: d3.scale.linear(), translation: {x: 50, y: 0}});
+
+    draw({scale: d3.scale.linear(), position: 'top', translation: {x: 0, y: 50}});
+
+    draw({scale: d3.scale.linear(), position: 'right', translation: {x: 350, y: 0}});
+
+    draw({scale: d3.scale.linear(), position: 'bottom', translation: {x: 0, y: 250}});
+  </script>
+</body>
+</html>

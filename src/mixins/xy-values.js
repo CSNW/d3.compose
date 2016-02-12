@@ -1,62 +1,92 @@
-import { createScale } from '../helpers';
+import {assign} from '../utils';
+import {
+  types,
+  scaleBandSeries
+} from '../helpers';
+import {isSeriesData} from './series';
+import {
+  properties as xyProperties,
+  getValue,
+  defaultXValue
+} from './xy';
 
-/**
-  Mixin for charts of centered key,value data (x: index, y: value, key)
+export const unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
 
-  @class XYValues
-  @namespace mixins
-*/
-var XYValues = {
-  /**
-    Determine width of data-point when displayed adjacent
+export function getDefaultXScale({data, xValue}) {
+  return scaleBandSeries()
+    .domain(getOrdinalDomain(data, xValue || defaultXValue))
+    .seriesCount(isSeriesData(data) ? data.length : 1);
+}
 
-    @method adjacentWidth
-    @return {Number}
-  */
-  adjacentWidth: function() {
-    var series_count = this.seriesCount ? this.seriesCount() : 1;
-    return this.layeredWidth() / series_count;
-  },
-
-  /**
-    Determine layered width (width of group for adjacent)
-
-    @method layeredWidth
-    @return {Number}
-  */
-  layeredWidth: function() {
-    var range_band = this.xScale() && this.xScale().rangeBand && this.xScale().rangeBand();
-    var width = isFinite(range_band) ? range_band : 0;
-
-    return width;
-  },
-
-  /**
-    Determine item width based on series display type (adjacent or layered)
-
-    @method itemWidth
-    @return {Number}
-  */
-  itemWidth: function() {
-    var scale = this.xScale();
-    return scale && scale.width ? scale.width() : this.layeredWidth();
-  },
-
-  // Override default x-scale to use ordinal type
-  /**
-    Override default x-scale to use ordinal type: `{type: 'ordinal', data: this.data(), key: 'y', centered: true}`
-
-    @method getDefaultYScale
-    @return {d3.scale}
-  */
-  getDefaultXScale: function() {
-    return createScale({
-      type: 'ordinal',
-      data: this.data(),
-      key: 'x',
-      centered: true
-    });
+export const properties = assign({},
+  xyProperties,
+  {
+    xScale: {
+      type: types.fn,
+      getDefault: getDefaultXScale
+    },
+    xScalePadding: {
+      type: types.number,
+      getDefault: () => 0.1
+    },
+    xScaleOuterPadding: {
+      type: types.number,
+      getDefault: () => 0.1
+    }
   }
+);
+
+export function prepare(selection, props) {
+  const {xScalePadding, xScaleOuterPadding, width, height} = props;
+  var {xScale, yScale} = props;
+
+  xScale = xScale.copy()
+  if (xScale.rangeRoundBands) {
+    xScale.rangeRoundBands([0, width], xScalePadding, xScaleOuterPadding);
+  } else {
+    throw new Error(unsupportedScale);
+  }
+
+  yScale = yScale.copy()
+    .range([height, 0]);
+
+  return assign({}, props, {xScale, yScale});
+}
+
+export {
+  getValue
 };
 
-export default XYValues;
+export function getWidth(xScale) {
+  if (xScale.rangeBand) {
+    return xScale.rangeBand();
+  } else {
+    throw new Error(unsupportedScale);
+  }
+}
+
+export function getOrdinalDomain(data, getValue) {
+  if (!isSeriesData(data)) {
+    return data.map(getValue);
+  }
+
+  const values = data.reduce((memo, series) => {
+    const uniq = series.values
+      .map(getValue)
+      .filter(value => memo.indexOf(value < 0));
+
+    return memo.concat(uniq);
+  }, []);
+
+  return values.sort();
+}
+
+const xyValues = {
+  getDefaultXScale,
+  properties,
+  prepare,
+  getValue,
+  getWidth,
+  getOrdinalDomain
+}
+export default xyValues;

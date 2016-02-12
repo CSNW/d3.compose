@@ -1,63 +1,71 @@
-// Many utils inlined from Underscore.js
-// 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+const slice = Array.prototype.slice;
 
-export var slice = Array.prototype.slice;
-export var toString = Object.prototype.toString;
-
-function _extend(target, extensions, undefined_only) {
-  for (var i = 0, length = extensions.length; i < length; i++) {
-    for (var key in extensions[i]) {
-      if (!undefined_only || target[key] === void 0)
-        target[key] = extensions[i][key];
+export function _assign(target, extensions, undefinedOnly) {
+  extensions.forEach((extension) => {
+    if (!extension) {
+      return;
     }
-  }
+
+    const keys = Object.keys(extension);
+    var key;
+    for (var i = 0, length = keys.length; i < length; i++) {
+      key = keys[i];
+      if (!undefinedOnly || target[key] === void 0) {
+        target[key] = extension[key];
+      }
+    }
+  });
 
   return target;
 }
 
-export function contains(arr, item) {
+export const assign = Object.assign || function(obj) {
+  return _assign(obj, slice.call(arguments, 1));
+};
+
+export function extend(target) {
+  const extensions = slice.call(arguments, 1);
+  extensions.forEach((extension) => {
+    for (var key in extension) {
+      target[key] = extension[key];
+    }
+  });
+
+  return target;
+}
+
+export function includes(arr, item) {
   return arr.indexOf(item) >= 0;
 }
 
-export function compact(arr) {
-  return arr.filter(function(item) {
-    return item;
-  });
+export function curry(fn) {
+  const values = slice.call(arguments, 1);
+
+  return function() {
+    var args = slice.call(arguments);
+    return fn.apply(this, values.concat(args));
+  };
 }
 
-export function difference(a, b) {
-  return a.filter(function(value) {
-    return b.indexOf(value) < 0;
-  });
+export function defaults(obj) {
+  return _assign(obj, slice.call(arguments, 1), true);
 }
 
-export function defaults(target) {
-  return _extend(target, slice.call(arguments, 1), true);
-}
+export function objectEach(obj, fn) {
+  if (!obj) {
+    return;
+  }
 
-export function extend(target) {
-  return _extend(target, slice.call(arguments, 1));
-}
-
-export function flatten(arr) {
-  // Assumes all items in arr are arrays and only flattens one level
-  return arr.reduce(function(memo, item) {
-    return memo.concat(item);
-  }, []);
-}
-
-export function find(arr, fn, context) {
-  if (!arr) return;
-  for (var i = 0, length = arr.length; i < length; i++) {
-    if (fn.call(context, arr[i], i, arr))
-      return arr[i];
+  const keys = Object.keys(obj);
+  var key;
+  for (var i = 0, length = keys.length; i < length; i++) {
+    key = keys[i];
+    fn(obj[key], key, obj);
   }
 }
 
-export function first(arr, n) {
-  if (arr == null) return void 0;
-  if (n == null) return arr[0];
-  return Array.prototype.slice.call(arr, 0, n);
+export function toArray(arr) {
+  return slice.call(arr);
 }
 
 export function isBoolean(obj) {
@@ -86,39 +94,6 @@ if (typeof /./ != 'function' && typeof Int8Array != 'object') {
   };
 }
 
-export function objectEach(obj, fn, context) {
-  if (!obj) return;
-  var keys = Object.keys(obj);
-  for (var i = 0, length = keys.length; i < length; i++) {
-    fn.call(context, obj[keys[i]], keys[i], obj);
-  }
-}
-
-export function objectFind(obj, fn, context) {
-  if (!obj) return;
-  var keys = Object.keys(obj);
-  for (var i = 0, length = keys.length; i < length; i++) {
-    if (fn.call(context, obj[keys[i]], keys[i], obj))
-      return obj[keys[i]];
-  }
-}
-
-export function pluck(objs, key) {
-  if (!objs) return [];
-  return objs.map(function(obj) {
-    return obj[key];
-  });
-}
-
-export function uniq(arr) {
-  var result = [];
-  for (var i = 0, length = arr.length; i < length; i++) {
-    if (result.indexOf(arr[i]) < 0)
-      result.push(arr[i]);
-  }
-  return result;
-}
-
 export function inherits(Child, Parent) {
   Child.prototype = Object.create(Parent.prototype, {
     constructor: {
@@ -141,43 +116,19 @@ export function inherits(Child, Parent) {
   }
 }
 
-// If value isn't `undefined`, return `value`, otherwise use `default_value`
-//
-// @method valueOrDefault
-// @param {Any} [value]
-// @param {Any} default_value
-// @return {Any}
-export function valueOrDefault(value, default_value) {
-  return !isUndefined(value) ? value : default_value;
-}
-
-export function deprecate(message, version) {
-  if (typeof console != 'undefined' && console.warn)
-    console.warn('DEPRECATED (will be removed in ' + version + ') - ' + message);
-}
-
-var utils = {
-  slice: slice,
-  toString: toString,
-  contains: contains,
-  compact: compact,
-  difference: difference,
-  defaults: defaults,
-  extend: extend,
-  flatten: flatten,
-  find: find,
-  first: first,
-  isBoolean: isBoolean,
-  isFunction: isFunction,
-  isObject: isObject,
-  isNumber: isNumber,
-  isString: isString,
-  isUndefined: isUndefined,
-  objectEach: objectEach,
-  objectFind: objectFind,
-  pluck: pluck,
-  uniq: uniq,
-  inherits: inherits,
-  valueOrDefault: valueOrDefault
+const utils = {
+  assign,
+  extend,
+  includes,
+  curry,
+  defaults,
+  objectEach,
+  isBoolean,
+  isObject,
+  isNumber,
+  isString,
+  isUndefined,
+  isFunction,
+  inherits
 };
 export default utils;

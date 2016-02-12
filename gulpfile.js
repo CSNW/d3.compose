@@ -7,6 +7,7 @@ const gulpLoadPlugins = require('gulp-load-plugins');
 const rimraf = require('rimraf');
 const GithubApi = require('github');
 const inquirer = require('inquirer');
+const babel = require('rollup-plugin-babel');
 
 const $ = gulpLoadPlugins();
 const pkg = require('./package.json');
@@ -178,7 +179,15 @@ function build(entry, output, options) {
         moduleName: 'd3c',
         sourceMap: !options.minify,
         external: ['d3', 'd3.chart'],
-        format: 'umd'
+        globals: {
+          d3: 'd3'
+        },
+        format: 'umd',
+        plugins: [
+          babel({
+            exclude: 'node_modules/**'
+          })
+        ]
       }))
       .pipe($.replace(/\{version\}/g, pkg.version));
 

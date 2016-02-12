@@ -1,46 +1,21 @@
 import d3 from 'd3';
-import { extend } from '../utils';
-import { translate } from '../helpers';
+import getTranslate from './get-translate';
 
-/**
-  Stack given array of elements vertically or horizontally
-
-  @example
-  ```js
-  // Stack all text elements vertically, from the top, with 0px padding
-  d3.selectAll('text').call(helpers.stack())
-
-  // Stack all text elements horizontally, from the right, with 5px padding
-  d3.selectAll('text').call(helpers.stack({
-    direction: 'horizontal',
-    origin: 'right',
-    padding: 5
-  }));
-  ```
-  @method stack
-  @for helpers
-  @param {Object} [options]
-  @param {String} [options.direction=vertical] `"vertical"` or `"horizontal"`
-  @param {String} [options.origin] `"top"`, `"right"`, `"bottom"`, or `"left"` (by default, `"top"` for `"vertical"` and `"left"` for `"horizontal"`)
-  @param {Number} [options.padding=0] padding (in px) between elements
-  @param {Number} [options.min_height=0] minimum spacing height (for vertical stacking)
-  @param {Number} [options.min_width=0]  minimum spacing width (for horizontal stacking)
-  @return {Function}
-*/
 export default function stack(options) {
-  options = extend({
-    direction: 'vertical',
-    origin: 'top',
-    padding: 0,
-    min_height: 0,
-    min_width: 0
-  }, options);
+  options = options || {};
+  var {
+    direction = 'vertical',
+    origin = 'top',
+    minHeight = 0,
+    minWidth = 0
+  } = options;
 
   // Ensure valid origin based on direction
-  if (options.direction == 'horizontal' && !(options.origin == 'left' || options.origin == 'right'))
-    options.origin = 'left';
-  else if (options.direction == 'vertical' && !(options.origin == 'top' || options.origin == 'bottom'))
-    options.origin = 'top';
+  if (direction == 'horizontal' && !(origin == 'left' || origin == 'right')) {
+    origin = 'left';
+  } else if (direction == 'vertical' && !(origin == 'top' || origin == 'bottom')) {
+    origin = 'top';
+  }
 
   function padding(i) {
     return i > 0 && options.padding ? options.padding : 0;
@@ -51,35 +26,40 @@ export default function stack(options) {
       var previous = 0;
 
       elements.attr('transform', function(d, i) {
-        var element_dimensions = this.getBBox();
-        var spacing_width = d3.max([element_dimensions.width, options.min_width]);
-        var spacing_height = d3.max([element_dimensions.height, options.min_height]);
+        var dimensions = {width: 0, height: 0};
+        try {
+          dimensions = this.getBBox();
+        } catch (ex) {}
+
+        var width = d3.max([dimensions.width, minWidth]);
+        var height = d3.max([dimensions.height, minHeight]);
         var x = 0;
         var y = 0;
-        var next_position;
+        var nextPosition;
 
-        if (options.direction == 'horizontal') {
-          next_position = previous + spacing_width + padding(i);
+        if (direction == 'horizontal') {
+          nextPosition = previous + width + padding(i);
 
-          if (options.origin == 'left')
+          if (origin == 'left') {
             x = previous + padding(i);
-          else
-            x = next_position;
+          } else {
+            x = nextPosition;
+          }
 
-          previous = next_position;
-        }
-        else {
-          next_position = previous + spacing_height + padding(i);
+          previous = nextPosition;
+        } else {
+          nextPosition = previous + height + padding(i);
 
-          if (options.origin == 'top')
+          if (origin == 'top') {
             y = previous + padding(i);
-          else
-            y = next_position;
+          } else {
+            y = nextPosition;
+          }
 
-          previous = next_position;
+          previous = nextPosition;
         }
 
-        return translate(x, y);
+        return getTranslate(x, y);
       });
     }
   };

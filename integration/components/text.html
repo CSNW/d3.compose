@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.compose - lines</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="../../.tmp/d3.compose.css">
+  <style>
+    .chart {
+      float: left;
+      width: 400px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    svg {
+      border: solid 1px #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="charts"></div>
+
+  <script src="../../node_modules/d3/d3.js"></script>
+  <script src="../../.tmp/d3.compose-all.js"></script>
+  <script type="text/javascript">
+    var charts = d3.select('#charts');
+    var id = 1;
+    function draw(props) {
+      var chart = charts.append('div')
+        .attr('id', 'chart-' + (id++))
+        .attr('class', 'chart');
+      var container = new d3c.Compose(chart);
+
+      var group = container.svg.append('g')
+        .attr('transform', 'translate(0, 100)');
+
+      var rect = group.append('rect')
+        .attr('width', 400).attr('height', 100)
+        .style({fill: '#e6e6e6'});
+      var line = group.append('line')
+        .attr('x1', 0).attr('y1', 50).attr('x2', 400).attr('y2', 50)
+        .style({stroke: '#999'});
+      var point = group.append('circle')
+        .attr('cx', 200).attr('cy', 50).attr('r', 2)
+        .style({fill: 'red'});
+
+      container.draw(d3c.text(d3c.utils.assign({width: 400, height: 100, top: 100}, props)));
+    }
+
+    draw({text: 'center x middle'});
+    draw({text: 'left x bottom', verticalAlign: 'bottom', textAlign: 'left'});
+    draw({text: 'right x top', verticalAlign: 'top', textAlign: 'right'});
+    draw({text: 'rotation: 90', rotation: 90});
+  </script>
+</body>
+</html>
