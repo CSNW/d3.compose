@@ -50,6 +50,26 @@
         {values: [3, 2, 1, 0]}
       ]
     });
+
+    // Example
+    draw({
+      // Series values
+      data: [
+        {
+          values: [{a: 1, b: 10}, {a: 2, b: 20}, {a: 3, b: 30}]
+        },
+        {
+          values: [{a: 1, b: 30}, {a: 2, b: -10}, {a: 3, b: 10}]
+        }
+      ],
+
+      xValue: d => d.a,
+      yValue: d => d.b,
+      xScale: d3.scale.linear().domain([1, 3]),
+      yScale: d3.scale.linear().domain([-30, 30]),
+      interpolate: 'cardinal',
+      tension: 0.5
+    });
   </script>
 </body>
 </html>

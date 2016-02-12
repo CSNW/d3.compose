@@ -41,7 +41,7 @@
     draw({data: [1, 2, 3]});
 
     draw({
-      xScale: d3c.helpers.scaleBandSeries()
+      xScale: d3c.scaleBandSeries()
         .domain([0, 1, 2])
         .seriesCount(2)
         .seriesPadding(0.05),
@@ -98,6 +98,46 @@
         {values: [1, 2, 3]},
         {values: [1, -2, 3]}
       ],
+      horizontal: true,
+      stacked: true
+    });
+
+    // Histogram
+    var values = d3.range(1000).map(d3.random.bates(10));
+    var x = d3.scale.linear().domain([0, 1]);
+    var domain = x.ticks(20);
+
+    draw({
+      xScale: d3c.scaleBandSeries().domain(domain),
+      data: d3.layout.histogram().bins(domain)(values),
+    });
+
+    // Time
+    var dates = d3.range(12).map(function(i) {
+      return new Date((i + 1) + '/1/2015');
+    });
+
+    draw({
+      xScale: d3c.scaleBandSeries().domain(dates),
+      data: dates.map(function(x) {
+        return {x: x, y: Math.random()};
+      })
+    });
+
+    // Example
+    draw({
+      // Series values
+      data: [
+        {values: [{a: 'a', b: 10}, {a: 'b', b: 30}, {a: 'c', b: 20}]},
+        {values: [{a: 'a', b: 30}, {a: 'b', b: 20}, {a: 'c', b: 10}]}
+      ],
+
+      xValue: d => d.a,
+      yValue: d => d.b,
+      xScale: d3c.scaleBandSeries()
+        .domain(['a', 'b', 'c']).seriesCount(2).adjacent(false),
+      yScale: d3.scale.linear().domain([0, 50]),
+
       horizontal: true,
       stacked: true
     });

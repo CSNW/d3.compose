@@ -5,6 +5,7 @@ import chart, {Chart} from './src/chart';
 import component, {Component} from './src/component';
 import overlay, {Overlay} from './src/overlay';
 import Compose from './src/compose';
+import mixins from './src/mixins';
 
 import bars, {Bars} from './src/charts/bars';
 import lines, {Lines} from './src/charts/lines';
@@ -30,6 +31,9 @@ const d3c = d3.compose = {
   overlay,
   Overlay,
   Compose,
+
+  scaleBandSeries: helpers.scaleBandSeries,
+  mixins,
 
   bars,
   Bars,

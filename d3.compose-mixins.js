@@ -3,6 +3,7 @@ import utils from './src/utils';
 import helpers from './src/helpers';
 import chart, {Chart} from './src/chart';
 import component, {Component} from './src/component';
+import mixins from './src/mixins';
 
 const d3c = d3.compose = {
   VERSION: '{version}',
@@ -11,7 +12,10 @@ const d3c = d3.compose = {
   chart,
   Chart,
   component,
-  Component
+  Component,
+
+  scaleBandSeries: helpers.scaleBandSeries,
+  mixins
 };
 
 export default d3c;

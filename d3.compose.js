@@ -11,7 +11,9 @@ const d3c = d3.compose = {
   chart,
   Chart,
   component,
-  Component
+  Component,
+
+  scaleBandSeries: helpers.scaleBandSeries
 };
 
 export default d3c;

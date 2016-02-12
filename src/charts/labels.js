@@ -14,6 +14,7 @@ import {
   properties as seriesProperties
 } from '../mixins/series';
 import {
+  ORIGINAL_Y,
   getValue,
   prepare as xyPrepare,
   properties as xyProperties
@@ -89,8 +90,8 @@ export function getText(format, yValue, d, i) {
   var value;
   if (d && !isUndefined(d.label)) {
     value = d.label;
-  } else if (d && !isUndefined(d.__original_y)) {
-    value = d.__original_y;
+  } else if (d && !isUndefined(d[ORIGINAL_Y])) {
+    value = d[ORIGINAL_Y];
   } else {
     value = yValue(d, i);
   }

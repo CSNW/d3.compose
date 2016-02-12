@@ -8,6 +8,8 @@ import {
   getSeriesMax
 } from './series';
 
+export const ORIGINAL_Y = '__original_y';
+
 export const defaultKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;
 export const defaultXValue = (d, i) => {
   return !isUndefined(d) && !isUndefined(d.x) ? d.x : (Array.isArray(d) ? d[0] : i);
