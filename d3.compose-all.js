@@ -9,6 +9,7 @@ import mixins from './src/mixins';
 
 import bars, {Bars} from './src/charts/bars';
 import lines, {Lines} from './src/charts/lines';
+import scatter, {Scatter} from './src/charts/scatter';
 import labels, {Labels} from './src/charts/labels';
 
 import text, {Text} from './src/components/text';
@@ -39,6 +40,8 @@ const d3c = d3.compose = {
   Bars,
   lines,
   Lines,
+  scatter,
+  Scatter,
   labels,
   Labels,
 
