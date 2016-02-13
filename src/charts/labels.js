@@ -1,6 +1,8 @@
 import d3 from 'd3';
 import {
   assign,
+  isFunction,
+  isNumber,
   isUndefined
 } from '../utils';
 import {
@@ -22,7 +24,48 @@ import {
 import chart from '../chart';
 
 /**
-  Labels
+  Labels chart for single or series xy data
+
+  @example
+  ```js
+  // Automatic scaling and labels use given y-values
+  labels({data: [1, 2, 3]});
+
+  // Use 'label' in data to specify label text
+  labels({
+    data: [
+      {x: 0, y: 1, label: 'a'},
+      {x: 1, y: 2, label: 'b'},
+      {x: 2, y: 3, label: 'c'}
+    ]
+  });
+
+  // Full example
+  labels({
+    // Series values
+    data: [
+      {values: [{a: 1, b: 10}, {a: 2, b: 20}, {a: 3, b: 30}]},
+      {values: [{a: 1, b: 30}, {a: 2, b: -10}, {a: 3, b: 10}]}
+    ],
+    xValue: d => d.a,
+    yValue: d => d.b,
+    xScale: d3.scale.linear().domain([1, 3]),
+    yScale: d3.scale.linear().domain([-30, 30]),
+
+    // Format string passed to d3.format, formats y-value or label
+    // (or pass in custom function)
+    format: '.1f',
+
+    // Position relative to the data point
+    // (right for y >= 0, left for y < 0)
+    position: 'right|left',
+
+    offset: {x: 10, y: 5},
+    padding: 10,
+    anchor: d => d >= 0 ? 'start' : 'end',
+    alignment: 'top'
+  });
+  ```
 */
 export const Labels = createSeriesDraw({
   prepare: xyPrepare,
@@ -68,12 +111,91 @@ Labels.properties = assign({},
   {
     className: types.any,
     style: types.any,
+
+    /**
+      Format function or string (that is passed to `d3.format`) that is passed label values.
+      (label value = d.label or y-value)
+
+      @property format
+      @type String|Function
+    */
     format: types.any,
-    position: types.any,
-    offset: types.any,
-    padding: types.any,
-    anchor: types.any,
-    alignment: types.any
+
+    /**
+      Label position relative to data point
+      (top, right, bottom, or left)
+
+      Additionally, `(a)|(b)` can be used to set position to `a` if y-value >= 0 and `b` otherwise,
+      where `a` and `b` are `top`, `right`, `bottom`, or `left`
+
+      For more advanced positioning, a "di" function can be specified to set position per label
+
+      @example
+      ```js
+      labels({position: 'top'}); // top for all values
+      labels({position: 'top|bottom'}); // top for y-value >= 0, bottom otherwise
+      labels({position: d => d.x >= 0 ? 'right' : 'left'});
+      ```
+
+      @property position
+      @type String|Function
+      @default 'top|bottom'
+    */
+    position: {
+      type: types.any,
+      getDefault: () => 'top|bottom'
+    },
+
+    /**
+      Offset between data point and label
+      (if `Number` is given, offset is set based on position)
+
+      @example
+      ```js
+      // 5px x-offset between point and label
+      labels({position: 'right', offset: 5});
+
+      // 5px x 10px offset between point and label
+      labels({offset: {x: 5, y: 10}})
+      ```
+      @property offset
+      @type Number|Object
+      @default 0
+    */
+    offset: {
+      type: types.any,
+      getDefault: () => 0
+    },
+
+    /**
+      Padding between text and label background
+
+      @property padding
+      @type Number
+      @default 1
+    */
+    padding: {
+      type: types.number,
+      getDefault: () => 1
+    },
+
+    /**
+      Horizontal text anchor (start, middle, or end)
+
+      @property anchor
+      @type String
+      @default (set based on label position)
+    */
+    anchor: types.enum('start', 'middle', 'end'),
+
+    /**
+      Vertical text alignment (top, middle, or bottom)
+
+      @property alignment
+      @type String
+      @default (set based on label position)
+    */
+    alignment: types.enum('top', 'middle', 'bottom')
   }
 );
 
@@ -136,11 +258,12 @@ export function applyLayout(layout) {
 
 export function prepareLabel(element, props, d, i, j) {
   const {xValue, xScale, yValue, yScale} = props;
+  const labelProps = getProps(props, element, d, i, j);
   const textElement = d3.select(element).select('text').node();
 
   const x = getValue(xValue, xScale, d, i, j);
   const y = getValue(yValue, yScale, d, i, j);
-  const layout = calculateLabelLayout(textElement, x, y, props);
+  const layout = calculateLabelLayout(textElement, x, y, labelProps);
 
   return {
     x: layout.x,
@@ -153,8 +276,7 @@ export function prepareLabel(element, props, d, i, j) {
 }
 
 export function calculateLabelLayout(textElement, x, y, props) {
-  const {padding = 0, anchor, alignment} = props;
-  const offset = assign({x: 0, y: 0}, props.offset);
+  const {position, offset, padding, anchor, alignment} = props;
 
   const textBounds = textElement.getBBox();
   const width = textBounds.width + (2 * padding);
@@ -190,4 +312,62 @@ export function calculateLabelLayout(textElement, x, y, props) {
   };
 
   return layout;
+}
+
+export function getProps(props, element, d, i, j) {
+  // Load values for position, offset, padding, anchor, and alignment
+  const {yValue} = props;
+  var {position, offset, padding, anchor, alignment} = props;
+
+  // Position
+  if (isFunction(position)) {
+    position = position.call(element, d, i, j);
+  }
+  if (position && position.indexOf('|') >= 0) {
+    const parts = position.split('|');
+    const y = yValue(d, i, j);
+    position = y >= 0 ? parts[0] : parts[1];
+  }
+
+  // Offset
+  if (isNumber(offset)) {
+    offset = {
+      top: {x: 0, y: -offset},
+      right: {x: offset, y: 0},
+      bottom: {x: 0, y: offset},
+      left: {x: -offset, y: 0}
+    }[position];
+  }
+  offset = assign({x: 0, y: 0}, offset);
+
+  // Padding
+  if (isFunction(padding)) {
+    padding = padding.call(element, d, i, j);
+  }
+
+  // Anchor
+  if (isFunction(anchor)) {
+    anchor = anchor.call(element, d, i, j);
+  } else if (isUndefined(anchor)) {
+    anchor = {
+      top: 'middle',
+      right: 'start',
+      bottom: 'middle',
+      left: 'end'
+    }[position];
+  }
+
+  // Alignment
+  if (isFunction(alignment)) {
+    alignment = alignment.call(element, d, i, j);
+  } else if (isUndefined(alignment)) {
+    alignment = {
+      top: 'bottom',
+      right: 'middle',
+      bottom: 'top',
+      left: 'middle'
+    }[position];
+  }
+
+  return {position, offset, padding, anchor, alignment};
 }
