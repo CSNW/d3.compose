@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>d3.compose - helpers.alignText</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="../../.tmp/d3.compose.css">
+  <style>
+    #chart {
+      border: solid 1px #ccc;
+      width: 600px;
+      height: 300px;
+      font-size: 30px;
+    }
+
+    .baseline {
+      stroke: blue;
+      stroke-width: 1px;
+      fill: none;
+    }
+    .bbox {
+      fill: #ccc;
+    }
+    .background {
+      fill: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <svg id="chart"></svg>
+
+  <script src="../../node_modules/d3/d3.js"></script>
+  <script src="../../.tmp/d3.compose-all.js"></script>
+  <script type="text/javascript">
+    var helpers = d3c.helpers;
+    var getTranslate = helpers.getTranslate;
+    var alignText = helpers.alignText;
+    var svg = d3.select('#chart');
+
+    // Baseline
+    svg.append('line')
+      .attr('class', 'baseline')
+      .attr('x1', 0).attr('x2', 600)
+      .attr('y1', 150).attr('y2', 150);
+
+    // Unaligned
+    svg.append('text')
+      .attr('class', 'unaligned')
+      .text('Unaligned')
+      .attr('transform', getTranslate(50, 150));
+
+    var unaligned = svg.select('text');
+    var unalignedBBox = unaligned.node().getBBox();
+
+    svg.insert('rect', '.unaligned')
+      .attr('class', 'bbox')
+      .attr('x', 50 + unalignedBBox.x)
+      .attr('y', 150 + unalignedBBox.y)
+      .attr('width', unalignedBBox.width)
+      .attr('height', unalignedBBox.height);
+
+    // Aligned
+    var padding = 4;
+    svg.append('text')
+      .attr('class', 'aligned')
+      .text('Aligned')
+      .attr('transform', function() {
+        var yAlignment = alignText(this);
+        return getTranslate(250 + padding, 150 + yAlignment + padding);
+      });
+
+    var aligned = svg.select('.aligned');
+    var alignedBBox = aligned.node().getBBox();
+
+    svg.insert('rect', '.aligned')
+      .attr('class', 'background')
+      .attr('x', 250)
+      .attr('y', 150)
+      .attr('height', alignedBBox.height + (2 * padding))
+      .attr('width', alignedBBox.width + (2 * padding));
+
+    // Line-height
+    svg.append('text')
+      .attr('class', 'line-height')
+      .text('LineHeight')
+      .attr('transform', function() {
+        var yAlignment = alignText(this, 40);
+        return getTranslate(430 + padding, 150 + yAlignment + padding);
+      });
+
+    var lineHeight = svg.select('.line-height');
+    var lineHeightBBox = lineHeight.node().getBBox();
+
+    svg.insert('rect', '.aligned')
+      .attr('class', 'background')
+      .attr('x', 430)
+      .attr('y', 150)
+      .attr('height', 40 + (2 * padding))
+      .attr('width', lineHeightBBox.width + (2 * padding));
+  </script>
+</body>
+</html>
