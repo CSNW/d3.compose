@@ -276,7 +276,7 @@ export function prepareLabel(element, props, d, i, j) {
 }
 
 export function calculateLabelLayout(textElement, x, y, props) {
-  const {position, offset, padding, anchor, alignment} = props;
+  const {offset, padding, anchor, alignment} = props;
 
   const textBounds = textElement.getBBox();
   const width = textBounds.width + (2 * padding);

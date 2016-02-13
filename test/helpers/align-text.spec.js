@@ -1,55 +1,21 @@
-import expect, {spyOn, restoreSpies} from 'expect';
+import expect from 'expect';
 import mockElement from '../_helpers/mock-element';
 import alignText from '../../src/helpers/align-text';
 
 describe('alignText', () => {
-  afterEach(restoreSpies);
-
-  it('should determine offset by height', () => {
-    spyOn(window, 'getComputedStyle').andReturn({
-      'font-size': 0,
-      'line-height': 0
-    });
+  it('should determine offset by y', () => {
     const element = mockElement({
-      bbox: {height: 20, width: 100}
+      bbox: {x: 0, y: -17, height: 20, width: 100}
     });
 
-    expect(alignText(element)).toEqual(20);
+    expect(alignText(element)).toEqual(17);
   });
 
-  it('should determine offset by height and css', () => {
-    spyOn(window, 'getComputedStyle').andReturn({
-      'font-size': '10',
-      'line-height': '20'
-    });
+  it('should determine offset by y and given line-height', () => {
     const element = mockElement({
-      bbox: {height: 20, width: 100}
+      bbox: {x: 0, y: -17, height: 20, width: 100}
     });
 
-    expect(alignText(element)).toEqual(15);
-  });
-
-  it('should determine offset by height, css, and given line-height', () => {
-    spyOn(window, 'getComputedStyle').andReturn({
-      'font-size': '10',
-      'line-height': '20'
-    });
-    const element = mockElement({
-      bbox: {height: 20, width: 100}
-    });
-
-    expect(alignText(element, 50)).toEqual(30);
-  });
-
-  it('should estimate line-height for offset calculations', () => {
-    spyOn(window, 'getComputedStyle').andReturn({
-      'font-size': '10',
-      'line-height': 'normal'
-    });
-    const element = mockElement({
-      bbox: {height: 20, width: 100}
-    });
-
-    expect(alignText(element)).toEqual(20 - (0.14 * 10) / 2);
+    expect(alignText(element, 50)).toEqual(17 + (50 - 20)/2);
   });
 });

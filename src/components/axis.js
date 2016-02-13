@@ -5,6 +5,7 @@ import {
   objectEach
 } from '../utils';
 import {
+  getDimensions,
   getLayer,
   getTranslate,
   prepareTransition,
@@ -17,33 +18,53 @@ import component, {Component} from '../component';
 */
 export const Axis = Component.extend({
   render() {
-    const {transform, axis, gridlines} = prepareProps(this.base, this.props);
+    const {transform, axis} = prepare(this.base, this.props);
     const layer = getLayer(this.base, 'axis')
       .attr('class', 'd3c-axis')
       .attr('transform', transform);
 
-    if (gridlines) {
-      // TODO Attach gridlines
-      // const gridlinesLayer = getLayer(this.base, 'gridlines')
-      //   .attr('class', 'd3c-axis-gridlines');
-    } else {
-      // TODO Detach gridlines
-    }
+    drawAxis(layer, axis);
+  },
+
+  getDimensions() {
+    const {axis} = prepare(this.base, this.props);
+    const layer = getLayer(this.base, '_layout')
+      .style({display: 'none'});
 
     drawAxis(layer, axis);
+    return getDimensions(layer);
   }
 });
 
 export const defaultPosition = 'left';
 
 Axis.properties = {
+  /**
+    Scale to pass to d3.axis
+
+    @property scale
+    @type d3.scale
+  */
   scale: types.any,
 
+  /**
+    "position" of axis relative to chart
+    (used to set defaults for orientation and orient)
+
+    @property position
+    @type String
+    @default left
+  */
   position: {
     type: types.enum('top', 'right', 'bottom', 'left'),
     getDefault: () => defaultPosition
   },
 
+  /**
+    @property translation
+    @type Object
+    @default (set based on position)
+  */
   translation: {
     type: types.object,
     getDefault: ({position = defaultPosition, width, height}) => {
@@ -56,11 +77,21 @@ Axis.properties = {
     }
   },
 
+  /**
+    @property orient
+    @type String
+    @default (set based on position)
+  */
   orient: {
     type: types.enum('top', 'right', 'bottom', 'left'),
     getDefault: ({position = defaultPosition}) => position
   },
 
+  /**
+    @property orientation
+    @type String
+    @default (set based on position)
+  */
   orientation: {
     type: types.enum('vertical', 'horizontal'),
     getDefault: ({position = defaultPosition}) => {
@@ -73,8 +104,7 @@ Axis.properties = {
     }
   },
 
-  gridlines: types.any,
-
+  // d3.axis properties
   ticks: types.any,
   tickValues: types.any,
   tickSize: types.any,
@@ -82,7 +112,7 @@ Axis.properties = {
   outerTickSize: types.any,
   tickPadding: types.any,
   tickFormat: types.any
-}
+};
 
 const axis = component(Axis);
 export default axis;
@@ -100,8 +130,8 @@ export function drawAxis(selection, props) {
   selection.call(axis);
 }
 
-export function prepareProps(selection, props) {
-  var {orientation, scale, width, height, translation, gridlines, transition} = props;
+export function prepare(selection, props) {
+  var {orientation, scale, width, height, translation} = props;
 
   // Set range for scale
   if (orientation == 'vertical') {
@@ -113,14 +143,9 @@ export function prepareProps(selection, props) {
   const transform = getTranslate(translation);
   const axis = assign({}, props, {scale});
 
-  if (gridlines) {
-    gridlines = assign({transition}, gridlines);
-  }
-
   return {
     transform,
-    axis,
-    gridlines
+    axis
   };
 }
 
