@@ -1,4 +1,8 @@
-const slice = Array.prototype.slice;
+// Many utils inlined from Underscore.js
+// 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+
+// Objects
+// -------
 
 export function _assign(target, extensions, undefinedOnly) {
   extensions.forEach((extension) => {
@@ -23,6 +27,10 @@ export const assign = Object.assign || function(obj) {
   return _assign(obj, slice.call(arguments, 1));
 };
 
+export function defaults(obj) {
+  return _assign(obj, slice.call(arguments, 1), true);
+}
+
 export function extend(target) {
   const extensions = slice.call(arguments, 1);
   extensions.forEach((extension) => {
@@ -32,23 +40,6 @@ export function extend(target) {
   });
 
   return target;
-}
-
-export function includes(arr, item) {
-  return arr.indexOf(item) >= 0;
-}
-
-export function curry(fn) {
-  const values = slice.call(arguments, 1);
-
-  return function() {
-    var args = slice.call(arguments);
-    return fn.apply(this, values.concat(args));
-  };
-}
-
-export function defaults(obj) {
-  return _assign(obj, slice.call(arguments, 1), true);
 }
 
 export function objectEach(obj, fn) {
@@ -64,9 +55,37 @@ export function objectEach(obj, fn) {
   }
 }
 
+// Arrays
+// ------
+
+const slice = Array.prototype.slice;
+
+export function difference(a, b) {
+  return a.filter(value => b.indexOf(value) < 0);
+}
+
+export function includes(arr, item) {
+  return arr.indexOf(item) >= 0;
+}
+
 export function toArray(arr) {
   return slice.call(arr);
 }
+
+// Functions
+// ---------
+
+export function curry(fn) {
+  const values = slice.call(arguments, 1);
+
+  return function() {
+    var args = slice.call(arguments);
+    return fn.apply(this, values.concat(args));
+  };
+}
+
+// Checks
+// ------
 
 export function isBoolean(obj) {
   return obj === true || obj === false;
@@ -118,11 +137,13 @@ export function inherits(Child, Parent) {
 
 const utils = {
   assign,
-  extend,
-  includes,
-  curry,
   defaults,
+  extend,
   objectEach,
+  difference,
+  includes,
+  toArray,
+  curry,
   isBoolean,
   isObject,
   isNumber,
