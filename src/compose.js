@@ -1,6 +1,7 @@
 import d3 from 'd3';
 import {
   assign,
+  difference,
   extend,
   objectEach
 } from './utils';
@@ -82,12 +83,14 @@ const Compose = Chart.extend({
   },
 
   prepareChildren(prepared, dimensions) {
-    // TODO Patch existing children by id
-    objectEach(this.children.byId, child => child.remove());
+    // Remove no longer existing children
+    const current = this.children.byId;
+    const removed = difference(this.children.ordered, prepared.ordered);
+    removed.forEach(id => current[id].remove());
 
     const byId = {};
-    prepared.ordered.forEach(_id => {
-      const {props, type} = prepared.byId[_id];
+    prepared.ordered.forEach(id => {
+      const {props, type} = prepared.byId[id];
 
       // For layout, override with default layout
       const withLayout = assign({}, props, {
@@ -99,15 +102,23 @@ const Compose = Chart.extend({
         height: dimensions.height
       });
 
-      var child;
-      if (type.layerType == 'div') {
-        child = new type(getLayer(this.container, _id, type.layerType), withLayout, this);
-      } else {
-        child = new type(getLayer(this.svg, _id), withLayout, this);
+      var child = current[id];
+      if (child && child._type !== type) {
+        child.remove();
+        child = undefined;
       }
-      child._id = _id;
 
-      byId[_id] = child;
+      if (child) {
+        child.setProps(withLayout);
+      } else {
+        const layer = type.layerType == 'div' ? getLayer(this.container, id, 'div') : getLayer(this.svg, id);
+
+        child = new type(layer, withLayout, this);
+        child._id = id;
+        child._type = type;
+      }
+
+      byId[id] = child;
     });
 
     this.children = {byId, ordered: prepared.ordered};
@@ -118,7 +129,8 @@ const Compose = Chart.extend({
     return this.children.ordered.map(_id => {
       const child = byId[_id];
       const layout = extractLayout(prepared.byId[_id].props);
-      return assign({_id}, child.prepareLayout(layout));
+      const preparedLayout = child.prepareLayout(layout);
+      return assign({_id}, preparedLayout);
     });
   },
 
