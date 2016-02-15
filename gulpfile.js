@@ -12,8 +12,8 @@ const babel = require('rollup-plugin-babel');
 const $ = gulpLoadPlugins();
 const pkg = require('./package.json');
 const paths = {
-  tmp: './.tmp/',
-  dist: './dist/',
+  tmp: './build/',
+  dist: './build/',
   src: 'src/**/*.js',
   css: 'src/css/*.css',
   test: 'test/**/*.test.js',

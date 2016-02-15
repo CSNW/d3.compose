@@ -1,4 +1,4 @@
-build
+.babelrc
 node_modules
 npm-debug.log
 

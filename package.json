@@ -2,7 +2,7 @@
   "name": "d3.compose",
   "version": "0.15.15",
   "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
-  "main": "dist/d3.compose.js",
+  "main": "build/d3.compose.js",
   "scripts": {
     "clean": "gulp clean:tmp",
     "lint": "eslint src test d3.compose.js d3.compose-mixins.js d3.compose-all.js",
