@@ -41,7 +41,7 @@
   "license": "MIT",
   "dependencies": {
     "d3": "^3.5.8",
-    "d3.chart": "^0.2.1"
+    "d3.chart": "^0.3.0"
   },
   "devDependencies": {
     "babel-core": "^6.2.1",
@@ -74,13 +74,13 @@
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.6",
     "gulp-zip": "^3.0.2",
-    "inquirer": "~0.8.0",
+    "inquirer": "^0.12.0",
     "jquery": "^2.1.4",
-    "jsdom": "^7.1.1",
+    "jsdom": "^8.0.0",
     "mocha": "^2.3.4",
     "rimraf": "^2.4.4",
     "rollup-plugin-babel": "^2.3.9",
     "run-sequence": "^1.1.2",
-    "yuidocjs": "^0.9.0"
+    "yuidocjs": "^0.10.0"
   }
 }
