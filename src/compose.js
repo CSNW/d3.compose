@@ -1,6 +1,7 @@
 import d3 from 'd3';
 import {
   assign,
+  difference,
   extend,
   objectEach
 } from './utils';
@@ -21,7 +22,7 @@ const selectionError = 'svg is not supported for the base selection'
 const Compose = Chart.extend({
   constructor: function Compose(base, props) {
     Chart.call(this, base, props);
-    this.children = [];
+    this.children = {byId: {}, ordered: []};
 
     // Need div, p, etc. to support div layers (e.g. Overlay)
     if (this.base.node().tagName == 'svg') {
@@ -56,18 +57,114 @@ const Compose = Chart.extend({
   },
 
   render() {
-    var {
-      description = [],
-      responsive,
-      width,
-      height,
-      aspectRatio
-    } = this.props;
-
     // 1. Size and style container/svg
-    //    - Use given width/height or base clientWidth and aspect ratio
-    //    - For non-responsive, set static width/height
-    //    - For responsive, set container to 100% and viewBox width/height
+    const dimensions = this.getDimensions();
+    this.prepareContainer(dimensions)
+
+    // 2. Prepare children
+    const description = this.props.description || [];
+    const prepared = prepareDescription(description);
+    this.prepareChildren(prepared, dimensions);
+
+    // 3. Extract and calculate layout
+    const extracted = this.extractLayout(prepared);
+    const layout = calculateLayout(extracted, dimensions);
+
+    // 4. Apply calculated layout
+    this.applyLayout(prepared, layout, dimensions);
+
+    // 5. Render children
+    objectEach(this.children.byId, child => child.render());
+  },
+
+  draw(description) {
+    this.props = assign({}, this.props, {description});
+    this.render();
+  },
+
+  prepareChildren(prepared, dimensions) {
+    // Remove no longer existing children
+    const current = this.children.byId;
+    const removed = difference(this.children.ordered, prepared.ordered);
+    removed.forEach(id => current[id].remove());
+
+    const byId = {};
+    prepared.ordered.forEach(id => {
+      const {props, type} = prepared.byId[id];
+
+      // For layout, override with default layout
+      const withLayout = assign({}, props, {
+        top: 0,
+        right: dimensions.width,
+        bottom: dimensions.height,
+        left: 0,
+        width: dimensions.width,
+        height: dimensions.height
+      });
+
+      var child = current[id];
+      if (child && child._type !== type) {
+        child.remove();
+        child = undefined;
+      }
+
+      if (child) {
+        child.setProps(withLayout);
+      } else {
+        const layer = type.layerType == 'div' ? getLayer(this.container, id, 'div') : getLayer(this.svg, id);
+
+        child = new type(layer, withLayout, this);
+        child._id = id;
+        child._type = type;
+      }
+
+      byId[id] = child;
+    });
+
+    this.children = {byId, ordered: prepared.ordered};
+  },
+
+  extractLayout(prepared) {
+    const byId = this.children.byId;
+    return this.children.ordered.map(_id => {
+      const child = byId[_id];
+      const layout = extractLayout(prepared.byId[_id].props);
+      const preparedLayout = child.prepareLayout(layout);
+      return assign({_id}, preparedLayout);
+    });
+  },
+
+  applyLayout(prepared, layout, {scale}) {
+    const byId = this.children.byId;
+    objectEach(layout.byId, (values, _id) => {
+      const child = byId[_id];
+      const props = assign({}, prepared.byId[_id].props, values);
+      child.setProps(props);
+
+      const x = values.x + values.margin.left;
+      const y = values.y + values.margin.top;
+
+      if (child.constructor && child.constructor.layerType == 'div') {
+        const translate = getTranslate((x * scale) + 'px', (y * scale) + 'px');
+        const transform = `${translate} scale(${scale},${scale})`;
+
+        child.base.style({
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform,
+          '-ms-transform': transform,
+          '-webkit-transform': transform
+        });
+      } else {
+        child.base.attr('transform', getTranslate(x, y));
+      }
+    });
+  },
+
+  getDimensions() {
+    const {responsive} = this.props;
+    var {width, height, aspectRatio} = this.props;
     const clientWidth = this.base.node().clientWidth;
     if (width && height) {
       aspectRatio = width / height;
@@ -77,10 +174,17 @@ const Compose = Chart.extend({
       width = clientWidth;
       height = width / aspectRatio;
     }
-    const dimensions = {width, height};
     const scale = responsive ? clientWidth / width : 1.0;
 
-    if (responsive) {
+    return {width, height, aspectRatio, scale};
+  },
+
+  prepareContainer({width, height, aspectRatio, scale}) {
+    // - Use given width/height or base clientWidth and aspect ratio
+    // - For non-responsive, set static width/height
+    // - For responsive, set container to 100% and viewBox width/height
+
+    if (this.props.responsive) {
       // Responsive svg based on the following approach (embedded + padding hack)
       // http://tympanus.net/codrops/2014/08/19/making-svgs-responsive-with-css/
       this.container
@@ -108,112 +212,21 @@ const Compose = Chart.extend({
         .attr('width', width)
         .attr('height', height);
     }
-
-    // 2. Prepare children
-    const prepared = prepareDescription(description);
-    this.prepareChildren(prepared, dimensions);
-
-    // 3. Extract and calculate layout
-    const extracted = this.extractLayout(prepared);
-    const layout = calculateLayout(extracted, dimensions);
-
-    // 4. Apply calculated layout
-    this.applyLayout(prepared, layout, scale);
-
-    // 5. Render children
-    this.children.forEach(child => child.render());
-  },
-
-  draw(description) {
-    this.props = assign({}, this.props, {description});
-    this.render();
-  },
-
-  prepareChildren(prepared, dimensions) {
-    if (this.children) {
-      // TODO Patch existing children by id
-      this.children.forEach(child => child.remove());
-    }
-
-    this.children = prepared.ordered.map((_id) => {
-      const {props, type} = prepared.byId[_id];
-
-      // For layout, override with default layout
-      const withLayout = assign({}, props, {
-        top: 0,
-        right: dimensions.width,
-        bottom: dimensions.height,
-        left: 0,
-        width: dimensions.width,
-        height: dimensions.height
-      });
-
-      var child;
-      if (type.layerType == 'div') {
-        child = new type(getLayer(this.container, _id, type.layerType), withLayout, this);
-      } else {
-        child = new type(getLayer(this.svg, _id), withLayout, this);
-      }
-      child._id = _id;
-
-      return child;
-    });
-  },
-
-  extractLayout(prepared) {
-    return this.children.map((child) => {
-      const _id = child._id;
-      const layout = extractLayout(prepared.byId[_id].props);
-      return assign({_id}, child.prepareLayout(layout));
-    });
-  },
-
-  applyLayout(prepared, layout, scale) {
-    const byId = {};
-    this.children.forEach((child) => {
-      byId[child._id] = child;
-    });
-
-    objectEach(layout.byId, (values, _id) => {
-      const child = byId[_id];
-      const props = assign({}, prepared.byId[_id].props, values);
-      child.setProps(props);
-
-      const x = values.x + values.margin.left;
-      const y = values.y + values.margin.top;
-
-      if (child.constructor && child.constructor.layerType == 'div') {
-        const translate = getTranslate((x * scale) + 'px', (y * scale) + 'px');
-        const transform = `${translate} scale(${scale},${scale})`;
-
-        child.base.style({
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          transform,
-          '-ms-transform': transform,
-          '-webkit-transform': transform
-        });
-      } else {
-        child.base.attr('transform', getTranslate(x, y));
-      }
-    });
   },
 
   attachMouseEvents() {
     const base = this.base.node();
     const container = this.container.node();
     const subscriptions = this.subscriptions;
+
+    // TODO Update to respond to changes in responsive/width
     var {responsive, width} = this.props;
     var scale = 1.0;
     var bounds, wasInside;
 
     this.container.on('mouseenter', () => {
-      if (responsive && width) {
-        scale = base.clientWidth / width;
-      }
-      bounds = getBounds();
-      wasInside = getInside();
+      calculateBounds();
+      wasInside = getInside(bounds);
 
       if (wasInside) {
         mouseEnter();
@@ -222,13 +235,11 @@ const Compose = Chart.extend({
     this.container.on('mousemove', () => {
       // Mousemove may fire before mouseenter in IE
       if (!bounds) {
-        if (responsive && width) {
-          scale = base.clientWidth / width;
-        }
-        bounds = getBounds();
+        calculateBounds();
+        wasInside = false;
       }
 
-      const isInside = getInside();
+      const isInside = getInside(bounds);
       if (wasInside && isInside) {
         mouseMove();
       } else if (wasInside) {
@@ -247,44 +258,20 @@ const Compose = Chart.extend({
     });
 
     function mouseEnter() {
-      publish(subscriptions, {type: 'mouseenter', coordinates: getCoordinates()});
+      publish(subscriptions, {type: 'mouseenter', coordinates: getCoordinates(container, scale)});
     }
     function mouseMove() {
-      publish(subscriptions, {type: 'mousemove', coordinates: getCoordinates()});
+      publish(subscriptions, {type: 'mousemove', coordinates: getCoordinates(container, scale)});
     }
     function mouseLeave() {
       publish(subscriptions, {type: 'mouseleave'});
     }
 
-    function getCoordinates() {
-      const mouse = d3.mouse(container);
-      const x = mouse[0];
-      const y = mouse[1];
-
-      // Scale to svg dimensions
-      const coordinates = {
-        x: x * (1/scale),
-        y: y * (1/scale)
-      };
-
-      return coordinates;
-    }
-
-    function getBounds() {
-      // Get bounds of container relative to document
-      const scrollY = 'scrollY' in window ? window.scrollY : document.documentElement.scrollTop;
-      const bounds = extend({}, container.getBoundingClientRect());
-      bounds.top += scrollY;
-      bounds.bottom += scrollY;
-
-      return bounds;
-    }
-    function getInside() {
-      // Check if the current mouse position is within the container bounds
-      const mouse = d3.mouse(document.documentElement);
-      const x = mouse[0];
-      const y = mouse[1];
-      return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
+    function calculateBounds() {
+      if (responsive && width) {
+        scale = base.clientWidth / width;
+      }
+      bounds = getBounds(container, scale);
     }
   }
 });
@@ -308,4 +295,36 @@ function publish(subscriptions, event) {
   for (var i = 0, length = subscriptions.length; i < length; i++) {
     subscriptions[i](event);
   }
+}
+
+function getCoordinates(container, scale) {
+  const mouse = d3.mouse(container);
+  const x = mouse[0];
+  const y = mouse[1];
+
+  // Scale to svg dimensions
+  const coordinates = {
+    x: x * (1/scale),
+    y: y * (1/scale)
+  };
+
+  return coordinates;
+}
+
+function getBounds(container) {
+  // Get bounds of container relative to document
+  const scrollY = 'scrollY' in window ? window.scrollY : document.documentElement.scrollTop;
+  const bounds = extend({}, container.getBoundingClientRect());
+  bounds.top += scrollY;
+  bounds.bottom += scrollY;
+
+  return bounds;
+}
+
+function getInside(bounds) {
+  // Check if the current mouse position is within the container bounds
+  const mouse = d3.mouse(document.documentElement);
+  const x = mouse[0];
+  const y = mouse[1];
+  return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
 }

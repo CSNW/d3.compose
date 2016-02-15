@@ -19,26 +19,27 @@
   <script type="text/javascript">
     var charts = d3.select('#charts');
     var id = 1;
-    function draw(description) {
-      var selection = charts.append('div')
+    function getSelection() {
+      return charts.append('div')
         .attr('id', 'chart-' + (id++))
         .attr('class', 'chart');
-      var container = new d3c.Compose(selection, {
-        responsive: true,
-        width: 1200
-      });
-      container.draw(description);
     }
+
+    // A
 
     var Custom = d3c.Overlay.extend({
       render: function() {
         this.base.text('Howdy!');
       }
     });
-
     var xScale = d3.scale.linear();
     var yScale = d3.scale.linear();
-    draw(
+
+    var containerA = new d3c.Compose(getSelection(), {
+      responsive: true,
+      width: 1200
+    });
+    containerA.draw(
       d3c.layered(
          [
           d3c.title({text: 'Title', margin: {top: 30, bottom: 30}}),
@@ -56,7 +57,25 @@
         ],
         {type: Custom, props: {left: 100, top: 100}}
       )
-    )
+    );
+
+    // B
+
+    var containerB = new d3c.Compose(getSelection())
+    var count = 0;
+    var intId = setInterval(drawB, 1000);
+    drawB();
+
+    function drawB() {
+      if (count++ >= 5) {
+        clearInterval(intId);
+        return;
+      }
+
+      containerB.draw(d3c.layered(
+        d3c.title({text: 'Title ' + count})
+      ))
+    }
   </script>
 </body>
 </html>
