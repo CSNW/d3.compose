@@ -8,6 +8,7 @@ const types = {
   number: {},
   string: {},
   any: {},
+  array: {},
   object: {},
   enum: () => {
     const valid = toArray(arguments);

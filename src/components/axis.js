@@ -14,7 +14,30 @@ import {
 import component, {Component} from '../component';
 
 /**
-  Axis
+  Axis component (wraps `d3.axis`)
+
+  @example
+  ```js
+  var scale = d3.scale.linear().domain([0, 100]);
+
+  // Simple
+  axis({position: 'left', scale});
+
+  // Proxied d3.axis properties
+  axis({
+    position: 'left',
+    scale,
+
+    ticks: 10,
+    tickValues: [0, 50, 100],
+    tickSize: [4, 6],
+    innerTickSize: 4,
+    outerTickSize: 6,
+    tickPadding: 3,
+    tickFormat: d3.format(',.0f')
+  });
+  ```
+  @class Axis
 */
 export const Axis = Component.extend({
   render() {

@@ -6,6 +6,24 @@ import {
 } from '../helpers';
 import component from '../component';
 
+/**
+  Text component
+
+  @example
+  ```js
+  // Simple
+  text({text: 'Simple'});
+
+  // Full example
+  text({
+    text: 'Full',
+    rotation: -90,
+    textAlign: 'left',
+    verticalAlign: 'top'
+  });
+  ```
+  @class Text
+*/
 export const Text = createDraw({
   select({text}) {
     return this
@@ -25,32 +43,68 @@ export const Text = createDraw({
   }
 });
 
+export const defaultTextAlign = 'center';
+
 Text.properties = {
+  /**
+    Text to display
+
+    @property text
+    @type String
+  */
   text: types.string,
 
+  /**
+    Rotation of text
+
+    @property rotation
+    @type Number
+    @default 0
+  */
   rotation: {
     type: types.number,
     getDefault: () => 0
   },
 
+  /**
+    Horizontal text-alignment (`'left'`, `'center'`, or `'right'`)
+
+    @property textAlign
+    @type String
+    @default 'center'
+  */
   textAlign: {
     type: types.enum('left', 'center', 'right'),
-    getDefault: () => 'center'
+    getDefault: () => defaultTextAlign
   },
 
+  /**
+    Vertical text-alignment (`'top'`, `'middle'`, `'bottom'`)
+
+    @property verticalAlign
+    @type String
+    @default 'middle'
+  */
   verticalAlign: {
     type: types.enum('top', 'middle', 'bottom'),
     getDefault: () => 'middle'
   },
 
+  /**
+    Text-anchor (`'start'`, `'middle'`, `'end'`, `'inherit'`)
+
+    @property anchor
+    @type String
+    @default (set based on text-align)
+  */
   anchor: {
     type: types.enum('start', 'middle', 'end', 'inherit'),
-    getDefault: ({textAlign}) => {
+    getDefault: ({textAlign = defaultTextAlign}) => {
       return {
         left: 'start',
         center: 'middle',
         right: 'end'
-      }[textAlign || 'middle'];
+      }[textAlign];
     }
   },
 

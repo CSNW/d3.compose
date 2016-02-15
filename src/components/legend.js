@@ -8,6 +8,11 @@ import {
 } from '../helpers';
 import component from '../component';
 
+/**
+  Legend component
+
+  @class Legend
+*/
 export const Legend = createDraw({
   select({data}) {
     return this.selectAll('.d3c-legend-group')
@@ -91,10 +96,25 @@ export const defaultStackDirection = 'vertical';
 export const defaultSwatchDimensions = {width: 20, height: 20};
 
 Legend.properties = {
+  /**
+    Direction to "stack" legend, `'vertical'` or `'horizontal'`.
+
+    @property stackDirection
+    @type String
+    @default 'vertical'
+  */
   stackDirection: {
     type: types.enum('vertical', 'horizontal'),
     getDefault: () => defaultStackDirection
   },
+
+  /**
+    Dimensions of "swatch" in px
+
+    @property swatchDimensions
+    @type Object
+    @default {width: 20, height: 20}
+  */
   swatchDimensions: {
     type: types.object,
     getDefault: () => defaultSwatchDimensions
