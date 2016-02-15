@@ -117,5 +117,5 @@ Lines.properties = assign({},
 export const connection = connect();
 
 // lines
-const lines = chart(connection(Lines));
+const lines = connection(chart(Lines));
 export default lines;

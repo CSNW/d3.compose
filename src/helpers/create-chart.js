@@ -1,7 +1,6 @@
 import isChart from './is-chart';
-import {Chart} from '../chart';
 
-export default function createChart(ChartFn, Type = Chart) {
+export default function createChart(ChartFn, Type) {
   if (isChart(ChartFn)) {
     return ChartFn;
   }

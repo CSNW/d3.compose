@@ -203,7 +203,7 @@ export const connection = connect(mapState, mapDispatch);
 /**
   bars
 */
-const bars = chart(connection(Bars));
+const bars = connection(chart(Bars));
 export default bars;
 
 // Draw

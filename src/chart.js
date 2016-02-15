@@ -132,7 +132,7 @@ assign(Chart, {
 
 export default function chart(Type) {
   if (!isChart(Type)) {
-    Type = createChart(Type);
+    Type = createChart(Type, Chart);
   }
 
   return (id, props) => {
