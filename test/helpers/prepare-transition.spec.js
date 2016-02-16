@@ -1,6 +1,6 @@
-import expect from 'expect';
-import mockSelection from '../_helpers/mock-selection';
-import prepareTransition from '../../src/helpers/prepare-transition';
+const expect = require('expect');
+const mockSelection = require('../_helpers/mock-selection');
+const prepareTransition = require('../..').helpers.prepareTransition;
 
 describe('prepareTransition', () => {
   function addMockTransition(selection) {

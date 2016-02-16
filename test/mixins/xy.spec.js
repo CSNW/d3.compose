@@ -1,14 +1,15 @@
-import expect, {createSpy} from 'expect';
-import d3 from 'd3';
-import getDimensions from '../../src/helpers/get-dimensions';
-import scaleBandSeries from '../../src/helpers/scale-band-series';
-import mockSelection from '../_helpers/mock-selection';
-import {
-  // properties,
-  prepare,
-  getValue,
-  getMinMaxDomain
-} from '../../src/mixins/xy';
+const expect = require('expect');
+const mockSelection = require('../_helpers/mock-selection');
+const d3 = require('d3');
+const d3c = require('../../');
+
+const createSpy = expect.createSpy;
+const getDimensions = d3c.helpers.getDimensions;
+const scaleBandSeries = d3c.scaleBandSeries;
+const xy = d3c.mixins.xy;
+const prepare = xy.prepare;
+const getValue = xy.getValue;
+const getMinMaxDomain = xy.getMinMaxDomain;
 
 describe('xy', () => {
   describe('properties', () => {

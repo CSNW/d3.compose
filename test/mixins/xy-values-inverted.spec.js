@@ -1,9 +1,12 @@
-import d3 from 'd3';
-import expect, {createSpy} from 'expect';
-import mockSelection from '../_helpers/mock-selection';
-import getDimensions from '../../src/helpers/get-dimensions';
-import scaleBandSeries from '../../src/helpers/scale-band-series';
-import {prepare} from '../../src/mixins/xy-values-inverted';
+const expect = require('expect');
+const mockSelection = require('../_helpers/mock-selection');
+const d3 = require('d3');
+const d3c = require('../../');
+
+const createSpy = expect.createSpy;
+const getDimensions = d3c.helpers.getDimensions;
+const scaleBandSeries = d3c.scaleBandSeries;
+const prepare = d3c.mixins.xyValuesInverted.prepare;
 
 describe('xyValuesInverted', () => {
   describe('prepare', () => {

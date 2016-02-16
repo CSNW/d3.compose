@@ -1,7 +1,9 @@
-import expect from 'expect';
-import {Chart} from '../../src/chart';
-import {Component} from '../../src/component';
-import isChart from '../../src/helpers/is-chart';
+const expect = require('expect');
+const d3c = require('../../');
+
+const Chart = d3c.Chart;
+const Component = d3c.Component;
+const isChart = d3c.helpers.isChart;
 
 describe('isChart', () => {
   it('should identify subclasses of Chart', () => {

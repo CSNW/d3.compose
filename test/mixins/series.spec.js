@@ -1,11 +1,9 @@
-import expect from 'expect';
-import {
-  // properties,
-  // createSeriesDraw,
-  isSeriesData,
-  getSeriesMax,
-  getSeriesMin
-} from '../../src/mixins/series';
+const expect = require('expect');
+const series = require('../../').mixins.series;
+
+const isSeriesData = series.isSeriesData;
+const getSeriesMax = series.getSeriesMax;
+const getSeriesMin = series.getSeriesMin;
 
 describe('series', () => {
   const getValue = (d) => d;

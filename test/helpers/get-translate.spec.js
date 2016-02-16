@@ -1,5 +1,5 @@
-import expect from 'expect';
-import getTranslate from '../../src/helpers/get-translate';
+const expect = require('expect');
+const getTranslate = require('../../').helpers.getTranslate;
 
 describe('getTranslate', () => {
   it('should create from separate arguments or object', () => {

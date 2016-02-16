@@ -1,8 +1,11 @@
-import expect, {createSpy} from 'expect';
-import d3 from 'd3';
-import mockSelection from '../_helpers/mock-selection';
-import getDimensions from '../../src/helpers/get-dimensions';
-import {prepare} from '../../src/mixins/xy-inverted';
+const expect = require('expect');
+const mockSelection = require('../_helpers/mock-selection');
+const d3 = require('d3');
+const d3c = require('../../');
+
+const createSpy = expect.createSpy;
+const getDimensions = d3c.helpers.getDimensions;
+const prepare = d3c.mixins.xyInverted.prepare;
 
 describe('xyInverted', () => {
   describe('prepare', () => {

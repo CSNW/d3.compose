@@ -1,6 +1,6 @@
-import expect from 'expect';
-import mockElement from '../_helpers/mock-element';
-import alignText from '../../src/helpers/align-text';
+const expect = require('expect');
+const mockElement = require('../_helpers/mock-element');
+const alignText = require('../../').helpers.alignText;
 
 describe('alignText', () => {
   it('should determine offset by y', () => {

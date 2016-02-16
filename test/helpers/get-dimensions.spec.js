@@ -1,6 +1,9 @@
-import expect, {spyOn, restoreSpies} from 'expect';
-import mockSelection from '../_helpers/mock-selection';
-import getDimensions from '../../src/helpers/get-dimensions';
+const expect = require('expect');
+const mockSelection = require('../_helpers/mock-selection');
+const getDimensions = require('../../').helpers.getDimensions;
+
+const spyOn = expect.spyOn;
+const restoreSpies = expect.restoreSpies;
 
 describe('getDimensions', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
-import mockElement from './mock-element';
+var mockElement = require('./mock-element');
 
-export default function mockSelection(options) {
+module.exports = function mockSelection(options) {
   // client, attr, bbox, nodeName, empty
   options = options || {};
   const attr = options.attr || {width: 0, height: 0};
@@ -35,4 +35,4 @@ export default function mockSelection(options) {
       return empty;
     }
   };
-}
+};

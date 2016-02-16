@@ -1,7 +1,8 @@
-import expect from 'expect';
-import {objectEach} from '../src/utils';
-import mockSelection from './_helpers/mock-selection';
-import {Chart} from '../src/chart';
+const expect = require('expect');
+const mockSelection = require('./_helpers/mock-selection');
+const d3c = require('../');
+const objectEach = d3c.utils.objectEach;
+const Chart = d3c.Chart;
 
 describe('Chart', () => {
   describe('extend', () => {

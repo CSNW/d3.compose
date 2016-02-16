@@ -1,5 +1,5 @@
-import expect from 'expect';
-import getRotate from '../../src/helpers/get-rotate';
+const expect = require('expect');
+const getRotate = require('../../').helpers.getRotate;
 
 describe('getRotate', () => {
   it('should create rotation without center (default to 0)', () => {

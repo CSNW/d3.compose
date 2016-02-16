@@ -1,5 +1,5 @@
-import expect from 'expect';
-import scaleBandSeries from '../../src/helpers/scale-band-series';
+const expect = require('expect');
+const scaleBandSeries = require('../../').scaleBandSeries;
 
 describe('scaleBandSeries', () => {
   it('should use seriesCount', () => {

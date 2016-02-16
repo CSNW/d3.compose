@@ -1,6 +1,6 @@
-import expect from 'expect';
-import mockSelection from '../_helpers/mock-selection';
-import getLayer from '../../src/helpers/get-layer';
+const expect = require('expect');
+const mockSelection = require('../_helpers/mock-selection');
+const getLayer = require('../../').helpers.getLayer;
 
 describe('getLayer', () => {
   it('should get existing layer by id', () => {

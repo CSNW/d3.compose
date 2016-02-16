@@ -1,4 +1,4 @@
-export default function mockElement(options) {
+module.exports = function mockElement(options) {
   // client, bbox, nodeName
   options = options || {};
   const client = options.client || {width: 0, height: 0};
@@ -13,4 +13,4 @@ export default function mockElement(options) {
       return bbox;
     }
   };
-}
+};

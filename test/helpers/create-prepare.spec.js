@@ -1,5 +1,7 @@
-import expect, {createSpy} from 'expect';
-import createPrepare from '../../src/helpers/create-prepare';
+const expect = require('expect');
+const createPrepare = require('../../').helpers.createPrepare;
+
+const createSpy = expect.createSpy;
 
 describe('createPrepare', () => {
   it('should call each step', () => {

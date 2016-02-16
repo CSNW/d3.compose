@@ -1,5 +1,7 @@
-import expect, {createSpy} from 'expect';
-import createDraw from '../../src/helpers/create-draw';
+const expect = require('expect');
+const createDraw = require('../../').helpers.createDraw;
+
+const createSpy = expect.createSpy;
 
 describe('createDraw', () => {
   var context = {};

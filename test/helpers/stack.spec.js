@@ -1,8 +1,10 @@
-import expect from 'expect';
-import {isFunction} from '../../src/utils';
-import getTranslate from '../../src/helpers/get-translate';
-import mockElement from '../_helpers/mock-element';
-import stack from '../../src/helpers/stack';
+const expect = require('expect');
+const mockElement = require('../_helpers/mock-element');
+const d3c = require('../../');
+
+const isFunction = d3c.utils.isFunction;
+const getTranslate = d3c.helpers.getTranslate;
+const stack = d3c.helpers.stack;
 
 describe('stack', () => {
   var context = {};

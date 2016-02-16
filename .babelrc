@@ -11,10 +11,5 @@
     "transform-es2015-parameters",
     "transform-es2015-destructuring",
     "transform-es2015-block-scoping"
-  ],
-  "env": {
-    "test": {
-      "plugins": ["transform-es2015-modules-commonjs"]
-    }
-  }
+  ]
 }
