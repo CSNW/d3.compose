@@ -28,7 +28,9 @@ describe('createDraw', () => {
   });
 
   it('should select in draw function', () => {
-    const {selection, subselection, props} = context;
+    const selection = context.selection;
+    const subselection = context.subselection;
+    const props = context.props;
 
     const select = createSpy().andCall(function() {
       return subselection;
@@ -50,7 +52,9 @@ describe('createDraw', () => {
   });
 
   it('should enter in draw function', () => {
-    const {selection, subselection, props} = context;
+    const selection = context.selection;
+    const subselection = context.subselection;
+    const props = context.props;
 
     const enter = createSpy();
     const draw = createDraw({
@@ -65,7 +69,9 @@ describe('createDraw', () => {
   });
 
   it('should update in draw function', () => {
-    const {selection, subselection, props} = context;
+    const selection = context.selection;
+    const subselection = context.subselection;
+    const props = context.props;
 
     const update = createSpy();
     const draw = createDraw({
@@ -80,7 +86,9 @@ describe('createDraw', () => {
   });
 
   it('should merge in draw function', () => {
-    const {selection, subselection, props} = context;
+    const selection = context.selection;
+    const subselection = context.subselection;
+    const props = context.props;
 
     const merge = createSpy();
     const draw = createDraw({
@@ -95,7 +103,9 @@ describe('createDraw', () => {
   });
 
   it('should exit in draw function', () => {
-    const {selection, subselection, props} = context;
+    const selection = context.selection;
+    const subselection = context.subselection;
+    const props = context.props;
 
     const exit = createSpy();
     const draw = createDraw({
@@ -110,7 +120,8 @@ describe('createDraw', () => {
   });
 
   it('should combine all steps into draw function', () => {
-    const {selection, subselection} = context;
+    const selection = context.selection;
+    const subselection = context.subselection;
     const props = {};
 
     const select = createSpy().andCall(function() {
