@@ -2,8 +2,9 @@ import {isUndefined} from '../utils';
 
 export default function prepareTransition(transition) {
   return function() {
-    if (!transition)
+    if (!transition) {
       return;
+    }
 
     if (!isUndefined(transition.duration)) {
       this.duration(transition.duration);

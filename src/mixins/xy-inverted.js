@@ -1,18 +1,18 @@
 import {assign} from '../utils';
 
 export function prepare(selection, props) {
-  const {width, height} = props;
-  var {xScale, yScale} = props;
+  var xScale = props.xScale;
+  var yScale = props.yScale;
 
   xScale = xScale.copy()
-    .range([height, 0]);
+    .range([props.height, 0]);
   yScale = yScale.copy()
-    .range([0, width]);
+    .range([0, props.width]);
 
-  return assign({}, props, {xScale, yScale});
+  return assign({}, props, {xScale: xScale, yScale: yScale});
 }
 
-const xyInverted = {
-  prepare
+var xyInverted = {
+  prepare: prepare
 }
 export default xyInverted;

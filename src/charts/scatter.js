@@ -45,38 +45,38 @@ import chart from '../chart';
   ```
   @class Scatter
 */
-export const Scatter = createSeriesDraw({
+export var Scatter = createSeriesDraw({
   prepare: createPrepare(xyPrepare),
 
-  select({seriesValues, key}) {
+  select: function select(props) {
     return this.selectAll('g')
-      .data(seriesValues, key);
+      .data(props.seriesValues, props.key);
   },
 
-  enter() {
-    const group = this.append('g');
+  enter: function enter() {
+    var group = this.append('g');
     group.append('path');
   },
 
-  merge({xValue, yValue, xScale, yScale, type, size}) {
+  merge: function merge(props) {
     this
-      .attr('transform', (d, i, j) => {
-        const x = getValue(xValue, xScale, d, i, j);
-        const y = getValue(yValue, yScale, d, i, j);
+      .attr('transform', function(d, i, j) {
+        var x = getValue(props.xValue, props.xScale, d, i, j);
+        var y = getValue(props.yValue, props.yScale, d, i, j);
         return getTranslate(x, y);
       });
 
     var symbol;
-    if (isFunction(type) || isFunction(size)) {
+    if (isFunction(props.type) || isFunction(props.size)) {
       symbol = function(d, i, j) {
-        const typeFn = isFunction(type) ? type : () => type;
-        const sizeFn = isFunction(size) ? size : () => size;
+        var typeFn = isFunction(props.type) ? props.type : function() { return props.type; };
+        var sizeFn = isFunction(props.size) ? props.size : function() { return props.size; };
         return d3.svg.symbol()
           .type(typeFn.call(this, d, i, j))
           .size(sizeFn.call(this, d, i, j))(d, i, j);
       }
     } else {
-      symbol = d3.svg.symbol().type(type).size(size);
+      symbol = d3.svg.symbol().type(props.type).size(props.size);
     }
 
     this.select('path')
@@ -106,7 +106,7 @@ Scatter.properties = assign({},
     */
     type: {
       type: types.any,
-      getDefault: () => 'circle'
+      getDefault: function() { return 'circle'; }
     },
 
     /**
@@ -127,7 +127,7 @@ Scatter.properties = assign({},
     */
     size: {
       type: types.number,
-      getDefault: () => 64
+      getDefault: function() { return 64; }
     }
 
     // TODO className
@@ -135,5 +135,5 @@ Scatter.properties = assign({},
   }
 );
 
-const scatter = chart(Scatter);
+var scatter = chart(Scatter);
 export default scatter;

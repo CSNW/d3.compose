@@ -2,23 +2,23 @@ import {assign} from '../utils';
 import {unsupportedScale} from './xy-values';
 
 export function prepare(selection, props) {
-  const {xScalePadding, xScaleOuterPadding, width, height} = props;
-  var {xScale, yScale} = props;
+  var xScale = props.xScale;
+  var yScale = props.yScale;
 
   xScale = xScale.copy();
   if (xScale.rangeRoundBands) {
-    xScale.rangeRoundBands([height, 0], xScalePadding, xScaleOuterPadding);
+    xScale.rangeRoundBands([props.height, 0], props.xScalePadding, props.xScaleOuterPadding);
   } else {
     throw new Error(unsupportedScale);
   }
 
   yScale = yScale.copy()
-    .range([0, width]);
+    .range([0, props.width]);
 
-  return assign({}, props, {xScale, yScale});
+  return assign({}, props, {xScale: xScale, yScale: yScale});
 }
 
-const xyValuesInverted = {
-  prepare
+var xyValuesInverted = {
+  prepare: prepare
 }
 export default xyValuesInverted;

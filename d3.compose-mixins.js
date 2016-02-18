@@ -5,17 +5,17 @@ import chart, {Chart} from './src/chart';
 import component, {Component} from './src/component';
 import mixins from './src/mixins';
 
-const d3c = d3.compose = {
+var d3c = d3.compose = {
   VERSION: '{version}',
-  utils,
-  helpers,
-  chart,
-  Chart,
-  component,
-  Component,
+  utils: utils,
+  helpers: helpers,
+  chart: chart,
+  Chart: Chart,
+  component: component,
+  Component: Component,
 
   scaleBandSeries: helpers.scaleBandSeries,
-  mixins
+  mixins: mixins
 };
 
 export default d3c;

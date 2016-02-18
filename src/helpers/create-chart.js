@@ -6,7 +6,7 @@ export default function createChart(ChartFn, Type) {
   }
 
   return Type.extend({
-    render() {
+    render: function render() {
       ChartFn(this.base, this.props);
     }
   }, {

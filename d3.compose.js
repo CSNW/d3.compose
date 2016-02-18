@@ -4,14 +4,14 @@ import helpers from './src/helpers';
 import chart, {Chart} from './src/chart';
 import component, {Component} from './src/component';
 
-const d3c = d3.compose = {
+var d3c = d3.compose = {
   VERSION: '{version}',
-  utils,
-  helpers,
-  chart,
-  Chart,
-  component,
-  Component,
+  utils: utils,
+  helpers: helpers,
+  chart: chart,
+  Chart: Chart,
+  component: component,
+  Component: Component,
 
   scaleBandSeries: helpers.scaleBandSeries
 };

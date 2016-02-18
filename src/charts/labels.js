@@ -67,16 +67,16 @@ import chart from '../chart';
   });
   ```
 */
-export const Labels = createSeriesDraw({
+export var Labels = createSeriesDraw({
   prepare: xyPrepare,
 
-  select({seriesValues, key}) {
+  select: function select(props) {
     return this.selectAll('g')
-      .data(seriesValues, key);
+      .data(props.seriesValues, props.key);
   },
 
-  enter() {
-    const group = this.append('g');
+  enter: function enter() {
+    var group = this.append('g');
 
     group.append('rect')
       .attr('class', 'd3c-label-bg');
@@ -84,23 +84,21 @@ export const Labels = createSeriesDraw({
       .attr('class', 'd3c-label-text');
   },
 
-  merge(props) {
-    const {className, style, format, yValue, transition} = props;
-
+  merge: function merge(props) {
     // Write text before calculating layout
     this
-      .attr('class', className)
-      .style(style) // TODO Applies to all labels, update for (d, i)
+      .attr('class', props.className)
+      .style(props.style) // TODO Applies to all labels, update for (d, i)
       .select('text')
-        .text((d, i) => getText(format, yValue, d, i));
+        .text(function(d, i) { return getText(props.format, props.yValue, d, i); });
 
-    const layout = calculateLayout(this, props);
+    var layout = calculateLayout(this, props);
 
     this
       .attr('opacity', 0)
       .call(applyLayout(layout));
 
-    this.transition().call(prepareTransition(transition))
+    this.transition().call(prepareTransition(props.transition))
       .attr('opacity', 1);
   }
 });
@@ -143,7 +141,7 @@ Labels.properties = assign({},
     */
     position: {
       type: types.any,
-      getDefault: () => 'top|bottom'
+      getDefault: function() { return 'top|bottom'; }
     },
 
     /**
@@ -164,7 +162,7 @@ Labels.properties = assign({},
     */
     offset: {
       type: types.any,
-      getDefault: () => 0
+      getDefault: function() { return 0; }
     },
 
     /**
@@ -176,7 +174,7 @@ Labels.properties = assign({},
     */
     padding: {
       type: types.number,
-      getDefault: () => 1
+      getDefault: function() { return 1; }
     },
 
     /**
@@ -202,7 +200,7 @@ Labels.properties = assign({},
 /**
   labels
 */
-const labels = chart(Labels);
+var labels = chart(Labels);
 export default labels;
 
 // Helpers
@@ -222,14 +220,14 @@ export function getText(format, yValue, d, i) {
 }
 
 export function calculateLayout(selection, props) {
-  const labels = [];
+  var labels = [];
 
   selection.each(function(d, i, j) {
     if (!labels[j]) {
       labels[j] = [];
     }
 
-    const label = prepareLabel(this, props, d, i, j);
+    var label = prepareLabel(this, props, d, i, j);
     labels[j].push(label);
   });
 
@@ -241,8 +239,8 @@ export function calculateLayout(selection, props) {
 export function applyLayout(layout) {
   return function() {
     this.each(function(d, i, j) {
-      const label = layout[j][i];
-      const group = d3.select(this);
+      var label = layout[j][i];
+      var group = d3.select(this);
 
       group
         .attr('transform', getTranslate(label.x, label.y))
@@ -257,13 +255,12 @@ export function applyLayout(layout) {
 }
 
 export function prepareLabel(element, props, d, i, j) {
-  const {xValue, xScale, yValue, yScale} = props;
-  const labelProps = getProps(props, element, d, i, j);
-  const textElement = d3.select(element).select('text').node();
+  var labelProps = getProps(props, element, d, i, j);
+  var textElement = d3.select(element).select('text').node();
 
-  const x = getValue(xValue, xScale, d, i, j);
-  const y = getValue(yValue, yScale, d, i, j);
-  const layout = calculateLabelLayout(textElement, x, y, labelProps);
+  var x = getValue(props.xValue, props.xScale, d, i, j);
+  var y = getValue(props.yValue, props.yScale, d, i, j);
+  var layout = calculateLabelLayout(textElement, x, y, labelProps);
 
   return {
     x: layout.x,
@@ -276,39 +273,37 @@ export function prepareLabel(element, props, d, i, j) {
 }
 
 export function calculateLabelLayout(textElement, x, y, props) {
-  const {offset, padding, anchor, alignment} = props;
-
-  const textBounds = textElement.getBBox();
-  const width = textBounds.width + (2 * padding);
-  const height = textBounds.height + (2 * padding);
-  const layout = {x, y, width, height};
+  var textBounds = textElement.getBBox();
+  var width = textBounds.width + (2 * props.padding);
+  var height = textBounds.height + (2 * props.padding);
+  var layout = {x: x, y: y, width: width, height: height};
 
   // Adjust text to be top-aligned (default is baseline)
-  const textYAdjustment = alignText(textElement);
+  var textYAdjustment = alignText(textElement);
 
   // Adjust x, y by anchor/alignment
-  if (anchor == 'end') {
+  if (props.anchor == 'end') {
     layout.x -= layout.width;
-  } else if (anchor == 'middle') {
+  } else if (props.anchor == 'middle') {
     layout.x -= (layout.width / 2);
   }
 
-  if (alignment == 'bottom') {
+  if (props.alignment == 'bottom') {
     layout.y -= layout.height;
-  } else if (alignment == 'middle') {
+  } else if (props.alignment == 'middle') {
     layout.y -= (layout.height / 2);
   }
 
   layout.bg = {
-    x: offset.x,
-    y: offset.y,
-    width,
-    height
+    x: props.offset.x,
+    y: props.offset.y,
+    width: width,
+    height: height
   };
 
   layout.text = {
-    x: offset.x + (layout.width / 2) - (textBounds.width / 2),
-    y: offset.y + (layout.height / 2) - (textBounds.height / 2) + textYAdjustment
+    x: props.offset.x + (layout.width / 2) - (textBounds.width / 2),
+    y: props.offset.y + (layout.height / 2) - (textBounds.height / 2) + textYAdjustment
   };
 
   return layout;
@@ -316,16 +311,19 @@ export function calculateLabelLayout(textElement, x, y, props) {
 
 export function getProps(props, element, d, i, j) {
   // Load values for position, offset, padding, anchor, and alignment
-  const {yValue} = props;
-  var {position, offset, padding, anchor, alignment} = props;
+  var position = props.position;
+  var offset = props.offset;
+  var padding = props.padding;
+  var anchor = props.anchor;
+  var alignment = props.alignment;
 
   // Position
   if (isFunction(position)) {
     position = position.call(element, d, i, j);
   }
   if (position && position.indexOf('|') >= 0) {
-    const parts = position.split('|');
-    const y = yValue(d, i, j);
+    var parts = position.split('|');
+    var y = props.yValue(d, i, j);
     position = y >= 0 ? parts[0] : parts[1];
   }
 
@@ -369,5 +367,5 @@ export function getProps(props, element, d, i, j) {
     }[position];
   }
 
-  return {position, offset, padding, anchor, alignment};
+  return {position: position, offset: offset, padding: padding, anchor: anchor, alignment: alignment};
 }

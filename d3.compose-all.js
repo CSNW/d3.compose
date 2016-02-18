@@ -21,44 +21,44 @@ import legend, {Legend} from './src/components/legend';
 
 import layered from './src/layouts/layered';
 
-const d3c = d3.compose = {
+var d3c = d3.compose = {
   VERSION: '{version}',
-  utils,
-  helpers,
-  chart,
-  Chart,
-  component,
-  Component,
-  overlay,
-  Overlay,
-  Compose,
+  utils: utils,
+  helpers: helpers,
+  chart: chart,
+  Chart: Chart,
+  component: component,
+  Component: Component,
+  overlay: overlay,
+  Overlay: Overlay,
+  Compose: Compose,
 
   scaleBandSeries: helpers.scaleBandSeries,
-  mixins,
+  mixins: mixins,
 
-  bars,
-  Bars,
-  lines,
-  Lines,
-  scatter,
-  Scatter,
-  labels,
-  Labels,
+  bars: bars,
+  Bars: Bars,
+  lines: lines,
+  Lines: Lines,
+  scatter: scatter,
+  Scatter: Scatter,
+  labels: labels,
+  Labels: Labels,
 
-  text,
-  Text,
-  title,
-  Title,
-  axisTitle,
-  AxisTitle,
-  axis,
-  Axis,
-  gridlines,
-  Gridlines,
-  legend,
-  Legend,
+  text: text,
+  Text: Text,
+  title: title,
+  Title: Title,
+  axisTitle: axisTitle,
+  AxisTitle: AxisTitle,
+  axis: axis,
+  Axis: Axis,
+  gridlines: gridlines,
+  Gridlines: Gridlines,
+  legend: legend,
+  Legend: Legend,
 
-  layered
+  layered: layered
 };
 
 export default d3c;

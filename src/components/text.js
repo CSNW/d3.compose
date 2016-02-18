@@ -24,26 +24,26 @@ import component from '../component';
   ```
   @class Text
 */
-export const Text = createDraw({
-  select({text}) {
+export var Text = createDraw({
+  select: function select(props) {
     return this
       .classed('d3c-text', true)
-      .selectAll('text').data(text ? [text] : []);
+      .selectAll('text').data(props.text ? [props.text] : []);
   },
-  enter() {
+  enter: function enter() {
     this.append('text');
   },
-  merge({text, rotation, textAlign, verticalAlign, anchor, className, style, width, height}) {
+  merge: function merge(props) {
     this
-      .text(text)
-      .attr('transform', getTransform(rotation, textAlign, verticalAlign, width, height))
-      .attr('text-anchor', anchor)
-      .attr('class', className)
-      .style(style)
+      .text(props.text)
+      .attr('transform', getTransform(props.rotation, props.textAlign, props.verticalAlign, props.width, props.height))
+      .attr('text-anchor', props.anchor)
+      .attr('class', props.className)
+      .style(props.style);
   }
 });
 
-export const defaultTextAlign = 'center';
+export var defaultTextAlign = 'center';
 
 Text.properties = {
   /**
@@ -63,7 +63,7 @@ Text.properties = {
   */
   rotation: {
     type: types.number,
-    getDefault: () => 0
+    getDefault: function() { return 0; }
   },
 
   /**
@@ -75,7 +75,7 @@ Text.properties = {
   */
   textAlign: {
     type: types.enum('left', 'center', 'right'),
-    getDefault: () => defaultTextAlign
+    getDefault: function() { return defaultTextAlign; }
   },
 
   /**
@@ -87,7 +87,7 @@ Text.properties = {
   */
   verticalAlign: {
     type: types.enum('top', 'middle', 'bottom'),
-    getDefault: () => 'middle'
+    getDefault: function() { return 'middle'; }
   },
 
   /**
@@ -99,12 +99,12 @@ Text.properties = {
   */
   anchor: {
     type: types.enum('start', 'middle', 'end', 'inherit'),
-    getDefault: ({textAlign = defaultTextAlign}) => {
+    getDefault: function(props) {
       return {
         left: 'start',
         center: 'middle',
         right: 'end'
-      }[textAlign];
+      }[props.textAlign || defaultTextAlign];
     }
   },
 
@@ -112,29 +112,27 @@ Text.properties = {
   style: types.any
 };
 
-const text = component(Text);
+var text = component(Text);
 export default text;
 
 // Helpers
 // -------
 
 export function getTransform(rotation, textAlign, verticalAlign, width, height) {
-  const x = {
+  var x = {
     left: 0,
     center: width / 2,
     right: width
   }[textAlign];
 
-  const y = {
+  var y = {
     top: 0,
     middle: height / 2,
     bottom: height
   }[verticalAlign];
 
-  const transform = {
-    translate: getTranslate(x, y),
-    rotate: getRotate(rotation)
-  };
+  var translate = getTranslate(x, y);
+  var rotate = getRotate(rotation);
 
-  return `${transform.translate} ${transform.rotate}`;
+  return translate + ' ' + rotate;
 }

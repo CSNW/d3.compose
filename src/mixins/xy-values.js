@@ -10,15 +10,15 @@ import {
   defaultXValue
 } from './xy';
 
-export const unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
+export var unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
 
-export function getDefaultXScale({data, xValue}) {
+export function getDefaultXScale(props) {
   return scaleBandSeries()
-    .domain(getOrdinalDomain(data, xValue || defaultXValue))
-    .seriesCount(isSeriesData(data) ? data.length : 1);
+    .domain(getOrdinalDomain(props.data, props.xValue || defaultXValue))
+    .seriesCount(isSeriesData(props.data) ? props.data.length : 1);
 }
 
-export const properties = assign({},
+export var properties = assign({},
   xyProperties,
   {
     xScale: {
@@ -27,30 +27,30 @@ export const properties = assign({},
     },
     xScalePadding: {
       type: types.number,
-      getDefault: () => 0.1
+      getDefault: function() { return 0.1; }
     },
     xScaleOuterPadding: {
       type: types.number,
-      getDefault: () => 0.1
+      getDefault: function() { return 0.1; }
     }
   }
 );
 
 export function prepare(selection, props) {
-  const {xScalePadding, xScaleOuterPadding, width, height} = props;
-  var {xScale, yScale} = props;
+  var xScale = props.xScale;
+  var yScale = props.yScale;
 
   xScale = xScale.copy()
   if (xScale.rangeRoundBands) {
-    xScale.rangeRoundBands([0, width], xScalePadding, xScaleOuterPadding);
+    xScale.rangeRoundBands([0, props.width], props.xScalePadding, props.xScaleOuterPadding);
   } else {
     throw new Error(unsupportedScale);
   }
 
   yScale = yScale.copy()
-    .range([height, 0]);
+    .range([props.height, 0]);
 
-  return assign({}, props, {xScale, yScale});
+  return assign({}, props, {xScale: xScale, yScale: yScale});
 }
 
 export {
@@ -70,10 +70,10 @@ export function getOrdinalDomain(data, getValue) {
     return data.map(getValue);
   }
 
-  const values = data.reduce((memo, series) => {
-    const uniq = series.values
+  var values = data.reduce(function(memo, series) {
+    var uniq = series.values
       .map(getValue)
-      .filter(value => memo.indexOf(value < 0));
+      .filter(function(value) { return memo.indexOf(value < 0); });
 
     return memo.concat(uniq);
   }, []);
@@ -81,12 +81,12 @@ export function getOrdinalDomain(data, getValue) {
   return values.sort();
 }
 
-const xyValues = {
-  getDefaultXScale,
-  properties,
-  prepare,
-  getValue,
-  getWidth,
-  getOrdinalDomain
+var xyValues = {
+  getDefaultXScale: getDefaultXScale,
+  properties: properties,
+  prepare: prepare,
+  getValue: getValue,
+  getWidth: getWidth,
+  getOrdinalDomain: getOrdinalDomain
 }
 export default xyValues;

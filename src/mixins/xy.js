@@ -8,36 +8,36 @@ import {
   getSeriesMax
 } from './series';
 
-export const ORIGINAL_Y = '__original_y';
+export var ORIGINAL_Y = '__original_y';
 
-export const defaultKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;
-export const defaultXValue = (d, i) => {
+export var defaultKey = function(d, i) { return !isUndefined(d && d.key) ? d.key : i; };
+export var defaultXValue = function(d, i) {
   return !isUndefined(d) && !isUndefined(d.x) ? d.x : (Array.isArray(d) ? d[0] : i);
 }
-export const defaultYValue = (d) => {
+export var defaultYValue = function(d) {
   return !isUndefined(d) && !isUndefined(d.y) ? d.y : (Array.isArray(d) ? d[1] : d);
 }
-export function getDefaultXScale({data, xValue}) {
+export function getDefaultXScale(props) {
   return d3.scale.linear()
-    .domain(getMinMaxDomain(data, xValue || defaultXValue));
+    .domain(getMinMaxDomain(props.data, props.xValue || defaultXValue));
 }
-export function getDefaultYScale({data, yValue}) {
+export function getDefaultYScale(props) {
   return d3.scale.linear()
-    .domain(getMinMaxDomain(data, yValue || defaultYValue));
+    .domain(getMinMaxDomain(props.data, props.yValue || defaultYValue));
 }
 
-export const properties = {
+export var properties = {
   key: {
     type: types.fn,
-    getDefault: () => defaultKey
+    getDefault: function() { return defaultKey; }
   },
   xValue: {
     type: types.fn,
-    getDefault: () => defaultXValue
+    getDefault: function() { return defaultXValue; }
   },
   yValue: {
     type: types.fn,
-    getDefault: () => defaultYValue
+    getDefault: function() { return defaultYValue; }
   },
   xScale: {
     type: types.fn,
@@ -50,15 +50,15 @@ export const properties = {
 };
 
 export function prepare(selection, props) {
-  const {width, height} = props;
-  var {xScale, yScale} = props;
+  var xScale = props.xScale;
+  var yScale = props.yScale;
 
   xScale = xScale.copy()
-    .range([0, width]);
+    .range([0, props.width]);
   yScale = yScale.copy()
-    .range([height, 0]);
+    .range([props.height, 0]);
 
-  return assign({}, props, {xScale, yScale});
+  return assign({}, props, {xScale: xScale, yScale: yScale});
 }
 
 export function getValue(value, scale, d, i, j) {
@@ -68,22 +68,22 @@ export function getValue(value, scale, d, i, j) {
 
 export function getMinMaxDomain(data, getValue) {
   var min = getSeriesMin(data, getValue);
-  const max = getSeriesMax(data, getValue);
+  var max = getSeriesMax(data, getValue);
 
   min = min < 0 ? min : 0;
 
   return [min, max];
 }
 
-const xy = {
-  defaultKey,
-  defaultXValue,
-  defaultYValue,
-  getDefaultXScale,
-  getDefaultYScale,
-  properties,
-  prepare,
-  getValue,
-  getMinMaxDomain
+var xy = {
+  defaultKey: defaultKey,
+  defaultXValue: defaultXValue,
+  defaultYValue: defaultYValue,
+  getDefaultXScale: getDefaultXScale,
+  getDefaultYScale: getDefaultYScale,
+  properties: properties,
+  prepare: prepare,
+  getValue: getValue,
+  getMinMaxDomain: getMinMaxDomain
 }
 export default xy;

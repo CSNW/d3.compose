@@ -6,7 +6,14 @@ const spyOn = expect.spyOn;
 const restoreSpies = expect.restoreSpies;
 
 describe('getDimensions', () => {
+  var context = {};
+
   beforeEach(() => {
+    context.hadWindow = !!global.window;
+    if (!context.hadWindow) {
+      global.window = {getComputedStyle: () => {}};
+    }
+
     spyOn(window, 'getComputedStyle').andCall(function(element) {
       return {
         height: element.clientHeight,
@@ -18,7 +25,14 @@ describe('getDimensions', () => {
       };
     });
   });
-  afterEach(restoreSpies);
+  afterEach(function() {
+    if (!context.hadWindow) {
+      delete global.window;
+    }
+
+    context = {};
+    restoreSpies();
+  });
 
   it('should find width/height of svg', () => {
     // width/height = client || attr

@@ -3,8 +3,8 @@ import {types} from '../helpers';
 import component, {Component} from '../component';
 import {Text} from './text';
 
-export const defaultPosition = 'top';
-export const defaultMargin = 8;
+export var defaultPosition = 'top';
+export var defaultMargin = 8;
 
 /**
   Title component that extends Text with defaults for styling, margins, and rotation
@@ -28,15 +28,18 @@ export const defaultMargin = 8;
   ```
   @class Title
 */
-export const Title = Component.extend({
-  render() {
+export var Title = Component.extend({
+  render: function render() {
     this.base.classed('d3c-title', true);
     Text(this.base, this.props);
   },
 
-  getMargin() {
-    const {position = defaultPosition} = this.props;
-    var top = 0, right = 0, bottom = 0, left = 0;
+  getMargin: function getMargin() {
+    var position = this.props.position || defaultPosition;
+    var top = 0;
+    var right = 0;
+    var bottom = 0;
+    var left = 0;
 
     if (position == 'left' || position == 'right') {
       right = defaultMargin;
@@ -46,7 +49,7 @@ export const Title = Component.extend({
       bottom = defaultMargin;
     }
 
-    return {top, right, bottom, left};
+    return {top: top, right: right, bottom: bottom, left: left};
   }
 }, {
   properties: assign({},
@@ -62,7 +65,7 @@ export const Title = Component.extend({
       */
       position: {
         type: types.enum('top', 'right', 'bottom', 'left'),
-        getDefault: () => defaultPosition
+        getDefault: function() { return defaultPosition; }
       },
 
       /**
@@ -75,8 +78,9 @@ export const Title = Component.extend({
       */
       rotation: {
         type: types.number,
-        getDefault: ({position = defaultPosition}) => {
-          const byPosition = {
+        getDefault: function(props) {
+          var position = props.position || defaultPosition;
+          var byPosition = {
             right: 90,
             left: -90
           };
@@ -87,5 +91,5 @@ export const Title = Component.extend({
   )
 });
 
-const title = component(Title);
+var title = component(Title);
 export default title;

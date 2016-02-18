@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "gulp clean:tmp",
     "lint": "eslint src test d3.compose.js d3.compose-mixins.js d3.compose-all.js",
-    "test": "mocha --recursive --require ./test/setup.js",
+    "test": "mocha --recursive",
     "test:watch": "npm test -- --watch",
     "check": "npm run lint && npm run test",
     "build": "gulp build:tmp",
@@ -44,20 +44,7 @@
     "d3.chart": "^0.3.0"
   },
   "devDependencies": {
-    "babel-core": "^6.2.1",
-    "babel-plugin-check-es2015-constants": "^6.3.13",
-    "babel-plugin-transform-es2015-arrow-functions": "^6.4.0",
-    "babel-plugin-transform-es2015-block-scoped-functions": "^6.3.13",
-    "babel-plugin-transform-es2015-block-scoping": "^6.4.0",
-    "babel-plugin-transform-es2015-computed-properties": "^6.4.0",
-    "babel-plugin-transform-es2015-destructuring": "^6.4.0",
-    "babel-plugin-transform-es2015-function-name": "^6.4.0",
-    "babel-plugin-transform-es2015-literals": "^6.3.13",
-    "babel-plugin-transform-es2015-parameters": "^6.4.5",
-    "babel-plugin-transform-es2015-shorthand-properties": "^6.3.13",
-    "babel-plugin-transform-es2015-template-literals": "^6.3.13",
     "eslint": "^1.10.3",
-    "eslint-config-defaults": "^8.0.2",
     "expect": "^1.13.0",
     "github": "^0.2.4",
     "gulp": "^3.9.0",
@@ -78,7 +65,6 @@
     "jsdom": "^8.0.0",
     "mocha": "^2.3.4",
     "rimraf": "^2.4.4",
-    "rollup-plugin-babel": "^2.3.9",
     "run-sequence": "^1.1.2",
     "yuidocjs": "^0.10.0"
   }

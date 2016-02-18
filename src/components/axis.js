@@ -5,7 +5,7 @@ import {
   objectEach
 } from '../utils';
 import {
-  getDimensions,
+  getDimensions as getSelectionDimensions,
   getLayer,
   getTranslate,
   prepareTransition,
@@ -39,27 +39,27 @@ import component, {Component} from '../component';
   ```
   @class Axis
 */
-export const Axis = Component.extend({
-  render() {
-    const {transform, axis} = prepare(this.base, this.props);
-    const layer = getLayer(this.base, 'axis')
+export var Axis = Component.extend({
+  render: function render() {
+    var prepared = prepare(this.base, this.props);
+    var layer = getLayer(this.base, 'axis')
       .attr('class', 'd3c-axis')
-      .attr('transform', transform);
+      .attr('transform', prepared.transform);
 
-    drawAxis(layer, axis);
+    drawAxis(layer, prepared.axis);
   },
 
-  getDimensions() {
-    const {axis} = prepare(this.base, this.props);
-    const layer = getLayer(this.base, '_layout')
+  getDimensions: function getDimensions() {
+    var prepared = prepare(this.base, this.props);
+    var layer = getLayer(this.base, '_layout')
       .style({display: 'none'});
 
-    drawAxis(layer, axis);
-    return getDimensions(layer);
+    drawAxis(layer, prepared.axis);
+    return getSelectionDimensions(layer);
   }
 });
 
-export const defaultPosition = 'left';
+export var defaultPosition = 'left';
 
 Axis.properties = {
   /**
@@ -80,7 +80,7 @@ Axis.properties = {
   */
   position: {
     type: types.enum('top', 'right', 'bottom', 'left'),
-    getDefault: () => defaultPosition
+    getDefault: function() { return defaultPosition; }
   },
 
   /**
@@ -90,13 +90,13 @@ Axis.properties = {
   */
   translation: {
     type: types.object,
-    getDefault: ({position = defaultPosition, width, height}) => {
+    getDefault: function(props) {
       return {
-        top: {x: 0, y: height},
+        top: {x: 0, y: props.height},
         right: {x: 0, y: 0},
         bottom: {x: 0, y: 0},
-        left: {x: width, y: 0}
-      }[position];
+        left: {x: props.width, y: 0}
+      }[props.position || defaultPosition];
     }
   },
 
@@ -107,7 +107,9 @@ Axis.properties = {
   */
   orient: {
     type: types.enum('top', 'right', 'bottom', 'left'),
-    getDefault: ({position = defaultPosition}) => position
+    getDefault: function(props) {
+      return props.position || defaultPosition;
+    }
   },
 
   /**
@@ -117,13 +119,13 @@ Axis.properties = {
   */
   orientation: {
     type: types.enum('vertical', 'horizontal'),
-    getDefault: ({position = defaultPosition}) => {
+    getDefault: function(props) {
       return {
         top: 'horizontal',
         right: 'vertical',
         bottom: 'horizontal',
         left: 'vertical'
-      }[position];
+      }[props.position || defaultPosition];
     }
   },
 
@@ -137,14 +139,14 @@ Axis.properties = {
   tickFormat: types.any
 };
 
-const axis = component(Axis);
+var axis = component(Axis);
 export default axis;
 
 // Helpers
 // -------
 
 export function drawAxis(selection, props) {
-  const axis = createAxis(props);
+  var axis = createAxis(props);
 
   if (props.transition && !selection.selectAll('*').empty()) {
     selection = selection.transition().call(prepareTransition(props.transition));
@@ -154,28 +156,28 @@ export function drawAxis(selection, props) {
 }
 
 export function prepare(selection, props) {
-  var {orientation, scale, width, height, translation} = props;
+  var scale = props.scale;
 
   // Set range for scale
-  if (orientation == 'vertical') {
-    scale = scale.copy().range([height, 0]);
+  if (props.orientation == 'vertical') {
+    scale = scale.copy().range([props.height, 0]);
   } else {
-    scale = scale.copy().range([0, width]);
+    scale = scale.copy().range([0, props.width]);
   }
 
-  const transform = getTranslate(translation);
-  const axis = assign({}, props, {scale});
+  var transform = getTranslate(props.translation);
+  var axis = assign({}, props, {scale: scale});
 
   return {
-    transform,
-    axis
+    transform: transform,
+    axis: axis
   };
 }
 
 export function createAxis(props) {
-  const axis = d3.svg.axis();
+  var axis = d3.svg.axis();
 
-  objectEach(props, (value, key) => {
+  objectEach(props, function(value, key) {
     if (!isUndefined(value) && axis[key]) {
       // If value is array, treat as arguments array (except for tickValues)
       // otherwise, pass in directly

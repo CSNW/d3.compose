@@ -45,33 +45,33 @@ import chart from '../chart';
   ```
   @class Lines
 */
-export const Lines = createSeriesDraw({
+export var Lines = createSeriesDraw({
   prepare: createPrepare(xyPrepare),
 
-  select({seriesValues, key}) {
+  select: function select(props) {
     return this.selectAll('path')
-      .data((d, i, j) => {
-        return [seriesValues.call(this, d, i, j)];
-      }, key);
+      .data(function(d, i, j) {
+        return [props.seriesValues.call(this, d, i, j)];
+      }, props.key);
   },
 
-  enter() {
+  enter: function enter() {
     this.append('path');
   },
 
-  merge({xValue, xScale, yValue, yScale, interpolate, tension}) {
-    const line = d3.svg.line()
-      .x((d, i, j) => getValue(xValue, xScale, d, i, j))
-      .y((d, i, j) => getValue(yValue, yScale, d, i, j));
+  merge: function merge(props) {
+    var line = d3.svg.line()
+      .x(function(d, i, j) { return getValue(props.xValue, props.xScale, d, i, j); })
+      .y(function(d, i, j) { return getValue(props.yValue, props.yScale, d, i, j); });
 
-    if (interpolate) {
-      line.interpolate(interpolate);
+    if (props.interpolate) {
+      line.interpolate(props.interpolate);
     }
-    if (!isUndefined(tension)) {
-      line.tension(tension);
+    if (!isUndefined(props.tension)) {
+      line.tension(props.tension);
     }
 
-    this.attr('d', (d) => line(d));
+    this.attr('d', function(d) { return line(d); });
   }
 });
 
@@ -91,7 +91,7 @@ Lines.properties = assign({},
     */
     interpolate: {
       type: types.any,
-      getDefault: () => 'monotone'
+      getDefault: function() { return 'monotone'; }
     },
 
     /**
@@ -105,7 +105,7 @@ Lines.properties = assign({},
     */
     tension: {
       type: types.number,
-      getDefault: () => null
+      getDefault: function() { return null; }
     }
   }
 );
@@ -114,8 +114,8 @@ Lines.properties = assign({},
 // ----------
 
 // TODO Connect to dispatch closest points
-export const connection = connect();
+export var connection = connect();
 
 // lines
-const lines = connection(chart(Lines));
+var lines = connection(chart(Lines));
 export default lines;
