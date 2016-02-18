@@ -179,7 +179,7 @@ const Compose = Chart.extend({
     return {width, height, aspectRatio, scale};
   },
 
-  prepareContainer({width, height, aspectRatio, scale}) {
+  prepareContainer({width, height, aspectRatio}) {
     // - Use given width/height or base clientWidth and aspect ratio
     // - For non-responsive, set static width/height
     // - For responsive, set container to 100% and viewBox width/height

@@ -16,7 +16,6 @@ const isNumber = utils.isNumber;
 const isString = utils.isString;
 const isUndefined = utils.isUndefined;
 const isFunction = utils.isFunction;
-const inherits = utils.inherits;
 
 describe('utils', function() {
   it('assign: should assign own properties to target object', () => {

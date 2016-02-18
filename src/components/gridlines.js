@@ -8,7 +8,6 @@ import {
   prepareTransition,
   types
 } from '../helpers';
-import {getValue} from '../mixins/xy';
 import component from '../component';
 
 /**
