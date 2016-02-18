@@ -73,7 +73,7 @@ assign(Chart.prototype, {
     return assign({}, layout, {width: width, height: height, margin: margin});
   },
 
-  getDimensions: function getDimensions() {
+  getDimensions: function() {
     return {
       width: constraint.flex(),
       height: constraint.flex()

@@ -5,7 +5,7 @@ import {
   objectEach
 } from '../utils';
 import {
-  getDimensions as getSelectionDimensions,
+  getDimensions,
   getLayer,
   getTranslate,
   prepareTransition,
@@ -49,13 +49,13 @@ export var Axis = Component.extend({
     drawAxis(layer, prepared.axis);
   },
 
-  getDimensions: function getDimensions() {
+  getDimensions: function() {
     var prepared = prepare(this.base, this.props);
     var layer = getLayer(this.base, '_layout')
       .style({display: 'none'});
 
     drawAxis(layer, prepared.axis);
-    return getSelectionDimensions(layer);
+    return getDimensions(layer);
   }
 });
 

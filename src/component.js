@@ -1,14 +1,14 @@
 import {
-  getDimensions as getSelectionDimensions,
+  getDimensions,
   isChart,
   createChart
 } from './helpers';
 import {Chart} from './chart';
 
 var Component = Chart.extend({
-  getDimensions: function getDimensions() {
+  getDimensions: function() {
     this.render();
-    return getSelectionDimensions(this.base);
+    return getDimensions(this.base);
   }
 });
 

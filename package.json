@@ -24,9 +24,8 @@
   },
   "keywords": [
     "d3.compose",
+    "d3-compose",
     "d3",
-    "d3.chart",
-    "d3-chart",
     "compose",
     "chart"
   ],
