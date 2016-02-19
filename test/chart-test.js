@@ -1,52 +1,50 @@
-const expect = require('expect');
+const tape = require('tape');
 const mockSelection = require('./_helpers/mock-selection');
 const d3c = require('../');
-const objectEach = d3c.utils.objectEach;
 const Chart = d3c.Chart;
 
-describe('Chart', () => {
-  describe('extend', () => {
-    it('should create extension with prototype and static properties', () => {
-      const protoProps = {
-        a: 1,
-        b: function() {}
-      };
-      const staticProps = {
-        c: {d: 4},
-        e: function() {}
-      };
+tape('Chart.extend() creates extension with prototype and static properties', t => {
+  t.plan(4);
 
-      const A = Chart.extend(protoProps, staticProps);
+  const protoProps = {
+    a: 1,
+    b: function() {}
+  };
+  const staticProps = {
+    c: {d: 4},
+    e: function() {}
+  };
 
-      objectEach(protoProps, (value, key) => {
-        expect(A.prototype[key]).toBe(value);
-      });
-      objectEach(staticProps, (value, key) => {
-        expect(A[key]).toBe(value);
-      });
-    });
+  const A = Chart.extend(protoProps, staticProps);
 
-    it('should maintain proper prototype chain', () => {
-      const A = Chart.extend({
-        a: 1
-      });
-      const B = A.extend({
-        b: 2
-      });
-      const C = B.extend({
-        c: 3
-      });
-
-      const c = new C(mockSelection());
-
-      expect(c.a).toEqual(1);
-      expect(c.b).toEqual(2);
-      expect(c.c).toEqual(3);
-
-      expect(c instanceof Chart).toEqual(true);
-      expect(c instanceof A).toEqual(true);
-      expect(c instanceof B).toEqual(true);
-      expect(c instanceof C).toEqual(true);
-    });
+  d3c.utils.objectEach(protoProps, (value, key) => {
+    t.equal(A.prototype[key], value);
   });
+  d3c.utils.objectEach(staticProps, (value, key) => {
+    t.equal(A[key], value);
+  });
+});
+
+tape('Chart.extend() maintains proper prototype chain', t => {
+  const A = Chart.extend({
+    a: 1
+  });
+  const B = A.extend({
+    b: 2
+  });
+  const C = B.extend({
+    c: 3
+  });
+
+  const c = new C(mockSelection());
+
+  t.equal(c.a, 1);
+  t.equal(c.b, 2);
+  t.equal(c.c, 3);
+
+  t.ok(c instanceof Chart);
+  t.ok(c instanceof A);
+  t.ok(c instanceof B);
+  t.ok(c instanceof C);
+  t.end();
 });

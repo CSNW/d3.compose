@@ -1,21 +1,21 @@
-const expect = require('expect');
+const tape = require('tape');
 const mockElement = require('../_helpers/mock-element');
 const alignText = require('../../').helpers.alignText;
 
-describe('alignText', () => {
-  it('should determine offset by y', () => {
-    const element = mockElement({
-      bbox: {x: 0, y: -17, height: 20, width: 100}
-    });
-
-    expect(alignText(element)).toEqual(17);
+tape('alignText() determines offset by y', t => {
+  const element = mockElement({
+    bbox: {x: 0, y: -17, height: 20, width: 100}
   });
 
-  it('should determine offset by y and given line-height', () => {
-    const element = mockElement({
-      bbox: {x: 0, y: -17, height: 20, width: 100}
-    });
+  t.equal(alignText(element), 17);
+  t.end();
+});
 
-    expect(alignText(element, 50)).toEqual(17 + (50 - 20)/2);
+tape('alighText() determines offset by y and given line-height', t => {
+  const element = mockElement({
+    bbox: {x: 0, y: -17, height: 20, width: 100}
   });
+
+  t.equal(alignText(element, 50), 17 + (50 - 20)/2);
+  t.end();
 });

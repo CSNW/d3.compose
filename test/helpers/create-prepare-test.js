@@ -1,26 +1,24 @@
-const expect = require('expect');
+const tape = require('tape');
+const sinon = require('sinon');
 const createPrepare = require('../../').helpers.createPrepare;
 
-const createSpy = expect.createSpy;
+tape('createPrepare() calls each step', t => {
+  const selection = {};
+  const props = {};
 
-describe('createPrepare', () => {
-  it('should call each step', () => {
-    const selection = {};
-    const props = {};
+  const a = {};
+  const b = {};
+  const c = {};
+  const aFn = sinon.mock().returns(a);
+  const bFn = sinon.mock().returns(b);
+  const cFn = sinon.mock().returns(c);
 
-    const a = {};
-    const b = {};
-    const c = {};
-    const aFn = createSpy().andCall(() => a);
-    const bFn = createSpy().andCall(() => b);
-    const cFn = createSpy().andCall(() => c);
+  const prepared = createPrepare(aFn, bFn, cFn);
+  const result = prepared(selection, props);
 
-    const prepared = createPrepare(aFn, bFn, cFn);
-    const result = prepared(selection, props);
-
-    expect(aFn).toHaveBeenCalledWith(selection, props);
-    expect(bFn).toHaveBeenCalledWith(selection, a);
-    expect(bFn).toHaveBeenCalledWith(selection, b);
-    expect(result).toBe(c);
-  });
+  t.ok(aFn.calledWith(selection, props));
+  t.ok(bFn.calledWith(selection, a));
+  t.ok(bFn.calledWith(selection, b));
+  t.equal(result, c);
+  t.end();
 });

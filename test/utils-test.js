@@ -1,157 +1,165 @@
-const expect = require('expect');
+const tape = require('tape');
+const sinon = require('sinon');
 const utils = require('../').utils;
 
-const createSpy = expect.createSpy;
-const assign = utils.assign;
-const defaults = utils.defaults;
-const extend = utils.extend;
-const objectEach = utils.objectEach;
-const difference = utils.difference;
-const includes = utils.includes;
-const toArray = utils.toArray;
-const curry = utils.curry;
-const isBoolean = utils.isBoolean;
-const isObject = utils.isObject;
-const isNumber = utils.isNumber;
-const isString = utils.isString;
-const isUndefined = utils.isUndefined;
-const isFunction = utils.isFunction;
+tape('utils.assign() assigns own properties to target object', t => {
+  const target = {};
+  const a = {a: 1};
 
-describe('utils', function() {
-  it('assign: should assign own properties to target object', () => {
-    const target = {};
-    const a = {a: 1};
+  const B = function() {
+    this.b = 2;
+  };
+  B.prototype.c = 3;
+  const b = new B();
 
-    const B = function() {
-      this.b = 2;
-    };
-    B.prototype.c = 3;
-    const b = new B();
+  // TODO Test internal directly (rather than Object.assign if available)
+  const result = utils.assign(target, a, b);
+  t.deepEqual(result, {a: 1, b: 2});
+  t.equal(result, target);
+  t.end();
+});
 
-    // TODO Test internal directly (rather than Object.assign if available)
-    expect(assign(target, a, b)).toEqual({a: 1, b: 2});
-  });
+tape('utils.defaults() assigns own + undefined properties to target object', t => {
+  const target = {
+    a: undefined,
+    b: null,
+    c: false
+  };
+  const a = {a: 1};
+  const b = {b: 2, c: 3};
 
-  it('defaults: should assign own + undefined properties to target object', () => {
-    const target = {
-      a: undefined,
-      b: null,
-      c: false
-    };
-    const a = {a: 1};
-    const b = {b: 2, c: 3};
+  const result = utils.defaults(target, a, b);
+  t.deepEqual(result, {a: 1, b: null, c: false});
+  t.equal(result, target);
+  t.end();
+});
 
-    expect(defaults(target, a, b)).toEqual({a: 1, b: null, c: false});
-  });
+tape('utils.extend() extends all properties to target object', t => {
+  const target = {};
+  const a = {a: 1};
 
-  it('extend: should extend all properties to target object', () => {
-    const target = {};
-    const a = {a: 1};
+  const B = function() {
+    this.b = 2;
+  };
+  B.prototype.c = 3;
+  const b = new B();
 
-    const B = function() {
-      this.b = 2;
-    };
-    B.prototype.c = 3;
-    const b = new B();
+  const result = utils.extend(target, a, b);
+  t.deepEqual(result, {a: 1, b: 2, c: 3});
+  t.equal(result, target);
+  t.end();
+});
 
-    expect(extend(target, a, b)).toEqual({a: 1, b: 2, c: 3});
-  });
+tape('utils.objectEach() loops through value, key for object', t => {
+  const args = [];
+  const obj = {
+    a: 1,
+    b: 3.14,
+    c: true
+  };
 
-  it('objectEach: should loop through value, key for object', () => {
-    const args = [];
-    const obj = {
-      a: 1,
-      b: 3.14,
-      c: true
-    };
+  utils.objectEach(obj, (value, key, ref) => args.push([value, key, ref]));
 
-    objectEach(obj, (value, key, ref) => args.push([value, key, ref]));
+  t.deepEqual(args[0], [1, 'a', obj]);
+  t.deepEqual(args[1], [3.14, 'b', obj]);
+  t.deepEqual(args[2], [true, 'c', obj]);
+  t.end();
+});
 
-    expect(args[0]).toEqual([1, 'a', obj]);
-    expect(args[1]).toEqual([3.14, 'b', obj]);
-    expect(args[2]).toEqual([true, 'c', obj]);
-  });
+tape('utils.difference() finds unique values in given array', t => {
+  t.deepEqual(utils.difference([1, 2, 3], [2, 3, 4]), [1]);
+  t.deepEqual(utils.difference([1, 2, 3], [1, 2, 3]), []);
+  t.end();
+});
 
-  it('difference: should find unique values in given array', () => {
-    expect(difference([1, 2, 3], [2, 3, 4])).toEqual([1]);
-    expect(difference([1, 2, 3], [1, 2, 3])).toEqual([]);
-  });
+tape('utils.includes() checks if array includes values', t => {
+  t.equal(utils.includes([1, 2, 3], 1), true);
+  t.equal(utils.includes([1, 2, 3], 4), false);
+  t.end();
+});
 
-  it('includes: should check if array includes values', () => {
-    expect(includes([1, 2, 3], 1)).toEqual(true);
-    expect(includes([1, 2, 3], 4)).toEqual(false);
-  });
+tape('utils.toArray() converts value to array', t => {
+  t.throws(() => arguments.push('Howdy'));
+  t.doesNotThrow(() => utils.toArray(arguments).push('Howdy'));
 
-  it('toArray: should convert value to array', () => {
-    expect(() => arguments.push('Howdy')).toThrow();
-    expect(() => toArray(arguments).push('Howdy')).toNotThrow();
-  });
+  const original = [1, 2, 3];
+  const result = utils.toArray(original);
+  t.deepEqual(result, [1, 2, 3]);
+  t.notEqual(result, original);
+  t.end();
+});
 
-  it('curry: should prepend arguments to function while maintaining context', () => {
-    const original = createSpy();
-    const curried = curry(original, 3, 2);
-    const context = {};
+tape('utils.curry() prepends arguments to function while maintaining context', t => {
+  const original = sinon.spy();
+  const curried = utils.curry(original, 3, 2);
+  const context = {};
 
-    curried.call(context, 1);
+  curried.call(context, 1);
 
-    expect(original).toHaveBeenCalledWith(3, 2, 1);
-    expect(original.calls[0].context).toBe(context);
-  });
+  t.deepEqual(original.args[0], [3, 2, 1]);
+  t.equal(original.thisValues[0], context);
+  t.end();
+});
 
-  it('isBoolean', () => {
-    expect(isBoolean(true)).toEqual(true);
-    expect(isBoolean(false)).toEqual(true);
+tape('utils.isBoolean()', t => {
+  t.equal(utils.isBoolean(true), true);
+  t.equal(utils.isBoolean(false), true);
 
-    expect(isBoolean(0)).toEqual(false);
-    expect(isBoolean(1)).toEqual(false);
-    expect(isBoolean([])).toEqual(false);
-    expect(isBoolean({})).toEqual(false);
-    expect(isBoolean(() => {})).toEqual(false);
-  });
+  t.equal(utils.isBoolean(0), false);
+  t.equal(utils.isBoolean(1), false);
+  t.equal(utils.isBoolean([]), false);
+  t.equal(utils.isBoolean({}), false);
+  t.equal(utils.isBoolean(() => {}), false);
+  t.end();
+});
 
-  it('isObject', () => {
-    expect(isObject({})).toEqual(true);
-    expect(isObject(() => {})).toEqual(true);
-    expect(isObject([])).toEqual(true);
+tape('utils.isObject()', t => {
+  t.equal(utils.isObject({}), true);
+  t.equal(utils.isObject(() => {}), true);
+  t.equal(utils.isObject([]), true);
 
-    expect(isObject(true)).toEqual(false);
-    expect(isObject(1)).toEqual(false);
-    expect(isObject('Howdy')).toEqual(false);
-  });
+  t.equal(utils.isObject(true), false);
+  t.equal(utils.isObject(1), false);
+  t.equal(utils.isObject('Howdy'), false);
+  t.end();
+});
 
-  it('isNumber', () => {
-    expect(isNumber(1)).toEqual(true);
-    expect(isNumber(3.14)).toEqual(true);
-    expect(isNumber(NaN)).toEqual(true);
+tape('utils.isNumber()', t => {
+  t.equal(utils.isNumber(1), true);
+  t.equal(utils.isNumber(3.14), true);
+  t.equal(utils.isNumber(NaN), true);
 
-    expect(isNumber(true)).toEqual(false);
-    expect(isNumber('Howdy')).toEqual(false);
-  });
+  t.equal(utils.isNumber(true), false);
+  t.equal(utils.isNumber('Howdy'), false);
+  t.end();
+});
 
-  it('isString', () => {
-    expect(isString('Howdy')).toEqual(true);
-    expect(isString('')).toEqual(true);
+tape('utils.isString()', t => {
+  t.equal(utils.isString('Howdy'), true);
+  t.equal(utils.isString(''), true);
 
-    expect(isString(true)).toEqual(false);
-    expect(isString(0)).toEqual(false);
-    expect(isString({})).toEqual(false);
-  });
+  t.equal(utils.isString(true), false);
+  t.equal(utils.isString(0), false);
+  t.equal(utils.isString({}), false);
+  t.end();
+});
 
-  it('isUndefined', () => {
-    expect(isUndefined(undefined)).toEqual(true);
-    expect(isUndefined(void 0)).toEqual(true);
-    expect(isUndefined()).toEqual(true);
+tape('utils.isUndefined()', t => {
+  t.equal(utils.isUndefined(undefined), true);
+  t.equal(utils.isUndefined(void 0), true);
+  t.equal(utils.isUndefined(), true);
 
-    expect(isUndefined(null)).toEqual(false);
-    expect(isUndefined({})).toEqual(false);
-    expect(isUndefined([])).toEqual(false);
-  });
+  t.equal(utils.isUndefined(null), false);
+  t.equal(utils.isUndefined({}), false);
+  t.equal(utils.isUndefined([]), false);
+  t.end();
+});
 
-  it('isFunction', () => {
-    expect(isFunction(() => {})).toEqual(true);
-    expect(isFunction(function() {})).toEqual(true);
+tape('utils.isFunction()', t => {
+  t.equal(utils.isFunction(() => {}), true);
+  t.equal(utils.isFunction(function() {}), true);
 
-    expect(isFunction({})).toEqual(false);
-    expect(isFunction([])).toEqual(false);
-  });
+  t.equal(utils.isFunction({}), false);
+  t.equal(utils.isFunction([]), false);
+  t.end();
 });

@@ -1,33 +1,31 @@
-const expect = require('expect');
+const tape = require('tape');
+const sinon = require('sinon');
 const mockSelection = require('../_helpers/mock-selection');
 const d3c = require('../../');
-
-const createSpy = expect.createSpy;
-const Chart = d3c.Chart;
 const createChart = d3c.helpers.createChart;
 
-describe('createChart', () => {
-  it('should pass through chart class', () => {
-    const Custom = Chart.extend({});
+tape('createChart() passes through chart class', t => {
+  const Custom = d3c.Chart.extend({});
 
-    expect(createChart(Custom)).toBe(Custom);
-  });
+  t.equal(createChart(Custom), Custom);
+  t.end();
+});
 
-  it('should wrap chart function in Chart', () => {
-    const Draw = createSpy();
-    Draw.properties = {};
+tape('createChart() wraps chart function in Chart', t => {
+  const Draw = sinon.spy();
+  Draw.properties = {};
 
-    const Wrapped = createChart(Draw, Chart);
+  const Wrapped = createChart(Draw, d3c.Chart);
 
-    const selection = mockSelection();
-    const props = {};
-    const instance = new Wrapped(selection, props);
+  const selection = mockSelection();
+  const props = {};
+  const instance = new Wrapped(selection, props);
 
-    expect(Wrapped.properties).toBe(Draw.properties);
+  t.equal(Wrapped.properties, Draw.properties);
 
-    instance.render();
-    expect(Draw).toHaveBeenCalled();
-    expect(Draw.calls[0].arguments[0]).toBe(selection);
-    expect(Draw.calls[0].arguments[1]).toEqual(props);
-  });
+  instance.render();
+  t.ok(Draw.called);
+  t.equal(Draw.args[0][0], selection);
+  t.deepEqual(Draw.args[0][1], props);
+  t.end();
 });

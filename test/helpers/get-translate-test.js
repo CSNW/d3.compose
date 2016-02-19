@@ -1,15 +1,15 @@
-const expect = require('expect');
+const tape = require('tape');
 const getTranslate = require('../../').helpers.getTranslate;
 
-describe('getTranslate', () => {
-  it('should create from separate arguments or object', () => {
-    expect(getTranslate(10, 15)).toEqual('translate(10, 15)');
-    expect(getTranslate({x: 12, y: 17})).toEqual('translate(12, 17)');
-  });
+tape('getTranslate() creates from separate arguments or object', t => {
+  t.equal(getTranslate(10, 15), 'translate(10, 15)');
+  t.equal(getTranslate({x: 12, y: 17}), 'translate(12, 17)');
+  t.end();
+});
 
-  it('should default to (0, 0)', () => {
-    expect(getTranslate()).toEqual('translate(0, 0)');
-    expect(getTranslate(10)).toEqual('translate(10, 0)');
-    expect(getTranslate({y: 10})).toEqual('translate(0, 10)');
-  });
+tape('getTranslate() defaults to (0, 0)', t => {
+  t.equal(getTranslate(), 'translate(0, 0)');
+  t.equal(getTranslate(10), 'translate(10, 0)');
+  t.equal(getTranslate({y: 10}), 'translate(0, 10)');
+  t.end();
 });

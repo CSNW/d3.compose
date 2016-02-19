@@ -8,7 +8,7 @@ module.exports = function mockSelection(options) {
   const children = options.children || {};
 
   return {
-    attr: function(key, value) {
+    attr(key, value) {
       if (arguments.length > 1) {
         attr[key] = value;
         return this;
@@ -16,23 +16,44 @@ module.exports = function mockSelection(options) {
 
       return attr[key];
     },
-    node: function() {
+    node() {
       return mockElement({
         nodeName: options.nodeName,
         client: options.client,
         bbox: options.bbox
       });
     },
-    append: function(type) {
+    append(type) {
       const child = mockSelection({nodeName: type});
       children[type] = child;
       return child;
     },
-    select: function(selector) {
+    select(selector) {
       return children[selector] || mockSelection({empty: true});
     },
-    empty: function() {
+    empty() {
       return empty;
-    }
+    },
+
+    call(fn) {
+      return fn.call(this);
+    },
+    enter() {
+      const context = this;
+      return {
+        call(fn) {
+          return fn.call(context);
+        }
+      };
+    },
+    exit() {
+      const context = this;
+      return {
+        call(fn) {
+          return fn.call(context);
+        }
+      }
+    },
+    remove() {}
   };
 };

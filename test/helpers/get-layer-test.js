@@ -1,23 +1,23 @@
-const expect = require('expect');
+const tape = require('tape');
 const mockSelection = require('../_helpers/mock-selection');
 const getLayer = require('../../').helpers.getLayer;
 
-describe('getLayer', () => {
-  it('should get existing layer by id', () => {
-    const child = mockSelection();
-    const selection = mockSelection({
-      children: {
-        '[data-layer="abc"]': child
-      }
-    });
-    expect(getLayer(selection, 'abc')).toEqual(child);
+tape('getLayer() gets existing layer by id', t => {
+  const child = mockSelection();
+  const selection = mockSelection({
+    children: {
+      '[data-layer="abc"]': child
+    }
   });
+  t.equal(getLayer(selection, 'abc'), child);
+  t.end();
+});
 
-  it('should append layer if not present', () => {
-    const selection = mockSelection();
-    const created = getLayer(selection, 'unknown');
+tape('getLayer() appends layer if not present', t => {
+  const selection = mockSelection();
+  const created = getLayer(selection, 'unknown');
 
-    expect(selection.select('g')).toEqual(created);
-    expect(created.attr('data-layer')).toEqual('unknown');
-  });
+  t.equal(selection.select('g'), created);
+  t.equal(created.attr('data-layer'), 'unknown');
+  t.end();
 });

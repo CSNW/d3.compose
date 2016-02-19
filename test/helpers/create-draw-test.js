@@ -1,160 +1,137 @@
-const expect = require('expect');
+const tape = require('tape');
+const sinon = require('sinon');
+const mockSelection = require('../_helpers/mock-selection');
 const createDraw = require('../../').helpers.createDraw;
 
-const createSpy = expect.createSpy;
+tape('createDraw() selects in draw function', t => {
+  const selection = mockSelection();
+  const subselection = mockSelection();
+  const props = {};
 
-describe('createDraw', () => {
-  var context = {};
+  const select = sinon.stub().returns(subselection);
+  const enter = sinon.spy();
 
-  beforeEach(() => {
-    const selection = {
-      call: () => {},
-      remove: () => {}
-    };
-    const subselection = {
-      call(fn) { fn.call(selection); },
-      enter() { return {call: (fn) => fn.call(selection) }; },
-      exit() { return {call: (fn) => fn.call(selection) }; }
-    };
-
-    Object.assign(context, {
-      selection,
-      subselection,
-      props: {}
-    });
-  });
-  afterEach(() => {
-    context = {};
+  const draw = createDraw({
+    select,
+    enter
   });
 
-  it('should select in draw function', () => {
-    const selection = context.selection;
-    const subselection = context.subselection;
-    const props = context.props;
+  draw(selection, props);
 
-    const select = createSpy().andCall(function() {
-      return subselection;
-    });
-    const enter = createSpy();
+  t.equal(select.thisValues[0], selection);
+  t.ok(select.calledWith(props));
 
-    const draw = createDraw({
-      select,
-      enter
-    });
+  t.equal(enter.thisValues[0], subselection);
+  t.ok(enter.calledWith(props));
+  t.end();
+});
 
-    draw(selection, props);
+tape('createDraw() enters in draw function', t => {
+  const selection = mockSelection();
+  const subselection = mockSelection();
+  const props = {};
 
-    expect(select.calls[0].context).toEqual(selection);
-    expect(select).toHaveBeenCalledWith(props);
-
-    expect(enter.calls[0].context).toEqual(selection);
-    expect(enter).toHaveBeenCalledWith(props);
+  const enter = sinon.spy();
+  const draw = createDraw({
+    select: () => subselection,
+    enter
   });
 
-  it('should enter in draw function', () => {
-    const selection = context.selection;
-    const subselection = context.subselection;
-    const props = context.props;
+  draw(selection, props);
 
-    const enter = createSpy();
-    const draw = createDraw({
-      select: () => subselection,
-      enter
-    });
+  t.equal(enter.thisValues[0], subselection);
+  t.ok(enter.calledWith(props));
+  t.end();
+});
 
-    draw(subselection, props);
+tape('createDraw() updates in draw function', t => {
+  const selection = mockSelection();
+  const subselection = mockSelection();
+  const props = {};
 
-    expect(enter.calls[0].context).toEqual(selection);
-    expect(enter).toHaveBeenCalledWith(props);
+  const update = sinon.spy();
+  const draw = createDraw({
+    select: () => subselection,
+    update
   });
 
-  it('should update in draw function', () => {
-    const selection = context.selection;
-    const subselection = context.subselection;
-    const props = context.props;
+  draw(selection, props);
 
-    const update = createSpy();
-    const draw = createDraw({
-      select: () => subselection,
-      update
-    });
+  t.equal(update.thisValues[0], subselection);
+  t.ok(update.calledWith(props));
+  t.end();
+});
 
-    draw(subselection, props);
+tape('createDraw() merges in draw function', t => {
+  const selection = mockSelection();
+  const subselection = mockSelection();
+  const props = {};
 
-    expect(update.calls[0].context).toEqual(selection);
-    expect(update).toHaveBeenCalledWith(props);
+  const merge = sinon.spy();
+  const draw = createDraw({
+    select: () => subselection,
+    merge
   });
 
-  it('should merge in draw function', () => {
-    const selection = context.selection;
-    const subselection = context.subselection;
-    const props = context.props;
+  draw(selection, props);
 
-    const merge = createSpy();
-    const draw = createDraw({
-      select: () => subselection,
-      merge
-    });
+  t.equal(merge.thisValues[0], subselection);
+  t.ok(merge.calledWith(props));
+  t.end();
+});
 
-    draw(subselection, props);
+tape('createDraw() exits in draw function', t => {
+  const selection = mockSelection();
+  const subselection = mockSelection();
+  const props = {};
 
-    expect(merge.calls[0].context).toEqual(selection);
-    expect(merge).toHaveBeenCalledWith(props);
+  const exit = sinon.spy();
+  const draw = createDraw({
+    select: () => subselection,
+    exit
   });
 
-  it('should exit in draw function', () => {
-    const selection = context.selection;
-    const subselection = context.subselection;
-    const props = context.props;
+  draw(selection, props);
 
-    const exit = createSpy();
-    const draw = createDraw({
-      select: () => subselection,
-      exit
-    });
+  t.equal(exit.thisValues[0], subselection);
+  t.ok(exit.calledWith(props));
+  t.end();
+});
 
-    draw(subselection, props);
+tape('createDraw() combines all steps into draw function', t => {
+  const selection = mockSelection();
+  const subselection = mockSelection();
+  const props = {};
 
-    expect(exit.calls[0].context).toEqual(selection);
-    expect(exit).toHaveBeenCalledWith(props);
+  const select = sinon.mock().returns(subselection);
+  const enter = sinon.spy();
+  const update = sinon.spy();
+  const merge = sinon.spy();
+  const exit = sinon.spy();
+
+  const draw = createDraw({
+    select,
+    enter,
+    update,
+    merge,
+    exit
   });
 
-  it('should combine all steps into draw function', () => {
-    const selection = context.selection;
-    const subselection = context.subselection;
-    const props = {};
+  draw(selection, props);
 
-    const select = createSpy().andCall(function() {
-      return subselection;
-    });
-    const enter = createSpy();
-    const update = createSpy();
-    const merge = createSpy();
-    const exit = createSpy();
+  t.equal(select.thisValues[0], selection);
+  t.ok(select.calledWith(props));
 
-    const draw = createDraw({
-      select,
-      enter,
-      update,
-      merge,
-      exit
-    });
+  t.equal(enter.thisValues[0], subselection);
+  t.ok(enter.calledWith(props));
 
-    draw(selection, props);
+  t.equal(update.thisValues[0], subselection);
+  t.ok(update.calledWith(props));
 
-    expect(select.calls[0].context).toEqual(selection);
-    expect(select).toHaveBeenCalledWith(props);
+  t.equal(merge.thisValues[0], subselection);
+  t.ok(merge.calledWith(props));
 
-    expect(enter.calls[0].context).toEqual(selection);
-    expect(enter).toHaveBeenCalledWith(props);
-
-    expect(update.calls[0].context).toEqual(selection);
-    expect(update).toHaveBeenCalledWith(props);
-
-    expect(merge.calls[0].context).toEqual(selection);
-    expect(merge).toHaveBeenCalledWith(props);
-
-    expect(exit.calls[0].context).toEqual(selection);
-    expect(exit).toHaveBeenCalledWith(props);
-  });
+  t.equal(exit.thisValues[0], subselection);
+  t.ok(exit.calledWith(props));
+  t.end();
 });

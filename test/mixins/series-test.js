@@ -1,50 +1,35 @@
-const expect = require('expect');
+const tape = require('tape');
 const series = require('../../').mixins.series;
 
-const isSeriesData = series.isSeriesData;
-const getSeriesMax = series.getSeriesMax;
-const getSeriesMin = series.getSeriesMin;
+const getValue = (d) => d;
+const seriesData = [
+  {key: 'a', values: [1, 5, 2, 3, 4]},
+  {key: 'b', values: [10, 50, 20, 30, 40]}
+];
+const nonSeriesData = [1, 5, 2, 3, 4]
 
-describe('series', () => {
-  const getValue = (d) => d;
-  const series = [
-    {key: 'a', values: [1, 5, 2, 3, 4]},
-    {key: 'b', values: [10, 50, 20, 30, 40]}
-  ];
-  const nonSeries = [1, 5, 2, 3, 4]
+tape('series.isSeriesData() determines series data', t => {
+  t.ok(series.isSeriesData(seriesData));
+  t.notOk(series.isSeriesData(nonSeriesData));
+  t.end();
+});
 
-  describe('properties', () => {
-    // TODO
-  });
+tape('series.getSeriesMax() calculates max for series data', t => {
+  t.equal(series.getSeriesMax(seriesData, getValue), 50);
+  t.end();
+});
 
-  describe('createSeriesDraw', () => {
-    // TODO
-  });
+tape('series.getSeriesMax()  calculates max for non-series data', t => {
+  t.equal(series.getSeriesMax(nonSeriesData, getValue), 5);
+  t.end();
+});
 
-  describe('isSeriesData', () => {
-    it('should determine series data', () => {
-      expect(isSeriesData(series)).toEqual(true);
-      expect(isSeriesData(nonSeries)).toEqual(false);
-    });
-  });
+tape('series.getSeriesMin() calculates min for series data', t => {
+  t.equal(series.getSeriesMin(seriesData, getValue), 1);
+  t.end();
+});
 
-  describe('getSeriesMax', () => {
-    it('should calculate max for series data', () => {
-      expect(getSeriesMax(series, getValue)).toEqual(50);
-    });
-
-    it('should calculate max for non-series data', () => {
-      expect(getSeriesMax(nonSeries, getValue)).toEqual(5);
-    });
-  });
-
-  describe('getSeriesMin', () => {
-    it('should calculate min for series data', () => {
-      expect(getSeriesMin(series, getValue)).toEqual(1);
-    });
-
-    it('should calculate min for non-series data', () => {
-      expect(getSeriesMin(nonSeries, getValue)).toEqual(1);
-    });
-  });
+tape('series.getSeriesMin() calculates min for non-series data', t => {
+  t.equal(series.getSeriesMin(nonSeriesData, getValue), 1);
+  t.end();
 });
