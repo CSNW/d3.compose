@@ -41,8 +41,7 @@
   "homepage": "https://github.com/CSNW/d3.compose",
   "license": "MIT",
   "dependencies": {
-    "d3": "^3.5.8",
-    "d3.chart": "^0.3.0"
+    "d3": "^3.5.8"
   },
   "devDependencies": {
     "eslint": "^1.10.3",
