@@ -3,12 +3,10 @@ import getTranslate from './get-translate';
 
 export default function stack(options) {
   options = options || {};
-  var {
-    direction = 'vertical',
-    origin = 'top',
-    minHeight = 0,
-    minWidth = 0
-  } = options;
+  var direction = options.direction || 'vertical';
+  var origin = options.origin || 'top';
+  var minHeight = options.minHeight || 0;
+  var minWidth = options.minWidth || 0;
 
   // Ensure valid origin based on direction
   if (direction == 'horizontal' && !(origin == 'left' || origin == 'right')) {

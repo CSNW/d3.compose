@@ -8,57 +8,53 @@ import {
   createDraw
 } from '../helpers';
 
-const defaultSeriesKey = (d, i) => !isUndefined(d && d.key) ? d.key : i;
-const defaultSeriesClass = (d, i) => `d3c-series d3c-index-${i}` + (d['class'] ? ' ' + d['class'] : '');
-const defaultSeriesStyle = d => d.style || null;
-const defaultSeriesValues = d => d.values || [];
+var defaultSeriesKey = function(d, i) { return !isUndefined(d && d.key) ? d.key : i; };
+var defaultSeriesClass = function(d, i) { return 'd3c-series d3c-index-' + i + (d['class'] ? ' ' + d['class'] : ''); };
+var defaultSeriesStyle = function(d) { return d.style || null; };
+var defaultSeriesValues = function(d) { return d.values || []; };
 
-export const properties = {
+export var properties = {
   seriesKey: {
     type: types.fn,
-    getDefault: () => defaultSeriesKey
+    getDefault: function() { return defaultSeriesKey; }
   },
   seriesClass: {
     type: types.any,
-    getDefault: () => defaultSeriesClass
+    getDefault: function() { return defaultSeriesClass; }
   },
   seriesStyle: {
     type: types.any,
-    getDefault: () => defaultSeriesStyle
+    getDefault: function() { return defaultSeriesStyle; }
   },
   seriesValues: {
     type: types.fn,
-    getDefault: () => defaultSeriesValues
+    getDefault: function() { return defaultSeriesValues; }
   }
 }
 
 export function createSeriesDraw(steps) {
-  const {prepare} = steps;
-  const drawValues = createDraw(assign({}, steps, {prepare: undefined}));
-  const draw = (selection, props) => {
-    if (prepare)
+  var prepare = steps.prepare;
+  var drawValues = createDraw(assign({}, steps, {prepare: undefined}));
+  var draw = function(selection, props) {
+    if (prepare) {
       props = prepare(selection, props);
+    }
 
-    const {
-      seriesKey,
-      seriesClass,
-      seriesStyle
-    } = props;
-    var {data} = props;
-
-    if (!isSeriesData(data))
+    var data = props.data;
+    if (!isSeriesData(data)) {
       data = [{values: data}];
+    }
 
     // Create series layers
-    const series = selection.selectAll('[data-series]')
-      .data(data, seriesKey);
+    var series = selection.selectAll('[data-series]')
+      .data(data, props.seriesKey);
 
     series.enter().append('g');
 
     series
-      .attr('class', seriesClass)
-      .attr('data-series', (d, i) => i)
-      .style(seriesStyle);
+      .attr('class', props.seriesClass)
+      .attr('data-series', function(d, i) { return i; })
+      .style(props.seriesStyle);
 
     // TODO Exit items then exit series layer
     series.exit().remove();
@@ -76,12 +72,12 @@ export function isSeriesData(data) {
 }
 
 export function getSeriesMax(data, getValue) {
-  const getMax = (values) => values && d3.extent(values, getValue)[1];
+  var getMax = function(values) { return values && d3.extent(values, getValue)[1]; };
 
   if (isSeriesData(data)) {
-    return data.reduce((memo, series) => {
+    return data.reduce(function(memo, series) {
       if (series && Array.isArray(series.values)) {
-        const seriesMax = getMax(series.values);
+        var seriesMax = getMax(series.values);
         return seriesMax > memo ? seriesMax : memo;
       } else {
         return memo;
@@ -93,12 +89,12 @@ export function getSeriesMax(data, getValue) {
 }
 
 export function getSeriesMin(data, getValue) {
-  const getMin = (values) => values && d3.extent(values, getValue)[0];
+  var getMin = function(values) { return values && d3.extent(values, getValue)[0]; };
 
   if (isSeriesData(data)) {
-    return data.reduce((memo, series) => {
+    return data.reduce(function(memo, series) {
       if (series && Array.isArray(series.values)) {
-        const seriesMin = getMin(series.values);
+        var seriesMin = getMin(series.values);
         return seriesMin < memo ? seriesMin : memo;
       } else {
         return memo;
@@ -109,15 +105,15 @@ export function getSeriesMin(data, getValue) {
   }
 }
 
-const series = {
-  defaultSeriesKey,
-  defaultSeriesClass,
-  defaultSeriesStyle,
-  defaultSeriesValues,
-  properties,
-  createSeriesDraw,
-  isSeriesData,
-  getSeriesMax,
-  getSeriesMin
+var series = {
+  defaultSeriesKey: defaultSeriesKey,
+  defaultSeriesClass: defaultSeriesClass,
+  defaultSeriesStyle: defaultSeriesStyle,
+  defaultSeriesValues: defaultSeriesValues,
+  properties: properties,
+  createSeriesDraw: createSeriesDraw,
+  isSeriesData: isSeriesData,
+  getSeriesMax: getSeriesMax,
+  getSeriesMin: getSeriesMin
 }
 export default series;

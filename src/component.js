@@ -5,8 +5,8 @@ import {
 } from './helpers';
 import {Chart} from './chart';
 
-const Component = Chart.extend({
-  getDimensions() {
+var Component = Chart.extend({
+  getDimensions: function() {
     this.render();
     return getDimensions(this.base);
   }
@@ -17,13 +17,13 @@ function component(Type) {
     Type = createChart(Type, Component);
   }
 
-  return (id, props) => {
+  return function(id, props) {
     if (!props) {
       props = id;
       id = undefined;
     }
 
-    return {type: Type, id, props};
+    return {type: Type, id: id, props: props};
   };
 }
 

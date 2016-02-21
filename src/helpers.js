@@ -14,22 +14,22 @@ import scaleBandSeries from './helpers/scale-band-series';
 import stack from './helpers/stack';
 import types from './helpers/types';
 
-const helpers = {
-  alignText,
-  checkProp,
-  createChart,
-  createPrepare,
-  connect,
-  createDraw,
-  getDimensions,
-  getLayer,
-  getRotate,
-  getTranslate,
-  isChart,
-  prepareTransition,
-  scaleBandSeries,
-  stack,
-  types
+var helpers = {
+  alignText: alignText,
+  checkProp: checkProp,
+  createChart: createChart,
+  createPrepare: createPrepare,
+  connect: connect,
+  createDraw: createDraw,
+  getDimensions: getDimensions,
+  getLayer: getLayer,
+  getRotate: getRotate,
+  getTranslate: getTranslate,
+  isChart: isChart,
+  prepareTransition: prepareTransition,
+  scaleBandSeries: scaleBandSeries,
+  stack: stack,
+  types: types
 };
 
 export {

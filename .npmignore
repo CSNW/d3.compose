@@ -1,0 +1,14 @@
+build/*.zip
+test/
+node_modules
+npm-debug.log
+
+_docs/
+_site/
+.sass-cache
+_tasks/
+
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

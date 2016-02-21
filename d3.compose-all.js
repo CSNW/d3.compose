@@ -1,64 +1,22 @@
-import d3 from 'd3';
-import utils from './src/utils';
-import helpers from './src/helpers';
-import chart, {Chart} from './src/chart';
-import component, {Component} from './src/component';
-import overlay, {Overlay} from './src/overlay';
-import Compose from './src/compose';
-import mixins from './src/mixins';
+export {default as utils} from './src/utils';
+export {default as helpers, scaleBandSeries} from './src/helpers';
+export {default as chart, Chart} from './src/chart';
+export {default as component, Component} from './src/component';
+export {default as overlay, Overlay} from './src/overlay';
+export {default as Compose} from './src/compose';
 
-import bars, {Bars} from './src/charts/bars';
-import lines, {Lines} from './src/charts/lines';
-import scatter, {Scatter} from './src/charts/scatter';
-import labels, {Labels} from './src/charts/labels';
+export {default as mixins} from './src/mixins';
 
-import text, {Text} from './src/components/text';
-import title, {Title} from './src/components/title';
-import axisTitle, {AxisTitle} from './src/components/axis-title';
-import axis, {Axis} from './src/components/axis';
-import gridlines, {Gridlines} from './src/components/gridlines';
-import legend, {Legend} from './src/components/legend';
+export {default as bars, Bars} from './src/charts/bars';
+export {default as lines, Lines} from './src/charts/lines';
+export {default as scatter, Scatter} from './src/charts/scatter';
+export {default as labels, Labels} from './src/charts/labels';
 
-import layered from './src/layouts/layered';
+export {default as text, Text} from './src/components/text';
+export {default as title, Title} from './src/components/title';
+export {default as axisTitle, AxisTitle} from './src/components/axis-title';
+export {default as axis, Axis} from './src/components/axis';
+export {default as gridlines, Gridlines} from './src/components/gridlines';
+export {default as legend, Legend} from './src/components/legend';
 
-const d3c = d3.compose = {
-  VERSION: '{version}',
-  utils,
-  helpers,
-  chart,
-  Chart,
-  component,
-  Component,
-  overlay,
-  Overlay,
-  Compose,
-
-  scaleBandSeries: helpers.scaleBandSeries,
-  mixins,
-
-  bars,
-  Bars,
-  lines,
-  Lines,
-  scatter,
-  Scatter,
-  labels,
-  Labels,
-
-  text,
-  Text,
-  title,
-  Title,
-  axisTitle,
-  AxisTitle,
-  axis,
-  Axis,
-  gridlines,
-  Gridlines,
-  legend,
-  Legend,
-
-  layered
-};
-
-export default d3c;
+export {default as layered} from './src/layouts/layered';

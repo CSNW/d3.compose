@@ -5,12 +5,12 @@
 // -------
 
 export function _assign(target, extensions, undefinedOnly) {
-  extensions.forEach((extension) => {
+  extensions.forEach(function(extension) {
     if (!extension) {
       return;
     }
 
-    const keys = Object.keys(extension);
+    var keys = Object.keys(extension);
     var key;
     for (var i = 0, length = keys.length; i < length; i++) {
       key = keys[i];
@@ -23,7 +23,7 @@ export function _assign(target, extensions, undefinedOnly) {
   return target;
 }
 
-export const assign = Object.assign || function(obj) {
+export var assign = Object.assign || function(obj) {
   return _assign(obj, slice.call(arguments, 1));
 };
 
@@ -32,8 +32,8 @@ export function defaults(obj) {
 }
 
 export function extend(target) {
-  const extensions = slice.call(arguments, 1);
-  extensions.forEach((extension) => {
+  var extensions = slice.call(arguments, 1);
+  extensions.forEach(function(extension) {
     for (var key in extension) {
       target[key] = extension[key];
     }
@@ -47,21 +47,19 @@ export function objectEach(obj, fn) {
     return;
   }
 
-  const keys = Object.keys(obj);
-  var key;
+  var keys = Object.keys(obj);
   for (var i = 0, length = keys.length; i < length; i++) {
-    key = keys[i];
-    fn(obj[key], key, obj);
+    fn(obj[keys[i]], keys[i], obj);
   }
 }
 
 // Arrays
 // ------
 
-const slice = Array.prototype.slice;
+var slice = Array.prototype.slice;
 
 export function difference(a, b) {
-  return a.filter(value => b.indexOf(value) < 0);
+  return a.filter(function(value) { return b.indexOf(value) < 0; });
 }
 
 export function includes(arr, item) {
@@ -76,7 +74,7 @@ export function toArray(arr) {
 // ---------
 
 export function curry(fn) {
-  const values = slice.call(arguments, 1);
+  var values = slice.call(arguments, 1);
 
   return function() {
     var args = slice.call(arguments);
@@ -135,21 +133,21 @@ export function inherits(Child, Parent) {
   }
 }
 
-const utils = {
-  assign,
-  defaults,
-  extend,
-  objectEach,
-  difference,
-  includes,
-  toArray,
-  curry,
-  isBoolean,
-  isObject,
-  isNumber,
-  isString,
-  isUndefined,
-  isFunction,
-  inherits
+var utils = {
+  assign: assign,
+  defaults: defaults,
+  extend: extend,
+  objectEach: objectEach,
+  difference: difference,
+  includes: includes,
+  toArray: toArray,
+  curry: curry,
+  isBoolean: isBoolean,
+  isObject: isObject,
+  isNumber: isNumber,
+  isString: isString,
+  isUndefined: isUndefined,
+  isFunction: isFunction,
+  inherits: inherits
 };
 export default utils;

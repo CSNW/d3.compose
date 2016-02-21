@@ -5,7 +5,7 @@ import {isUndefined} from '../utils';
 // (v3 = ordinal + rangeRoundBands, v4 = band + rangeRound)
 
 export default function scaleBandSeries() {
-  const underlying = d3.scale.ordinal();
+  var underlying = d3.scale.ordinal();
   var _adjacent = true;
   var _seriesCount = 1;
   var _seriesPadding = 0;
@@ -13,9 +13,9 @@ export default function scaleBandSeries() {
 
   function scale(value, seriesIndex) {
     seriesIndex = _seriesCount > 1 && _adjacent && seriesIndex ? seriesIndex : 0;
-    const scaled = underlying(value);
-    const width = scale.rangeBand();
-    const padding = getPadding();
+    var scaled = underlying(value);
+    var width = scale.rangeBand();
+    var padding = getPadding();
 
     return scaled + (padding / 2) + (seriesIndex * (width + padding)) + (width / 2);
   }
@@ -75,7 +75,7 @@ export default function scaleBandSeries() {
   };
 
   scale.copy = function() {
-    const copied = scaleBandSeries()
+    var copied = scaleBandSeries()
       .adjacent(_adjacent)
       .seriesCount(_seriesCount)
       .seriesPadding(_seriesPadding)
@@ -99,7 +99,7 @@ export default function scaleBandSeries() {
       return 0;
     }
 
-    const width = underlying.rangeBand() / _seriesCount;
+    var width = underlying.rangeBand() / _seriesCount;
     return _seriesPadding * width;
   }
 

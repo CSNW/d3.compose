@@ -1,13 +1,12 @@
+build
 node_modules
 npm-debug.log
-.tmp/
-_docs/
 
+_docs/
 _site/
 .sass-cache
 _tasks/
 
-# OS Junk
 Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/

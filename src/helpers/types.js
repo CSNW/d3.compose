@@ -3,17 +3,17 @@ import {
   toArray
 } from '../utils';
 
-const types = {
+var types = {
   boolean: {},
   number: {},
   string: {},
   any: {},
   array: {},
   object: {},
-  enum: () => {
-    const valid = toArray(arguments);
+  enum: function() {
+    var valid = toArray(arguments);
     return {
-      validate: (value) => includes(valid, value)
+      validate: function(value) { return includes(valid, value); }
     };
   }
 };

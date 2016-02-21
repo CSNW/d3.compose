@@ -4,12 +4,12 @@ import xyInverted from './mixins/xy-inverted';
 import xyValues from './mixins/xy-values';
 import xyValuesInverted from './mixins/xy-values-inverted';
 
-const mixins = {
-  series,
-  xy,
-  xyValues,
-  xyInverted,
-  xyValuesInverted
+var mixins = {
+  series: series,
+  xy: xy,
+  xyValues: xyValues,
+  xyInverted: xyInverted,
+  xyValuesInverted: xyValuesInverted
 };
 
 export {

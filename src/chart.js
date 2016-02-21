@@ -13,8 +13,8 @@ import {
 } from './helpers';
 import {constraint} from './layout';
 
-const defaultProps = {};
-const defaultMargin = {top: 0, right: 0, bottom: 0, left: 0};
+var defaultProps = {};
+var defaultMargin = {top: 0, right: 0, bottom: 0, left: 0};
 
 export function Chart(selection, props, context) {
   this.base = selection;
@@ -23,17 +23,18 @@ export function Chart(selection, props, context) {
 }
 
 assign(Chart.prototype, {
-  setProps(props = defaultProps) {
-    const properties = this.constructor && this.constructor.properties;
+  setProps: function setProps(props) {
+    props = props || defaultProps;
+    var properties = this.constructor && this.constructor.properties;
     if (!properties) {
       this.props = props;
       return;
     }
 
     // Get defaults and check props
-    const loaded = assign({}, props);
-    objectEach(properties, (definition, key) => {
-      const prop = loaded[key];
+    var loaded = assign({}, props);
+    objectEach(properties, function(definition, key) {
+      var prop = loaded[key];
 
       if (!isUndefined(prop)) {
         // TODO Skip in production
@@ -46,12 +47,14 @@ assign(Chart.prototype, {
     this.props = loaded;
   },
 
-  prepareLayout(layout) {
-    var {width, height, margin} = layout;
+  prepareLayout: function prepareLayout(layout) {
+    var width = layout.width;
+    var height = layout.height;
+    var margin = layout.margin;
 
     // Load width/height (if necessary)
     if (isUndefined(width) || isUndefined(height)) {
-      const dimensions = this.getDimensions();
+      var dimensions = this.getDimensions();
       if (isUndefined(width)) {
         width = dimensions.width;
       }
@@ -67,25 +70,25 @@ assign(Chart.prototype, {
       margin = assign({}, this.getMargin(), margin);
     }
 
-    return assign({}, layout, {width, height, margin});
+    return assign({}, layout, {width: width, height: height, margin: margin});
   },
 
-  getDimensions() {
+  getDimensions: function() {
     return {
       width: constraint.flex(),
       height: constraint.flex()
     };
   },
 
-  getMargin() {
+  getMargin: function getMargin() {
     return defaultMargin;
   },
 
-  render() {
+  render: function render() {
 
   },
 
-  remove() {
+  remove: function remove() {
 
   }
 });
@@ -103,7 +106,7 @@ assign(Chart, {
   },
   layerType: 'g',
 
-  extend(protoProps, staticProps) {
+  extend: function extend(protoProps, staticProps) {
     var Parent = this;
     var Child;
 
@@ -132,15 +135,15 @@ assign(Chart, {
 
 export default function chart(Type) {
   if (!isChart(Type)) {
-    Type = createChart(Type);
+    Type = createChart(Type, Chart);
   }
 
-  return (id, props) => {
+  return function(id, props) {
     if (!props) {
       props = id;
       id = undefined;
     }
 
-    return {type: Type, id, props};
+    return {type: Type, id: id, props: props};
   };
 }

@@ -25,15 +25,18 @@ import {Title, defaultMargin, defaultPosition} from './title';
   ```
   @class AxisTitle
 */
-export const AxisTitle = Component.extend({
-  render() {
+export var AxisTitle = Component.extend({
+  render: function render() {
     this.base.classed('d3c-axis-title', true);
     Text(this.base, this.props);
   },
 
-  getMargin() {
-    const {position = defaultPosition} = this.props;
-    var top = 0, right = 0, bottom = 0, left = 0;
+  getMargin: function getMargin() {
+    var position = this.props.position || defaultPosition;
+    var top = 0;
+    var right = 0;
+    var bottom = 0;
+    var left = 0;
 
     if (position == 'left') {
       right = defaultMargin / 2;
@@ -49,11 +52,11 @@ export const AxisTitle = Component.extend({
       bottom = defaultMargin / 2;
     }
 
-    return {top, right, bottom, left};
+    return {top: top, right: right, bottom: bottom, left: left};
   }
 }, {
   properties: assign({}, Title.properties)
 });
 
-const axisTitle = component(AxisTitle);
+var axisTitle = component(AxisTitle);
 export default axisTitle;

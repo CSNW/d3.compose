@@ -8,7 +8,6 @@ import {
   prepareTransition,
   types
 } from '../helpers';
-import {getValue} from '../mixins/xy';
 import component from '../component';
 
 /**
@@ -34,35 +33,35 @@ import component from '../component';
   ```
   @class Gridlines
 */
-export const Gridlines = createDraw({
-  prepare(selection, props) {
-    const {orientation, width, height} = props;
-    const scale = props.scale.copy();
+export var Gridlines = createDraw({
+  prepare: function prepare(selection, props) {
+    var scale = props.scale.copy();
 
-    if (orientation == 'vertical') {
-      scale.range([0, width]);
+    if (props.orientation == 'vertical') {
+      scale.range([0, props.width]);
     } else {
-      scale.range([height, 0]);
+      scale.range([props.height, 0]);
     }
 
-    return assign({}, props, {scale});
+    return assign({}, props, {scale: scale});
   },
 
-  select({scale, ticks, tickValues}) {
-    if (isUndefined(tickValues) && scale && scale.ticks) {
-      tickValues = scale.ticks(ticks);
+  select: function select(props) {
+    var tickValues = props.tickValues;
+    if (isUndefined(tickValues) && props.scale && props.scale.ticks) {
+      tickValues = props.scale.ticks(props.ticks);
     }
 
     return this.selectAll('line')
       .data(tickValues || []);
   },
 
-  enter() {
+  enter: function enter() {
     this.append('line')
       .attr('class', 'd3c-gridline');
   },
 
-  merge(props) {
+  merge: function merge(props) {
     this
       .attr('opacity', 0)
       .each(drawLine(props));
@@ -72,8 +71,8 @@ export const Gridlines = createDraw({
   }
 });
 
-export const defaultOrientation = 'vertical';
-export const defaultTicks = 10;
+export var defaultOrientation = 'vertical';
+export var defaultTicks = 10;
 
 Gridlines.properties = {
   /**
@@ -93,7 +92,7 @@ Gridlines.properties = {
   */
   orientation: {
     type: types.enum('vertical', 'horizontal'),
-    getDefault: () => defaultOrientation
+    getDefault: function() { return defaultOrientation; }
   },
 
   /**
@@ -105,7 +104,7 @@ Gridlines.properties = {
   */
   ticks: {
     type: types.number,
-    getDefault: () => defaultTicks
+    getDefault: function() { return defaultTicks; }
   },
 
   /**
@@ -117,23 +116,23 @@ Gridlines.properties = {
   tickValues: types.array
 }
 
-const gridlines = component(Gridlines);
+var gridlines = component(Gridlines);
 export default gridlines;
 
 // Helpers
 // -------
 
-export function drawLine({orientation, scale, width, height}) {
+export function drawLine(props) {
   return function(d, i, j) {
     var x1, x2, y1, y2;
-    if (orientation == 'vertical') {
-      x1 = x2 = scale(d, j);
+    if (props.orientation == 'vertical') {
+      x1 = x2 = props.scale(d, j);
       y1 = 0;
-      y2 = height;
+      y2 = props.height;
     } else {
       x1 = 0;
-      x2 = width;
-      y1 = y2 = scale(d, j);
+      x2 = props.width;
+      y1 = y2 = props.scale(d, j);
     }
 
     d3.select(this)

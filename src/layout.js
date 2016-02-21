@@ -12,14 +12,14 @@ export function prepareDescription(description) {
   }
 
   if (description._layered) {
-    const allItems = description.items.reduce((memo, item, index) => {
+    var allItems = description.items.reduce(function(memo, item, index) {
       if (Array.isArray(item)) {
-        const asSurround = toSurround(item);
-        const items = asSurround.ordered.map(_id => asSurround.byId[_id]);
+        var asSurround = toSurround(item);
+        var items = asSurround.ordered.map(function(_id) { return asSurround.byId[_id]; });
         return memo.concat(items);
       } else {
-        const container = {_id: '_container'};
-        const layout = {
+        var container = {_id: '_container'};
+        var layout = {
           top: 0,
           right: constraint.eq(container, 'right'),
           bottom: constraint.eq(container, 'bottom'),
@@ -34,38 +34,38 @@ export function prepareDescription(description) {
       }
     }, []);
 
-    const byId = {};
-    const ordered = [];
-    allItems.forEach((item) => {
+    var byId = {};
+    var ordered = [];
+    allItems.forEach(function(item) {
       byId[item._id] = item;
       ordered.push(item._id);
     });
 
-    return {byId, ordered};
+    return {byId: byId, ordered: ordered};
   } else {
     return toSurround(description);
   }
 }
 
-const layoutProps = ['top', 'right', 'bottom', 'left', 'width', 'height'];
+var layoutProps = ['top', 'right', 'bottom', 'left', 'width', 'height'];
 export function calculateLayout(layout, dimensions) {
   // 1. Create references for each layout item
-  const byId = {};
-  const ordered = [];
-  layout.forEach((item) => {
+  var byId = {};
+  var ordered = [];
+  layout.forEach(function(item) {
     byId[item._id] = {
       margin: getDefaultMargin(item.margin),
       zIndex: 0
     };
 
-    layoutProps.forEach((key) => {
+    layoutProps.forEach(function(key) {
       byId[item._id][key] = layoutReference(item[key]);
     });
 
     ordered.push(item._id);
   });
 
-  const container = {
+  var container = {
     top: layoutReference(0),
     right: layoutReference(dimensions.width),
     bottom: layoutReference(dimensions.height),
@@ -75,11 +75,11 @@ export function calculateLayout(layout, dimensions) {
   };
 
   // 2. Replace constraints with references
-  objectEach(byId, (item) => {
-    layoutProps.forEach((key) => {
-      const constraint = item[key];
+  objectEach(byId, function(item) {
+    layoutProps.forEach(function(key) {
+      var constraint = item[key];
       if (constraint._id) {
-        const reference = constraint._id == '_container' ? container : byId[constraint._id];
+        var reference = constraint._id == '_container' ? container : byId[constraint._id];
         item[key] = reference[constraint.key];
       }
     });
@@ -88,11 +88,11 @@ export function calculateLayout(layout, dimensions) {
   // 3. Calculate values
   var iteration = 0;
   var solved = false;
-  const maxIterations = 100;
+  var maxIterations = 100;
   while (!solved && iteration < maxIterations) {
     solved = true;
 
-    objectEach(byId, (item) => {
+    objectEach(byId, function(item) {
       var has = hasResults();
 
       // Top
@@ -150,8 +150,8 @@ export function calculateLayout(layout, dimensions) {
   }
 
   // 4. Extract results
-  const results = {};
-  objectEach(byId, (item, _id) => {
+  var results = {};
+  objectEach(byId, function(item, _id) {
     results[_id] = {
       x: item.left.result,
       y: item.top.result,
@@ -164,25 +164,34 @@ export function calculateLayout(layout, dimensions) {
 
   return {
     byId: results,
-    ordered
+    ordered: ordered
   };
 }
 
 // Placeholder until formal constraints
-export const constraint = {
-  eq(item, key) {
+export var constraint = {
+  eq: function eq(item, key) {
     if (item) {
-      return {_id: item._id, type: 'equal', key};
+      return {_id: item._id, type: 'equal', key: key};
     }
   },
-  flex(grow = 1) {
-    return {type: 'flex', grow};
+  flex: function flew(grow) {
+    grow = grow || 1;
+    return {type: 'flex', grow: grow};
   }
 }
 
 export function extractLayout(props) {
-  const {width, height, top, right, bottom, left, zIndex, margin} = props;
-  return {width, height, top, right, bottom, left, zIndex, margin};
+  return {
+    width: props.width,
+    height: props.height,
+    top: props.top,
+    right: props.right,
+    bottom: props.bottom,
+    left: props.left,
+    zIndex: props.zIndex,
+    margin: props.margin
+  };
 }
 
 function layoutReference(value) {
@@ -195,7 +204,7 @@ function layoutReference(value) {
   }
 }
 
-const defaultMargin = {top: 0, right: 0, bottom: 0, left: 0};
+var defaultMargin = {top: 0, right: 0, bottom: 0, left: 0};
 function getDefaultMargin(margin) {
   if (!isUndefined(margin) && !isObject(margin)) {
     margin = {top: margin, right: margin, bottom: margin, left: margin};
@@ -210,22 +219,21 @@ function toSurround(description) {
     description = [layered(description)];
   }
 
-  var {
-    top,
-    right,
-    bottom,
-    left,
-    middle
-  } = extractSurroundPositions(description);
+  var positions = extractSurroundPositions(description);
+  var top = positions.top;
+  var right = positions.right;
+  var bottom = positions.bottom;
+  var left = positions.left;
+  var middle = positions.middle;
 
-  const container = {_id: '_container'};
-  const topEdge = top[top.length - 1] && constraint.eq(top[top.length - 1], 'bottom') || 0;
-  const rightEdge = right[0] && constraint.eq(right[0], 'left') || constraint.eq(container, 'right');
-  const bottomEdge = bottom[0] && constraint.eq(bottom[0], 'top') || constraint.eq(container, 'bottom');
-  const leftEdge = left[left.length - 1] && constraint.eq(left[left.length - 1], 'right') || 0;
+  var container = {_id: '_container'};
+  var topEdge = top[top.length - 1] && constraint.eq(top[top.length - 1], 'bottom') || 0;
+  var rightEdge = right[0] && constraint.eq(right[0], 'left') || constraint.eq(container, 'right');
+  var bottomEdge = bottom[0] && constraint.eq(bottom[0], 'top') || constraint.eq(container, 'bottom');
+  var leftEdge = left[left.length - 1] && constraint.eq(left[left.length - 1], 'right') || 0;
 
-  top = top.map((item, i, items) => {
-    const layout = {
+  top = top.map(function(item, i, items) {
+    var layout = {
       _position: 'top',
       top: items[i - 1] && constraint.eq(items[i - 1], 'bottom') || 0,
       left: leftEdge,
@@ -237,8 +245,8 @@ function toSurround(description) {
     item.props = assign(layout, item.props);
     return item;
   });
-  right = right.map((item, i, items) => {
-    const layout = {
+  right = right.map(function(item, i, items) {
+    var layout = {
       _position: 'right',
       right: items[i - 1] && constraint.eq(items[i - 1], 'left') || constraint.eq(container, 'right'),
       top: topEdge,
@@ -250,8 +258,8 @@ function toSurround(description) {
     item.props = assign(layout, item.props);
     return item;
   });
-  bottom = bottom.map((item, i, items) => {
-    const layout = {
+  bottom = bottom.map(function(item, i, items) {
+    var layout = {
       _position: 'bottom',
       bottom: items[i + 1] && constraint.eq(items[i + 1], 'top') || constraint.eq(container, 'bottom'),
       left: leftEdge,
@@ -263,8 +271,8 @@ function toSurround(description) {
     item.props = assign(layout, item.props);
     return item;
   });
-  left = left.map((item, i, items) => {
-    const layout = {
+  left = left.map(function(item, i, items) {
+    var layout = {
       _position: 'left',
       left: items[i - 1] && constraint.eq(items[i - 1], 'right') || 0,
       top: topEdge,
@@ -276,8 +284,8 @@ function toSurround(description) {
     item.props = assign(layout, item.props);
     return item;
   });
-  middle = middle.map((item) => {
-    const layout = {
+  middle = middle.map(function(item) {
+    var layout = {
       _position: 'middle',
       top: topEdge,
       right: rightEdge,
@@ -292,34 +300,34 @@ function toSurround(description) {
     return item;
   });
 
-  const allItems = top.concat(left).concat(middle).concat(right).concat(bottom);
-  const byId = {};
-  const ordered = [];
-  allItems.forEach((item) => {
+  var allItems = top.concat(left).concat(middle).concat(right).concat(bottom);
+  var byId = {};
+  var ordered = [];
+  allItems.forEach(function(item) {
     byId[item._id] = item;
     ordered.push(item._id);
   });
 
-  return {byId, ordered};
+  return {byId: byId, ordered: ordered};
 }
 
 function extractSurroundPositions(description) {
-  const top = [];
-  const bottom = [];
-  const right = [];
-  const left = [];
-  const middle = [];
+  var top = [];
+  var bottom = [];
+  var right = [];
+  var left = [];
+  var middle = [];
   var foundRow = false;
   var foundMiddle = false;
 
-  description.forEach((row, rowIndex) => {
+  description.forEach(function(row, rowIndex) {
     if (!Array.isArray(row)) {
       row = [row];
     } else if (row.length > 1) {
       foundRow = true;
     }
 
-    row.forEach((item, itemIndex) => {
+    row.forEach(function(item, itemIndex) {
       if (!item) {
         return;
       }
@@ -327,7 +335,7 @@ function extractSurroundPositions(description) {
       if (item._layered) {
         foundMiddle = foundRow = true;
 
-        item.items.forEach((chart, chartIndex) => {
+        item.items.forEach(function(chart, chartIndex) {
           middle.push(assign({}, chart, {_id: getId(rowIndex, itemIndex, chartIndex)}));
         });
 
@@ -349,18 +357,18 @@ function extractSurroundPositions(description) {
   });
 
   return {
-    top,
-    right,
-    bottom,
-    left,
-    middle
+    top: top,
+    right: right,
+    bottom: bottom,
+    left: left,
+    middle: middle
   };
 }
 
 function getId(rowIndex, colIndex, layeredIndex) {
-  var id = `item-${rowIndex + 1}-${colIndex + 1}`;
+  var id = 'item-' + (rowIndex + 1) + '-' + (colIndex + 1);
   if (!isUndefined(layeredIndex)) {
-    id += `-${layeredIndex + 1}`;
+    id += '-' + (layeredIndex + 1);
   }
   return id;
 }

@@ -1,7 +1,7 @@
 export default function alignText(element, lineHeight) {
   var offset = 0;
   try {
-    const bbox = element.getBBox();
+    var bbox = element.getBBox();
 
     // Add additional line-height, if specified
     var heightAdjustment = 0;

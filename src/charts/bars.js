@@ -28,24 +28,24 @@ import {prepare as xyValuesInvertedPrepare} from '../mixins/xy-values-inverted';
 import chart from '../chart';
 
 // Draw vertical bars (stacked and unstacked)
-export const drawVerticalBars = createSeriesDraw({
+export var drawVerticalBars = createSeriesDraw({
   prepare: createPrepare(
     xyValuesPrepare,
     prepareStackedBars
   ),
-  select,
+  select: select,
   enter: enterVertical,
   merge: mergeVertical,
   exit: exitVertical
 });
 
 // Draw horizontal bars (stacked and unstacked)
-export const drawHorizontalBars = createSeriesDraw({
+export var drawHorizontalBars = createSeriesDraw({
   prepare: createPrepare(
     xyValuesInvertedPrepare,
     prepareStackedBars
   ),
-  select,
+  select: select,
   enter: enterHorizontal,
   merge: mergeHorizontal,
   exit: exitHorizontal
@@ -107,11 +107,11 @@ export function Bars(selection, props) {
   }
 }
 
-export function getDefaultXScale({data, xValue, stacked}) {
+export function getDefaultXScale(props) {
   return scaleBandSeries()
-    .domain(getOrdinalDomain(data, xValue || defaultXValue))
-    .seriesCount(isSeriesData(data) ? data.length : 1)
-    .adjacent(!stacked);
+    .domain(getOrdinalDomain(props.data, props.xValue || defaultXValue))
+    .seriesCount(isSeriesData(props.data) ? props.data.length : 1)
+    .adjacent(!props.stacked);
 }
 
 Bars.properties = assign({},
@@ -152,7 +152,7 @@ Bars.properties = assign({},
     */
     horizontal: {
       type: types.boolean,
-      getDefault: () => false
+      getDefault: function() { return false; }
     },
 
     /**
@@ -165,7 +165,7 @@ Bars.properties = assign({},
     */
     stacked: {
       type: types.boolean,
-      getDefault: () => false
+      getDefault: function() { return false; }
     },
 
     // TODO Need to decide the standard for what these apply to
@@ -176,15 +176,15 @@ Bars.properties = assign({},
     // (internal)
     offset: {
       type: types.number,
-      getDefault: () => 0
+      getDefault: function() { return 0; }
     },
     onMouseEnterBar: {
       type: types.fn,
-      getDefault: () => () => {}
+      getDefault: function() { return function() {}; }
     },
     onMouseLeaveBar: {
       type: types.fn,
-      getDefault: () => () => {}
+      getDefault: function() { return function() {}; }
     }
   }
 );
@@ -192,78 +192,78 @@ Bars.properties = assign({},
 // Connection
 // ----------
 
-export const mapState = () => {
+export var mapState = function() {
   // TODO Get offset axis / offset from state
 };
-export const mapDispatch = () => {
+export var mapDispatch = function() {
   // TODO "bind" onMouseEnterBar and onMouseLeaveBar
 }
-export const connection = connect(mapState, mapDispatch);
+export var connection = connect(mapState, mapDispatch);
 
 /**
   bars
 */
-const bars = chart(connection(Bars));
+var bars = connection(chart(Bars));
 export default bars;
 
 // Draw
 // ----
 
-export function select({seriesValues, key}) {
+export function select(props) {
   return this.selectAll('rect')
-    .data(seriesValues, key);
+    .data(props.seriesValues, props.key);
 }
 
-export function enterVertical({yValue, yScale, offset, onMouseEnterBar, onMouseLeaveBar}) {
+export function enterVertical(props) {
   this.append('rect')
-    .attr('y', (d, i, j) => bar0(yValue, yScale, offset, d, i, j))
+    .attr('y', function(d, i, j) { return bar0(props.yValue, props.yScale, props.offset, d, i, j); })
     .attr('height', 0)
-    .on('mouseenter', onMouseEnterBar)
-    .on('mouseleave', onMouseLeaveBar);
+    .on('mouseenter', props.onMouseEnterBar)
+    .on('mouseleave', props.onMouseLeaveBar);
 }
 
-export function mergeVertical({xValue, yValue, xScale, yScale, offset, className, style, stacked, transition}) {
+export function mergeVertical(props) {
   this
-    .attr('x', (d, i, j) => barX(xValue, xScale, d, i, j))
-    .attr('width', barWidth(xScale))
-    .attr('class', className)
-    .style(style); // TODO Applies to all bars, update for (d, i)
+    .attr('x', function(d, i, j) { return barX(props.xValue, props.xScale, d, i, j); })
+    .attr('width', barWidth(props.xScale))
+    .attr('class', props.className)
+    .style(props.style); // TODO Applies to all bars, update for (d, i)
 
-  this.transition().call(prepareTransition(transition))
-    .attr('y', (d, i, j) => barY(yValue, yScale, offset, stacked, d, i, j))
-    .attr('height', (d, i, j) => barHeight(yValue, yScale, offset, stacked, d, i, j));
+  this.transition().call(prepareTransition(props.transition))
+    .attr('y', function(d, i, j) { return barY(props.yValue, props.yScale, props.offset, props.stacked, d, i, j); })
+    .attr('height', function(d, i, j) { return barHeight(props.yValue, props.yScale, props.offset, props.stacked, d, i, j); });
 }
 
-export function exitVertical({yValue, yScale, offset, transition}) {
-  this.transition().call(prepareTransition(transition))
-    .attr('y', (d, i, j) => bar0(yValue, yScale, offset, d, i, j))
+export function exitVertical(props) {
+  this.transition().call(prepareTransition(props.transition))
+    .attr('y', function(d, i, j) { return bar0(props.yValue, props.yScale, props.offset, d, i, j); })
     .attr('height', 0)
     .remove();
 }
 
-export function enterHorizontal({yValue, yScale, offset, onMouseEnterBar, onMouseLeaveBar}) {
+export function enterHorizontal(props) {
   this.append('rect')
-    .attr('x', (d, i, j) => bar0(yValue, yScale, offset, d, i, j))
+    .attr('x', function(d, i, j) { return bar0(props.yValue, props.yScale, props.offset, d, i, j); })
     .attr('width', 0)
-    .on('mouseenter', onMouseEnterBar)
-    .on('mouseleave', onMouseLeaveBar);
+    .on('mouseenter', props.onMouseEnterBar)
+    .on('mouseleave', props.onMouseLeaveBar);
 }
 
-export function mergeHorizontal({xValue, xScale, yValue, yScale, offset, className, style, stacked, transition}) {
+export function mergeHorizontal(props) {
   this
-    .attr('y', (d, i, j) => barX(xValue, xScale, d, i, j))
-    .attr('height', barWidth(xScale))
-    .attr('class', className)
-    .style(style); // TODO Applies to all bars, update for (d, i)
+    .attr('y', function(d, i, j) { return barX(props.xValue, props.xScale, d, i, j); })
+    .attr('height', barWidth(props.xScale))
+    .attr('class', props.className)
+    .style(props.style); // TODO Applies to all bars, update for (d, i)
 
-  this.transition().call(prepareTransition(transition))
-    .attr('x', (d, i, j) => barY(yValue, yScale, offset, stacked, d, i ,j))
-    .attr('width', (d, i, j) => barHeight(yValue, yScale, offset, stacked, d, i, j));
+  this.transition().call(prepareTransition(props.transition))
+    .attr('x', function(d, i, j) { return barY(props.yValue, props.yScale, props.offset, props.stacked, d, i ,j); })
+    .attr('width', function(d, i, j) { return barHeight(props.yValue, props.yScale, props.offset, props.stacked, d, i, j); });
 }
 
-export function exitHorizontal({yValue, yScale, offset, transition}) {
-  this.transition().call(prepareTransition(transition))
-    .attr('x', (d, i, j) => bar0(yValue, yScale, offset, d, i, j))
+export function exitHorizontal(props) {
+  this.transition().call(prepareTransition(props.transition))
+    .attr('x', function(d, i, j) { return bar0(props.yValue, props.yScale, props.offset, d, i, j); })
     .attr('width', 0)
     .remove();
 }
@@ -272,14 +272,14 @@ export function exitHorizontal({yValue, yScale, offset, transition}) {
 // -------
 
 export function bar0(yValue, yScale, offset, d, i, j) {
-  const y0 = yScale(0);
-  const y = getValue(yValue, yScale, d, i, j);
+  var y0 = yScale(0);
+  var y = getValue(yValue, yScale, d, i, j);
 
   return y <= y0 ? y0 - offset : y0 + offset;
 }
 
 export function barX(xValue, xScale, d, i, j) {
-  const x = getValue(xValue, xScale, d, i, j);
+  var x = getValue(xValue, xScale, d, i, j);
 
   // TODO Look for centered on scale (set in scaleBandSeries)
   if (!xScale._ordinalSeries) {
@@ -287,13 +287,13 @@ export function barX(xValue, xScale, d, i, j) {
   }
 
   // For ordinal-series scale, x is centered, get value at edge
-  const width = getWidth(xScale);
+  var width = getWidth(xScale);
   return x - (width / 2);
 }
 
 export function barY(yValue, yScale, offset, stacked, d, i, j) {
   var y0 = yScale(0);
-  const y = getValue(yValue, yScale, d, i, j);
+  var y = getValue(yValue, yScale, d, i, j);
 
   if (stacked) {
     y0 = yScale(d.__previous || 0);
@@ -309,20 +309,22 @@ export function barWidth(xScale) {
 
 export function barHeight(yValue, yScale, offset, stacked, d, i, j) {
   var y0 = yScale(0);
-  const y = getValue(yValue, yScale, d, i, j);
+  var y = getValue(yValue, yScale, d, i, j);
 
   if (stacked) {
     y0 = yScale(d.__previous || 0);
     offset = j === 0 ? offset : 0;
   }
 
-  const height = Math.abs(y0 - y - offset);
+  var height = Math.abs(y0 - y - offset);
   return height > 0 ? height : 0;
 }
 
 export function prepareStackedBars(selection, props) {
-  const {stacked, xValue, yValue} = props;
-  var {data} = props;
+  var stacked = props.stacked;
+  var xValue = props.xValue;
+  var yValue = props.yValue;
+  var data = props.data;
 
   if (!stacked || !isSeriesData(data)) {
     return props;
@@ -330,11 +332,11 @@ export function prepareStackedBars(selection, props) {
 
   // TODO Investigate using d3.stack
   // (here or on data before it's passed in, e.g. look for y0 on point)
-  const grouped = {};
-  data = data.map((series, j) => {
-    const values = series.values.map((d, i) => {
-      const x = xValue(d, i, j);
-      const y = yValue(d, i, j);
+  var grouped = {};
+  data = data.map(function(series, j) {
+    var values = series.values.map(function(d, i) {
+      var x = xValue(d, i, j);
+      var y = yValue(d, i, j);
       var previous, stackedY;
 
       if (!grouped[x]) {
@@ -358,11 +360,11 @@ export function prepareStackedBars(selection, props) {
       return d;
     });
 
-    return assign({}, series, {values});
+    return assign({}, series, {values: values});
   });
 
   return assign({}, props, {
-    data,
-    yValue: d => d.y
+    data: data,
+    yValue: function(d) { return d.y; }
   });
 }

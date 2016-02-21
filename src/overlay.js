@@ -4,7 +4,7 @@ import {
 } from './helpers';
 import {Component} from './component';
 
-export const Overlay = Component.extend({
+export var Overlay = Component.extend({
 
 });
 
@@ -15,12 +15,12 @@ export default function overlay(Type) {
     Type = createChart(Type, Overlay);
   }
 
-  return (id, props) => {
+  return function(id, props) {
     if (!props) {
       props = id;
       id = undefined;
     }
 
-    return {type: Type, id, props};
-  }
+    return {type: Type, id: id, props: props};
+  };
 }
