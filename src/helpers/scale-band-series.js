@@ -6,6 +6,7 @@ import {isUndefined} from '../utils';
 
 export default function scaleBandSeries() {
   var underlying = d3.scale.ordinal();
+  var _type = 'rangeRoundBands';
   var _adjacent = true;
   var _seriesCount = 1;
   var _seriesPadding = 0;
@@ -50,7 +51,29 @@ export default function scaleBandSeries() {
     return scale;
   };
 
+  scale.range = function(range) {
+    return scale.rangeBands(range, 0, 0);
+  };
+
+  scale.rangeBands = function(range, innerPadding, outerPadding) {
+    _type = 'rangeBands';
+    _range = range;
+    _innerPadding = innerPadding;
+    _outerPadding = outerPadding;
+
+    if (!isUndefined(outerPadding)) {
+      underlying.rangeBands(range, innerPadding, outerPadding);
+    } else if (!isUndefined(innerPadding)) {
+      underlying.rangeBands(range, innerPadding);
+    } else {
+      underlying.rangeBands(range);
+    }
+
+    return scale;
+  };
+
   scale.rangeRoundBands = function(range, innerPadding, outerPadding) {
+    _type = 'rangeRoundBands';
     _range = range;
     _innerPadding = innerPadding;
     _outerPadding = outerPadding;
@@ -81,12 +104,14 @@ export default function scaleBandSeries() {
       .seriesPadding(_seriesPadding)
       .domain(underlying.domain());
 
+    var range = _type == 'rangeRoundBands' ? copied.rangeRoundBands : copied.rangeBands;
+
     if (!isUndefined(_outerPadding)) {
-      copied.rangeRoundBands(_range, _innerPadding, _outerPadding);
+      range.call(copied, _range, _innerPadding, _outerPadding);
     } else if (!isUndefined(_innerPadding)) {
-      copied.rangeRoundBands(_range, _innerPadding);
+      range.call(copied, _range, _innerPadding);
     } else if (!isUndefined(_range)) {
-      copied.rangeRoundBands(_range);
+      range.call(copied, _range);
     }
 
     return copied;
