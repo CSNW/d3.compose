@@ -53,9 +53,9 @@ tape('xy.prepare() sets range for yScale', t => {
 
 tape('xy.getValue() gets value for given values and scale', t => {
   const scale = d3c.scaleBandSeries()
-    .seriesCount(2)
+    .series(2)
     .domain([1, 2, 3, 4])
-    .rangeRoundBands([0, 100], 0, 0);
+    .range([0, 100]);
   const value = d => d.x;
   const bandWidth = 25/2;
 

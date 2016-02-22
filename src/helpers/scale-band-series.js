@@ -1,132 +1,108 @@
 import d3 from 'd3';
-import {isUndefined} from '../utils';
 
 // Note: Will need to be updated for compatibility with v3 and v4
 // (v3 = ordinal + rangeRoundBands, v4 = band + rangeRound)
 
 export default function scaleBandSeries() {
   var underlying = d3.scale.ordinal();
-  var _type = 'rangeRoundBands';
-  var _adjacent = true;
-  var _seriesCount = 1;
-  var _seriesPadding = 0;
-  var _range, _innerPadding, _outerPadding;
+  var domain = underlying.domain;
+  var range = [0, 1];
+  var round = false;
+  var paddingInner = 0;
+  var paddingOuter = 0;
+  var paddingSeries = 0;
+  var adjacent = true;
+  var centered = true;
+  var series = 1;
+  var bandwidth, step;
 
-  function scale(value, seriesIndex) {
-    seriesIndex = _seriesCount > 1 && _adjacent && seriesIndex ? seriesIndex : 0;
-    var scaled = underlying(value);
-    var width = scale.rangeBand();
-    var padding = getPadding();
+  function scale(d, j) {
+    j = series > 1 && adjacent && j ? j : 0;
+    var edge = underlying(d);
+    var aligned = edge + step * j
 
-    return scaled + (padding / 2) + (seriesIndex * (width + padding)) + (width / 2);
+    return centered ? aligned + bandwidth / 2 : aligned;
   }
 
-  // TODO centered value
+  function rescale() {
+    var setRange = round ? 'rangeRoundBands' : 'rangeBands';
+    underlying[setRange](range, paddingInner, paddingOuter);
+    var width = underlying.rangeBand();
 
-  scale.adjacent = function(value) {
-    if (!arguments.length) return _adjacent;
-
-    _adjacent = value;
-    return scale;
-  };
-
-  scale.seriesCount = function(count) {
-    if (!arguments.length) return _seriesCount;
-
-    _seriesCount = count;
-    return scale;
-  };
-
-  scale.seriesPadding = function(value) {
-    if (!arguments.length) return _seriesPadding;
-
-    _seriesPadding = value;
-    return scale;
-  };
-
-  scale.domain = function(values) {
-    if (!arguments.length) return underlying.domain();
-
-    underlying.domain(values);
-    return scale;
-  };
-
-  scale.range = function(range) {
-    return scale.rangeBands(range, 0, 0);
-  };
-
-  scale.rangeBands = function(range, innerPadding, outerPadding) {
-    _type = 'rangeBands';
-    _range = range;
-    _innerPadding = innerPadding;
-    _outerPadding = outerPadding;
-
-    if (!isUndefined(outerPadding)) {
-      underlying.rangeBands(range, innerPadding, outerPadding);
-    } else if (!isUndefined(innerPadding)) {
-      underlying.rangeBands(range, innerPadding);
+    if (series > 1 && adjacent) {
+      // TODO round + align
+      step = width / (series - paddingSeries)
+      bandwidth = step - (paddingSeries * step);
     } else {
-      underlying.rangeBands(range);
+      step = 0;
+      bandwidth = width;
     }
 
     return scale;
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain(_), rescale()) : domain();
   };
 
-  scale.rangeRoundBands = function(range, innerPadding, outerPadding) {
-    _type = 'rangeRoundBands';
-    _range = range;
-    _innerPadding = innerPadding;
-    _outerPadding = outerPadding;
-
-    if (!isUndefined(outerPadding)) {
-      underlying.rangeRoundBands(range, innerPadding, outerPadding);
-    } else if (!isUndefined(innerPadding)) {
-      underlying.rangeRoundBands(range, innerPadding);
-    } else {
-      underlying.rangeRoundBands(range);
-    }
-
-    return scale;
+  scale.range = function(_) {
+    return arguments.length ? (range = [+_[0], +_[1]], rescale()) : range.slice();
   };
 
-  scale.rangeBand = function() {
-    if (!_adjacent || _seriesCount <= 1) {
-      return underlying.rangeBand();
-    }
-
-    return (underlying.rangeBand() / _seriesCount) - getPadding();
+  scale.rangeRound = function(_) {
+    return range = [+_[0], +_[1]], round = true, rescale();
   };
+
+  scale.bandwidth = scale.rangeBand = function() {
+    return bandwidth;
+  };
+
+  scale.round = function(_) {
+    return arguments.length ? (round = !!_, rescale()) : round;
+  };
+
+  scale.padding = function(_) {
+    return arguments.length ? (paddingInner = paddingOuter = paddingSeries = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+  };
+
+  scale.paddingInner = function(_) {
+    return arguments.length ? (paddingInner =  Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+  };
+
+  scale.paddingOuter = function(_) {
+    return arguments.length ? (paddingOuter =  Math.max(0, Math.min(1, _)), rescale()) : paddingOuter;
+  };
+
+  scale.paddingSeries = function(_) {
+    return arguments.length ? (paddingSeries = Math.max(0, Math.min(1, _)), rescale()) : paddingSeries;
+  }
+
+  scale.adjacent = function(_) {
+    return arguments.length ? (adjacent = !!_, rescale()) : adjacent;
+  };
+
+  scale.centered = function(_) {
+    return arguments.length ? (centered = !!_, scale) : centered;
+  };
+
+  scale.series = function(_) {
+    return arguments.length ? (series = Math.max(1, _), rescale()) : series;
+  };
+
+  // TODO align
 
   scale.copy = function() {
-    var copied = scaleBandSeries()
-      .adjacent(_adjacent)
-      .seriesCount(_seriesCount)
-      .seriesPadding(_seriesPadding)
-      .domain(underlying.domain());
-
-    var range = _type == 'rangeRoundBands' ? copied.rangeRoundBands : copied.rangeBands;
-
-    if (!isUndefined(_outerPadding)) {
-      range.call(copied, _range, _innerPadding, _outerPadding);
-    } else if (!isUndefined(_innerPadding)) {
-      range.call(copied, _range, _innerPadding);
-    } else if (!isUndefined(_range)) {
-      range.call(copied, _range);
-    }
-
-    return copied;
-  };
-
-  scale._ordinalSeries = true;
-
-  function getPadding() {
-    if (!_adjacent || _seriesCount <= 1) {
-      return 0;
-    }
-
-    var width = underlying.rangeBand() / _seriesCount;
-    return _seriesPadding * width;
+    return scaleBandSeries()
+      .domain(domain())
+      .range(range)
+      .round(round)
+      .paddingInner(paddingInner)
+      .paddingOuter(paddingOuter)
+      .paddingSeries(paddingSeries)
+      .adjacent(adjacent)
+      .centered(centered)
+      .series(series);
   }
 
-  return scale;
+  return rescale();
 }

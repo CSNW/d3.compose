@@ -10,12 +10,12 @@ import {
   defaultXValue
 } from './xy';
 
-export var unsupportedScale = 'Only d3.scale.ordinal() and scaleBandSeries() are supported for xScale';
+export var unsupportedScale = 'Only d3.scale.ordinal(), d3.scaleBand(), and d3c.scaleBandSeries() are supported for xScale';
 
 export function getDefaultXScale(props) {
   return scaleBandSeries()
     .domain(getOrdinalDomain(props.data, props.xValue || defaultXValue))
-    .seriesCount(isSeriesData(props.data) ? props.data.length : 1);
+    .series(isSeriesData(props.data) ? props.data.length : 1);
 }
 
 export var properties = assign({},
@@ -43,6 +43,8 @@ export function prepare(selection, props) {
   xScale = xScale.copy()
   if (xScale.rangeRoundBands) {
     xScale.rangeRoundBands([0, props.width], props.xScalePadding, props.xScaleOuterPadding);
+  } else if (xScale.bandwidth) {
+    xScale.range([0, props.width]);
   } else {
     throw new Error(unsupportedScale);
   }

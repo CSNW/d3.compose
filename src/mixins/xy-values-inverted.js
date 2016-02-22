@@ -8,6 +8,8 @@ export function prepare(selection, props) {
   xScale = xScale.copy();
   if (xScale.rangeRoundBands) {
     xScale.rangeRoundBands([props.height, 0], props.xScalePadding, props.xScaleOuterPadding);
+  } else if (xScale.bandwidth) {
+    xScale.range([props.height, 0]);
   } else {
     throw new Error(unsupportedScale);
   }
