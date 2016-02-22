@@ -10,7 +10,7 @@
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/default.css">
 
-  <link rel="stylesheet" type="text/css" href="../.tmp/d3.compose.css">
+  <link rel="stylesheet" type="text/css" href="../build/d3.compose.css">
   <style>
     .example {
       margin-bottom: 16px;
@@ -24,10 +24,7 @@
   </style>
 
   <script src="../node_modules/d3/d3.js"></script>
-  <script src="../node_modules/d3.chart/d3.chart.js"></script>
-
-  <script src="../.tmp/d3.compose-all.js"></script>
-
+  <script src="../build/d3.compose-all.js"></script>
   <script src="js/data.js"></script>
 </head>
 <body>
@@ -39,59 +36,58 @@
       <div id="chart-1"></div>
 
       <script type="text/javascript">
-        var utils = d3.compose.utils;
-        var chart_1 = d3.select('#chart-1')
-          .chart('Compose', function(data) {
-            var scales = {
-              x: {type: 'ordinal', domain: [2000, 2005, 2010, 2015, 2020], centered: true},
-              y: {domain: [0, 20000]},
-              y2: {domain: [0, 90]}
-            };
-            var charts = [
-              d3c.bars('bars', {
-                data: data.results,
-                xScale: utils.extend({adjacent: true, series: 2}, scales.x),
-                yScale: scales.y,
+        function chart1(data) {
+          var xScale = d3c.scaleBandSeries().domain([2000, 2005, 2010, 2015, 2020]).adjacent(true).series(2).padding(0.1);
+          var yScale = d3.scale.linear().domain([0, 20000]);
+          var y2Scale = d3.scale.linear().domain([0, 90]);
 
-                labels: {
-                  offset: 2,
-                  position: 'top',
-                  style: {
-                    'font-size': '14px'
-                  },
-                  format: d3.format(',0d')
-                }
-              }),
-              d3c.lines('lines', {
-                data: data.input,
-                xScale: scales.x,
-                yScale: scales.y2,
+          var bars = d3c.bars('bars', {
+            data: data.results,
+            xScale: xScale,
+            yScale: yScale,
 
-                labels: {
-                  position: 'top'
-                }
-              })
-            ];
+            // TODO
+            labels: {
+              offset: 2,
+              position: 'top',
+              style: {
+                'font-size': '14px'
+              },
+              format: d3.format(',0d')
+            }
+          });
+          var lines = d3c.lines('lines', {
+            data: data.input,
+            xScale: xScale,
+            yScale: y2Scale,
 
-            return [
-              d3c.title({text: 'Chart Title', textAlign: 'left'}),
-              [
-                d3c.axisTitle('Y1 Title'),
-                d3c.axis('y1', {scale: scales.y}),
-                d3c.layered(charts),
-                d3c.axis('y2', {scale: scales.y2}),
-                d3c.axisTitle('Y2 Title'),
-                d3c.insetLegend({charts: ['lines', 'bars'], swatchDimensions: {height: 5, width: 40}}),
-                d3c.gridlines('y-gridlines', {orientation: 'horizontal', scale: scales.y}),
-              ],
-              d3c.axis('x', {scale: scales.x, gridlines: true}),
-              d3c.axisTitle('X Title')
-            ];
-          })
-          .width(600)
-          .height(400);
+            // TODO
+            labels: {
+              position: 'top'
+            }
+          });
 
-        chart_1.draw(data['chart-1']);
+          return [
+            d3c.title({text: 'Chart Title', textAlign: 'left'}),
+            [
+              d3c.axisTitle({position: 'left', text: 'Y1 Title'}),
+              d3c.axis('y1', {position: 'left', scale: yScale}),
+              d3c.layered(
+                d3c.gridlines({orientation: 'vertical', scale: xScale}),
+                d3c.gridlines({orientation: 'horizontal', scale: yScale}),
+                bars,
+                lines
+              ),
+              d3c.axis('y2', {position: 'right', scale: y2Scale}),
+              d3c.axisTitle({position: 'right', text: 'Y2 Title'})
+            ],
+            d3c.axis('x', {position: 'bottom', scale: xScale}),
+            d3c.axisTitle({position: 'bottom', text: 'X Title'})
+          ];
+        }
+
+        var chart1Container = new d3c.Compose(d3.select('#chart-1'), {width: 600, height: 400});
+        chart1Container.draw(chart1(data['chart-1']));
       </script>
     </section>
 
@@ -100,85 +96,87 @@
       <div id="chart-2"></div>
 
       <script type="text/javascript">
-        d3.chart('Overlay').extend('HoverOverlay', {
-          initialize: function() {
-            var list = this.base.append('ul').style({
-              'background-color': '#fff',
-              'border': 'solid 1px #ccc',
-              'list-style': 'none',
-              'padding': '4px 4px 4px 6px'
-            });
+        // d3.chart('Overlay').extend('HoverOverlay', {
+        //   initialize: function() {
+        //     var list = this.base.append('ul').style({
+        //       'background-color': '#fff',
+        //       'border': 'solid 1px #ccc',
+        //       'list-style': 'none',
+        //       'padding': '4px 4px 4px 6px'
+        //     });
 
-            this.on('attach', function() {
-              this.container.on('mouseenter', function(point) {
-                this.position(getPosition(point));
-              }.bind(this));
-              this.container.on('mousemove', function(point) {
-                this.position(getPosition(point));
-              }.bind(this));
+        //     this.on('attach', function() {
+        //       this.container.on('mouseenter', function(point) {
+        //         this.position(getPosition(point));
+        //       }.bind(this));
+        //       this.container.on('mousemove', function(point) {
+        //         this.position(getPosition(point));
+        //       }.bind(this));
 
-              var points = {};
-              this.container.on('mouseenter:point', function(point) {
-                points[point.key] = point;
-                if (Object.keys(points).length)
-                  this.show();
-                listPoints(list, points);
-              }.bind(this));
-              this.container.on('mouseleave:point', function(point) {
-                delete points[point.key];
-                if (!Object.keys(points).length)
-                  this.hide();
-                listPoints(list, points);
-              }.bind(this));
+        //       var points = {};
+        //       this.container.on('mouseenter:point', function(point) {
+        //         points[point.key] = point;
+        //         if (Object.keys(points).length)
+        //           this.show();
+        //         listPoints(list, points);
+        //       }.bind(this));
+        //       this.container.on('mouseleave:point', function(point) {
+        //         delete points[point.key];
+        //         if (!Object.keys(points).length)
+        //           this.hide();
+        //         listPoints(list, points);
+        //       }.bind(this));
 
-              function getPosition(point) {
-                return {
-                  container: {
-                    x: point.container.x + 20,
-                    y: point.container.y
-                  }
-                };
-              }
+        //       function getPosition(point) {
+        //         return {
+        //           container: {
+        //             x: point.container.x + 20,
+        //             y: point.container.y
+        //           }
+        //         };
+        //       }
 
-              function listPoints(list, points) {
-                list.selectAll('*').remove();
-                utils.objectEach(points, function(point) {
-                  list.append('li').text('(' + point.d.x + ', ' + point.d.y + ')');
-                });
-              }
-            }.bind(this));
-          }
-        });
+        //       function listPoints(list, points) {
+        //         list.selectAll('*').remove();
+        //         utils.objectEach(points, function(point) {
+        //           list.append('li').text('(' + point.d.x + ', ' + point.d.y + ')');
+        //         });
+        //       }
+        //     }.bind(this));
+        //   }
+        // });
 
-        var chart_2 = d3.select('#chart-2')
-          .chart('Compose', function(data) {
-            var scales = {
-              x: {domain: [2000, 2020]},
-              y: {data: data.lines, key: 'y'}
-            };
-            var charts = [
-              d3c.lines('line', {data: data.lines, xScale: scales.x, yScale: scales.y, hoverTolerance: 50})
-            ];
+        function chart2(data) {
+          var max = d3c.mixins.series.getSeriesMax(data.lines, d3c.mixins.xy.defaultYValue);
+          var xScale = d3.scale.linear().domain([2000, 2020]);
+          var yScale = d3.scale.linear().domain([0, max]).nice();
 
-            return [
-              d3c.title('Results by Year'),
-              d3c.legend({charts: ['line'], centered: true}),
+          var lines = d3c.lines('lines', {data: data.lines, xScale: xScale, yScale: yScale});
+
+          return d3c.layered(
+            [[
+              d3c.title({text: 'Results by Year'}),
+              // TODO legend
+              // d3c.legend({charts: ['line'], centered: true})
               [
-                d3c.axisTitle('Results'),
-                d3c.axis('yAxis', {scale: scales.y}),
-                d3c.layered(charts)
+                d3c.axisTitle({text: 'Results', position: 'left'}),
+                d3c.axis('yAxis', {position: 'left', scale: yScale}),
+                d3c.layered(lines)
               ],
-              d3c.axis('xAxis', {scale: scales.x, tickFormat: d3.format('####')}),
-              d3c.axisTitle('Year'),
-              {type: 'HoverOverlay'}
-            ];
-          })
-          .width(600)
-          .height(400)
-          .margins({right: 30})
-          .responsive(false);
+              d3c.axis('xAxis', {position: 'bottom', scale: xScale, tickFormat: d3.format('####')}),
+              d3c.axisTitle({position: 'bottom', text: 'Year'})
+            ]]
+            // TODO overlay (double array is to overcome temporary limitation in layered)
+            // {type: Overlay}
+          );
+        }
 
-        chart_2.draw(data['chart-2']);
+        var chart2Container = new d3c.Compose(d3.select('#chart-2'), {
+          width: 600,
+          height: 400,
+          responsive: false
+        });
+        chart2Container.draw(chart2(data['chart-2']));
       </script>
     </section>
 
@@ -187,36 +185,43 @@
       <div id="chart-3"></div>
 
       <script type="text/javascript">
-        var chart_3 = d3.select('#chart-3')
-          .chart('Compose', function(data) {
-            var scales = {
-              x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
-              y: {data: data, value: function(d, i) { return d; }}
-            };
-            var charts = [
-              d3c.bars('bars', {
-                data: data,
-                xScale: scales.x,
-                yScale: scales.y,
-                labels: {format: d3.format(',0d')}
-              })
-            ];
+        function chart3(data) {
+          var min = d3c.mixins.series.getSeriesMin(data, function(d) { return d; });
+          var max = d3c.mixins.series.getSeriesMax(data, function(d) { return d; });
+          var xScale = d3c.scaleBandSeries()
+            .domain(data.map(function(d, i) { return i; }))
+            .adjacent(true)
+            .series(2);
+          var yScale = d3.scale.linear()
+            .domain([min, max]);
 
-            return [
-              d3c.title('Results'),
-              [
-                d3c.axisTitle('Results'),
-                d3c.axis('y', {scale: scales.y, gridlines: true}),
-                d3c.layered(charts)
-              ]
-            ];
-          })
-          .duration(1000)
-          .margins({bottom: 30})
-          .width(600)
-          .height(400);
+          var bars = d3c.bars('bars', {
+            data: data,
+            xScale: xScale,
+            yScale: yScale,
+            labels: {format: d3.format(',0d')}
+          });
 
-        chart_3.draw(data['chart-3']);
+          return [
+            d3c.title({text: 'Result'}),
+            [
+              d3c.axisTitle({position: 'left', text: 'Results'}),
+              d3c.axis('y', {position: 'left', scale: yScale}),
+              d3c.layered(
+                d3c.gridlines({orientation: 'horizontal', scale: yScale}),
+                bars
+              )
+            ]
+          ];
+        }
+
+        var chart3Container = new d3c.Compose(d3.select('#chart-3'), {
+          width: 600,
+          height: 400,
+          transition: {duration: 1000},
+          margin: {bottom: 30}
+        });
+        chart3Container.draw(chart3(data['chart-3']));
       </script>
     </section>
 
@@ -225,30 +230,36 @@
       <div id="chart-4"></div>
 
       <script type="text/javascript">
-        var chart_4 = d3.select('#chart-4')
-          .chart('Compose', function(data) {
-            var scales = {
-              x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
-              y: {domain: [-50, 150]}
-            };
-            var charts = [
-              d3c.stackedBars('stacked', {data: data.stacked, xScale: scales.x, yScale: scales.y, labels: true})
-            ];
+        function chart4(data) {
+          var domain = d3c.mixins.xyValues.getOrdinalDomain(data.stacked, d3c.mixins.xy.defaultXValue);
+          var xScale = d3.scale.ordinal().domain(domain);
+          var yScale = d3.scale.linear().domain([-50, 150]);
 
-            return [
-              d3c.title('Stacked Bars'),
-              [
-                d3c.axis({scale: scales.y, ticks: 5}),
-                d3c.layered(charts),
-                d3c.legend({charts: ['stacked']})
-              ]
-            ];
-          })
-          .width(600)
-          .height(200)
-          .margins({bottom: 20});
+          var stacked = d3c.bars('stacked', {
+            data: data.stacked,
+            stacked: true,
+            xScale: xScale,
+            yScale: yScale,
+            labels: true
+          });
 
-        chart_4.draw({
+          return [
+            d3c.title({text: 'Stacked Bars'}),
+            [
+              d3c.axis({position: 'left', scale: yScale, ticks: 5}),
+              d3c.layered(stacked),
+              // TODO Legend
+              // d3c.legend({charts: ['stacked']})
+            ]
+          ];
+        }
+
+        var chart4Container = new d3c.Compose(d3.select('#chart-4'), {
+          width: 600,
+          height: 400,
+          margin: {bottom: 20}
+        });
+        chart4Container.draw(chart4({
           stacked: [
             {key: 'a', name: 'A', values: [{x: 0, y: 10}, {x: 1, y: 50}]},
             {key: 'b', name: 'B', values: [{x: 0, y: 20}, {x: 1, y: 40}]},
@@ -256,7 +267,7 @@
             {key: 'd', name: 'D', values: [{x: 0, y: 30}, {x: 1, y: 20}]},
             {key: 'e', name: 'E', values: [{x: 0, y: -40}, {x: 1, y: 10}]}
           ]
-        })
+        }));
       </script>
     </section>
 
@@ -265,37 +276,40 @@
       <div id="chart-5"></div>
 
       <script type="text/javascript">
-        var chart_5 = d3.select('#chart-5')
-          .chart('Compose', function(data) {
-            var scales = {
-              x: {type: 'ordinal', data: data, value: function(d, i) { return i; }, adjacent: true},
-              y: {data: data, value: function(d, i) { return d; }}
-            };
-            var charts = [
-              d3c.horizontalBars('bars', {
-                data: data,
-                xScale: scales.x,
-                yScale: scales.y,
-                labels: {format: d3.format(',0d'), position: 'right|left', offset: 3}
-              })
-            ];
+        function chart5(data) {
+          var min = d3c.mixins.series.getSeriesMin(data, function(d) { return d; });
+          var max = d3c.mixins.series.getSeriesMax(data, function(d) { return d; });
+          var xScale = d3c.scaleBandSeries()
+            .domain(data.map(function(d, i) { return i; }))
+            .adjacent(true)
+            .series(2);
+          var yScale = d3.scale.linear().domain([min, max]);
 
-            return [
-              d3c.title('Results'),
-              [
-                d3c.layered(charts)
-              ],
-              d3c.axis({scale: scales.y}),
-              d3c.axisTitle('Results')
-            ];
-          })
-          .width(600)
-          .height(400)
-          .margins({right: 50, left: 50})
-          .duration(1000)
-          .delay(200);
+          var horizontal = d3c.bars('bars', {
+            data: data,
+            xScale: xScale,
+            yScale: yScale,
+            horizontal: true,
+            labels: {format: d3.format(',0d'), position: 'right|left', offset: 3}
+          });
 
-        chart_5.draw(data['chart-3']);
+          return [
+            d3c.title({text: 'Results'}),
+            [
+              d3c.layered(horizontal)
+            ],
+            d3c.axis({position: 'bottom', scale: yScale}),
+            d3c.axisTitle({position: 'bottom', text: 'Results'})
+          ];
+        }
+
+        var chart5Container = new d3c.Compose(d3.select('#chart-5'), {
+          width: 600,
+          height: 400,
+          transition: {duration: 1000, delay: 200},
+          margin: {right: 50, left: 50}
+        });
+        chart5Container.draw(chart5(data['chart-3']));
       </script>
     </section>
 
@@ -304,29 +318,36 @@
       <div id="chart-6"></div>
 
       <script type="text/javascript">
-        var chart_6 = d3.select('#chart-6')
-          .chart('Compose', function(data) {
-            var scales = {
-              x: {type: 'ordinal', data: data.stacked, key: 'x', centered: true},
-              y: {domain: [-50, 150]}
-            };
-            var charts = [
-              d3c.horizontalStackedBars('stacked', {data: data.stacked, xScale: scales.x, yScale: scales.y, labels: {position: 'right|left', offset: 2}})
-            ];
+        function chart6(data) {
+          var domain = d3c.mixins.xyValues.getOrdinalDomain(data.stacked, d3c.mixins.xy.defaultXValue);
+          var xScale = d3.scale.ordinal().domain(domain);
+          var yScale = d3.scale.linear().domain([-50, 150]);
 
-            return [
-              d3c.title('Horizontal Stacked Bars'),
-              [
-                d3c.layered(charts),
-                d3c.legend({charts: ['stacked']})
-              ],
-              d3c.axis({scale: scales.y, ticks: 5})
-            ];
-          })
-          .width(600)
-          .height(240);
+          var stacked = d3c.bars('stacked', {
+            data: data.stacked,
+            horizontal: true,
+            stacked: true,
+            xScale: xScale,
+            yScale: yScale,
+            labels: true
+          });
 
-        chart_6.draw({
+          return [
+            d3c.title({text: 'Horizontal Stacked Bars'}),
+            [
+              d3c.layered(stacked),
+              // TODO Legend
+              // d3c.legend({charts: ['stacked']})
+            ],
+            d3c.axis({position: 'bottom', scale: yScale, ticks: 5}),
+          ];
+        }
+
+        var chart6Container = new d3c.Compose(d3.select('#chart-6'), {
+          width: 600,
+          height: 400
+        });
+        chart6Container.draw(chart6({
           stacked: [
             {key: 'a', name: 'A', values: [{x: 0, y: 10}, {x: 1, y: 50}]},
             {key: 'b', name: 'B', values: [{x: 0, y: 20}, {x: 1, y: 40}]},
@@ -334,7 +355,7 @@
             {key: 'd', name: 'D', values: [{x: 0, y: 30}, {x: 1, y: 20}]},
             {key: 'e', name: 'E', values: [{x: 0, y: -40}, {x: 1, y: 10}]}
           ]
-        })
+        }));
       </script>
     </section>
   </div>
