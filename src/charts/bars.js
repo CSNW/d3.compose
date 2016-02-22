@@ -281,8 +281,7 @@ export function bar0(yValue, yScale, offset, d, i, j) {
 export function barX(xValue, xScale, d, i, j) {
   var x = getValue(xValue, xScale, d, i, j);
 
-  // TODO Look for centered on scale (set in scaleBandSeries)
-  if (xScale.centered && !xScale.centered()) {
+  if (!xScale.centered || !xScale.centered()) {
     return x;
   }
 
