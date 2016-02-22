@@ -248,7 +248,7 @@ function toSurround(description) {
   right = right.map(function(item, i, items) {
     var layout = {
       _position: 'right',
-      right: items[i - 1] && constraint.eq(items[i - 1], 'left') || constraint.eq(container, 'right'),
+      right: items[i + 1] && constraint.eq(items[i + 1], 'left') || constraint.eq(container, 'right'),
       top: topEdge,
       bottom: bottomEdge,
       height: constraint.flex()

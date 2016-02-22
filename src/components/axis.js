@@ -159,7 +159,7 @@ export function prepare(selection, props) {
   var scale = props.scale.copy();
 
   // Center tick for scaleBandSeries
-  if (scale.series) {
+  if (scale.series && scale.centered) {
     scale.series(1).centered(false);
   }
 
