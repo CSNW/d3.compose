@@ -226,7 +226,7 @@ export function mergeVertical(props) {
   this
     .attr('x', function(d, i, j) { return barX(props.xValue, props.xScale, d, i, j); })
     .attr('width', barWidth(props.xScale))
-    .attr('class', props.className)
+    .attr('class', 'd3c-bar') // TODO props.className
     .style(props.style); // TODO Applies to all bars, update for (d, i)
 
   this.transition().call(prepareTransition(props.transition))
@@ -253,7 +253,7 @@ export function mergeHorizontal(props) {
   this
     .attr('y', function(d, i, j) { return barX(props.xValue, props.xScale, d, i, j); })
     .attr('height', barWidth(props.xScale))
-    .attr('class', props.className)
+    .attr('class', 'd3c-bar') // TODO props.className
     .style(props.style); // TODO Applies to all bars, update for (d, i)
 
   this.transition().call(prepareTransition(props.transition))
@@ -282,7 +282,7 @@ export function barX(xValue, xScale, d, i, j) {
   var x = getValue(xValue, xScale, d, i, j);
 
   // TODO Look for centered on scale (set in scaleBandSeries)
-  if (!xScale._ordinalSeries) {
+  if (xScale.centered && !xScale.centered()) {
     return x;
   }
 

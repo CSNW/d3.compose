@@ -71,7 +71,9 @@ export var Lines = createSeriesDraw({
       line.tension(props.tension);
     }
 
-    this.attr('d', function(d) { return line(d); });
+    this
+      .attr('d', function(d) { return line(d); })
+      .attr('class', 'd3c-line');
   }
 });
 

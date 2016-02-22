@@ -1,0 +1,66 @@
+.d3c-container {
+  background-color: #fff;
+  border: solid 1px #ddd;
+}
+
+.d3c-index-0 {stroke: #1f77b4; fill: #1f77b4;}
+.d3c-index-1 {stroke: #ff7f0e; fill: #ff7f0e;}
+.d3c-index-2 {stroke: #2ca02c; fill: #2ca02c;}
+.d3c-index-3 {stroke: #d62728; fill: #d62728;}
+.d3c-index-4 {stroke: #9467bd; fill: #9467bd;}
+.d3c-index-5 {stroke: #8c564b; fill: #8c564b;}
+.d3c-index-6 {stroke: #e377c2; fill: #e377c2;}
+.d3c-index-7 {stroke: #7f7f7f; fill: #7f7f7f;}
+
+.d3c-line {
+  stroke-width: 1.5px;
+  fill: none;
+}
+
+.d3c-bar {
+  stroke: none;
+  shape-rendering: crispEdges;
+}
+
+.d3c-label-text {
+  font-size: 0.85em;
+  stroke: none;
+  fill: black;
+}
+.d3c-label-bg {
+  opacity: 0.2;
+  fill: white;
+  stroke: none;
+}
+
+.d3c-title {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.d3c-axis-title {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.d3c-axis path {
+  fill: none;
+  stroke-width: 2px;
+  stroke: black;
+}
+.d3c-axis .tick {
+  font-size: 0.9em;
+}
+.d3c-axis .tick line, 
+.d3c-axis line.tick { /* line.tick for v3.0.0 support */
+  stroke: black;
+}
+
+.d3c-legend-label {
+  font-size: 0.9em;
+}
+
+.d3c-gridline {
+  stroke-width: 0.5px;
+  stroke: #c9c9c9;
+  fill: none;
+}

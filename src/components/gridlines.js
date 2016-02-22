@@ -48,8 +48,8 @@ export var Gridlines = createDraw({
 
   select: function select(props) {
     var tickValues = props.tickValues;
-    if (isUndefined(tickValues) && props.scale && props.scale.ticks) {
-      tickValues = props.scale.ticks(props.ticks);
+    if (isUndefined(tickValues) && props.scale) {
+      tickValues = props.scale.ticks ? props.scale.ticks(props.ticks) : props.scale.domain();
     }
 
     return this.selectAll('line')
