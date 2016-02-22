@@ -1,4 +1,5 @@
 import d3 from 'd3';
+import {isUndefined} from '../utils';
 
 // Note: Will need to be updated for compatibility with v3 and v4
 // (v3 = ordinal + rangeRoundBands, v4 = band + rangeRound)
@@ -14,28 +15,30 @@ export default function scaleBandSeries() {
   var adjacent = true;
   var centered = true;
   var series = 1;
-  var bandwidth, step;
+  var fullWidth, bandwidth, step;
 
   function scale(d, j) {
-    j = series > 1 && adjacent && j ? j : 0;
+    var hasSeries = series > 1 && adjacent && !isUndefined(j);
+    j = hasSeries ? j : 0;
+    var width = hasSeries ? bandwidth : fullWidth;
+    
     var edge = underlying(d);
     var aligned = edge + step * j
-
-    return centered ? aligned + bandwidth / 2 : aligned;
+    return centered ? aligned + width / 2 : aligned;
   }
 
   function rescale() {
     var setRange = round ? 'rangeRoundBands' : 'rangeBands';
     underlying[setRange](range, paddingInner, paddingOuter);
-    var width = underlying.rangeBand();
+    fullWidth = underlying.rangeBand();
 
     if (series > 1 && adjacent) {
       // TODO round + align
-      step = width / (series - paddingSeries)
+      step = fullWidth / (series - paddingSeries)
       bandwidth = step - (paddingSeries * step);
     } else {
       step = 0;
-      bandwidth = width;
+      bandwidth = fullWidth;
     }
 
     return scale;

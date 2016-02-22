@@ -49,3 +49,25 @@ tape('scaleBandSeries() uses paddingSeries', t => {
   t.equal(scale.bandwidth(), bandwidth);
   t.end();
 });
+
+tape('scaleBandSeries() treats missing series parameter as full width', t => {
+  var scale = scaleBandSeries()
+    .domain([0, 1, 2, 3])
+    .range([0, 100])
+    .series(2);
+
+  t.equal(scale(2, 1), 50 + 12.5 + (12.5 / 2));
+  t.equal(scale(2), 50 + (25 / 2));
+
+  scale.adjacent(false);
+
+  t.equal(scale(2, 1), 50 + (25 / 2));
+  t.equal(scale(2), 50 + (25 / 2));
+
+  scale.adjacent(true).centered(false);
+
+  t.equal(scale(2, 1), 50 + 12.5);
+  t.equal(scale(2), 50);
+
+  t.end();
+});

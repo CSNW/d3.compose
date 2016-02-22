@@ -123,16 +123,16 @@ export default gridlines;
 // -------
 
 export function drawLine(props) {
-  return function(d, i, j) {
+  return function(d) {
     var x1, x2, y1, y2;
     if (props.orientation == 'vertical') {
-      x1 = x2 = props.scale(d, j);
+      x1 = x2 = props.scale(d);
       y1 = 0;
       y2 = props.height;
     } else {
       x1 = 0;
       x2 = props.width;
-      y1 = y2 = props.scale(d, j);
+      y1 = y2 = props.scale(d);
     }
 
     d3.select(this)

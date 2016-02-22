@@ -156,13 +156,18 @@ export function drawAxis(selection, props) {
 }
 
 export function prepare(selection, props) {
-  var scale = props.scale;
+  var scale = props.scale.copy();
+
+  // Center tick for scaleBandSeries
+  if (scale.series) {
+    scale.series(1).centered(false);
+  }
 
   // Set range for scale
   if (props.orientation == 'vertical') {
-    scale = scale.copy().range([props.height, 0]);
+    scale = scale.range([props.height, 0]);
   } else {
-    scale = scale.copy().range([0, props.width]);
+    scale = scale.range([0, props.width]);
   }
 
   var transform = getTranslate(props.translation);
