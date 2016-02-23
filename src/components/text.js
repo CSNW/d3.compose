@@ -34,9 +34,10 @@ export var Text = createDraw({
     this.append('text');
   },
   merge: function merge(props) {
+    var transform = getTransform(props.rotation, props.textAlign, props.verticalAlign, props.width, props.height);
     this
       .text(props.text)
-      .attr('transform', getTransform(props.rotation, props.textAlign, props.verticalAlign, props.width, props.height))
+      .attr('transform', transform)
       .attr('text-anchor', props.anchor)
       .attr('class', props.className)
       .style(props.style);

@@ -7,20 +7,15 @@ import {
 } from '../utils';
 import {
   alignText,
+  createPrepare,
+  createSeriesDraw,
   getTranslate,
+  getValue,
   prepareTransition,
   types
 } from '../helpers';
-import {
-  createSeriesDraw,
-  properties as seriesProperties
-} from '../mixins/series';
-import {
-  ORIGINAL_Y,
-  getValue,
-  prepare as xyPrepare,
-  properties as xyProperties
-} from '../mixins/xy';
+import series from '../mixins/series';
+import xy, {ORIGINAL_Y} from '../mixins/xy';
 import chart from '../chart';
 
 /**
@@ -68,7 +63,7 @@ import chart from '../chart';
   ```
 */
 export var Labels = createSeriesDraw({
-  prepare: xyPrepare,
+  prepare: createPrepare(series.prepare, xy.prepare),
 
   select: function select(props) {
     return this.selectAll('g')
@@ -90,7 +85,9 @@ export var Labels = createSeriesDraw({
       .attr('class', props.className)
       .style(props.style) // TODO Applies to all labels, update for (d, i)
       .select('text')
-        .text(function(d, i) { return getText(props.format, props.yValue, d, i); });
+        .text(function(d, i) {
+          return getText(props.format, props.yValue, d, i);
+        });
 
     var layout = calculateLayout(this, props);
 
@@ -104,8 +101,8 @@ export var Labels = createSeriesDraw({
 });
 
 Labels.properties = assign({},
-  seriesProperties,
-  xyProperties,
+  series.properties,
+  xy.properties,
   {
     className: types.any,
     style: types.any,

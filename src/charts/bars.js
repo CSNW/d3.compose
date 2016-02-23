@@ -1,36 +1,28 @@
+import {assign} from '../utils';
 import {
-  assign
-} from '../utils';
-import {
-  createPrepare,
   connect,
+  createPrepare,
+  createSeriesDraw,
+  getBandwidth,
+  getUniqueValues,
+  getValue,
+  isSeriesData,
   prepareTransition,
   scaleBandSeries,
   types
 } from '../helpers';
-import {
-  createSeriesDraw,
-  properties as seriesProperties,
-  isSeriesData
-} from '../mixins/series';
+import series from '../mixins/series'
 import {
   ORIGINAL_Y,
   defaultXValue
 } from '../mixins/xy';
-import {
-  getValue,
-  getWidth,
-  getOrdinalDomain,
-  properties as xyValuesProperties,
-  prepare as xyValuesPrepare
-} from '../mixins/xy-values';
-import {prepare as xyValuesInvertedPrepare} from '../mixins/xy-values-inverted';
+import xyValues from '../mixins/xy-values';
 import chart from '../chart';
 
 // Draw vertical bars (stacked and unstacked)
 export var drawVerticalBars = createSeriesDraw({
   prepare: createPrepare(
-    xyValuesPrepare,
+    xyValues.prepare,
     prepareStackedBars
   ),
   select: select,
@@ -42,7 +34,7 @@ export var drawVerticalBars = createSeriesDraw({
 // Draw horizontal bars (stacked and unstacked)
 export var drawHorizontalBars = createSeriesDraw({
   prepare: createPrepare(
-    xyValuesInvertedPrepare,
+    xyValues.prepare,
     prepareStackedBars
   ),
   select: select,
@@ -76,7 +68,7 @@ export var drawHorizontalBars = createSeriesDraw({
 
   // Handling non-ordinal scales
   bars({
-
+    // TODO
   });
 
   // Full example
@@ -93,14 +85,14 @@ export var drawHorizontalBars = createSeriesDraw({
       .domain(['a', 'b', 'c']).seriesCount(2).adjacent(false),
     yScale: d3.scale.linear().domain([0, 50]),
 
-    horizontal: true,
+    inverted: true, // horizontal
     stacked: true
   })
   ```
   @class Bars
 */
 export function Bars(selection, props) {
-  if (props.horizontal) {
+  if (props.inverted) {
     drawHorizontalBars(selection, props);
   } else {
     drawVerticalBars(selection, props);
@@ -109,14 +101,14 @@ export function Bars(selection, props) {
 
 export function getDefaultXScale(props) {
   return scaleBandSeries()
-    .domain(getOrdinalDomain(props.data, props.xValue || defaultXValue))
-    .seriesCount(isSeriesData(props.data) ? props.data.length : 1)
+    .domain(getUniqueValues(props.data, props.xValue || defaultXValue))
+    .series(isSeriesData(props.data) ? props.data.length : 1)
     .adjacent(!props.stacked);
 }
 
 Bars.properties = assign({},
-  seriesProperties,
-  xyValuesProperties,
+  series.properties,
+  xyValues.properties,
   {
     /**
       Scale to apply to x-values to position bars.
@@ -140,19 +132,6 @@ Bars.properties = assign({},
     xScale: {
       type: types.fn,
       getDefault: getDefaultXScale
-    },
-
-    /**
-      Draw bars horizontally,
-      with x aligned vertically (increasing bottom to top) and y aligned horizontally (increasing left to right)
-
-      @property horizontal
-      @type Boolean
-      @default false
-    */
-    horizontal: {
-      type: types.boolean,
-      getDefault: function() { return false; }
     },
 
     /**
@@ -216,7 +195,9 @@ export function select(props) {
 
 export function enterVertical(props) {
   this.append('rect')
-    .attr('y', function(d, i, j) { return bar0(props.yValue, props.yScale, props.offset, d, i, j); })
+    .attr('y', function(d, i, j) {
+      return bar0(props.yValue, props.yScale, props.offset, d, i, j);
+    })
     .attr('height', 0)
     .on('mouseenter', props.onMouseEnterBar)
     .on('mouseleave', props.onMouseLeaveBar);
@@ -224,26 +205,36 @@ export function enterVertical(props) {
 
 export function mergeVertical(props) {
   this
-    .attr('x', function(d, i, j) { return barX(props.xValue, props.xScale, d, i, j); })
+    .attr('x', function(d, i, j) {
+      return barX(props.xValue, props.xScale, d, i, j);
+    })
     .attr('width', barWidth(props.xScale))
     .attr('class', 'd3c-bar') // TODO props.className
     .style(props.style); // TODO Applies to all bars, update for (d, i)
 
   this.transition().call(prepareTransition(props.transition))
-    .attr('y', function(d, i, j) { return barY(props.yValue, props.yScale, props.offset, props.stacked, d, i, j); })
-    .attr('height', function(d, i, j) { return barHeight(props.yValue, props.yScale, props.offset, props.stacked, d, i, j); });
+    .attr('y', function(d, i, j) {
+      return barY(props.yValue, props.yScale, props.offset, props.stacked, d, i, j);
+    })
+    .attr('height', function(d, i, j) {
+      return barHeight(props.yValue, props.yScale, props.offset, props.stacked, d, i, j);
+    });
 }
 
 export function exitVertical(props) {
   this.transition().call(prepareTransition(props.transition))
-    .attr('y', function(d, i, j) { return bar0(props.yValue, props.yScale, props.offset, d, i, j); })
+    .attr('y', function(d, i, j) {
+      return bar0(props.yValue, props.yScale, props.offset, d, i, j);
+    })
     .attr('height', 0)
     .remove();
 }
 
 export function enterHorizontal(props) {
   this.append('rect')
-    .attr('x', function(d, i, j) { return bar0(props.yValue, props.yScale, props.offset, d, i, j); })
+    .attr('x', function(d, i, j) {
+      return bar0(props.yValue, props.yScale, props.offset, d, i, j);
+    })
     .attr('width', 0)
     .on('mouseenter', props.onMouseEnterBar)
     .on('mouseleave', props.onMouseLeaveBar);
@@ -251,19 +242,27 @@ export function enterHorizontal(props) {
 
 export function mergeHorizontal(props) {
   this
-    .attr('y', function(d, i, j) { return barX(props.xValue, props.xScale, d, i, j); })
+    .attr('y', function(d, i, j) {
+      return barX(props.xValue, props.xScale, d, i, j);
+    })
     .attr('height', barWidth(props.xScale))
     .attr('class', 'd3c-bar') // TODO props.className
     .style(props.style); // TODO Applies to all bars, update for (d, i)
 
   this.transition().call(prepareTransition(props.transition))
-    .attr('x', function(d, i, j) { return barY(props.yValue, props.yScale, props.offset, props.stacked, d, i ,j); })
-    .attr('width', function(d, i, j) { return barHeight(props.yValue, props.yScale, props.offset, props.stacked, d, i, j); });
+    .attr('x', function(d, i, j) {
+      return barY(props.yValue, props.yScale, props.offset, props.stacked, d, i ,j);
+    })
+    .attr('width', function(d, i, j) {
+      return barHeight(props.yValue, props.yScale, props.offset, props.stacked, d, i, j);
+    });
 }
 
 export function exitHorizontal(props) {
   this.transition().call(prepareTransition(props.transition))
-    .attr('x', function(d, i, j) { return bar0(props.yValue, props.yScale, props.offset, d, i, j); })
+    .attr('x', function(d, i, j) {
+      return bar0(props.yValue, props.yScale, props.offset, d, i, j);
+    })
     .attr('width', 0)
     .remove();
 }
@@ -286,7 +285,7 @@ export function barX(xValue, xScale, d, i, j) {
   }
 
   // For ordinal-series scale, x is centered, get value at edge
-  var width = getWidth(xScale);
+  var width = getBandwidth(xScale);
   return x - (width / 2);
 }
 
@@ -303,7 +302,7 @@ export function barY(yValue, yScale, offset, stacked, d, i, j) {
 }
 
 export function barWidth(xScale) {
-  return getWidth(xScale);
+  return getBandwidth(xScale);
 }
 
 export function barHeight(yValue, yScale, offset, stacked, d, i, j) {

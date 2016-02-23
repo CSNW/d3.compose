@@ -4,19 +4,14 @@ import {
   isFunction
 } from '../utils';
 import {
-  types,
   createPrepare,
-  getTranslate
-} from '../helpers';
-import {
   createSeriesDraw,
-  properties as seriesProperties
-} from '../mixins/series';
-import {
+  getTranslate,
   getValue,
-  prepare as xyPrepare,
-  properties as xyProperties
-} from '../mixins/xy';
+  types
+} from '../helpers';
+import series from '../mixins/series';
+import xy from '../mixins/xy';
 import chart from '../chart';
 
 /**
@@ -46,7 +41,7 @@ import chart from '../chart';
   @class Scatter
 */
 export var Scatter = createSeriesDraw({
-  prepare: createPrepare(xyPrepare),
+  prepare: createPrepare(series.prepare, xy.prepare),
 
   select: function select(props) {
     return this.selectAll('g')
@@ -85,8 +80,8 @@ export var Scatter = createSeriesDraw({
 });
 
 Scatter.properties = assign({},
-  seriesProperties,
-  xyProperties,
+  series.properties,
+  xy.properties,
   {
     /**
       Symbol type for data points

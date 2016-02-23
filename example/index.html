@@ -147,7 +147,7 @@
         // });
 
         function chart2(data) {
-          var max = d3c.mixins.series.getSeriesMax(data.lines, d3c.mixins.xy.defaultYValue);
+          var max = d3c.helpers.seriesExtent(data.lines, function(d) { return d.y; })[1];
           var xScale = d3.scale.linear().domain([2000, 2020]);
           var yScale = d3.scale.linear().domain([0, max]).nice();
 
@@ -186,8 +186,9 @@
 
       <script type="text/javascript">
         function chart3(data) {
-          var min = d3c.mixins.series.getSeriesMin(data, function(d) { return d; });
-          var max = d3c.mixins.series.getSeriesMax(data, function(d) { return d; });
+          var extent = d3c.helpers.seriesExtent(data, function(d) { return d; });
+          var min = extent[0];
+          var max = extent[1];
           var xScale = d3c.scaleBandSeries()
             .domain(data.map(function(d, i) { return i; }))
             .adjacent(true)
@@ -231,8 +232,8 @@
 
       <script type="text/javascript">
         function chart4(data) {
-          var domain = d3c.mixins.xyValues.getOrdinalDomain(data.stacked, d3c.mixins.xy.defaultXValue);
-          var xScale = d3.scale.ordinal().domain(domain);
+          var domain = d3c.helpers.getUniqueValues(data.stacked, function(d) { return d.x; });
+          var xScale = d3c.scaleBandSeries().domain(domain).padding(0.1);
           var yScale = d3.scale.linear().domain([-50, 150]);
 
           var stacked = d3c.bars('stacked', {
@@ -277,8 +278,9 @@
 
       <script type="text/javascript">
         function chart5(data) {
-          var min = d3c.mixins.series.getSeriesMin(data, function(d) { return d; });
-          var max = d3c.mixins.series.getSeriesMax(data, function(d) { return d; });
+          var extent = d3c.helpers.seriesExtent(data, function(d) { return d; });
+          var min = extent[0];
+          var max = extent[1];
           var xScale = d3c.scaleBandSeries()
             .domain(data.map(function(d, i) { return i; }))
             .adjacent(true)
@@ -289,7 +291,7 @@
             data: data,
             xScale: xScale,
             yScale: yScale,
-            horizontal: true,
+            inverted: true,
             labels: {format: d3.format(',0d'), position: 'right|left', offset: 3}
           });
 
@@ -319,13 +321,13 @@
 
       <script type="text/javascript">
         function chart6(data) {
-          var domain = d3c.mixins.xyValues.getOrdinalDomain(data.stacked, d3c.mixins.xy.defaultXValue);
+          var domain = d3c.helpers.getUniqueValues(data.stacked, function(d) { return d.x; });
           var xScale = d3.scale.ordinal().domain(domain);
           var yScale = d3.scale.linear().domain([-50, 150]);
 
           var stacked = d3c.bars('stacked', {
             data: data.stacked,
-            horizontal: true,
+            inverted: true,
             stacked: true,
             xScale: xScale,
             yScale: yScale,

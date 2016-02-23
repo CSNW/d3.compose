@@ -1,94 +1,51 @@
 import {assign} from '../utils';
 import {
-  types,
-  scaleBandSeries
+  getUniqueValues,
+  isSeriesData,
+  scaleBandSeries,
+  types
 } from '../helpers';
-import {isSeriesData} from './series';
-import {
-  properties as xyProperties,
-  getValue,
-  defaultXValue
-} from './xy';
+import xy, {defaultXValue} from './xy';
 
 export var unsupportedScale = 'Only d3.scale.ordinal(), d3.scaleBand(), and d3c.scaleBandSeries() are supported for xScale';
 
 export function getDefaultXScale(props) {
   return scaleBandSeries()
-    .domain(getOrdinalDomain(props.data, props.xValue || defaultXValue))
+    .domain(getUniqueValues(props.data, props.xValue || defaultXValue))
     .series(isSeriesData(props.data) ? props.data.length : 1);
 }
 
 export var properties = assign({},
-  xyProperties,
+  xy.properties,
   {
     xScale: {
       type: types.fn,
       getDefault: getDefaultXScale
-    },
-    xScalePadding: {
-      type: types.number,
-      getDefault: function() { return 0.1; }
-    },
-    xScaleOuterPadding: {
-      type: types.number,
-      getDefault: function() { return 0.1; }
     }
   }
 );
 
 export function prepare(selection, props) {
-  var xScale = props.xScale;
-  var yScale = props.yScale;
+  var xScale = props.xScale.copy();
+  var yScale = props.yScale.copy();
 
-  xScale = xScale.copy()
-  if (xScale.rangeRoundBands) {
-    xScale.rangeRoundBands([0, props.width], props.xScalePadding, props.xScaleOuterPadding);
-  } else if (xScale.bandwidth) {
-    xScale.range([0, props.width]);
-  } else {
+  if (!xScale.bandwidth && !xScale.rangeBand) {
     throw new Error(unsupportedScale);
   }
 
-  yScale = yScale.copy()
-    .range([props.height, 0]);
+  if (props.inverted) {
+    xScale.rangeRoundBands ? xScale.rangeRoundBands([props.height, 0]) : xScale.range([props.height, 0]);
+    yScale.range([0, props.width]);
+  } else {
+    xScale.rangeRoundBands ? xScale.rangeRoundBands([0, props.width]) : xScale.range([0, props.width]);
+    yScale.range([props.height, 0]);
+  }
 
   return assign({}, props, {xScale: xScale, yScale: yScale});
 }
 
-export {
-  getValue
-};
-
-export function getWidth(xScale) {
-  if (xScale.rangeBand) {
-    return xScale.rangeBand();
-  } else {
-    throw new Error(unsupportedScale);
-  }
-}
-
-export function getOrdinalDomain(data, getValue) {
-  if (!isSeriesData(data)) {
-    return data.map(getValue);
-  }
-
-  var values = data.reduce(function(memo, series) {
-    var uniq = series.values
-      .map(getValue)
-      .filter(function(value) { return memo.indexOf(value < 0); });
-
-    return memo.concat(uniq);
-  }, []);
-
-  return values.sort();
-}
-
 var xyValues = {
-  getDefaultXScale: getDefaultXScale,
   properties: properties,
-  prepare: prepare,
-  getValue: getValue,
-  getWidth: getWidth,
-  getOrdinalDomain: getOrdinalDomain
+  prepare: prepare
 }
 export default xyValues;

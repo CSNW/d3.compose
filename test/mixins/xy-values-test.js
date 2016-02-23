@@ -22,6 +22,7 @@ tape('xyValues.prepare() sets rangeRoundBands for xScale', t => {
     copy() {
       return this;
     },
+    rangeBand: () => 0,
     rangeRoundBands: sinon.spy()
   };
 
@@ -30,7 +31,7 @@ tape('xyValues.prepare() sets rangeRoundBands for xScale', t => {
   xyValues.prepare(selection, props);
 
   t.ok(xScale.rangeRoundBands.called);
-  t.deepEqual(xScale.rangeRoundBands.args[0], [[0, 200], 0, 0]);
+  t.deepEqual(xScale.rangeRoundBands.args[0], [[0, 200]]);
   t.end();
 });
 
@@ -48,13 +49,5 @@ tape('xyValues.prepare() sets range for yScale', t => {
 
   t.ok(yScale.range.called);
   t.deepEqual(yScale.range.args[0], [[100, 0]]);
-  t.end();
-});
-
-tape('xyValues.getWidth() uses rangeBand, if available', t => {
-  const xScale = {
-    rangeBand: () => 50
-  };
-  t.equal(xyValues.getWidth(xScale), 50);
   t.end();
 });

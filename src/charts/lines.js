@@ -4,19 +4,14 @@ import {
   isUndefined
 } from '../utils';
 import {
-  types,
+  connect,
   createPrepare,
-  connect
-} from '../helpers';
-import {
   createSeriesDraw,
-  properties as seriesProperties
-} from '../mixins/series';
-import {
   getValue,
-  prepare as xyPrepare,
-  properties as xyProperties
-} from '../mixins/xy';
+  types
+} from '../helpers';
+import series from '../mixins/series';
+import xy from '../mixins/xy';
 import chart from '../chart';
 
 /**
@@ -46,7 +41,7 @@ import chart from '../chart';
   @class Lines
 */
 export var Lines = createSeriesDraw({
-  prepare: createPrepare(xyPrepare),
+  prepare: createPrepare(series.prepare, xy.prepare),
 
   select: function select(props) {
     return this.selectAll('path')
@@ -61,8 +56,12 @@ export var Lines = createSeriesDraw({
 
   merge: function merge(props) {
     var line = d3.svg.line()
-      .x(function(d, i, j) { return getValue(props.xValue, props.xScale, d, i, j); })
-      .y(function(d, i, j) { return getValue(props.yValue, props.yScale, d, i, j); });
+      .x(function(d, i, j) {
+        return getValue(props.xValue, props.xScale, d, i, j);
+      })
+      .y(function(d, i, j) {
+        return getValue(props.yValue, props.yScale, d, i, j);
+      });
 
     if (props.interpolate) {
       line.interpolate(props.interpolate);
@@ -78,8 +77,8 @@ export var Lines = createSeriesDraw({
 });
 
 Lines.properties = assign({},
-  seriesProperties,
-  xyProperties,
+  series.properties,
+  xy.properties,
   {
     /**
       Set interpolation mode for line
