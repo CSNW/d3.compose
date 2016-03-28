@@ -403,8 +403,8 @@ function merge(props) {
     var item_size = sizes[i];
     var transform = null;
 
-    if (item_size.height > item_size.height) {
-      var offset = (item_size.height - item_size.height) / 2;
+    if (item_size.height > size.height) {
+      var offset = (item_size.height - size.height) / 2;
       transform = translate(0, -offset);
     }
 
