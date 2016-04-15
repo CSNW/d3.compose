@@ -1,6 +1,5 @@
 import alignText from './helpers/align-text';
 import checkProp from './helpers/check-prop';
-import connect from './helpers/connect';
 import createChart from './helpers/create-chart';
 import createDraw from './helpers/create-draw';
 import createPrepare from './helpers/create-prepare';
@@ -23,7 +22,6 @@ import types from './helpers/types';
 var helpers = {
   alignText: alignText,
   checkProp: checkProp,
-  connect: connect,
   createChart: createChart,
   createDraw: createDraw,
   createPrepare: createPrepare,

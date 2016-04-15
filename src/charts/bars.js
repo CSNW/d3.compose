@@ -1,6 +1,5 @@
 import {assign} from '../utils';
 import {
-  connect,
   createPrepare,
   createSeriesDraw,
   getBandwidth,
@@ -17,6 +16,7 @@ import {
   defaultXValue
 } from '../mixins/xy';
 import xyValues from '../mixins/xy-values';
+import connect from '../connect';
 import chart from '../chart';
 
 // Draw vertical bars (stacked and unstacked)
@@ -177,7 +177,7 @@ export var mapState = function() {
 export var mapDispatch = function() {
   // TODO "bind" onMouseEnterBar and onMouseLeaveBar
 }
-export var connection = connect(mapState, mapDispatch);
+export var connection = connect.map(mapState, mapDispatch);
 
 /**
   bars

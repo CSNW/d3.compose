@@ -4,7 +4,6 @@ import {
   isUndefined
 } from '../utils';
 import {
-  connect,
   createPrepare,
   createSeriesDraw,
   getValue,
@@ -12,6 +11,7 @@ import {
 } from '../helpers';
 import series from '../mixins/series';
 import xy from '../mixins/xy';
+import connect from '../connect';
 import chart from '../chart';
 
 /**
@@ -115,7 +115,7 @@ Lines.properties = assign({},
 // ----------
 
 // TODO Connect to dispatch closest points
-export var connection = connect();
+export var connection = connect.map();
 
 // lines
 var lines = connection(chart(Lines));
