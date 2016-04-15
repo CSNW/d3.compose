@@ -43,8 +43,8 @@
     draw({
       xScale: d3c.scaleBandSeries()
         .domain([0, 1, 2])
-        .seriesCount(2)
-        .seriesPadding(0.05),
+        .series(2)
+        .paddingSeries(0.05),
       yScale: d3.scale.linear().domain([0, 5]),
       data: [
         {values: [1, 2, 3]},
@@ -135,7 +135,7 @@
       xValue: d => d.a,
       yValue: d => d.b,
       xScale: d3c.scaleBandSeries()
-        .domain(['a', 'b', 'c']).seriesCount(2).adjacent(false),
+        .domain(['a', 'b', 'c']).series(2).adjacent(false),
       yScale: d3.scale.linear().domain([0, 50]),
 
       horizontal: true,

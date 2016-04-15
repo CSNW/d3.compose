@@ -5,5 +5,5 @@ export default function getRotate(degrees, center) {
   }
   rotation += ')';
 
-return rotation;
+  return rotation;
 }

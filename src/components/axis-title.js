@@ -1,7 +1,11 @@
 import {assign} from '../utils';
 import component, {Component} from '../component';
 import {Text} from './text';
-import {Title, defaultMargin, defaultPosition} from './title';
+import {
+  Title,
+  defaultMargin,
+  defaultPosition
+} from './title';
 
 /**
   Axis title component that extends Title with defaults for styling and margins

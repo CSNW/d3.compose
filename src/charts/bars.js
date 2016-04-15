@@ -63,7 +63,7 @@ export var drawHorizontalBars = createSeriesDraw({
       {values: [{x: 'a', y: 10}, {x: 'b', y: 30}, {x: 'c', y: 20}]},
       {values: [{x: 'a', y: 30}, {x: 'b', y: 20}, {x: 'c', y: 10}]}
     ],
-    xScale: d3c.scaleBandSeries().domain(['a', 'b', 'c']).seriesCount(2)
+    xScale: d3c.scaleBandSeries().domain(['a', 'b', 'c']).series(2)
   });
 
   // Handling non-ordinal scales
@@ -82,7 +82,7 @@ export var drawHorizontalBars = createSeriesDraw({
     xValue: d => d.a,
     yValue: d => d.b,
     xScale: d3c.scaleBandSeries()
-      .domain(['a', 'b', 'c']).seriesCount(2).adjacent(false),
+      .domain(['a', 'b', 'c']).series(2).adjacent(false),
     yScale: d3.scale.linear().domain([0, 50]),
 
     inverted: true, // horizontal
@@ -123,7 +123,7 @@ Bars.properties = assign({},
       });
 
       bars({
-        xScale: d3c.scaleBandSeries().domain(['a', 'b', 'c']).seriesCount(2)
+        xScale: d3c.scaleBandSeries().domain(['a', 'b', 'c']).series(2)
       });
       ```
       @property xScale
