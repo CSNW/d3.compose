@@ -2,8 +2,6 @@ import d3 from 'd3';
 import {
   assign,
   difference,
-  extend,
-  isFunction,
   objectEach
 } from './utils';
 import {
@@ -44,7 +42,7 @@ var Compose = Chart.extend({
     // Attach mouse event source
     var transform = this.getRelativePoint.bind(this);
     this.unsubscribe = {
-      mouse: mouseSource(this.container, {transform: transform}, function(action) {
+      mouse: mouseSource(this.container, {transform: transform}, function() {
         // TODO
       })
     };

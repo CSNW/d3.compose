@@ -14,11 +14,6 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
 ## Getting Started
 
 1. Download the [latest release](https://github.com/CSNW/d3.compose/releases)
-
-    - `d3.compose-all` Includes all charts, components, extensions, and mixins
-    - `d3.compose-mixins` Use if you're creating your own charts/components and want to use d3.compose's mixins to help
-    - `d3.compose` Use if you're using your own charts/components and don't need mixins, charts, or components provided by d3.compose
-
 2. Download the dependencies:
 
     - [D3.js (>= 3.0.0)](http://d3js.org/)
@@ -40,7 +35,7 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
         <script src="d3.js"></script>
         <script src="d3.chart.js"></script>
 
-        <script src="d3.compose-all.js"></script>
+        <script src="d3.compose.js"></script>
 
         <!-- Your code -->
       </body>

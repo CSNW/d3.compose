@@ -22,7 +22,7 @@ const banner = '/*!\n' +
   Build distribution version of library
 */
 const dist_options = {minify: true, banner: true};
-gulp.task('build:dist:css', css(paths.css, paths.dist, dist_options));
+gulp.task('css', css(paths.css, paths.dist, dist_options));
 
 /**
   Bump the bower version to match package.json

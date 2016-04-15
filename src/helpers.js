@@ -46,7 +46,6 @@ export {
   helpers as default,
   alignText,
   checkProp,
-  connect,
   createChart,
   createDraw,
   createPrepare,

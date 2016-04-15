@@ -3,7 +3,7 @@
   "homepage": "https://github.com/CSNW/d3.compose",
   "version": "0.15.15",
   "main": [
-    "./dist/d3.compose-all.js",
+    "./dist/d3.compose.js",
     "./dist/d3.compose.css"
   ],
   "authors": [
