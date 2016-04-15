@@ -3,6 +3,7 @@ import {
   assign,
   difference,
   extend,
+  isFunction,
   objectEach
 } from './utils';
 import {
@@ -23,9 +24,10 @@ var Compose = Chart.extend({
   constructor: function Compose(base, props) {
     Chart.call(this, base, props);
     this.children = {byId: {}, ordered: []};
+    this.baseNode = this.base.node();
 
     // Need div, p, etc. to support div layers (e.g. Overlay)
-    if (this.base.node().tagName == 'svg') {
+    if (this.baseNode.tagName == 'svg') {
       throw new Error(selectionError);
     }
 
@@ -35,25 +37,17 @@ var Compose = Chart.extend({
       .attr('class', 'd3c-container')
       .style({position: 'relative'});
     this.svg = this.container.append('svg')
-      .attr('xlmns', 'http://www.w3.org/2000/svg')
+      .attr('xmlns', 'http://www.w3.org/2000/svg')
       .attr('version', '1.1')
       .attr('class', 'd3c-svg');
 
-    // Setup events source
-    var subscriptions = this.subscriptions = [];
-    this.events = {
-      subscribe: function subscribe(listener) {
-        subscriptions.push(listener);
-
-        return function unsubscribe() {
-          var index = subscriptions.indexOf(listener);
-          subscriptions.splice(index, 1);
-        }
-      }
-    };
-
     // Attach mouse event source
-    this.attachMouseEvents();
+    var transform = this.getRelativePoint.bind(this);
+    this.unsubscribe = {
+      mouse: mouseSource(this.container, {transform: transform}, function(action) {
+        // TODO
+      })
+    };
   },
 
   render: function render() {
@@ -164,23 +158,33 @@ var Compose = Chart.extend({
     });
   },
 
+  getScale: function getScale() {
+    return this.props.responsive && this.props.width ? this.baseNode.clientWidth / this.props.width : 1.0;
+  },
+
   getDimensions: function getDimensions() {
-    var responsive = this.props.responsive;
     var width = this.props.width;
     var height = this.props.height;
     var aspectRatio = this.props.aspectRatio;
-    var clientWidth = this.base.node().clientWidth;
+
     if (width && height) {
       aspectRatio = width / height;
     } else if (width) {
       height = width / aspectRatio;
     } else {
-      width = clientWidth;
+      width = this.baseNode.clientWidth;
       height = width / aspectRatio;
     }
-    var scale = responsive ? clientWidth / width : 1.0;
 
-    return {width: width, height: height, aspectRatio: aspectRatio, scale: scale};
+    return {width: width, height: height, aspectRatio: aspectRatio, scale: this.getScale()};
+  },
+
+  getRelativePoint: function(point) {
+    var scale = this.getScale();
+    return {
+      x: point[0] * 1/scale,
+      y: point[1] * 1/scale
+    };
   },
 
   prepareContainer: function prepareContainer(dimensions) {
@@ -220,68 +224,6 @@ var Compose = Chart.extend({
         .attr('width', width)
         .attr('height', height);
     }
-  },
-
-  attachMouseEvents: function attachMouseEvents() {
-    var base = this.base.node();
-    var container = this.container.node();
-    var subscriptions = this.subscriptions;
-
-    // TODO Update to respond to changes in responsive/width
-    var responsive = this.props.responsive;
-    var width = this.props.width;
-    var scale = 1.0;
-    var bounds, wasInside;
-
-    this.container.on('mouseenter', function() {
-      calculateBounds();
-      wasInside = getInside(bounds);
-
-      if (wasInside) {
-        mouseEnter();
-      }
-    });
-    this.container.on('mousemove', function() {
-      // Mousemove may fire before mouseenter in IE
-      if (!bounds) {
-        calculateBounds();
-        wasInside = false;
-      }
-
-      var isInside = getInside(bounds);
-      if (wasInside && isInside) {
-        mouseMove();
-      } else if (wasInside) {
-        mouseLeave();
-      } else {
-        mouseEnter();
-      }
-
-      wasInside = isInside;
-    });
-    this.container.on('mouseleave', function() {
-      if (wasInside) {
-        wasInside = false;
-        mouseLeave();
-      }
-    });
-
-    function mouseEnter() {
-      publish(subscriptions, {type: 'mouseenter', coordinates: getCoordinates(container, scale)});
-    }
-    function mouseMove() {
-      publish(subscriptions, {type: 'mousemove', coordinates: getCoordinates(container, scale)});
-    }
-    function mouseLeave() {
-      publish(subscriptions, {type: 'mouseleave'});
-    }
-
-    function calculateBounds() {
-      if (responsive && width) {
-        scale = base.clientWidth / width;
-      }
-      bounds = getBounds(container, scale);
-    }
   }
 });
 
@@ -300,40 +242,41 @@ Compose.properties = {
 
 export default Compose;
 
-function publish(subscriptions, event) {
-  for (var i = 0, length = subscriptions.length; i < length; i++) {
-    subscriptions[i](event);
+/*
+  mouseSource
+
+  @param {d3.selection} container
+  @param {Object} [options]
+  @param {Function} [options.transform]
+  @param {Function} fn
+*/
+var sourceId = 0;
+export function mouseSource(container, options, fn) {
+  if (!fn) {
+    fn = options;
+    options = undefined;
   }
-}
 
-function getCoordinates(container, scale) {
-  var mouse = d3.mouse(container);
-  var x = mouse[0];
-  var y = mouse[1];
+  var namespace = '__mouse-' + (sourceId++);
+  var transform = options && options.transform || function(position) { return position; };
 
-  // Scale to svg dimensions
-  var coordinates = {
-    x: x * (1/scale),
-    y: y * (1/scale)
+  container.on('mouseenter.' + namespace, function() {
+    fn({type: 'mouseenter', position: transform(d3.mouse(this))});
+  });
+  container.on('mouseover.' + namespace, function() {
+    fn({type: 'mouseover', position: transform(d3.mouse(this))});
+  });
+  container.on('mousemove.' + namespace, function() {
+    fn({type: 'mousemove', position: transform(d3.mouse(this))});
+  });
+  container.on('mouseout.' + namespace, function() {
+    fn({type: 'mouseout'});
+  });
+  container.on('mouseleave.' + namespace, function() {
+    fn({type: 'mouseleave'});
+  });
+
+  return function unsubscribe() {
+    container.on('.' + namespace, null);
   };
-
-  return coordinates;
-}
-
-function getBounds(container) {
-  // Get bounds of container relative to document
-  var scrollY = 'scrollY' in window ? window.scrollY : document.documentElement.scrollTop;
-  var bounds = extend({}, container.getBoundingClientRect());
-  bounds.top += scrollY;
-  bounds.bottom += scrollY;
-
-  return bounds;
-}
-
-function getInside(bounds) {
-  // Check if the current mouse position is within the container bounds
-  var mouse = d3.mouse(document.documentElement);
-  var x = mouse[0];
-  var y = mouse[1];
-  return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
 }
