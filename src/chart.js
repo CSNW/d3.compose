@@ -31,20 +31,11 @@ assign(Chart.prototype, {
       return;
     }
 
-    // Get defaults and check props
-    var loaded = assign({}, props);
-    objectEach(properties, function(definition, key) {
-      var prop = loaded[key];
+    // TODO Skip in production
+    checkProps(properties, props);
 
-      if (!isUndefined(prop)) {
-        // TODO Skip in production
-        checkProp(prop, definition);
-      } else if (definition.getDefault) {
-        loaded[key] = definition.getDefault.call(this, props);
-      }
-    });
-
-    this.props = loaded;
+    var defaults = getDefaults(properties, props);
+    this.props = assign(defaults, props);
   },
 
   prepareLayout: function prepareLayout(layout) {
@@ -73,7 +64,7 @@ assign(Chart.prototype, {
     return assign({}, layout, {width: width, height: height, margin: margin});
   },
 
-  getDimensions: function() {
+  getDimensions: function getDimensions() {
     return {
       width: constraint.flex(),
       height: constraint.flex()
@@ -84,54 +75,57 @@ assign(Chart.prototype, {
     return defaultMargin;
   },
 
-  render: function render() {
-
-  },
-
-  remove: function remove() {
-
-  }
+  render: function render() {},
+  remove: function remove() {}
 });
 
-assign(Chart, {
-  properties: {
-    top: types.any,
-    right: types.any,
-    bottom: types.any,
-    left: types.any,
-    width: types.any,
-    height: types.any,
-    margin: types.any,
-    zIndex: types.any
-  },
-  layerType: 'g',
+Chart.properties = {
+  top: types.any,
+  right: types.any,
+  bottom: types.any,
+  left: types.any,
+  width: types.any,
+  height: types.any,
+  margin: types.any,
+  zIndex: types.any
+};
 
-  extend: function extend(protoProps, staticProps) {
-    var Parent = this;
-    var Child;
+Chart.layerType = 'g';
 
-    if (protoProps && protoProps.hasOwnProperty('constructor')) {
-      Child = protoProps.constructor;
+/**
+  Create extension with given prototype and static properties
 
-      // inherits sets constructor, remove from protoProps
-      protoProps = assign({}, protoProps);
-      delete protoProps.constructor;
-    } else {
-      Child = function() { return Parent.apply(this, arguments); };
-    }
+  @method extend
+  @static
+  @param {Object} protoProps
+  @param {Object} staticProps
+  @return {Class} extension
+*/
+Chart.extend = function extend(protoProps, staticProps) {
+  var Parent = this;
+  var Child;
 
-    inherits(Child, Parent);
+  if (protoProps && protoProps.hasOwnProperty('constructor')) {
+    Child = protoProps.constructor;
 
-    if (staticProps) {
-      assign(Child, staticProps);
-    }
-    if (protoProps) {
-      assign(Child.prototype, protoProps);
-    }
-
-    return Child;
+    // inherits sets constructor, remove from protoProps
+    protoProps = assign({}, protoProps);
+    delete protoProps.constructor;
+  } else {
+    Child = function() { return Parent.apply(this, arguments); };
   }
-});
+
+  inherits(Child, Parent);
+
+  if (staticProps) {
+    assign(Child, staticProps);
+  }
+  if (protoProps) {
+    assign(Child.prototype, protoProps);
+  }
+
+  return Child;
+}
 
 export default function chart(Type) {
   if (!isChart(Type)) {
@@ -146,4 +140,23 @@ export default function chart(Type) {
 
     return {type: Type, id: id, props: props};
   };
+}
+
+// Helpers
+export function getDefaults(definitions, props) {
+  var defaults = Object.keys(definitions).reduce(function(memo, key) {
+    var definition = definitions[key];
+    if (isUndefined(props[key]) && definition.getDefault) {
+      memo[key] = definition.getDefault(props);
+    }
+    return memo;
+  }, {});
+
+  return defaults;
+}
+
+export function checkProps(definitions, props) {
+  objectEach(definitions, function(definition, key) {
+    checkProp(props[key], definition);
+  });
 }
