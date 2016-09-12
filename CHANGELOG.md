@@ -21,6 +21,7 @@
 - __0.15.14__ Fix small height issue for stacked bars
 - __0.15.15__ Fix broken build
 - __0.15.16__ Re-fix expanding Legend bug
+- __0.15.17__ Adjust legend background approach
 
 # 0.14.0
 
