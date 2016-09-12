@@ -403,10 +403,8 @@ function merge(props) {
     var item_size = sizes[i];
     var transform = null;
 
-    if (item_size.height > size.height) {
-      var offset = (item_size.height - size.height) / 2;
-      transform = translate(0, -offset);
-    }
+    if (item_size.height > size.height)
+      transform = translate(0, item_size.y);
 
     d3.select(this)
       .attr('width', item_size.width)
