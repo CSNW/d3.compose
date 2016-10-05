@@ -18,8 +18,8 @@ import Legend from './Legend';
   @extends Legend
 */
 var InsetLegend = Legend.extend({
-  render: function() {
-    Legend.prototype.render.call(this);
+  render: function(data) {
+    Legend.prototype.render.call(this, data);
 
     var layer = getLayer(this.base, 'legend');
     var transform = getTransform(layer, this.props);

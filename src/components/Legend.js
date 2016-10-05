@@ -92,9 +92,10 @@ var Legend = Mixed.extend({
     prepareLegend
   ),
 
-  render: function() {
+  render: function(data) {
     // TODO Move to lifecycle
     this.update(this.base, this.options());
+    this.props.data = data;
 
     var layer = getLayer(this.base, 'legend')
       .classed('chart-legend', true);
@@ -148,8 +149,8 @@ var Legend = Mixed.extend({
     Mixed.prototype.initialize.apply(this, arguments);
     this.attached = {};
   },
-  draw: function() {
-    this.render();
+  draw: function(data) {
+    this.render(data);
   },
   swatchDimensions: function() {
     return this.props.swatchDimensions;
