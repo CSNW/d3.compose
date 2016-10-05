@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.17 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.18 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('d3.chart')) :
@@ -3274,9 +3274,10 @@
       prepareLegend
     ),
 
-    render: function() {
+    render: function(data) {
       // TODO Move to lifecycle
       this.update(this.base, this.options());
+      this.props.data = data;
 
       var layer = getLayer(this.base, 'legend')
         .classed('chart-legend', true);
@@ -3330,8 +3331,8 @@
       Mixed$6.prototype.initialize.apply(this, arguments);
       this.attached = {};
     },
-    draw: function() {
-      this.render();
+    draw: function(data) {
+      this.render(data);
     },
     swatchDimensions: function() {
       return this.props.swatchDimensions;
@@ -3624,8 +3625,8 @@
     @extends Legend
   */
   var InsetLegend = Legend.extend({
-    render: function() {
-      Legend.prototype.render.call(this);
+    render: function(data) {
+      Legend.prototype.render.call(this, data);
 
       var layer = getLayer(this.base, 'legend');
       var transform = getTransform(layer, this.props);
@@ -6740,7 +6741,7 @@
   });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.17',
+    VERSION: '0.15.18',
     utils: utils,
     helpers: helpers,
     Base: Base,

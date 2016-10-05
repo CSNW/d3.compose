@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.17 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.18 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('d3.chart')) :
@@ -4172,7 +4172,7 @@
   });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.17',
+    VERSION: '0.15.18',
     utils: utils,
     helpers: helpers,
     Base: Base,
