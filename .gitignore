@@ -2,6 +2,8 @@ node_modules
 npm-debug.log
 .tmp/
 _docs/
+yarn.lock
+package-lock.json
 
 _site/
 .sass-cache
