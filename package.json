@@ -1,6 +1,6 @@
 {
   "name": "d3.compose",
-  "version": "0.15.18",
+  "version": "0.15.19",
   "description": "Compose complex, data-driven visualizations from reusable charts and components with d3",
   "main": "dist/d3.compose.js",
   "scripts": {
@@ -57,7 +57,7 @@
     "gulp-plumber": "^1.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.3",
-    "gulp-rollup": "^1.4.0",
+    "gulp-rollup": "1.4.0",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.6",
@@ -67,7 +67,7 @@
     "jsdom": "^7.1.1",
     "mocha": "^2.3.4",
     "rimraf": "^2.4.4",
-    "rollup": "^0.21.1",
+    "rollup": "0.21.1",
     "run-sequence": "^1.1.2",
     "yuidocjs": "^0.9.0"
   }

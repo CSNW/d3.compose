@@ -1,7 +1,7 @@
 {
   "name": "d3.compose",
   "homepage": "https://github.com/CSNW/d3.compose",
-  "version": "0.15.18",
+  "version": "0.15.19",
   "main": [
     "./dist/d3.compose-all.js",
     "./dist/d3.compose.css"
