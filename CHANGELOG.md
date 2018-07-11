@@ -23,6 +23,8 @@
 - __0.15.16__ Re-fix expanding Legend bug
 - __0.15.17__ Adjust legend background approach
 - __0.15.18__ Fix legend data issue
+- __0.15.19__ Update d3.chart
+- __0.15.20__ Update label collision handling
 
 # 0.14.0
 
