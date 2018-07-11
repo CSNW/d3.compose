@@ -451,7 +451,10 @@ var Labels = Mixed.extend({
       labels.slice(seriesIndex + 1).forEach(function(compareSeries) {
         compareSeries.forEach(function(compareLabel) {
           series.forEach(function(label) {
-            if (checkForOverlap(label, compareLabel))
+            var overlapping = checkForOverlap(label, compareLabel);
+            var not_grouped = notGrouped(label, compareLabel);
+
+            if (overlapping && not_grouped)
               groupLabels(label, compareLabel);
           });
         });
@@ -477,6 +480,14 @@ var Labels = Mixed.extend({
           bottom: label.y + label.height
         };
       }
+    }
+
+    function notGrouped(labelA, labelB) {
+      return !groupIncludes(labelA.group, labelB) && !groupIncludes(labelB.group, labelA);
+    }
+
+    function groupIncludes(group, label) {
+      return group && group.labels.indexOf(label) > -1;
     }
 
     function groupLabels(labelA, labelB) {
@@ -538,8 +549,13 @@ var Labels = Mixed.extend({
           }
         }
 
-        if (overlap)
-          label.y = overlap.y - label.height;
+        if (overlap) {
+          // Design goal is to maintain y-ordering:
+          // even if overlap is not top-most element,
+          // still need to position above top-most
+          label.y = prev[prev.length - 1].y - label.height;
+        }
+          
       });
     }
   },
