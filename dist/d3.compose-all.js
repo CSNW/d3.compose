@@ -1,6 +1,6 @@
 /*!
  * d3.compose - Compose complex, data-driven visualizations from reusable charts and components with d3
- * v0.15.19 - https://github.com/CSNW/d3.compose - license: MIT
+ * v0.15.20 - https://github.com/CSNW/d3.compose - license: MIT
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('d3.chart')) :
@@ -4881,7 +4881,10 @@
         labels.slice(seriesIndex + 1).forEach(function(compareSeries) {
           compareSeries.forEach(function(compareLabel) {
             series.forEach(function(label) {
-              if (checkForOverlap(label, compareLabel))
+              var overlapping = checkForOverlap(label, compareLabel);
+              var not_grouped = notGrouped(label, compareLabel);
+
+              if (overlapping && not_grouped)
                 groupLabels(label, compareLabel);
             });
           });
@@ -4907,6 +4910,14 @@
             bottom: label.y + label.height
           };
         }
+      }
+
+      function notGrouped(labelA, labelB) {
+        return !groupIncludes(labelA.group, labelB) && !groupIncludes(labelB.group, labelA);
+      }
+
+      function groupIncludes(group, label) {
+        return group && group.labels.indexOf(label) > -1;
       }
 
       function groupLabels(labelA, labelB) {
@@ -4968,8 +4979,13 @@
             }
           }
 
-          if (overlap)
-            label.y = overlap.y - label.height;
+          if (overlap) {
+            // Design goal is to maintain y-ordering:
+            // even if overlap is not top-most element,
+            // still need to position above top-most
+            label.y = prev[prev.length - 1].y - label.height;
+          }
+            
         });
       }
     },
@@ -6741,7 +6757,7 @@
   });
 
   var d3c = d3.compose = {
-    VERSION: '0.15.19',
+    VERSION: '0.15.20',
     utils: utils,
     helpers: helpers,
     Base: Base,
