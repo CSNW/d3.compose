@@ -1,7 +1,8 @@
 name: d3.compose
+title: d3.compose
 baseurl: /d3.compose
 url: http://csnw.github.io/d3.compose/
-github: https://github.com/csnw/d3.compose/
+repository: csnw/d3.compose
 
 exclude:
 - Gemfile
@@ -12,11 +13,26 @@ exclude:
 - _tmp
 - _docs
 
-highlighter: pygments
-markdown: redcarpet
-redcarpet:
-  extensions:
-  - fenced_code_blocks
 sass:
   style: :compressed
   sass_dir: _css
+
+# Default github-pages configuation
+encoding: UTF-8
+kramdown:
+  input: GFM
+  hard_wrap: false
+future: true
+jailed: false
+theme: jekyll-theme-primer
+gfm_quirks: paragraph_end
+
+# Unchangable github-pages configuration
+lsi: false
+safe: true
+highlighter: rouge
+gist:
+  noscript: false
+kramdown:
+  math_engine: mathjax
+syntax_highlighter: rouge
