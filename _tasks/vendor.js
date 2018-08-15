@@ -4,7 +4,7 @@ var fs = require('fs');
 process.chdir('../js/');
 
 var input_files = [
-  'vendor/jquery-2.1.3.js',
+  'vendor/jquery-3.3.1.js',
   'vendor/bootstrap.js',
   'vendor/underscore.js',
   'vendor/backbone.js',
