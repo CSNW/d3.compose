@@ -2,6 +2,7 @@ build
 node_modules
 npm-debug.log
 
+.tmp
 _docs/
 _site/
 .sass-cache
