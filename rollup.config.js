@@ -5,12 +5,16 @@ const banner = `/*!
  */`
 
 export default {
-  moduleName: 'd3c',
-  format: 'umd',
+  input: 'index.js',
   external: ['d3'],
-  globals: {
-    d3: 'd3'
-  },
-  banner,
+  output: {
+    file: 'build/d3.compose.js',
+    format: 'umd',
+    name: 'd3c',
+    globals: {
+      d3: 'd3'
+    },
+    banner,
   outro: `exports.version = '${pkg.version}';`,
+  }
 };

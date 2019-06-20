@@ -2,7 +2,6 @@
 
 const path = require('path');
 const gulp = require('gulp');
-const runSequence = require('run-sequence');
 const GithubApi = require('github');
 const inquirer = require('inquirer');
 const $ = require('gulp-load-plugins')();
@@ -22,38 +21,38 @@ const banner = '/*!\n' +
   Build distribution version of library
 */
 const dist_options = {minify: true, banner: true};
-gulp.task('css', css(paths.css, paths.dist, dist_options));
 
 /**
   Bump the bower version to match package.json
 */
-gulp.task('version:bower', () => {
+function version() {
   return gulp.src('./bower.json')
     .pipe($.bump({version: pkg.version}))
     .pipe(gulp.dest('./'));
-});
+}
+
 
 /**
   Prepare files for docs
 */
-gulp.task('docs', () => {
+function docs() {
   return gulp.src([`${paths.dist}*`, 'package.json', 'CHANGELOG.md'])
     .pipe($.copy('_docs/additional/'));
-});
+}
 
 /**
   Create zip for github
 */
-gulp.task('zip:github', () => {
+function zipGithub() {
   return gulp.src(`${paths.dist}*`, {base: 'dist'})
     .pipe($.zip(paths.zip))
     .pipe(gulp.dest(paths.dist));
-});
+}
 
 /**
   Publish release to github
 */
-gulp.task('publish:github', series('zip:github', (cb) => {
+function publishGithub(cb) {
   const github = new GithubApi({
     version: '3.0.0',
     protocol: 'https'
@@ -98,7 +97,7 @@ gulp.task('publish:github', series('zip:github', (cb) => {
       }, cb);
     })
   });
-}));
+}
 
 /**
   Create css build function
@@ -129,26 +128,9 @@ function css(files, output, options) {
   };
 }
 
-/**
-  Approximate gulp 4.0 series
-
-  @param {...String} ...tasks
-  @param {Function} [fn] Function to call at end of series
-  @return {Function}
-*/
-function series() {
-  const tasks = Array.prototype.slice.call(arguments);
-  var fn = cb => cb();
-
-  if (typeof tasks[tasks.length - 1] === 'function')
-    fn = tasks.pop();
-
-  return (cb) => {
-    const tasks_with_cb = tasks.concat([(err) => {
-      if (err) return cb(err);
-      fn(cb);
-    }]);
-
-    runSequence.apply(this, tasks_with_cb);
-  }
-}
+module.exports = {
+  css: css(paths.css, paths.dist, dist_options),
+  docs,
+  'publish:github': gulp.series(zipGithub, publishGithub),
+  'version:bower': version
+};
