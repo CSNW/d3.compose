@@ -79,8 +79,8 @@ tape('utils.includes() checks if array includes values', t => {
 });
 
 tape('utils.toArray() converts value to array', t => {
-  t.throws(() => arguments.push('Howdy'));
-  t.doesNotThrow(() => utils.toArray(arguments).push('Howdy'));
+  t.throws(function() { arguments.push('Howdy'); });
+  t.doesNotThrow(function() { utils.toArray(arguments).push('Howdy'); });
 
   const original = [1, 2, 3];
   const result = utils.toArray(original);

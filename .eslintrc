@@ -1,13 +1,15 @@
-ecmaFeatures:
-  modules: true
+{
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true
+  },
+  "extends": "eslint:recommended",
 
-env:
-  es6: true
-  browser: true
-  node: true
-
-extends:
-  "eslint:recommended"
-
-rules:
-  no-empty: 0
+  "rules": {
+    "no-empty": 0
+  }
+}

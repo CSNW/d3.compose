@@ -9,7 +9,6 @@ Compose rich, data-bound charts from charts (like Lines and Bars) and components
 - CSS class-based styling is extensible and easy to customize to match your site
 
 [![npm version](https://img.shields.io/npm/v/d3.compose.svg?style=flat-square)](https://www.npmjs.com/package/d3.compose)
-[![Code Climate](https://img.shields.io/codeclimate/github/CSNW/d3.compose.svg?style=flat-square)](https://codeclimate.com/github/CSNW/d3.compose)
 
 ## Getting Started
 
