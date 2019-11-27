@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "acorn": ">7.0.0",
-    "lodash": ">=4.17.13",
     "eslint": "^6.7.1",
     "faucet": "0.0.1",
     "github": "^0.2.4",
@@ -55,6 +54,7 @@
     "inquirer": "^6.4.0",
     "jquery": "^3.4.1",
     "jsdom": "^8.0.0",
+    "lodash": ">=4.17.13",
     "node-mkdirp": "0.0.1",
     "rimraf": "^2.4.4",
     "rollup": "^1.15.6",

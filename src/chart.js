@@ -104,8 +104,8 @@ Chart.layerType = 'g';
 Chart.extend = function extend(protoProps, staticProps) {
   var Parent = this;
   var Child;
-
-  if (protoProps && protoProps.hasOwnProperty('constructor')) {
+  
+  if (protoProps && Object.prototype.hasOwnProperty.call(protoProps, "constructor")) {
     Child = protoProps.constructor;
 
     // inherits sets constructor, remove from protoProps
