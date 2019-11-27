@@ -39,7 +39,7 @@
     "d3": "^3.5.8"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
+    "eslint": "^6.7.1",
     "faucet": "0.0.1",
     "github": "^0.2.4",
     "gulp": "^4.0.2",
