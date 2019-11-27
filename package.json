@@ -40,6 +40,8 @@
   },
   "devDependencies": {
     "acorn": ">7.0.0",
+    "mime": "^1.4.1",
+    "cryptiles": "^4.1.2",
     "eslint": "^6.7.1",
     "faucet": "0.0.1",
     "github": "^0.2.4",
@@ -55,6 +57,7 @@
     "jquery": "^3.4.1",
     "jsdom": "^8.0.0",
     "lodash": ">=4.17.13",
+    "lodash.template": ">=4.5.0",
     "node-mkdirp": "0.0.1",
     "rimraf": "^2.4.4",
     "rollup": "^1.15.6",
