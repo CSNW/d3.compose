@@ -39,6 +39,8 @@
     "d3": "^3.5.8"
   },
   "devDependencies": {
+    "acorn": ">7.0.0",
+    "lodash": ">=4.17.13",
     "eslint": "^6.7.1",
     "faucet": "0.0.1",
     "github": "^0.2.4",
