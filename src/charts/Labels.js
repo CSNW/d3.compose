@@ -249,7 +249,7 @@ var Labels = Mixed.extend({
     var value = valueOrDefault(d.label, valueOrDefault(d.__original_y, chart.yValue.call(this, d, i)));
     var format = chart.format();
 
-    return format ? format(value) : value;
+    return format ? format(value, d) : value;
   }),
 
   /**
