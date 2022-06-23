@@ -54,7 +54,7 @@
     "gulp-zip": "^5.0.0",
     "inquirer": "^6.4.0",
     "jquery": "^3.4.1",
-    "jsdom": "^8.0.0",
+    "jsdom": "^16.5.0",
     "lodash": ">=4.17.13",
     "lodash.template": "^4.5.0",
     "mime": "^1.4.1",
